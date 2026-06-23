@@ -19,6 +19,7 @@ from app.core.config import get_settings
 from app.db.database import SessionLocal, init_db
 from app.db.seed import seed_database
 from app.db.seed_evidence import seed_evidence
+from app.db.seed_plansheets import seed_plansheets
 
 settings = get_settings()
 
@@ -32,6 +33,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     try:
         seed_database(db)
         seed_evidence(db)
+        seed_plansheets(db)
     finally:
         db.close()
     yield
@@ -41,13 +43,14 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
         "Review-support API for stormwater and land development review. "
-        "Phase 5 adds a persisted human review queue, reviewer actions with "
-        "status transitions, and evaluation scoring of AI draft findings "
-        "against expected Brookside Meadows findings. The mock provider is the "
-        "default and no live AI calls, embeddings, or vector retrieval are "
-        "included."
+        "Phase 6 adds a plan sheet and CAD-aware review foundation: a seeded "
+        "plan sheet index, CAD-aware feature metadata, plan references, missing "
+        "sheet detection, and plan consistency findings that require human "
+        "review. The CAD-aware metadata is seeded, not extracted from real CAD "
+        "files. The mock AI provider remains the default and no live AI calls, "
+        "embeddings, vector retrieval, or CAD parsing are included."
     ),
-    version="0.5.0",
+    version="0.6.0",
     lifespan=lifespan,
 )
 

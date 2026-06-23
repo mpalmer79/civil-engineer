@@ -2,10 +2,12 @@ import PageHeader from "@/components/PageHeader";
 import EvaluationSummary from "@/components/EvaluationSummary";
 import EvaluationScoringClient from "@/components/EvaluationScoringClient";
 import SectionCard from "@/components/SectionCard";
-import { getEvaluationData } from "@/lib/api";
+import MetricCard from "@/components/MetricCard";
+import { getEvaluationData, getPlanConsistencySummary } from "@/lib/api";
 
 export default async function EvaluationPage() {
   const { cases, summary } = await getEvaluationData();
+  const planSummary = await getPlanConsistencySummary();
   return (
     <div>
       <PageHeader
@@ -39,6 +41,42 @@ export default async function EvaluationPage() {
         </SectionCard>
 
         <EvaluationSummary evaluationCases={cases} evaluationSummary={summary} />
+
+        {planSummary ? (
+          <SectionCard title="Phase 6 plan sheet and CAD-aware review">
+            <p className="text-sm text-slate-600">
+              Phase 6 plan consistency metrics from the seeded plan references
+              and sheets. These are review-support counts, not a design score.
+            </p>
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+              <MetricCard
+                value={planSummary.planConsistencyFindings}
+                label="Plan consistency findings"
+                accent="amber"
+              />
+              <MetricCard
+                value={planSummary.missingSheetCount}
+                label="Missing sheet count"
+                accent="red"
+              />
+              <MetricCard
+                value={planSummary.conflictingLabelCount}
+                label="Conflicting label count"
+                accent="amber"
+              />
+              <MetricCard
+                value={planSummary.cadMetadataRecords}
+                label="CAD-aware metadata records"
+                accent="water"
+              />
+              <MetricCard
+                value={planSummary.findingsRequiringHumanReview}
+                label="Plan references requiring human review"
+                accent="amber"
+              />
+            </div>
+          </SectionCard>
+        ) : null}
 
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
           <span className="font-semibold text-slate-800">Scope note:</span>{" "}

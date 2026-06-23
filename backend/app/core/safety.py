@@ -85,6 +85,51 @@ PROHIBITED_FINAL_DECISION_WORDS: set[str] = {
     "meets all requirements",
 }
 
+# Phase 6 plan sheet status values. None of these implies a final engineering
+# decision or approval. "present" and "current" describe inclusion in the
+# package, not correctness of the design.
+ALLOWED_PLAN_SHEET_STATUSES: set[str] = {
+    "present",
+    "missing",
+    "referenced_not_included",
+    "superseded",
+    "current",
+    "needs_reviewer_confirmation",
+}
+
+# Phase 6 plan reference consistency statuses. These record whether a reference
+# target was located and whether labels agree, never whether a design is sound.
+ALLOWED_PLAN_REFERENCE_STATUSES: set[str] = {
+    "consistent",
+    "missing_target",
+    "conflicting_label",
+    "unclear",
+    "needs_human_review",
+}
+
+# Phase 6 plan consistency finding types. Each describes a review-support gap or
+# conflict to surface for a human reviewer.
+ALLOWED_PLAN_FINDING_TYPES: set[str] = {
+    "missing_sheet",
+    "missing_referenced_sheet",
+    "conflicting_label",
+    "missing_plan_reference",
+    "unclear_revision",
+    "cad_metadata_gap",
+    "requires_human_review",
+}
+
+# Phase 6 plan consistency finding statuses. Every plan finding starts under
+# human review and never reaches a final approval state.
+ALLOWED_PLAN_FINDING_STATUSES: set[str] = {
+    "draft",
+    "requires_human_review",
+    "accepted_by_reviewer",
+    "rejected_by_reviewer",
+    "escalated",
+    "requested_more_information",
+}
+
 # Evidence roles a finding source may carry. None of these is a conclusion.
 ALLOWED_EVIDENCE_ROLES: set[str] = {
     "supports_finding",
