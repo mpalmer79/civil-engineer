@@ -1,4 +1,4 @@
-# CivilSite AI: Stormwater Review Assistant
+# Civil Engineer: Stormwater Review Assistant
 
 CivilSite AI is a portfolio GenAI system that assists stormwater and site-plan review using retrieval-augmented generation, checklist validation, risk flagging, human review, audit logging, and evaluation tracking.
 
