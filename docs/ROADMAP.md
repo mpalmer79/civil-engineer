@@ -14,7 +14,8 @@ flowchart LR
     P2 --> P3[Phase 3\nRetrieval]
     P3 --> P4[Phase 4\nAI Review]
     P4 --> P5[Phase 5\nEvaluation]
-    P5 --> P6[Phase 6\nExpansion Modules]
+    P5 --> P6[Phase 6\nPlan Sheet & CAD]
+    P6 --> P7[Phase 7+\nExpansion Modules]
 ```
 
 ---
@@ -150,11 +151,43 @@ accepted. See `PHASE_5_HUMAN_REVIEW_AND_EVALUATION.md`.
 
 ---
 
-## Phase 6, Expansion Modules
+## Phase 6, Plan Sheet and CAD-Aware Review Foundation
+
+**Goal:** Begin the transition from document-only review into plan sheet and
+CAD-aware review support, without attempting full CAD parsing.
+
+- Plan sheet data model and a seeded Brookside Meadows plan sheet index
+- CAD-aware civil feature metadata, seeded rather than extracted
+- Plan references connecting documents, sheets, and features
+- Missing sheet detection and plan consistency findings that require human review
+- Plan Sheets and CAD Review frontend pages
+- Audit events for the plan consistency check
+
+**Exit criteria:** The plan sheet index, CAD-aware metadata, plan references, and
+plan consistency findings are seeded and served through the API, the consistency
+check generates findings with audit events, and the frontend Plan Sheets and CAD
+Review pages render. The CAD-aware metadata is seeded, not extracted from real
+CAD files, and no DWG or DXF parsing, CAD verification, or final design review is
+included.
+
+**Delivered in Phase 6:** the `plan_sheets`, `cad_metadata`, `plan_references`,
+and `plan_consistency_findings` tables, seeded Brookside Meadows plan data
+(twelve sheets including the referenced-not-included C-3.1, sixteen CAD-aware
+feature records, eleven plan references, and six plan consistency findings), the
+plan sheet, CAD metadata, plan reference, and plan consistency endpoints, the
+Plan Sheets and CAD Review pages, audit events for the consistency check, and
+backend tests. See `PHASE_6_PLAN_SHEET_CAD_FOUNDATION.md` and
+`CAD_INTEGRATION_ROADMAP.md`.
+
+---
+
+## Phase 7 and beyond, Expansion Modules
 
 **Goal:** Reuse the engine to grow from a stormwater assistant into a land
 development review platform. Each module mostly adds **checklist content,
-document types, and evaluation cases**, not new infrastructure.
+document types, and evaluation cases**, not new infrastructure. Phase 7 also
+begins the plan sheet PDF viewer and sheet hotspot work described in
+`CAD_INTEGRATION_ROADMAP.md`.
 
 Future expansion areas:
 

@@ -15,32 +15,33 @@ professional engineering judgment.
 
 ---
 
-## Current phase: Phase 5, Human Review Queue and Evaluation Scoring
+## Current phase: Phase 6, Plan Sheet and CAD-Aware Review Foundation
 
-Phase 5 adds the human review and evaluation scoring layer on top of the Phase 4
-AI Review Assistant. It adds:
+Phase 6 adds the first plan sheet intelligence layer and CAD-aware metadata
+modeling on top of the Phase 5 human review and evaluation scoring. It adds
+plan sheet intelligence and CAD-aware metadata modeling, not full CAD parsing.
+It adds:
 
-- A **human review queue** for AI draft findings
-- **Persisted review actions**: accept, edit, reject, escalate, mark unclear, or
-  request more information
-- **Draft finding status transitions** driven by reviewer actions
-- **Review action audit events** for every reviewer decision
-- **Evaluation scoring** against the expected Brookside Meadows findings
-- **Recall and precision** metrics
-- **Citation validity rate** and **human review required rate**
-- **Validation and safety failure tracking** with separate handling of failed
-  drafts
-- **Evaluation result storage** in the backend
-- **Evaluation dashboard updates** that score a real AI review run
-- Backend tests for review actions, status transitions, evaluation scoring, and
-  audit events
+- A **plan sheet index** with sheet number, title, discipline, revision, status,
+  and connections to documents, checklist items, and findings
+- A **CAD-aware metadata model** of civil features (basins, pipes, roads, lots,
+  utilities, and more), seeded rather than extracted from real CAD files
+- **Plan references** connecting documents, sheets, and civil features
+- **Missing sheet detection** for sheets that are referenced but not included
+- **Plan consistency findings** generated from the references and sheets, each
+  requiring human review
+- **Plan Sheets and CAD Review frontend pages**
+- **Audit events** for every step of the plan consistency check
+- A **future Autodesk and CAD integration roadmap**
+- Backend tests for sheet indexing, missing sheet detection, reference
+  consistency, the API endpoints, and the safety language boundary
 
-Phase 5 keeps the professional boundary: there is no action called approve and
-no status such as approved, certified, fully compliant, or safe. The system does
-not provide production engineering approval, automated compliance, live
-engineering design, final review decisions, or a replacement for a Professional
-Engineer. Live AI calls are disabled by default, so the project runs without any
-API key.
+Phase 6 keeps the professional boundary: the CAD-aware metadata is seeded, not
+extracted from real CAD files, and the system does not parse DWG or DXF
+drawings, verify CAD, validate the design, certify compliance, or make final
+engineering decisions. There is no action called approve and no status such as
+approved, certified, fully compliant, or safe. Live AI calls are disabled by
+default, so the project runs without any API key.
 
 Earlier phases established the product foundation:
 
@@ -53,6 +54,9 @@ Earlier phases established the product foundation:
 - Phase 4: a controlled AI review run workflow with a mock provider, evidence
   first prompts, strict JSON validation, safety and citation checks, and
   mandatory human review for every draft finding
+- Phase 5: a persisted human review queue, reviewer actions with status
+  transitions, and evaluation scoring of AI draft findings against the expected
+  Brookside Meadows findings
 
 The reviewed fixture remains **Brookside Meadows**: a 47-lot single-family
 subdivision in the Town of Hartwell with a green-and-gray stormwater treatment
@@ -111,6 +115,8 @@ examples.
 | `/documents` | Document library | The seeded submission package with status and planted issues |
 | `/checklist` | Stormwater checklist | 19 structured review items with expected statuses |
 | `/findings` | Findings | The 10 expected review-support findings |
+| `/plan-sheets` | Plan Sheets | The Brookside Meadows plan sheet index with revisions and missing sheet detection |
+| `/cad-review` | CAD Review | CAD-aware feature metadata, plan references, and plan consistency findings |
 | `/ai-review` | AI Review Assistant | Run a controlled AI review and view draft findings and validation failures |
 | `/human-review` | Human Review queue | Record reviewer actions and status transitions on draft findings |
 | `/audit` | Audit trail | Seeded, traceable review history |
@@ -143,6 +149,11 @@ All data routes use the `/api/v1` prefix. Seeded project id:
 - `GET /api/v1/projects/{project_id}/review-actions`
 - `POST /api/v1/ai-review-runs/{review_run_id}/evaluate` and `GET /api/v1/ai-review-runs/{review_run_id}/evaluation`
 - `GET /api/v1/projects/{project_id}/ai-evaluation-results` and `GET /api/v1/ai-evaluation-results/{evaluation_result_id}`
+- `GET /api/v1/projects/{project_id}/plan-sheets` and `GET /api/v1/projects/{project_id}/plan-sheets/summary` and `GET /api/v1/plan-sheets/{sheet_id}`
+- `GET /api/v1/projects/{project_id}/cad-metadata` (optional `?entity_type=`) and `GET /api/v1/plan-sheets/{sheet_id}/cad-metadata`
+- `GET /api/v1/projects/{project_id}/plan-references` and `GET /api/v1/projects/{project_id}/plan-references/inconsistencies`
+- `POST /api/v1/projects/{project_id}/plan-consistency-check` and `GET /api/v1/projects/{project_id}/plan-consistency-findings`
+- `GET /api/v1/plan-consistency-findings/{plan_finding_id}`
 
 ---
 
@@ -184,32 +195,38 @@ civil-engineer/
 - [`docs/PHASE_3_RETRIEVAL_FOUNDATION.md`](docs/PHASE_3_RETRIEVAL_FOUNDATION.md): Phase 3 evidence and retrieval
 - [`docs/PHASE_4_AI_REVIEW_ASSISTANT.md`](docs/PHASE_4_AI_REVIEW_ASSISTANT.md): Phase 4 AI review workflow
 - [`docs/PHASE_5_HUMAN_REVIEW_AND_EVALUATION.md`](docs/PHASE_5_HUMAN_REVIEW_AND_EVALUATION.md): Phase 5 human review and evaluation scoring
+- [`docs/PHASE_6_PLAN_SHEET_CAD_FOUNDATION.md`](docs/PHASE_6_PLAN_SHEET_CAD_FOUNDATION.md): Phase 6 plan sheet and CAD-aware review foundation
+- [`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md): staged CAD integration path
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture
 - [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md): research basis
 
 ---
 
-## What Phase 5 proves
+## What Phase 6 proves
 
-- The product manages a full review lifecycle: AI draft findings are routed
-  through a human review queue where a reviewer accepts, edits, rejects,
-  escalates, marks unclear, or requests more information, and every action is
-  persisted with a status transition.
-- The professional boundary holds in the review workflow: there is no approve
-  action, failed drafts cannot be accepted, and edited text must still pass the
-  prohibited-word safety check.
-- Quality is measured: evaluation scoring compares draft findings against the
-  expected findings and stores recall, precision, citation validity, and
-  validation and safety failure counts.
-- The decision history is preserved: every review action and evaluation run
-  writes audit events with non-sensitive metadata.
+- The product understands the plan set: it models a plan sheet index, CAD-aware
+  civil feature metadata, and plan references, and connects them to documents,
+  checklist items, and findings.
+- It surfaces plan-level gaps: missing sheet detection flags the referenced but
+  not included sheet C-3.1, and the plan consistency check generates
+  review-support findings for missing targets, conflicting labels, and unclear
+  revisions.
+- The professional boundary holds: the CAD-aware metadata is seeded, not
+  extracted from real CAD files, and the system does not parse DWG or DXF
+  drawings, verify CAD, validate the design, or approve plans. Every plan
+  consistency finding requires human review.
+- The decision history is preserved: the plan consistency check writes audit
+  events for the start, the sheet index and CAD metadata loads, each reference
+  evaluated, each finding created, and completion.
 - The project runs without any API key: the mock provider is the default and
   live calls are disabled.
 
 ## What comes next
 
-- **Phase 6**: expansion modules that reuse the same retrieval, checklist,
-  findings, human review, audit, and evaluation backbone to grow from a
-  stormwater assistant into a broader land development review platform.
+- **Phase 7**: a plan sheet PDF viewer with sheet hotspot annotations tied to
+  plan consistency findings and civil feature references, building on the
+  Phase 6 plan sheet and CAD-aware foundation.
 
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full plan.
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) and
+[`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md) for the full
+plan.

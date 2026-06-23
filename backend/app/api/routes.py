@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from app.api.v1 import (
     ai_review,
     audit,
+    cad_metadata,
     checklist,
     chunks,
     documents,
@@ -14,6 +15,9 @@ from app.api.v1 import (
     findings,
     hotspots,
     human_review,
+    plan_consistency,
+    plan_references,
+    plan_sheets,
     projects,
     retrieval,
 )
@@ -30,3 +34,7 @@ api_router.include_router(chunks.router)
 api_router.include_router(retrieval.router)
 api_router.include_router(ai_review.router)
 api_router.include_router(human_review.router)
+api_router.include_router(plan_sheets.router)
+api_router.include_router(cad_metadata.router)
+api_router.include_router(plan_references.router)
+api_router.include_router(plan_consistency.router)
