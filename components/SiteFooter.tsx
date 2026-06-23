@@ -11,7 +11,7 @@ export default function SiteFooter() {
             </p>
             <p className="mt-2 text-sm text-slate-600">
               A review-support and evidence-organization prototype for land
-              development workflows. It assists a human reviewer — it does not
+              development workflows. It assists a human reviewer, it does not
               approve plans, certify compliance, or replace a licensed
               Professional Engineer.
             </p>
@@ -43,8 +43,8 @@ export default function SiteFooter() {
         <p className="mt-8 text-xs text-slate-400">
           Brookside Meadows is a fictional project created for a portfolio
           software demonstration. All people, firms, documents, and values are
-          synthetic. Phase 1 is a static prototype with seeded data — no live AI
-          calls, backend, or authentication.
+          synthetic. Live AI calls, retrieval, and authentication are not part of
+          the current build.
         </p>
       </div>
     </footer>

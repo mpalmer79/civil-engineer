@@ -1,8 +1,10 @@
 import PageHeader from "@/components/PageHeader";
 import EvaluationSummary from "@/components/EvaluationSummary";
 import SectionCard from "@/components/SectionCard";
+import { getEvaluationData } from "@/lib/api";
 
-export default function EvaluationPage() {
+export default async function EvaluationPage() {
+  const { cases, summary } = await getEvaluationData();
   return (
     <div>
       <PageHeader
@@ -15,16 +17,16 @@ export default function EvaluationPage() {
         <SectionCard title="Why evaluation comes first">
           <p className="text-sm text-slate-600">
             An evaluation harness is the difference between a serious GenAI system
-            and a demo. Each case isolates one meaningful behavior — from
+            and a demo. Each case isolates one meaningful behavior, from
             detecting a missing infiltration test to staying silent on a clean
-            control package — and is scored against expected findings.
+            control package, and is scored against expected findings.
           </p>
         </SectionCard>
 
-        <EvaluationSummary />
+        <EvaluationSummary evaluationCases={cases} evaluationSummary={summary} />
 
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">Phase 1 note:</span>{" "}
+          <span className="font-semibold text-slate-800">Prototype note:</span>{" "}
           This dashboard displays seeded evaluation outcomes with mock but
           plausible values. Later phases will run evaluation cases against
           generated findings and compute these metrics live.

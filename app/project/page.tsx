@@ -4,59 +4,72 @@ import ProjectSummaryCard from "@/components/ProjectSummaryCard";
 import MetricCard from "@/components/MetricCard";
 import SectionCard from "@/components/SectionCard";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
-import { brookside } from "@/data/brookside";
-import { documents } from "@/data/documents";
-import { checklist } from "@/data/checklist";
-import { findings } from "@/data/findings";
-import { auditEvents } from "@/data/auditEvents";
-import { evaluationCases } from "@/data/evaluationCases";
+import {
+  getProject,
+  getDocuments,
+  getChecklist,
+  getFindings,
+  getAuditEvents,
+  getEvaluationData,
+} from "@/lib/api";
 
-const dashboardCards = [
-  {
-    value: documents.length,
-    label: "Documents",
-    hint: `${documents.filter((d) => d.status === "present").length} present`,
-    href: "/documents",
-    accent: "water" as const,
-  },
-  {
-    value: `${checklist.filter((c) => c.expectedStatus === "supported").length} / ${checklist.length}`,
-    label: "Checklist supported",
-    hint: "Remaining need follow-up",
-    href: "/checklist",
-    accent: "land" as const,
-  },
-  {
-    value: findings.filter((f) => f.riskLevel === "high").length,
-    label: "High-risk findings",
-    hint: "Review-support issues",
-    href: "/findings",
-    accent: "red" as const,
-  },
-  {
-    value: findings.filter((f) => f.humanReviewState === "pending").length,
-    label: "Pending human review",
-    hint: "Awaiting reviewer action",
-    href: "/findings",
-    accent: "amber" as const,
-  },
-  {
-    value: evaluationCases.length,
-    label: "Evaluation cases",
-    hint: `${evaluationCases.filter((c) => c.passed).length} passed`,
-    href: "/evaluation",
-    accent: "water" as const,
-  },
-  {
-    value: auditEvents.length,
-    label: "Audit events",
-    hint: "Traceability records",
-    href: "/audit",
-    accent: "slate" as const,
-  },
-];
+export default async function ProjectPage() {
+  const [brookside, documents, checklist, findings, auditEvents, evaluation] =
+    await Promise.all([
+      getProject(),
+      getDocuments(),
+      getChecklist(),
+      getFindings(),
+      getAuditEvents(),
+      getEvaluationData(),
+    ]);
+  const evaluationCases = evaluation.cases;
 
-export default function ProjectPage() {
+  const dashboardCards = [
+    {
+      value: documents.length,
+      label: "Documents",
+      hint: `${documents.filter((d) => d.status === "present").length} present`,
+      href: "/documents",
+      accent: "water" as const,
+    },
+    {
+      value: `${checklist.filter((c) => c.expectedStatus === "supported").length} / ${checklist.length}`,
+      label: "Checklist supported",
+      hint: "Remaining need follow-up",
+      href: "/checklist",
+      accent: "land" as const,
+    },
+    {
+      value: findings.filter((f) => f.riskLevel === "high").length,
+      label: "High-risk findings",
+      hint: "Review-support issues",
+      href: "/findings",
+      accent: "red" as const,
+    },
+    {
+      value: findings.filter((f) => f.humanReviewState === "pending").length,
+      label: "Pending human review",
+      hint: "Awaiting reviewer action",
+      href: "/findings",
+      accent: "amber" as const,
+    },
+    {
+      value: evaluationCases.length,
+      label: "Evaluation cases",
+      hint: `${evaluationCases.filter((c) => c.passed).length} passed`,
+      href: "/evaluation",
+      accent: "water" as const,
+    },
+    {
+      value: auditEvents.length,
+      label: "Audit events",
+      hint: "Traceability records",
+      href: "/audit",
+      accent: "slate" as const,
+    },
+  ];
+
   return (
     <div>
       <PageHeader
@@ -84,7 +97,7 @@ export default function ProjectPage() {
           ))}
         </div>
 
-        <ProjectSummaryCard />
+        <ProjectSummaryCard project={brookside} />
 
         {/* Site conditions + improvements */}
         <div className="grid gap-6 lg:grid-cols-2">
@@ -158,7 +171,7 @@ export default function ProjectPage() {
             <p>
               Brookside Meadows is deliberately authored with realistic planted
               conflicts, missing evidence, and civil engineering tensions so the
-              review-support system has concrete, checkable work to do — not a toy
+              review-support system has concrete, checkable work to do, not a toy
               example.
             </p>
             <ul className="grid gap-2 sm:grid-cols-2">
@@ -180,9 +193,9 @@ export default function ProjectPage() {
               </li>
             </ul>
             <p>
-              It is also richer than the v1 stormwater review needs — carrying
+              It is also richer than the v1 stormwater review needs, carrying
               grading, roadway, utility, erosion-control, phasing, and inspection
-              content — so the same fixture supports every future module.
+              content, so the same fixture supports every future module.
             </p>
           </div>
         </SectionCard>

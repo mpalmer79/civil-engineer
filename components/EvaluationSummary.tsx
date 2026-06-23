@@ -1,7 +1,17 @@
-import { evaluationCases, evaluationSummary } from "@/data/evaluationCases";
+import {
+  evaluationCases as staticCases,
+  evaluationSummary as staticSummary,
+  type EvaluationCase,
+} from "@/data/evaluationCases";
 import MetricCard from "@/components/MetricCard";
 
-export default function EvaluationSummary() {
+export default function EvaluationSummary({
+  evaluationCases = staticCases,
+  evaluationSummary = staticSummary,
+}: {
+  evaluationCases?: EvaluationCase[];
+  evaluationSummary?: typeof staticSummary;
+}) {
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">

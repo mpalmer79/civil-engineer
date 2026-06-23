@@ -1,6 +1,10 @@
-import { brookside } from "@/data/brookside";
+import { brookside as defaultProject, type BooksideProject } from "@/data/brookside";
 
-export default function ProjectSummaryCard() {
+export default function ProjectSummaryCard({
+  project: brookside = defaultProject,
+}: {
+  project?: BooksideProject;
+}) {
   return (
     <div className="surface-card p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
