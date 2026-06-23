@@ -11,6 +11,11 @@ from typing import Protocol
 
 from app.core.config import Settings
 
+# Providers that have a real live implementation in this codebase. Anthropic is
+# intentionally not listed: no Anthropic provider is implemented yet, so the
+# repository does not imply that it is live-ready.
+LIVE_READY_PROVIDERS: set[str] = {"openai"}
+
 
 class AIProvider(Protocol):
     name: str
@@ -32,8 +37,10 @@ def describe_provider_mode(settings: Settings) -> dict:
     """Return a small, non-sensitive description of the provider mode for the UI."""
 
     provider = settings.AI_PROVIDER.lower()
+    # Only OpenAI has a real live provider implementation. Other provider names
+    # are not treated as live-ready and fall back to the mock provider.
     live_ready = (
-        provider in {"openai", "anthropic"}
+        provider in LIVE_READY_PROVIDERS
         and settings.AI_ENABLE_LIVE_CALLS
         and bool(_key_for(provider, settings))
     )
@@ -61,8 +68,6 @@ def describe_provider_mode(settings: Settings) -> dict:
 def _key_for(provider: str, settings: Settings) -> str:
     if provider == "openai":
         return settings.OPENAI_API_KEY
-    if provider == "anthropic":
-        return settings.ANTHROPIC_API_KEY
     return ""
 
 
@@ -78,7 +83,7 @@ def get_provider(settings: Settings) -> AIProvider:
 
     provider = settings.AI_PROVIDER.lower()
     if (
-        provider in {"openai", "anthropic"}
+        provider in LIVE_READY_PROVIDERS
         and settings.AI_ENABLE_LIVE_CALLS
         and _key_for(provider, settings)
     ):

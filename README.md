@@ -15,27 +15,32 @@ professional engineering judgment.
 
 ---
 
-## Current phase: Phase 4, AI Review Assistant
+## Current phase: Phase 5, Human Review Queue and Evaluation Scoring
 
-Phase 4 adds the first controlled AI review workflow. It uses retrieved source
-evidence, structured prompts, JSON output validation, prohibited-word safety
-checks, audit events, and mandatory human review. It adds:
+Phase 5 adds the human review and evaluation scoring layer on top of the Phase 4
+AI Review Assistant. It adds:
 
-- A controlled **AI review run** workflow (evidence-first, not a chatbot)
-- A **mock AI provider by default**, with optional live provider configuration
-  that is disabled by default
-- Retrieved **source evidence in prompts** (the model never reviews from memory)
-- Structured **JSON draft findings** with strict schema validation
-- **Prohibited-word safety checks** and source citation checks
-- **Mandatory human review** for every draft finding
-- **Audit events** for every step of an AI review run
-- An **AI Review page** in the frontend
-- Backend tests for validation, safety checks, audit events, and mock behavior
+- A **human review queue** for AI draft findings
+- **Persisted review actions**: accept, edit, reject, escalate, mark unclear, or
+  request more information
+- **Draft finding status transitions** driven by reviewer actions
+- **Review action audit events** for every reviewer decision
+- **Evaluation scoring** against the expected Brookside Meadows findings
+- **Recall and precision** metrics
+- **Citation validity rate** and **human review required rate**
+- **Validation and safety failure tracking** with separate handling of failed
+  drafts
+- **Evaluation result storage** in the backend
+- **Evaluation dashboard updates** that score a real AI review run
+- Backend tests for review actions, status transitions, evaluation scoring, and
+  audit events
 
-The AI Review Assistant produces draft review-support findings, not final
-engineering conclusions. It does not provide production engineering approval,
-automated compliance, live engineering design, or final review decisions. Live
-AI calls are disabled by default, so the project runs without any API key.
+Phase 5 keeps the professional boundary: there is no action called approve and
+no status such as approved, certified, fully compliant, or safe. The system does
+not provide production engineering approval, automated compliance, live
+engineering design, final review decisions, or a replacement for a Professional
+Engineer. Live AI calls are disabled by default, so the project runs without any
+API key.
 
 Earlier phases established the product foundation:
 
@@ -45,6 +50,9 @@ Earlier phases established the product foundation:
   API endpoints, tests, and frontend integration
 - Phase 3: document chunks, finding sources, and keyword retrieval with
   evidence display
+- Phase 4: a controlled AI review run workflow with a mock provider, evidence
+  first prompts, strict JSON validation, safety and citation checks, and
+  mandatory human review for every draft finding
 
 The reviewed fixture remains **Brookside Meadows**: a 47-lot single-family
 subdivision in the Town of Hartwell with a green-and-gray stormwater treatment
@@ -103,9 +111,10 @@ examples.
 | `/documents` | Document library | The seeded submission package with status and planted issues |
 | `/checklist` | Stormwater checklist | 19 structured review items with expected statuses |
 | `/findings` | Findings | The 10 expected review-support findings |
-| `/ai-review` | AI Review Assistant | Run a controlled AI review and view draft findings |
+| `/ai-review` | AI Review Assistant | Run a controlled AI review and view draft findings and validation failures |
+| `/human-review` | Human Review queue | Record reviewer actions and status transitions on draft findings |
 | `/audit` | Audit trail | Seeded, traceable review history |
-| `/evaluation` | Evaluation dashboard | 8 evaluation cases with recall and citation metrics |
+| `/evaluation` | Evaluation dashboard | Score a review run with recall, precision, and citation metrics |
 
 ## Backend endpoints
 
@@ -129,6 +138,11 @@ All data routes use the `/api/v1` prefix. Seeded project id:
 - `GET /api/v1/ai-review-runs/{review_run_id}` and `GET /api/v1/ai-review-runs/{review_run_id}/draft-findings`
 - `GET /api/v1/projects/{project_id}/draft-findings` and `GET /api/v1/draft-findings/{draft_finding_id}`
 - `GET /api/v1/projects/{project_id}/ai-provider-mode`
+- `GET /api/v1/projects/{project_id}/human-review-queue`
+- `POST /api/v1/draft-findings/{draft_finding_id}/review-actions` and `GET /api/v1/draft-findings/{draft_finding_id}/review-actions`
+- `GET /api/v1/projects/{project_id}/review-actions`
+- `POST /api/v1/ai-review-runs/{review_run_id}/evaluate` and `GET /api/v1/ai-review-runs/{review_run_id}/evaluation`
+- `GET /api/v1/projects/{project_id}/ai-evaluation-results` and `GET /api/v1/ai-evaluation-results/{evaluation_result_id}`
 
 ---
 
@@ -169,25 +183,33 @@ civil-engineer/
 - [`docs/PHASE_2_BACKEND_DATA_MODEL.md`](docs/PHASE_2_BACKEND_DATA_MODEL.md): Phase 2 backend and data model
 - [`docs/PHASE_3_RETRIEVAL_FOUNDATION.md`](docs/PHASE_3_RETRIEVAL_FOUNDATION.md): Phase 3 evidence and retrieval
 - [`docs/PHASE_4_AI_REVIEW_ASSISTANT.md`](docs/PHASE_4_AI_REVIEW_ASSISTANT.md): Phase 4 AI review workflow
+- [`docs/PHASE_5_HUMAN_REVIEW_AND_EVALUATION.md`](docs/PHASE_5_HUMAN_REVIEW_AND_EVALUATION.md): Phase 5 human review and evaluation scoring
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture
 - [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md): research basis
 
 ---
 
-## What Phase 4 proves
+## What Phase 5 proves
 
-- The AI is constrained: it reviews only retrieved evidence, cites chunk ids,
-  and returns structured output that is validated before it is saved.
-- The professional boundary is enforced in AI output: prohibited final-decision
-  wording fails validation, and every draft finding requires human review.
-- The workflow is auditable: each run writes audit events with non-sensitive
-  metadata, and validation failures are recorded, not hidden.
+- The product manages a full review lifecycle: AI draft findings are routed
+  through a human review queue where a reviewer accepts, edits, rejects,
+  escalates, marks unclear, or requests more information, and every action is
+  persisted with a status transition.
+- The professional boundary holds in the review workflow: there is no approve
+  action, failed drafts cannot be accepted, and edited text must still pass the
+  prohibited-word safety check.
+- Quality is measured: evaluation scoring compares draft findings against the
+  expected findings and stores recall, precision, citation validity, and
+  validation and safety failure counts.
+- The decision history is preserved: every review action and evaluation run
+  writes audit events with non-sensitive metadata.
 - The project runs without any API key: the mock provider is the default and
   live calls are disabled.
 
 ## What comes next
 
-- **Phase 5**: a live evaluation harness that scores AI draft findings against
-  expected findings, and a human review queue that records reviewer actions.
+- **Phase 6**: expansion modules that reuse the same retrieval, checklist,
+  findings, human review, audit, and evaluation backbone to grow from a
+  stormwater assistant into a broader land development review platform.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full plan.
