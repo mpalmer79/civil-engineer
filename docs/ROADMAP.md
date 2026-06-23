@@ -108,6 +108,15 @@ behind the same retrieval interface. See `PHASE_3_RETRIEVAL_FOUNDATION.md`.
 **Exit criteria:** Running the checklist produces validated findings that cite
 sources, avoid prohibited wording, and land in the human review queue.
 
+**Delivered in Phase 4:** a constrained AI review service, a provider
+abstraction with a deterministic mock provider (default) and an optional live
+provider (disabled by default), evidence-first prompts, strict JSON schema
+validation, prohibited-word and citation safety checks, `ai_review_runs` and
+`ai_draft_findings` tables, audit events for every step, an AI Review page, and
+mandatory human review for every draft finding. A persisted human review queue
+and live evaluation scoring are deferred to Phase 5. See
+`PHASE_4_AI_REVIEW_ASSISTANT.md`.
+
 ---
 
 ## Phase 5, Evaluation System

@@ -25,6 +25,17 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./civil_engineer_ai.db"
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
 
+    # AI provider configuration. The default is the deterministic mock provider
+    # so the project runs and tests pass without any paid API key. Live calls
+    # are disabled by default and require both a provider key and an explicit
+    # opt in.
+    AI_PROVIDER: str = "mock"
+    AI_MODEL: str = "mock-review-v1"
+    AI_ENABLE_LIVE_CALLS: bool = False
+    OPENAI_API_KEY: str = ""
+    ANTHROPIC_API_KEY: str = ""
+    PROMPT_VERSION: str = "checklist_review_v1"
+
     @property
     def cors_origins_list(self) -> list[str]:
         """Return the configured CORS origins as a list."""

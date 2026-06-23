@@ -1,17 +1,18 @@
 # Civil Engineer AI Backend
 
 FastAPI backend for Civil Engineer AI: Stormwater Review Assistant. This is the
-Phase 3 data and retrieval foundation. It serves seeded Brookside Meadows review
-data, document chunks, and source evidence through a versioned read API.
+Phase 4 backend. It serves seeded Brookside Meadows review data, document chunks,
+and source evidence, and it runs a controlled AI review workflow that produces
+draft review-support findings.
 
 Civil Engineer AI is a review-support and evidence-organization system. It does
 not approve plans, certify compliance, stamp drawings, or replace a licensed
-Professional Engineer. Statuses and finding conclusions never use final-decision
-language, and retrieval results are framed as source evidence, not conclusions.
+Professional Engineer. Statuses, retrieval results, and AI draft findings never
+use final-decision language, and every AI draft finding requires human review.
 
-Retrieval is keyword and metadata based. Phase 3 does not include live AI calls,
-embeddings, vector retrieval, or authentication. Those are planned for later
-phases.
+The AI Review Assistant uses a deterministic mock provider by default, so the
+backend runs without any API key. Live provider calls are disabled by default.
+Phase 4 does not include embeddings, a vector store, or authentication.
 
 ## Requirements
 
@@ -108,7 +109,32 @@ curl "http://localhost:8000/api/v1/projects/proj_brookside_meadows/search?query=
 curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/checklist/chk_infiltration_testing/evidence
 curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/findings/find_infiltration_missing/evidence
 curl http://localhost:8000/api/v1/findings/find_infiltration_missing/sources
+
+# AI Review Assistant (mock provider by default)
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/ai-provider-mode
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/ai-review-runs
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/draft-findings
 ```
+
+## AI provider configuration
+
+The AI Review Assistant defaults to a deterministic mock provider. No API key is
+required and live calls are disabled by default. Configure with environment
+variables (see `.env.example`):
+
+```env
+AI_PROVIDER=mock
+AI_MODEL=mock-review-v1
+AI_ENABLE_LIVE_CALLS=false
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+PROMPT_VERSION=checklist_review_v1
+```
+
+To enable an optional live OpenAI provider: set `AI_PROVIDER=openai`,
+`AI_ENABLE_LIVE_CALLS=true`, provide `OPENAI_API_KEY` (never commit it), set
+`AI_MODEL`, and install the optional package with `pip install openai`. If the
+live provider is unavailable, the service falls back to the mock provider.
 
 ## Project layout
 

@@ -7,7 +7,7 @@ import { getHotspots, projectMetrics } from "@/lib/api";
 
 const heroCtas = [
   { href: "/project", label: "Project dashboard" },
-  { href: "/checklist", label: "Review checklist" },
+  { href: "/ai-review", label: "AI Review" },
   { href: "/findings", label: "Findings" },
   { href: "/evaluation", label: "Evaluation" },
 ];
@@ -53,7 +53,7 @@ export default async function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
               <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
-                Phase 2 · Backend and data foundation
+                Phase 4 · AI Review Assistant
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Civil Engineer AI
@@ -165,10 +165,23 @@ export default async function HomePage() {
               Checklist items expand to show the seeded chunks linked to them.
             </div>
             <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
-              Retrieval is keyword and metadata based; embeddings and live AI
-              review come later.
+              Retrieval is keyword and metadata based; embeddings and semantic
+              retrieval come later.
             </div>
           </div>
+          <p className="mt-5 max-w-3xl text-slate-600">
+            Phase 4 adds controlled AI draft findings: for each checklist item the
+            backend retrieves evidence, builds a constrained prompt, validates the
+            structured output, runs safety checks, and saves a draft finding that
+            requires human review. See the{" "}
+            <a
+              href="/ai-review"
+              className="font-semibold text-water-700 hover:text-water-600"
+            >
+              AI Review
+            </a>{" "}
+            page.
+          </p>
         </div>
       </section>
 

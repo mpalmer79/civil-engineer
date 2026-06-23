@@ -15,25 +15,27 @@ professional engineering judgment.
 
 ---
 
-## Current phase: Phase 3, Document Evidence and Retrieval Foundation
+## Current phase: Phase 4, AI Review Assistant
 
-Phase 3 adds the foundation for source evidence and retrieval so every
-review-support finding can trace back to specific pages and sections of the
-submitted documents. It adds:
+Phase 4 adds the first controlled AI review workflow. It uses retrieved source
+evidence, structured prompts, JSON output validation, prohibited-word safety
+checks, audit events, and mandatory human review. It adds:
 
-- A **document chunk** data model and 56 seeded synthetic chunks
-- **Finding sources** that link the ten findings to chunks with an evidence role
-  and confidence
-- A keyword and metadata **retrieval service**
-- **API endpoints** for chunks, search, checklist evidence, finding evidence, and
-  finding sources
-- **Frontend evidence display** on the findings, checklist, and documents pages,
-  and an evidence-first section on the homepage
-- **Backend tests** proving retrieval works on the seeded fixture
+- A controlled **AI review run** workflow (evidence-first, not a chatbot)
+- A **mock AI provider by default**, with optional live provider configuration
+  that is disabled by default
+- Retrieved **source evidence in prompts** (the model never reviews from memory)
+- Structured **JSON draft findings** with strict schema validation
+- **Prohibited-word safety checks** and source citation checks
+- **Mandatory human review** for every draft finding
+- **Audit events** for every step of an AI review run
+- An **AI Review page** in the frontend
+- Backend tests for validation, safety checks, audit events, and mock behavior
 
-Retrieval is keyword and metadata based in this phase. Phase 3 does not add live
-AI-generated findings, embeddings, a vector store, or authentication. Those are
-planned for later phases.
+The AI Review Assistant produces draft review-support findings, not final
+engineering conclusions. It does not provide production engineering approval,
+automated compliance, live engineering design, or final review decisions. Live
+AI calls are disabled by default, so the project runs without any API key.
 
 Earlier phases established the product foundation:
 
@@ -41,6 +43,8 @@ Earlier phases established the product foundation:
 - Phase 1: a static Next.js prototype driven by seed data
 - Phase 2: a FastAPI backend, SQLite database, SQLAlchemy models, seeded data,
   API endpoints, tests, and frontend integration
+- Phase 3: document chunks, finding sources, and keyword retrieval with
+  evidence display
 
 The reviewed fixture remains **Brookside Meadows**: a 47-lot single-family
 subdivision in the Town of Hartwell with a green-and-gray stormwater treatment
@@ -68,7 +72,10 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 ```
 
 When the backend is reachable, pages render live data from it. When it is not,
-they fall back to the local seed data so the app still works.
+they fall back to the local seed data so the app still works. Core project pages
+include static fallback data, but Phase 3 source evidence and Phase 4 AI draft
+findings are backend-canonical. If the backend is not running, evidence and AI
+review panels show a status note instead of duplicated or stale data.
 
 ### Backend (FastAPI)
 
@@ -96,6 +103,7 @@ examples.
 | `/documents` | Document library | The seeded submission package with status and planted issues |
 | `/checklist` | Stormwater checklist | 19 structured review items with expected statuses |
 | `/findings` | Findings | The 10 expected review-support findings |
+| `/ai-review` | AI Review Assistant | Run a controlled AI review and view draft findings |
 | `/audit` | Audit trail | Seeded, traceable review history |
 | `/evaluation` | Evaluation dashboard | 8 evaluation cases with recall and citation metrics |
 
@@ -117,6 +125,10 @@ All data routes use the `/api/v1` prefix. Seeded project id:
 - `GET /api/v1/projects/{project_id}/checklist/{checklist_item_id}/evidence`
 - `GET /api/v1/projects/{project_id}/findings/{finding_id}/evidence`
 - `GET /api/v1/findings/{finding_id}/sources`
+- `POST /api/v1/projects/{project_id}/ai-review-runs` and `GET /api/v1/projects/{project_id}/ai-review-runs`
+- `GET /api/v1/ai-review-runs/{review_run_id}` and `GET /api/v1/ai-review-runs/{review_run_id}/draft-findings`
+- `GET /api/v1/projects/{project_id}/draft-findings` and `GET /api/v1/draft-findings/{draft_finding_id}`
+- `GET /api/v1/projects/{project_id}/ai-provider-mode`
 
 ---
 
@@ -156,26 +168,26 @@ civil-engineer/
 - [`docs/HOMEPAGE_HOTSPOT_PLAN.md`](docs/HOMEPAGE_HOTSPOT_PLAN.md): interactive map plan
 - [`docs/PHASE_2_BACKEND_DATA_MODEL.md`](docs/PHASE_2_BACKEND_DATA_MODEL.md): Phase 2 backend and data model
 - [`docs/PHASE_3_RETRIEVAL_FOUNDATION.md`](docs/PHASE_3_RETRIEVAL_FOUNDATION.md): Phase 3 evidence and retrieval
+- [`docs/PHASE_4_AI_REVIEW_ASSISTANT.md`](docs/PHASE_4_AI_REVIEW_ASSISTANT.md): Phase 4 AI review workflow
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture
 - [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md): research basis
 
 ---
 
-## What Phase 3 proves
+## What Phase 4 proves
 
-- Review is evidence-first: every finding traces back to specific document
-  chunks with page and section references.
-- Retrieval is transparent and testable: keyword and metadata ranking with a
-  plain relevance reason for each result.
-- The professional boundary holds in retrieval output: every result is framed as
-  source evidence for reviewer evaluation, not a conclusion, and no prohibited
-  final-decision language is used.
+- The AI is constrained: it reviews only retrieved evidence, cites chunk ids,
+  and returns structured output that is validated before it is saved.
+- The professional boundary is enforced in AI output: prohibited final-decision
+  wording fails validation, and every draft finding requires human review.
+- The workflow is auditable: each run writes audit events with non-sensitive
+  metadata, and validation failures are recorded, not hidden.
+- The project runs without any API key: the mock provider is the default and
+  live calls are disabled.
 
 ## What comes next
 
-- **Phase 4**: the AI review assistant (structured prompts, JSON validation,
-  safety checks, findings that cite retrieved evidence, human review required for
-  every finding).
-- **Phase 5**: the live evaluation harness.
+- **Phase 5**: a live evaluation harness that scores AI draft findings against
+  expected findings, and a human review queue that records reviewer actions.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full plan.

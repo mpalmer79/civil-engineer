@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from app.api.v1 import (
+    ai_review,
     audit,
     checklist,
     chunks,
@@ -26,3 +27,4 @@ api_router.include_router(evaluation.router)
 api_router.include_router(hotspots.router)
 api_router.include_router(chunks.router)
 api_router.include_router(retrieval.router)
+api_router.include_router(ai_review.router)

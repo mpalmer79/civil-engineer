@@ -31,7 +31,7 @@ export default function SourceEvidence({
                 <EvidenceRoleBadge role={item.evidenceRole} />
               ) : null}
               <span className="text-xs font-medium text-slate-500">
-                source strength {Math.round(item.score * 100)}%
+                retrieval score {Math.round(item.score * 100)}%
               </span>
             </div>
             <p className="mt-2 text-sm text-slate-700">{item.excerpt}</p>
