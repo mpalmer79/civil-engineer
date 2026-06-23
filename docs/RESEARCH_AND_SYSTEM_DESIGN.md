@@ -1,10 +1,10 @@
-# CivilSite AI: Stormwater Review Assistant
+# Civil Engineer: Stormwater Review Assistant
 
 ## Research and System Design Brief
 
-CivilSite AI is a portfolio GenAI system concept for assisting stormwater and site-plan review. It is designed as a review-support tool that helps organize project documents, retrieve source evidence, compare submissions against checklist expectations, flag potential risks, route findings for human review, and preserve an audit trail.
+Civil Engineer is a portfolio GenAI system concept for assisting stormwater and site-plan review. It is designed as a review-support tool that helps organize project documents, retrieve source evidence, compare submissions against checklist expectations, flag potential risks, route findings for human review, and preserve an audit trail.
 
-CivilSite AI is not a licensed engineering tool. It must not approve plans, certify compliance, stamp drawings, replace a Professional Engineer, or make final public safety determinations. Its purpose is to demonstrate production-style GenAI architecture in a realistic civil engineering workflow.
+Civil Engineer is not a licensed engineering tool. It must not approve plans, certify compliance, stamp drawings, replace a Professional Engineer, or make final public safety determinations. Its purpose is to demonstrate production-style GenAI architecture in a realistic civil engineering workflow.
 
 ## 1. Project Purpose
 
