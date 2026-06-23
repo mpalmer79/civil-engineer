@@ -1,10 +1,16 @@
-# Civil Engineer: Stormwater Review Assistant
+# Civil Engineer AI: Stormwater Review Assistant
+
+> **Legacy documentation note.** This brief predates the Phase 0 canonical
+> naming. The product name is **Civil Engineer AI** and the canonical demo
+> fixture is **Brookside Meadows** (see `BROOKSIDE_MEADOWS_PROJECT_STORY.md`).
+> Any remaining "Cedar Ridge" example is legacy placeholder content retained
+> only to illustrate data shapes — documentation debt, not a separate project.
 
 ## Research and System Design Brief
 
-Civil Engineer is a portfolio GenAI system concept for assisting stormwater and site-plan review. It is designed as a review-support tool that helps organize project documents, retrieve source evidence, compare submissions against checklist expectations, flag potential risks, route findings for human review, and preserve an audit trail.
+Civil Engineer AI is a portfolio GenAI system concept for assisting stormwater and site-plan review. It is designed as a review-support tool that helps organize project documents, retrieve source evidence, compare submissions against checklist expectations, flag potential risks, route findings for human review, and preserve an audit trail.
 
-Civil Engineer is not a licensed engineering tool. It must not approve plans, certify compliance, stamp drawings, replace a Professional Engineer, or make final public safety determinations. Its purpose is to demonstrate production-style GenAI architecture in a realistic civil engineering workflow.
+Civil Engineer AI is not a licensed engineering tool. It must not approve plans, certify compliance, stamp drawings, replace a Professional Engineer, or make final public safety determinations. Its purpose is to demonstrate production-style GenAI architecture in a realistic civil engineering workflow.
 
 ## 1. Project Purpose
 
@@ -33,11 +39,11 @@ This project should be grounded in public stormwater and professional engineerin
 - NSPE describes its Code of Ethics as a foundational framework for engineering practice, including professional responsibilities toward the public, employers, and the profession. [NSPE Code of Ethics][nspe-ethics]
 - ASCE's Code of Ethics places public health, safety, and welfare at the center of civil engineering professional conduct. [ASCE Code of Ethics][asce-ethics]
 
-These sources support the main boundary for CivilSite AI: the system can assist with organizing and flagging review evidence, but licensed engineering judgment must remain with qualified human professionals.
+These sources support the main boundary for Civil Engineer AI: the system can assist with organizing and flagging review evidence, but licensed engineering judgment must remain with qualified human professionals.
 
 ## 3. Civil Engineering Workflow Being Modeled
 
-CivilSite AI models a simplified stormwater/site-plan review workflow for a land development or redevelopment project.
+Civil Engineer AI models a simplified stormwater/site-plan review workflow for a land development or redevelopment project.
 
 ### 3.1 Typical Workflow
 
@@ -70,11 +76,11 @@ A realistic review sequence looks like this:
 9. **Closeout and maintenance handoff**  
    As-built information, inspection documentation, ownership, and maintenance responsibilities may be reviewed before closeout.
 
-CivilSite AI should focus on steps 2 through 7 for v1. Construction inspection support can be included later as an extension.
+Civil Engineer AI should focus on steps 2 through 7 for v1. Construction inspection support can be included later as an extension.
 
 ### 3.2 Participants
 
-| Participant | Role in Workflow | CivilSite AI Relevance |
+| Participant | Role in Workflow | Civil Engineer AI Relevance |
 | --- | --- | --- |
 | Developer or applicant | Submits the project package | Provides documents and responses |
 | Civil design engineer | Prepares plans, calculations, and technical reports | Source of engineering documents |
@@ -86,7 +92,7 @@ CivilSite AI should focus on steps 2 through 7 for v1. Construction inspection s
 
 ### 3.3 Decisions That Require Licensed Judgment
 
-CivilSite AI can flag evidence issues, but it must not make final engineering decisions. The following require licensed or qualified human judgment:
+Civil Engineer AI can flag evidence issues, but it must not make final engineering decisions. The following require licensed or qualified human judgment:
 
 - Whether drainage calculations are technically correct
 - Whether a proposed stormwater management practice is properly designed
@@ -97,7 +103,7 @@ CivilSite AI can flag evidence issues, but it must not make final engineering de
 - Whether field conditions are acceptable
 - Whether a substitute design or corrective action is adequate
 
-CivilSite AI should support those decisions by organizing evidence and surfacing potential problems.
+Civil Engineer AI should support those decisions by organizing evidence and surfacing potential problems.
 
 ## 4. Document Types
 
@@ -175,7 +181,7 @@ Avoid `approved` and `compliant` as system status values. Those words imply auth
 
 ## 6. GenAI System Design
 
-CivilSite AI should use GenAI as one component inside a larger review system.
+Civil Engineer AI should use GenAI as one component inside a larger review system.
 
 ### 6.1 Appropriate AI Use Cases
 
@@ -262,7 +268,7 @@ This makes the project much stronger because it shows awareness of traceability 
 
 ## 7. Safety and Professional Boundaries
 
-CivilSite AI must be framed as a review-support system.
+Civil Engineer AI must be framed as a review-support system.
 
 ### 7.1 The System Must Not
 
@@ -305,7 +311,7 @@ Avoid wording like:
 
 ### 7.4 Why This Boundary Matters
 
-Stormwater review affects public infrastructure, flooding risk, water quality, and long-term maintenance. Professional engineering ethics place public health, safety, and welfare at the center of practice. CivilSite AI should therefore avoid presenting itself as a substitute for licensed judgment.
+Stormwater review affects public infrastructure, flooding risk, water quality, and long-term maintenance. Professional engineering ethics place public health, safety, and welfare at the center of practice. Civil Engineer AI should therefore avoid presenting itself as a substitute for licensed judgment.
 
 ## 8. Architecture Recommendations
 
@@ -400,7 +406,7 @@ V1 ingestion flow:
 
 ## 9. Evaluation Plan
 
-CivilSite AI should include an evaluation dashboard from the beginning. This is a major difference between a serious GenAI system and a simple demo.
+Civil Engineer AI should include an evaluation dashboard from the beginning. This is a major difference between a serious GenAI system and a simple demo.
 
 ### 9.1 Evaluation Metrics
 
@@ -548,7 +554,7 @@ Include these issues in the mock package:
 The repo should be organized so a recruiter can quickly understand the project.
 
 ```text
-civilsite-ai/
+civil-engineer/
 ├── README.md
 ├── docs/
 │   ├── RESEARCH_AND_SYSTEM_DESIGN.md
@@ -568,9 +574,9 @@ civilsite-ai/
 ### 11.1 README.md Outline
 
 ```md
-# CivilSite AI: Stormwater Review Assistant
+# Civil Engineer AI: Stormwater Review Assistant
 
-CivilSite AI is a portfolio GenAI system that assists stormwater and site-plan review by using document retrieval, checklist validation, risk flagging, human review, audit logging, and evaluation tracking.
+Civil Engineer AI is a portfolio GenAI system that assists stormwater and site-plan review by using document retrieval, checklist validation, risk flagging, human review, audit logging, and evaluation tracking.
 
 ## What It Demonstrates
 
@@ -584,7 +590,7 @@ CivilSite AI is a portfolio GenAI system that assists stormwater and site-plan r
 
 ## What It Does Not Do
 
-CivilSite AI does not approve plans, certify compliance, replace licensed engineers, stamp drawings, or make final safety determinations.
+Civil Engineer AI does not approve plans, certify compliance, replace licensed engineers, stamp drawings, or make final safety determinations.
 
 ## Architecture
 
@@ -696,7 +702,7 @@ The first successful milestone should be one complete vertical slice, not the fu
 
 ## 13. Final System Positioning
 
-CivilSite AI should be positioned as:
+Civil Engineer AI should be positioned as:
 
 > A production-style GenAI portfolio system for stormwater review support. It combines structured project data, document retrieval, checklist validation, risk flagging, human review, audit logging, and evaluation tracking.
 

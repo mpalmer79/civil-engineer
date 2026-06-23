@@ -1,16 +1,24 @@
-# CivilSite AI: Stormwater Review Assistant Architecture
+# Civil Engineer AI: Stormwater Review Assistant Architecture
 
-CivilSite AI: Stormwater Review Assistant is a portfolio GenAI system designed to assist with stormwater and site-plan document review. The system is not a licensed engineering tool. It does not approve plans, certify compliance, stamp drawings, replace a Professional Engineer, or make final public safety determinations.
+Civil Engineer AI: Stormwater Review Assistant is a portfolio GenAI system designed to assist with stormwater and site-plan document review. The system is not a licensed engineering tool. It does not approve plans, certify compliance, stamp drawings, replace a Professional Engineer, or make final public safety determinations.
 
-The goal of this architecture is to show a realistic production-style GenAI system. CivilSite AI combines structured project data, document retrieval, checklist validation, risk flagging, human review, audit logging, and evaluation tracking.
+The goal of this architecture is to show a realistic production-style GenAI system. Civil Engineer AI combines structured project data, document retrieval, checklist validation, risk flagging, human review, audit logging, and evaluation tracking.
 
-This project is stored in the `civil-engineer` repository, but the product name is **CivilSite AI: Stormwater Review Assistant**.
+This project is stored in the `civil-engineer` repository, and the product name is **Civil Engineer AI: Stormwater Review Assistant**.
+
+> **Legacy documentation note.** This architecture brief predates the Phase 0
+> canonical naming. The product name is **Civil Engineer AI** and the canonical
+> demo fixture is **Brookside Meadows** (see
+> `BROOKSIDE_MEADOWS_PROJECT_STORY.md`). Any remaining example that references a
+> "Cedar Ridge" project is legacy placeholder content retained only to
+> illustrate the data shapes; it is documentation debt to be reconciled and
+> does not describe a separate product or project.
 
 ---
 
 ## 1. Architecture Goals
 
-CivilSite AI is designed around the following goals:
+Civil Engineer AI is designed around the following goals:
 
 1. Ingest stormwater and site-plan review documents.
 2. Extract useful text and metadata from uploaded files.
@@ -28,7 +36,7 @@ The system should feel like an early production GenAI review-support platform, n
 
 ## 2. Professional Boundary
 
-CivilSite AI supports human review. It does not make final engineering decisions.
+Civil Engineer AI supports human review. It does not make final engineering decisions.
 
 The system must not:
 
@@ -66,7 +74,7 @@ This boundary is part of the architecture. It affects prompts, database statuses
 
 ## 3. High-Level System Overview
 
-CivilSite AI uses a frontend, backend, database, vector search layer, AI provider, human review workflow, and evaluation service.
+Civil Engineer AI uses a frontend, backend, database, vector search layer, AI provider, human review workflow, and evaluation service.
 
 ```mermaid
 flowchart LR
@@ -1394,7 +1402,7 @@ These should not be built before the core vertical slice works.
 
 ## 17. Architecture Summary
 
-CivilSite AI should be built as a review-support system, not a chatbot.
+Civil Engineer AI should be built as a review-support system, not a chatbot.
 
 The strongest architecture for this portfolio project is:
 
