@@ -45,7 +45,8 @@ def test_audit_endpoint_returns_events(client: TestClient) -> None:
     response = client.get(f"/api/v1/projects/{PROJECT_ID}/audit-events")
     assert response.status_code == 200
     events = response.json()
-    assert len(events) == 10
+    # At least the 10 seeded events; AI review runs may add more.
+    assert len(events) >= 10
     assert all(event["project_id"] == PROJECT_ID for event in events)
 
 

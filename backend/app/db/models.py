@@ -1,9 +1,9 @@
-"""SQLAlchemy models reflecting the Phase 0 domain model.
+"""SQLAlchemy models for the Civil Engineer AI backend.
 
-Phase 2 keeps the schema clean and migration ready. JSON columns are used for
-arrays and nested values such as site conditions, supporting documents, and
-seeded evaluation results. These are easy to normalize into separate tables in
-a later phase if needed.
+The schema includes the Phase 2 core review entities, the Phase 3 source
+evidence entities, and the Phase 4 AI review entities. JSON columns are used for
+arrays and nested values during the local prototype phase, with a clean path to
+normalization later.
 """
 
 from __future__ import annotations
@@ -123,6 +123,9 @@ class AuditEvent(Base):
     related_entity_id: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
     timestamp: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    # Non-sensitive structured context (provider, prompt version, chunk ids,
+    # validation and safety status). Never stores secrets or API keys.
+    event_metadata: Mapped[dict] = mapped_column("event_metadata", JSON, default=dict)
 
     project: Mapped["Project"] = relationship(back_populates="audit_events")
 
@@ -248,6 +251,73 @@ class RetrievalQuery(Base):
         String, nullable=True
     )
     result_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+
+class AIReviewRun(Base):
+    """An execution of the AI Review Assistant over a project's checklist.
+
+    A run records the provider, model, prompt version, and outcome counts so the
+    workflow is auditable. The AI does not make final engineering decisions; it
+    produces draft review-support findings that require human review.
+    """
+
+    __tablename__ = "ai_review_runs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    review_run_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    run_type: Mapped[str] = mapped_column(String, nullable=False)
+    provider: Mapped[str] = mapped_column(String, nullable=False)
+    model_name: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    prompt_version: Mapped[str] = mapped_column(String, nullable=False)
+    checklist_item_count: Mapped[int] = mapped_column(Integer, default=0)
+    draft_findings_created: Mapped[int] = mapped_column(Integer, default=0)
+    safety_failures: Mapped[int] = mapped_column(Integer, default=0)
+    started_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+
+class AIDraftFinding(Base):
+    """An AI-generated draft review-support finding.
+
+    A draft finding is not a final engineering conclusion. It is generated from
+    retrieved source evidence, validated against a strict schema and safety
+    checks, and always requires human review before any action.
+    """
+
+    __tablename__ = "ai_draft_findings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    draft_finding_id: Mapped[str] = mapped_column(
+        String, unique=True, nullable=False
+    )
+    review_run_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_review_runs.review_run_id"), nullable=False
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    checklist_item_id: Mapped[str] = mapped_column(String, nullable=False)
+    finding_type: Mapped[str] = mapped_column(String, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    risk_level: Mapped[str] = mapped_column(String, nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    recommended_human_action: Mapped[str] = mapped_column(Text, nullable=False)
+    source_chunk_ids: Mapped[list] = mapped_column(JSON, default=list)
+    validation_status: Mapped[str] = mapped_column(String, nullable=False)
+    safety_check_status: Mapped[str] = mapped_column(String, nullable=False)
+    validation_errors: Mapped[list] = mapped_column(JSON, default=list)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )

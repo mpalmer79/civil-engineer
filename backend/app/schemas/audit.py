@@ -18,3 +18,4 @@ class AuditEventRead(BaseModel):
     related_entity_id: str
     description: str
     timestamp: datetime
+    event_metadata: dict = {}

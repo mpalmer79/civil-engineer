@@ -25,11 +25,37 @@ export default async function EvaluationPage() {
 
         <EvaluationSummary evaluationCases={cases} evaluationSummary={summary} />
 
+        <SectionCard
+          title="Phase 4 AI review validation metrics"
+          description="The AI Review Assistant tracks these signals on each run. Phase 5 will score them against expected findings in a live evaluation harness."
+        >
+          <ul className="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
+            <li className="rounded-lg bg-slate-50 px-3 py-2">
+              Draft finding schema validity (validation passed rate)
+            </li>
+            <li className="rounded-lg bg-slate-50 px-3 py-2">
+              Source chunk citation validity
+            </li>
+            <li className="rounded-lg bg-slate-50 px-3 py-2">
+              Prohibited wording count (target zero)
+            </li>
+            <li className="rounded-lg bg-slate-50 px-3 py-2">
+              Human review requirement rate (target 100 percent)
+            </li>
+            <li className="rounded-lg bg-slate-50 px-3 py-2">
+              Validation failure count and safety check failure count
+            </li>
+            <li className="rounded-lg bg-slate-50 px-3 py-2">
+              Expected finding match rate against the seeded planted issues
+            </li>
+          </ul>
+        </SectionCard>
+
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
           <span className="font-semibold text-slate-800">Prototype note:</span>{" "}
           This dashboard displays seeded evaluation outcomes with mock but
-          plausible values. Later phases will run evaluation cases against
-          generated findings and compute these metrics live.
+          plausible values. Phase 5 will run evaluation cases against generated
+          draft findings and compute these metrics live.
         </div>
       </div>
     </div>
