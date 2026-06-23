@@ -8,7 +8,7 @@ This project is built as a realistic software engineering portfolio project. It 
 
 ## Project Overview
 
-CivilSite AI is designed to support a mock stormwater/site-plan review workflow. The system helps organize project documents, retrieve source evidence, compare submissions against review checklist items, flag potential risks, and route findings to a human reviewer.
+Civil Engineer is designed to support a mock stormwater/site-plan review workflow. The system helps organize project documents, retrieve source evidence, compare submissions against review checklist items, flag potential risks, and route findings to a human reviewer.
 
 The project focuses on one practical use case:
 
