@@ -8,7 +8,7 @@ import { getHotspots, projectMetrics } from "@/lib/api";
 const heroCtas = [
   { href: "/project", label: "Project dashboard" },
   { href: "/ai-review", label: "AI Review" },
-  { href: "/findings", label: "Findings" },
+  { href: "/human-review", label: "Human Review" },
   { href: "/evaluation", label: "Evaluation" },
 ];
 
@@ -53,7 +53,7 @@ export default async function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
               <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
-                Phase 4 · AI Review Assistant
+                Phase 5 · Human review and evaluation scoring
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Civil Engineer AI
@@ -181,6 +181,55 @@ export default async function HomePage() {
               AI Review
             </a>{" "}
             page.
+          </p>
+        </div>
+      </section>
+
+      {/* Phase 5: human review and evaluation scoring */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="surface-card p-6">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+            Human review and evaluation scoring
+          </h2>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            Phase 5 tracks reviewer actions and compares AI draft findings against
+            the expected review issues. Every draft finding routes to a human
+            reviewer who can accept, edit, reject, escalate, mark unclear, or
+            request more information. Each action is recorded with a note, applies
+            a status transition, and writes audit events. Evaluation scoring then
+            measures recall, precision, citation validity, and reviewer signals
+            against the seeded Brookside Meadows findings.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              The{" "}
+              <a
+                href="/human-review"
+                className="font-semibold text-water-700 hover:text-water-600"
+              >
+                Human Review Queue
+              </a>{" "}
+              records reviewer decisions and preserves action history.
+            </div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Failed drafts are surfaced separately and cannot be accepted as
+              valid findings.
+            </div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              The{" "}
+              <a
+                href="/evaluation"
+                className="font-semibold text-water-700 hover:text-water-600"
+              >
+                Evaluation
+              </a>{" "}
+              page scores draft findings against expected findings.
+            </div>
+          </div>
+          <p className="mt-5 text-sm text-slate-500">
+            Accepted findings remain review-support findings under human control.
+            The system does not approve plans, certify compliance, or make final
+            engineering decisions.
           </p>
         </div>
       </section>

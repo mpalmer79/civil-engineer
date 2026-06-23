@@ -2,7 +2,7 @@
   "name": "civil-engineer",
   "version": "0.1.0",
   "private": true,
-  "description": "Civil Engineer AI: Stormwater Review Assistant, Phase 3 document evidence and retrieval foundation",
+  "description": "Civil Engineer AI: Stormwater Review Assistant, Phase 5 human review queue and evaluation scoring",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

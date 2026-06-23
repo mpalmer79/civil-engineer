@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     )
 
     PROJECT_NAME: str = "Civil Engineer AI Backend"
-    PHASE: str = "3"
+    PHASE: str = "5"
     API_V1_PREFIX: str = "/api/v1"
 
     DATABASE_URL: str = "sqlite:///./civil_engineer_ai.db"
@@ -29,11 +29,12 @@ class Settings(BaseSettings):
     # so the project runs and tests pass without any paid API key. Live calls
     # are disabled by default and require both a provider key and an explicit
     # opt in.
+    # Only OpenAI has a real live provider implementation. Other provider names
+    # fall back to the mock provider until a real implementation is added.
     AI_PROVIDER: str = "mock"
     AI_MODEL: str = "mock-review-v1"
     AI_ENABLE_LIVE_CALLS: bool = False
     OPENAI_API_KEY: str = ""
-    ANTHROPIC_API_KEY: str = ""
     PROMPT_VERSION: str = "checklist_review_v1"
 
     @property

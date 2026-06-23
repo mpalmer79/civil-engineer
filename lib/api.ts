@@ -637,4 +637,366 @@ export async function getProjectDraftFindings(): Promise<AiDraftFinding[]> {
   return data ? data.map(mapDraft) : [];
 }
 
+// Phase 5: human review queue, review actions, and evaluation scoring.
+//
+// Review actions and evaluation runs mutate backend state, so they are never
+// faked in frontend-only mode. When the backend is unavailable the queue and
+// results read as empty, and mutating calls return a clear backend-required
+// signal so the UI can prompt the reviewer to start the API.
+
+export type HumanReviewAction = {
+  reviewActionId: string;
+  draftFindingId: string;
+  projectId: string;
+  reviewRunId: string;
+  reviewerName: string;
+  action: string;
+  reviewerNote: string;
+  editedTitle: string | null;
+  editedSummary: string | null;
+  editedRecommendedAction: string | null;
+  previousStatus: string;
+  newStatus: string;
+  createdAt: string;
+};
+
+export type HumanReviewQueueItem = {
+  draftFinding: AiDraftFinding;
+  checklistItemId: string;
+  isFailedDraft: boolean;
+  needsReview: boolean;
+  latestStatus: string;
+  reviewActions: HumanReviewAction[];
+};
+
+export type HumanReviewQueue = {
+  projectId: string;
+  needsReview: HumanReviewQueueItem[];
+  reviewed: HumanReviewQueueItem[];
+  validationFailures: HumanReviewQueueItem[];
+  needsReviewCount: number;
+  reviewedCount: number;
+  validationFailureCount: number;
+};
+
+export type ReviewActionInput = {
+  action: string;
+  reviewerName: string;
+  reviewerNote: string;
+  editedTitle?: string;
+  editedSummary?: string;
+  editedRecommendedAction?: string;
+};
+
+export type ReviewActionOutcome =
+  | { ok: true; action: HumanReviewAction; draftFinding: AiDraftFinding }
+  | { ok: false; backendDown: boolean; message: string };
+
+export type EvaluationMatch = {
+  evaluationMatchId: string;
+  evaluationResultId: string;
+  expectedFindingId: string | null;
+  draftFindingId: string | null;
+  matchType: string;
+  matchConfidence: number;
+  matchedOn: string | null;
+  notes: string | null;
+  createdAt: string;
+};
+
+export type EvaluationResult = {
+  evaluationResultId: string;
+  projectId: string;
+  reviewRunId: string;
+  expectedFindingsCount: number;
+  draftFindingsCount: number;
+  matchedFindingsCount: number;
+  unmatchedExpectedCount: number;
+  extraDraftFindingsCount: number;
+  citationValidityRate: number;
+  humanReviewRequiredRate: number;
+  prohibitedWordCount: number;
+  validationFailureCount: number;
+  safetyFailureCount: number;
+  recall: number;
+  precision: number;
+  overallScore: number;
+  createdAt: string;
+  matches: EvaluationMatch[];
+};
+
+export type EvaluationOutcome =
+  | { ok: true; result: EvaluationResult }
+  | { ok: false; backendDown: boolean; message: string };
+
+type ApiReviewAction = {
+  review_action_id: string;
+  draft_finding_id: string;
+  project_id: string;
+  review_run_id: string;
+  reviewer_name: string;
+  action: string;
+  reviewer_note: string;
+  edited_title: string | null;
+  edited_summary: string | null;
+  edited_recommended_action: string | null;
+  previous_status: string;
+  new_status: string;
+  created_at: string;
+};
+
+type ApiQueueItem = {
+  draft_finding: ApiDraft;
+  checklist_item_id: string;
+  is_failed_draft: boolean;
+  needs_review: boolean;
+  latest_status: string;
+  review_actions: ApiReviewAction[];
+};
+
+type ApiQueue = {
+  project_id: string;
+  needs_review: ApiQueueItem[];
+  reviewed: ApiQueueItem[];
+  validation_failures: ApiQueueItem[];
+  needs_review_count: number;
+  reviewed_count: number;
+  validation_failure_count: number;
+};
+
+type ApiEvalMatch = {
+  evaluation_match_id: string;
+  evaluation_result_id: string;
+  expected_finding_id: string | null;
+  draft_finding_id: string | null;
+  match_type: string;
+  match_confidence: number;
+  matched_on: string | null;
+  notes: string | null;
+  created_at: string;
+};
+
+type ApiEvalResult = {
+  evaluation_result_id: string;
+  project_id: string;
+  review_run_id: string;
+  expected_findings_count: number;
+  draft_findings_count: number;
+  matched_findings_count: number;
+  unmatched_expected_count: number;
+  extra_draft_findings_count: number;
+  citation_validity_rate: number;
+  human_review_required_rate: number;
+  prohibited_word_count: number;
+  validation_failure_count: number;
+  safety_failure_count: number;
+  recall: number;
+  precision: number;
+  overall_score: number;
+  created_at: string;
+  matches?: ApiEvalMatch[];
+};
+
+function mapReviewAction(a: ApiReviewAction): HumanReviewAction {
+  return {
+    reviewActionId: a.review_action_id,
+    draftFindingId: a.draft_finding_id,
+    projectId: a.project_id,
+    reviewRunId: a.review_run_id,
+    reviewerName: a.reviewer_name,
+    action: a.action,
+    reviewerNote: a.reviewer_note,
+    editedTitle: a.edited_title,
+    editedSummary: a.edited_summary,
+    editedRecommendedAction: a.edited_recommended_action,
+    previousStatus: a.previous_status,
+    newStatus: a.new_status,
+    createdAt: a.created_at,
+  };
+}
+
+function mapQueueItem(i: ApiQueueItem): HumanReviewQueueItem {
+  return {
+    draftFinding: mapDraft(i.draft_finding),
+    checklistItemId: i.checklist_item_id,
+    isFailedDraft: i.is_failed_draft,
+    needsReview: i.needs_review,
+    latestStatus: i.latest_status,
+    reviewActions: i.review_actions.map(mapReviewAction),
+  };
+}
+
+function mapEvalMatch(m: ApiEvalMatch): EvaluationMatch {
+  return {
+    evaluationMatchId: m.evaluation_match_id,
+    evaluationResultId: m.evaluation_result_id,
+    expectedFindingId: m.expected_finding_id,
+    draftFindingId: m.draft_finding_id,
+    matchType: m.match_type,
+    matchConfidence: m.match_confidence,
+    matchedOn: m.matched_on,
+    notes: m.notes,
+    createdAt: m.created_at,
+  };
+}
+
+function mapEvalResult(r: ApiEvalResult): EvaluationResult {
+  return {
+    evaluationResultId: r.evaluation_result_id,
+    projectId: r.project_id,
+    reviewRunId: r.review_run_id,
+    expectedFindingsCount: r.expected_findings_count,
+    draftFindingsCount: r.draft_findings_count,
+    matchedFindingsCount: r.matched_findings_count,
+    unmatchedExpectedCount: r.unmatched_expected_count,
+    extraDraftFindingsCount: r.extra_draft_findings_count,
+    citationValidityRate: r.citation_validity_rate,
+    humanReviewRequiredRate: r.human_review_required_rate,
+    prohibitedWordCount: r.prohibited_word_count,
+    validationFailureCount: r.validation_failure_count,
+    safetyFailureCount: r.safety_failure_count,
+    recall: r.recall,
+    precision: r.precision,
+    overallScore: r.overall_score,
+    createdAt: r.created_at,
+    matches: (r.matches ?? []).map(mapEvalMatch),
+  };
+}
+
+export async function getHumanReviewQueue(): Promise<HumanReviewQueue | null> {
+  const data = await safeFetch<ApiQueue>(
+    `/api/v1/projects/${PROJECT_ID}/human-review-queue`,
+  );
+  if (!data) return null;
+  return {
+    projectId: data.project_id,
+    needsReview: data.needs_review.map(mapQueueItem),
+    reviewed: data.reviewed.map(mapQueueItem),
+    validationFailures: data.validation_failures.map(mapQueueItem),
+    needsReviewCount: data.needs_review_count,
+    reviewedCount: data.reviewed_count,
+    validationFailureCount: data.validation_failure_count,
+  };
+}
+
+export async function submitReviewAction(
+  draftFindingId: string,
+  input: ReviewActionInput,
+): Promise<ReviewActionOutcome> {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/draft-findings/${draftFindingId}/review-actions`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        cache: "no-store",
+        body: JSON.stringify({
+          action: input.action,
+          reviewer_name: input.reviewerName,
+          reviewer_note: input.reviewerNote,
+          edited_title: input.editedTitle ?? null,
+          edited_summary: input.editedSummary ?? null,
+          edited_recommended_action: input.editedRecommendedAction ?? null,
+        }),
+      },
+    );
+    if (!res.ok) {
+      let message = `Review action was not recorded (status ${res.status}).`;
+      try {
+        const body = (await res.json()) as { detail?: string };
+        if (body.detail) message = body.detail;
+      } catch {
+        // Ignore body parse errors and keep the default message.
+      }
+      return { ok: false, backendDown: false, message };
+    }
+    const body = (await res.json()) as {
+      review_action: ApiReviewAction;
+      draft_finding: ApiDraft;
+    };
+    return {
+      ok: true,
+      action: mapReviewAction(body.review_action),
+      draftFinding: mapDraft(body.draft_finding),
+    };
+  } catch {
+    return {
+      ok: false,
+      backendDown: true,
+      message:
+        "The backend is not reachable. Start the API to record review actions. Review actions are never faked in frontend-only mode.",
+    };
+  }
+}
+
+export async function getDraftReviewActions(
+  draftFindingId: string,
+): Promise<HumanReviewAction[]> {
+  const data = await safeFetch<ApiReviewAction[]>(
+    `/api/v1/draft-findings/${draftFindingId}/review-actions`,
+  );
+  return data ? data.map(mapReviewAction) : [];
+}
+
+export async function getProjectReviewActions(): Promise<HumanReviewAction[]> {
+  const data = await safeFetch<ApiReviewAction[]>(
+    `/api/v1/projects/${PROJECT_ID}/review-actions`,
+  );
+  return data ? data.map(mapReviewAction) : [];
+}
+
+export async function runEvaluationScoring(
+  reviewRunId: string,
+): Promise<EvaluationOutcome> {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/ai-review-runs/${reviewRunId}/evaluate`,
+      { method: "POST", cache: "no-store" },
+    );
+    if (!res.ok) {
+      let message = `Evaluation scoring did not run (status ${res.status}).`;
+      try {
+        const body = (await res.json()) as { detail?: string };
+        if (body.detail) message = body.detail;
+      } catch {
+        // Ignore body parse errors and keep the default message.
+      }
+      return { ok: false, backendDown: false, message };
+    }
+    return { ok: true, result: mapEvalResult((await res.json()) as ApiEvalResult) };
+  } catch {
+    return {
+      ok: false,
+      backendDown: true,
+      message:
+        "The backend is not reachable. Start the API to run evaluation scoring.",
+    };
+  }
+}
+
+export async function getRunEvaluation(
+  reviewRunId: string,
+): Promise<EvaluationResult | null> {
+  const data = await safeFetch<ApiEvalResult>(
+    `/api/v1/ai-review-runs/${reviewRunId}/evaluation`,
+  );
+  return data ? mapEvalResult(data) : null;
+}
+
+export async function getProjectEvaluationResults(): Promise<EvaluationResult[]> {
+  const data = await safeFetch<ApiEvalResult[]>(
+    `/api/v1/projects/${PROJECT_ID}/ai-evaluation-results`,
+  );
+  return data ? data.map(mapEvalResult) : [];
+}
+
+export async function getEvaluationResult(
+  evaluationResultId: string,
+): Promise<EvaluationResult | null> {
+  const data = await safeFetch<ApiEvalResult>(
+    `/api/v1/ai-evaluation-results/${evaluationResultId}`,
+  );
+  return data ? mapEvalResult(data) : null;
+}
+
 export { projectMetrics };

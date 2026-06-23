@@ -27,6 +27,7 @@ ALLOWED_REVIEW_STATUSES: set[str] = {
     "edited_by_reviewer",
     "rejected_by_reviewer",
     "escalated",
+    "marked_unclear",
     "requested_more_information",
 }
 
@@ -38,8 +39,26 @@ HUMAN_REVIEW_STATUSES: set[str] = {
     "edited_by_reviewer",
     "rejected_by_reviewer",
     "escalated",
+    "marked_unclear",
     "requested_more_information",
 }
+
+# Allowed human review actions a reviewer may take on an AI draft finding, and
+# the resulting draft finding status for each. None of these is a final
+# engineering approval: an accepted finding is accepted by a reviewer as a
+# review-support finding, not certified or declared compliant.
+HUMAN_REVIEW_ACTIONS: dict[str, str] = {
+    "accepted": "accepted_by_reviewer",
+    "edited": "edited_by_reviewer",
+    "rejected": "rejected_by_reviewer",
+    "escalated": "escalated",
+    "marked_unclear": "marked_unclear",
+    "requested_more_information": "requested_more_information",
+}
+
+# Actions that promote a draft into a usable review-support finding. These may
+# only be applied to a draft that passed validation and safety checks.
+ACTIONS_REQUIRING_VALID_DRAFT: set[str] = {"accepted", "edited"}
 
 # Final-decision language the system must never use as a status or conclusion.
 # Matching is done case insensitively against normalized text.

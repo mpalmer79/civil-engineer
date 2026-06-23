@@ -134,6 +134,16 @@ and live evaluation scoring are deferred to Phase 5. See
 planted Brookside Meadows issues are detected; the clean control case yields no
 false positives.
 
+**Delivered in Phase 5:** a persisted human review queue with reviewer actions
+(accept, edit, reject, escalate, mark unclear, request more information), draft
+finding status transitions, review action audit events, and a `human_review_actions`
+table; plus a heuristic evaluation scoring service that compares AI draft findings
+against the expected findings and reports recall, precision, citation validity,
+prohibited wording, and validation and safety failure counts, stored in
+`ai_evaluation_results` and `ai_evaluation_matches`. Failed drafts are surfaced
+separately and cannot be accepted. No action is named approve. See
+`PHASE_5_HUMAN_REVIEW_AND_EVALUATION.md`.
+
 > Phases 1 to 5 together constitute the **v1 build** defined in `V1_SCOPE.md`.
 
 ---

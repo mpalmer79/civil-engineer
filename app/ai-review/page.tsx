@@ -42,11 +42,12 @@ export default function AiReviewPage() {
         <SafetyBoundaryBanner />
 
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">Phase 4 note:</span>{" "}
+          <span className="font-semibold text-slate-800">Phase 5 note:</span>{" "}
           The default provider is a deterministic mock, so the workflow runs
-          without any API key. Optional live provider configuration is documented
-          in the Phase 4 notes. The AI does not approve plans, certify
-          compliance, or make final engineering decisions.
+          without any API key. Draft findings route to the Human Review Queue,
+          and each run can be scored against the expected findings on the
+          Evaluation page. The AI does not approve plans, certify compliance, or
+          make final engineering decisions.
         </div>
       </div>
     </div>

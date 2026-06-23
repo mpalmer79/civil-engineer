@@ -1,18 +1,22 @@
 # Civil Engineer AI Backend
 
 FastAPI backend for Civil Engineer AI: Stormwater Review Assistant. This is the
-Phase 4 backend. It serves seeded Brookside Meadows review data, document chunks,
-and source evidence, and it runs a controlled AI review workflow that produces
-draft review-support findings.
+Phase 5 backend. It serves seeded Brookside Meadows review data, document chunks,
+and source evidence, runs a controlled AI review workflow that produces draft
+review-support findings, records human review actions on those drafts, and scores
+review runs against the expected findings.
 
 Civil Engineer AI is a review-support and evidence-organization system. It does
 not approve plans, certify compliance, stamp drawings, or replace a licensed
-Professional Engineer. Statuses, retrieval results, and AI draft findings never
-use final-decision language, and every AI draft finding requires human review.
+Professional Engineer. Statuses, retrieval results, AI draft findings, and human
+review actions never use final-decision language, and every AI draft finding
+requires human review. No action is named approve, and an accepted finding stays
+a review-support finding under human control.
 
 The AI Review Assistant uses a deterministic mock provider by default, so the
-backend runs without any API key. Live provider calls are disabled by default.
-Phase 4 does not include embeddings, a vector store, or authentication.
+backend runs without any API key. Only OpenAI has a real live provider
+implementation, and live provider calls are disabled by default. Phase 5 does not
+include embeddings, a vector store, or authentication.
 
 ## Requirements
 
@@ -64,7 +68,7 @@ database.
 
 ```bash
 curl http://localhost:8000/health
-# {"status":"ok","service":"Civil Engineer AI Backend","phase":"2"}
+# {"status":"ok","service":"Civil Engineer AI Backend","phase":"5"}
 ```
 
 ## API route examples
@@ -114,6 +118,20 @@ curl http://localhost:8000/api/v1/findings/find_infiltration_missing/sources
 curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/ai-provider-mode
 curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/ai-review-runs
 curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/draft-findings
+
+# Human review queue and review actions (Phase 5)
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/human-review-queue
+curl -X POST http://localhost:8000/api/v1/draft-findings/DRAFT_ID/review-actions \
+  -H "Content-Type: application/json" \
+  -d '{"action":"accepted","reviewer_name":"Town Engineer","reviewer_note":"Evidence gap confirmed."}'
+curl http://localhost:8000/api/v1/draft-findings/DRAFT_ID/review-actions
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/review-actions
+
+# Evaluation scoring (Phase 5)
+curl -X POST http://localhost:8000/api/v1/ai-review-runs/RUN_ID/evaluate
+curl http://localhost:8000/api/v1/ai-review-runs/RUN_ID/evaluation
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/ai-evaluation-results
+curl http://localhost:8000/api/v1/ai-evaluation-results/EVAL_ID
 ```
 
 ## AI provider configuration
@@ -127,14 +145,15 @@ AI_PROVIDER=mock
 AI_MODEL=mock-review-v1
 AI_ENABLE_LIVE_CALLS=false
 OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
 PROMPT_VERSION=checklist_review_v1
 ```
 
-To enable an optional live OpenAI provider: set `AI_PROVIDER=openai`,
-`AI_ENABLE_LIVE_CALLS=true`, provide `OPENAI_API_KEY` (never commit it), set
-`AI_MODEL`, and install the optional package with `pip install openai`. If the
-live provider is unavailable, the service falls back to the mock provider.
+Only OpenAI has a real live provider implementation today. To enable it: set
+`AI_PROVIDER=openai`, `AI_ENABLE_LIVE_CALLS=true`, provide `OPENAI_API_KEY` (never
+commit it), set `AI_MODEL`, and install the optional package with
+`pip install openai`. If the live provider is unavailable, the service falls back
+to the mock provider. Other provider names also fall back to the mock provider
+until a real implementation is added.
 
 ## Project layout
 

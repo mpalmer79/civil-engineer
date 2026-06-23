@@ -11,6 +11,12 @@ from typing import Protocol
 
 from app.core.config import Settings
 
+# Providers with a real, live implementation in this repository. Anthropic is
+# intentionally not listed: there is no live Anthropic provider yet, so the repo
+# must not imply that one is live-ready. Add it here only when a real provider
+# implementation exists.
+LIVE_READY_PROVIDERS: set[str] = {"openai"}
+
 
 class AIProvider(Protocol):
     name: str
@@ -29,11 +35,15 @@ class AIProvider(Protocol):
 
 
 def describe_provider_mode(settings: Settings) -> dict:
-    """Return a small, non-sensitive description of the provider mode for the UI."""
+    """Return a small, non-sensitive description of the provider mode for the UI.
+
+    Only OpenAI has a real live provider implementation. The mock provider is
+    the default and is used whenever a live provider is not fully configured.
+    """
 
     provider = settings.AI_PROVIDER.lower()
     live_ready = (
-        provider in {"openai", "anthropic"}
+        provider in LIVE_READY_PROVIDERS
         and settings.AI_ENABLE_LIVE_CALLS
         and bool(_key_for(provider, settings))
     )
@@ -46,8 +56,9 @@ def describe_provider_mode(settings: Settings) -> dict:
     else:
         mode = "live_disabled"
         detail = (
-            f"Provider '{provider}' selected, but live calls are disabled or no "
-            "API key is configured. Using the mock provider."
+            f"Provider '{provider}' selected, but live calls are disabled, no "
+            "API key is configured, or no live implementation exists. Using the "
+            "mock provider."
         )
     return {
         "provider": provider,
@@ -61,8 +72,6 @@ def describe_provider_mode(settings: Settings) -> dict:
 def _key_for(provider: str, settings: Settings) -> str:
     if provider == "openai":
         return settings.OPENAI_API_KEY
-    if provider == "anthropic":
-        return settings.ANTHROPIC_API_KEY
     return ""
 
 
@@ -78,7 +87,7 @@ def get_provider(settings: Settings) -> AIProvider:
 
     provider = settings.AI_PROVIDER.lower()
     if (
-        provider in {"openai", "anthropic"}
+        provider in LIVE_READY_PROVIDERS
         and settings.AI_ENABLE_LIVE_CALLS
         and _key_for(provider, settings)
     ):
