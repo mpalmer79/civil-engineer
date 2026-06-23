@@ -1,4 +1,4 @@
-# Roadmap — Civil Engineer AI
+# Roadmap, Civil Engineer AI
 
 **Product:** Civil Engineer AI: Stormwater Review Assistant
 
@@ -19,7 +19,7 @@ flowchart LR
 
 ---
 
-## Phase 0 — Foundation  *(this phase)*
+## Phase 0, Foundation  *(this phase)*
 
 **Goal:** Build the strongest possible foundation before any code.
 
@@ -35,9 +35,9 @@ written. (See `PHASE_0_FOUNDATION.md` §9.)
 
 ---
 
-## Phase 1 — Static Portfolio Prototype
+## Phase 1, Static Portfolio Prototype
 
-**Goal:** A clickable, convincing UI driven entirely by seed data — no AI calls.
+**Goal:** A clickable, convincing UI driven entirely by seed data, no AI calls.
 
 - Next.js + TypeScript frontend
 - Seeded Brookside Meadows project data (from `SEED_DATA_PLAN.md`)
@@ -46,8 +46,8 @@ written. (See `PHASE_0_FOUNDATION.md` §9.)
 - Static findings list and finding detail pages
 - Static human review queue (actions stubbed/local)
 - Static audit trail view
-- Reconcile naming: retire "CivilSite AI"/"Cedar Ridge" references in favor of
-  **Civil Engineer AI** / **Brookside Meadows**
+- Use the canonical product naming (**Civil Engineer AI**) and demo fixture
+  (**Brookside Meadows**) consistently across the app and docs
 
 **Why first:** It de-risks the product story and UX, and gives a portfolio-ready
 artifact early, before any backend or model cost.
@@ -57,7 +57,7 @@ content.
 
 ---
 
-## Phase 2 — Backend and Data Model
+## Phase 2, Backend and Data Model
 
 **Goal:** Make the seeded data real and queryable.
 
@@ -73,7 +73,7 @@ content.
 
 ---
 
-## Phase 3 — Retrieval Layer
+## Phase 3, Retrieval Layer
 
 **Goal:** Turn documents into source-linked, retrievable evidence.
 
@@ -87,9 +87,15 @@ content.
 **Exit criteria:** For any checklist item, the system returns ranked, cited
 evidence chunks from the Brookside Meadows package.
 
+**Delivered in Phase 3:** the document chunk and finding source data model,
+seeded chunks and source evidence, and keyword and metadata retrieval with
+checklist and finding evidence endpoints and frontend evidence display.
+Embeddings, a vector store, and semantic retrieval are deferred to a later step
+behind the same retrieval interface. See `PHASE_3_RETRIEVAL_FOUNDATION.md`.
+
 ---
 
-## Phase 4 — AI Review Assistant
+## Phase 4, AI Review Assistant
 
 **Goal:** Generate structured, safe, source-cited findings.
 
@@ -104,7 +110,7 @@ sources, avoid prohibited wording, and land in the human review queue.
 
 ---
 
-## Phase 5 — Evaluation System
+## Phase 5, Evaluation System
 
 **Goal:** Prove the system works and keep it from regressing.
 
@@ -119,33 +125,33 @@ sources, avoid prohibited wording, and land in the human review queue.
 planted Brookside Meadows issues are detected; the clean control case yields no
 false positives.
 
-> Phases 1–5 together constitute the **v1 build** defined in `V1_SCOPE.md`.
+> Phases 1 to 5 together constitute the **v1 build** defined in `V1_SCOPE.md`.
 
 ---
 
-## Phase 6 — Expansion Modules
+## Phase 6, Expansion Modules
 
 **Goal:** Reuse the engine to grow from a stormwater assistant into a land
 development review platform. Each module mostly adds **checklist content,
-document types, and evaluation cases** — not new infrastructure.
+document types, and evaluation cases**, not new infrastructure.
 
 Future expansion areas:
 
-- **Grading review assistant** — cut/fill balance evidence, slope stability
+- **Grading review assistant**, cut/fill balance evidence, slope stability
   references, phased earthwork.
-- **Utility coordination review assistant** — water/sewer/storm crossings,
+- **Utility coordination review assistant**, water/sewer/storm crossings,
   pump-station documentation, conflict checks.
-- **Roadway layout review assistant** — geometry, sight distance, sidewalk and
+- **Roadway layout review assistant**, geometry, sight distance, sidewalk and
   fire-access checks.
-- **Construction phasing review assistant** — sequencing dependencies and
+- **Construction phasing review assistant**, sequencing dependencies and
   stabilization timing.
-- **Municipal comment-response assistant** — track comments and draft response
+- **Municipal comment-response assistant**, track comments and draft response
   letters.
-- **Inspection closeout assistant** — corrective-action tracking to closeout.
-- **RFI resolution assistant** — open/closed RFI tracking and follow-up.
-- **Cost and maintenance planning assistant** — long-term O&M responsibility and
+- **Inspection closeout assistant**, corrective-action tracking to closeout.
+- **RFI resolution assistant**, open/closed RFI tracking and follow-up.
+- **Cost and maintenance planning assistant**, long-term O&M responsibility and
   funding.
-- **Climate resilience scenario assistant** — design-storm sensitivity and
+- **Climate resilience scenario assistant**, design-storm sensitivity and
   nature-based-solution scenarios.
 
 **Cross-cutting platform capabilities (enabled by the Phase 0 model):**

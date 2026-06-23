@@ -1,8 +1,10 @@
 import PageHeader from "@/components/PageHeader";
 import DocumentTable from "@/components/DocumentTable";
 import MetricCard from "@/components/MetricCard";
+import SectionCard from "@/components/SectionCard";
+import ChunkDisclosure from "@/components/ChunkDisclosure";
 import { type DocumentStatus } from "@/data/documents";
-import { getDocuments } from "@/lib/api";
+import { getDocuments, getChunksByDocument } from "@/lib/api";
 
 const statusOrder: { status: DocumentStatus; label: string }[] = [
   { status: "present", label: "Present" },
@@ -13,9 +15,15 @@ const statusOrder: { status: DocumentStatus; label: string }[] = [
 ];
 
 export default async function DocumentsPage() {
-  const documents = await getDocuments();
+  const [documents, chunksByDocument] = await Promise.all([
+    getDocuments(),
+    getChunksByDocument(),
+  ]);
   const counts = (status: DocumentStatus) =>
     documents.filter((d) => d.status === status).length;
+  const documentsWithChunks = documents.filter(
+    (d) => (chunksByDocument[d.documentId] ?? []).length > 0,
+  );
 
   return (
     <div>
@@ -48,11 +56,42 @@ export default async function DocumentsPage() {
 
         <DocumentTable documents={documents} />
 
+        <SectionCard
+          title="Seeded source chunks"
+          description="Phase 3 seeds short synthetic excerpts for each document so retrieval can trace findings back to specific pages and sections. Expand a document to view its chunks."
+        >
+          {documentsWithChunks.length === 0 ? (
+            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
+              Source chunks are served by the backend. Start the API to view
+              seeded chunks for each document.
+            </p>
+          ) : (
+            <ul className="space-y-3">
+              {documentsWithChunks.map((doc) => (
+                <li
+                  key={doc.documentId}
+                  className="rounded-lg bg-slate-50 p-3"
+                >
+                  <p className="text-sm font-semibold text-slate-800">
+                    {doc.fileName}
+                  </p>
+                  <div className="mt-2">
+                    <ChunkDisclosure
+                      summaryLabel="View seeded chunks"
+                      chunks={chunksByDocument[doc.documentId] ?? []}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </SectionCard>
+
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">Prototype note:</span>{" "}
-          This view uses seeded synthetic document records. Later phases will add
-          ingestion, chunking, embeddings, and retrieval so each document becomes
-          searchable, source-linked evidence.
+          <span className="font-semibold text-slate-800">Phase 3 note:</span>{" "}
+          Document records and source chunks are served by the backend. Retrieval
+          is keyword and metadata based in this phase; embeddings and live AI
+          review are planned for later phases.
         </div>
       </div>
     </div>

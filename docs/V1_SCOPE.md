@@ -1,8 +1,8 @@
-# V1 Scope — Civil Engineer AI
+# V1 Scope, Civil Engineer AI
 
 **Product:** Civil Engineer AI: Stormwater Review Assistant
 **V1 thesis:** One complete, end-to-end **Stormwater Review Assistant for
-Brookside Meadows** — narrow enough to finish, deep enough to prove the
+Brookside Meadows**, narrow enough to finish, deep enough to prove the
 platform.
 
 > V1 does **not** attempt to build every land development module. It builds one
@@ -16,7 +16,7 @@ platform.
 A reviewer can open the seeded **Brookside Meadows** stormwater package, run an
 AI-assisted checklist review, inspect the cited evidence behind each finding,
 accept/edit/reject/escalate findings, read a full audit trail, and view
-evaluation results showing the system caught the expected issues — all without
+evaluation results showing the system caught the expected issues, all without
 the system ever approving, certifying, or claiming the design is safe.
 
 ---
@@ -27,14 +27,14 @@ the system ever approving, certifying, or claiming the design is safe.
 | --- | --- | --- |
 | 1 | **Mock project dashboard** | Brookside Meadows status: documents, checklist progress, open findings, high-risk count, recent audit activity. |
 | 2 | **Seeded Brookside Meadows project** | The full project record from `SEED_DATA_PLAN.md`. |
-| 3 | **Seeded document package** | ~14–19 synthetic documents with planted issues. |
+| 3 | **Seeded document package** | ~14 to 19 synthetic documents with planted issues. |
 | 4 | **Document library** | List of documents with type, status, chunk count, and a source-view. |
-| 5 | **Stormwater checklist engine** | 12–20 reusable checklist items; applicability from project flags. |
+| 5 | **Stormwater checklist engine** | 12 to 20 reusable checklist items; applicability from project flags. |
 | 6 | **Retrieval-ready document chunks** | Documents chunked with page/section metadata; embeddings for source retrieval. |
 | 7 | **AI-assisted finding generation** | Per checklist item: retrieve evidence → structured JSON finding with citations and safety check. |
 | 8 | **Human review queue** | Pending findings with accept / edit / reject / escalate / mark-unclear / request-info actions. |
 | 9 | **Audit log** | Every retrieval, model call, finding, validation result, and human action. |
-| 10 | **Evaluation cases** | 6–10 cases comparing actual findings to expected, with recall/precision/citation metrics. |
+| 10 | **Evaluation cases** | 6 to 10 cases comparing actual findings to expected, with recall/precision/citation metrics. |
 
 ---
 
@@ -80,7 +80,7 @@ items (see `ROADMAP.md`), not permanent exclusions.
 - Construction management / scheduling execution
 - Real-time sensor or IoT integration
 - Multi-tenant accounts, authentication, and role-based access control
-- The non-stormwater review modules (grading, roadway, utility, etc.) —
+- The non-stormwater review modules (grading, roadway, utility, etc.), 
   modeled in the domain but not reviewed in v1
 
 ---
@@ -123,14 +123,14 @@ V1 is successful if a reviewer can complete this loop on Brookside Meadows:
 - **The system measures itself.**
 - **The professional boundary holds** in language and status values.
 
-(See `PHASE_0_FOUNDATION.md` Section 7–8 for the full rationale.)
+(See `PHASE_0_FOUNDATION.md` Section 7 to 8 for the full rationale.)
 
 ---
 
 ## 7. Build Order Within V1
 
 V1 follows the documentation-first, vertical-slice sequence. The recommended
-internal order (expanded in `ROADMAP.md`, Phases 1–5):
+internal order (expanded in `ROADMAP.md`, Phases 1 to 5):
 
 1. Static portfolio prototype with seeded data (no AI calls).
 2. Backend + database schema + seed data + read APIs.
@@ -139,5 +139,5 @@ internal order (expanded in `ROADMAP.md`, Phases 1–5):
 5. Evaluation system (expected findings, metrics, dashboard).
 
 The first milestone is **one complete vertical slice** for a single checklist
-item — retrieve, generate, validate, review, audit, evaluate — before fanning
+item, retrieve, generate, validate, review, audit, evaluate, before fanning
 out to the full checklist.

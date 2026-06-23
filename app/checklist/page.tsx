@@ -3,7 +3,7 @@ import ChecklistTable from "@/components/ChecklistTable";
 import SectionCard from "@/components/SectionCard";
 import MetricCard from "@/components/MetricCard";
 import { type ChecklistStatus } from "@/data/checklist";
-import { getChecklist } from "@/lib/api";
+import { getChecklist, getChunksByChecklistItem } from "@/lib/api";
 
 const statusSummary: { status: ChecklistStatus; label: string }[] = [
   { status: "supported", label: "Supported" },
@@ -14,7 +14,10 @@ const statusSummary: { status: ChecklistStatus; label: string }[] = [
 ];
 
 export default async function ChecklistPage() {
-  const checklist = await getChecklist();
+  const [checklist, evidenceByItem] = await Promise.all([
+    getChecklist(),
+    getChunksByChecklistItem(),
+  ]);
   const counts = (status: ChecklistStatus) =>
     checklist.filter((c) => c.expectedStatus === status).length;
 
@@ -66,7 +69,7 @@ export default async function ChecklistPage() {
           </ul>
         </SectionCard>
 
-        <ChecklistTable items={checklist} />
+        <ChecklistTable items={checklist} evidenceByItem={evidenceByItem} />
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 **Product:** Civil Engineer AI: Stormwater Review Assistant
 **Repository:** `civil-engineer`
-**Phase:** 0 — Foundation (documentation and blueprint only; no application code)
+**Phase:** 0, Foundation (documentation and blueprint only; no application code)
 **Status:** Draft for review
 
 ---
@@ -29,12 +29,10 @@ source of truth for the research basis, checklist logic, and system
 architecture. This document does not replace them; it frames them and sets the
 product direction for the larger platform.
 
-> **Naming note.** The product name is **Civil Engineer AI**. Earlier drafts of
-> the research and architecture briefs used the working name "CivilSite AI" and
-> a "Cedar Ridge" demo project. Going forward, the canonical product name is
-> **Civil Engineer AI: Stormwater Review Assistant**, and the canonical demo
-> project is **Brookside Meadows**. The older references are documentation debt
-> to be reconciled in Phase 1, not separate products.
+> **Naming note.** The canonical product name is **Civil Engineer AI**, the full
+> title is **Civil Engineer AI: Stormwater Review Assistant**, and the canonical
+> demo project is **Brookside Meadows**. These names are used consistently across
+> the documentation and the codebase.
 
 ---
 
@@ -43,8 +41,8 @@ product direction for the larger platform.
 Civil Engineer AI is a **review-support and evidence-organization system for
 land development workflows.**
 
-It helps a human reviewer — a municipal engineer, a staff civil engineer, or a
-consulting reviewer — work through a stormwater and site-plan submission
+It helps a human reviewer, a municipal engineer, a staff civil engineer, or a
+consulting reviewer, work through a stormwater and site-plan submission
 package faster and with better traceability. It does this by:
 
 - Organizing the submitted document package into searchable, source-linked
@@ -59,7 +57,7 @@ package faster and with better traceability. It does this by:
 - Measuring its own accuracy against a library of evaluation cases.
 
 The defining design idea is that the AI model is **one constrained component
-inside a controlled review workflow** — not the product itself. The product is
+inside a controlled review workflow**, not the product itself. The product is
 the workflow: retrieval, checklist structure, source citation, human review,
 auditability, and evaluation. A reviewer should always be able to ask, "Where
 did this come from, and who decided it?" and get a clear answer.
@@ -83,7 +81,7 @@ Stormwater and site-plan review is the right first module for six reasons:
 
 2. **The failure modes are concrete and detectable.** Missing infiltration
    testing, mismatched design storms, an O&M plan with no named maintenance
-   owner, an inspection note with no corrective action — these are real,
+   owner, an inspection note with no corrective action, these are real,
    recurring review issues that an evidence-organization system can flag
    without making engineering judgments.
 
@@ -92,7 +90,7 @@ Stormwater and site-plan review is the right first module for six reasons:
    software) and *certifying that a design is adequate and safe* (licensed work
    only). That clarity makes it an honest portfolio domain.
 
-4. **It is narrow enough to finish.** A single mock project with ~10–14
+4. **It is narrow enough to finish.** A single mock project with ~10 to 14
    documents and ~15 checklist items is a completable vertical slice.
 
 5. **It is grounded in authoritative public guidance.** EPA construction and
@@ -101,9 +99,9 @@ Stormwater and site-plan review is the right first module for six reasons:
    research basis (see `RESEARCH_AND_SYSTEM_DESIGN.md`, Section 2, and the
    source list in that document).
 
-6. **It generalizes.** Every primitive built for stormwater — documents,
+6. **It generalizes.** Every primitive built for stormwater, documents,
    chunks, checklist items, findings, risk flags, review actions, audit events,
-   evaluation cases — is reusable for grading, utilities, roadway, erosion
+   evaluation cases, is reusable for grading, utilities, roadway, erosion
    control, permitting, and inspection review. Stormwater is the proving ground
    for a platform, not a one-off demo.
 
@@ -114,7 +112,7 @@ Stormwater and site-plan review is the right first module for six reasons:
 The stormwater module is **module one of a multi-module land development review
 platform.** The architecture is deliberately built so that adding a new
 review domain means adding *checklist content, document types, and evaluation
-cases* — not rebuilding the engine.
+cases*, not rebuilding the engine.
 
 The long-term platform is intended to support the full lifecycle of a
 neighborhood development project:
@@ -144,7 +142,7 @@ The reusable backbone that makes this expansion cheap:
 - **A human-review queue and audit log** shared by every module.
 - **An evaluation harness** that every module plugs expected findings into.
 
-The story chosen for v1 — **Brookside Meadows**, a residential subdivision —
+The story chosen for v1, **Brookside Meadows**, a residential subdivision, 
 deliberately includes grading, roadway, utility, erosion-control, phasing, and
 inspection content even though v1 only *reviews* the stormwater slice. That way
 the same seed project carries the platform vision forward without new data
@@ -155,7 +153,7 @@ work. See `BROOKSIDE_MEADOWS_PROJECT_STORY.md`.
 ## 4. Professional Boundaries That Govern the Project
 
 This is a portfolio GenAI system. It must never present itself as a licensed
-engineering tool. These boundaries are not a disclaimer bolted on at the end —
+engineering tool. These boundaries are not a disclaimer bolted on at the end, 
 they shape the prompts, the database status values, the UI labels, the audit
 records, and the evaluation tests.
 
@@ -209,8 +207,8 @@ Avoid:
 ### 4.4 Why the Boundary Matters
 
 Stormwater review affects flooding risk, water quality, public infrastructure,
-and long-term maintenance liability. Professional engineering ethics — the NSPE
-and ASCE codes — place public health, safety, and welfare at the center of
+and long-term maintenance liability. Professional engineering ethics, the NSPE
+and ASCE codes, place public health, safety, and welfare at the center of
 practice, and reserve design adequacy and safety determinations for licensed
 judgment. A portfolio system earns more credibility by respecting that line
 than by pretending to cross it. The boundary is enforced in code through:
@@ -272,8 +270,8 @@ and the system:
 
 1. **The system reasons over real submitted evidence, not memory.** Findings
    cite specific documents, pages, and chunks.
-2. **Structure drives the review.** A checklist engine — not an open-ended
-   prompt — decides what gets examined.
+2. **Structure drives the review.** A checklist engine, not an open-ended
+   prompt, decides what gets examined.
 3. **Gaps and conflicts are detected, not just summaries produced.** The system
    catches the intentionally planted issues in the Brookside Meadows package
    (missing infiltration testing, conflicting design storm, unnamed O&M owner,
@@ -300,7 +298,7 @@ in a domain where professional judgment matters.** Specifically:
 
 - **Domain credibility.** The workflow, document types, checklist, and risk
   categories read like they came from someone who has actually reviewed
-  subdivision and stormwater packages — not from a generic template.
+  subdivision and stormwater packages, not from a generic template.
 - **Architecture maturity.** Retrieval-augmented generation, structured JSON
   output with schema validation, prompt versioning, and a clear service
   boundary between checklist, retrieval, AI, review, and audit.
@@ -308,7 +306,7 @@ in a domain where professional judgment matters.** Specifically:
   a "looks good" button.
 - **Auditability.** Every AI action and human decision is traceable.
 - **Evaluation-driven development.** A test harness with expected findings,
-  recall/precision, and citation-accuracy metrics — the single biggest
+  recall/precision, and citation-accuracy metrics, the single biggest
   differentiator between a serious system and a demo.
 - **Responsible-AI judgment.** Explicit, enforced professional boundaries and
   safe language, demonstrating that the builder knows where automation should

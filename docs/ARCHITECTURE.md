@@ -6,13 +6,10 @@ The goal of this architecture is to show a realistic production-style GenAI syst
 
 This project is stored in the `civil-engineer` repository, and the product name is **Civil Engineer AI: Stormwater Review Assistant**.
 
-> **Legacy documentation note.** This architecture brief predates the Phase 0
-> canonical naming. The product name is **Civil Engineer AI** and the canonical
+> **Naming note.** The product name is **Civil Engineer AI** and the canonical
 > demo fixture is **Brookside Meadows** (see
-> `BROOKSIDE_MEADOWS_PROJECT_STORY.md`). Any remaining example that references a
-> "Cedar Ridge" project is legacy placeholder content retained only to
-> illustrate the data shapes; it is documentation debt to be reconciled and
-> does not describe a separate product or project.
+> `BROOKSIDE_MEADOWS_PROJECT_STORY.md`). Example payloads in this brief use the
+> Brookside Meadows fixture to illustrate data shapes.
 
 ---
 
@@ -233,13 +230,13 @@ Example project metadata:
 
 ```json
 {
-  "project_id": "proj_001",
-  "project_name": "Cedar Ridge Commercial Redevelopment",
-  "project_type": "commercial_redevelopment",
-  "jurisdiction": "Mock Municipality",
-  "review_type": "post_construction_stormwater",
-  "site_area_acres": 4.8,
-  "disturbed_area_acres": 2.1,
+  "project_id": "proj_brookside_meadows",
+  "project_name": "Brookside Meadows Residential Subdivision",
+  "project_type": "residential_subdivision",
+  "jurisdiction": "Town of Hartwell",
+  "review_type": "subdivision_site_plan_with_post_construction_stormwater",
+  "site_area_acres": 38.5,
+  "disturbed_area_acres": 22.0,
   "has_infiltration_practice": true,
   "has_detention_basin": true,
   "status": "ready_for_review"

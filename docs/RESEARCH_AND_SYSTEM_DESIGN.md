@@ -1,10 +1,8 @@
 # Civil Engineer AI: Stormwater Review Assistant
 
-> **Legacy documentation note.** This brief predates the Phase 0 canonical
-> naming. The product name is **Civil Engineer AI** and the canonical demo
-> fixture is **Brookside Meadows** (see `BROOKSIDE_MEADOWS_PROJECT_STORY.md`).
-> Any remaining "Cedar Ridge" example is legacy placeholder content retained
-> only to illustrate data shapes — documentation debt, not a separate project.
+> **Naming note.** The product name is **Civil Engineer AI** and the canonical
+> demo fixture is **Brookside Meadows** (see `BROOKSIDE_MEADOWS_PROJECT_STORY.md`).
+> Examples in this brief use the Brookside Meadows fixture.
 
 ## Research and System Design Brief
 
@@ -482,11 +480,11 @@ The v1 build should focus on one end-to-end mock project.
 
 Project name:
 
-**Cedar Ridge Commercial Redevelopment Stormwater Review**
+**Brookside Meadows Residential Subdivision Stormwater Review**
 
 Project description:
 
-A mock commercial redevelopment project with parking lot reconstruction, increased impervious surface, one proposed infiltration basin, one dry detention basin, site grading changes, and a post-construction stormwater review package.
+A mock residential subdivision on a former farm parcel with new internal roads, 47 single-family lots, increased impervious surface, one proposed infiltration basin, one wet detention basin, bioretention areas, site grading changes, and a post-construction stormwater review package. See `BROOKSIDE_MEADOWS_PROJECT_STORY.md` for the full fixture.
 
 ### 10.2 Included Documents
 

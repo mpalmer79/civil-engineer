@@ -1,8 +1,8 @@
-# Seed Data Plan — Civil Engineer AI
+# Seed Data Plan, Civil Engineer AI
 
 **Product:** Civil Engineer AI: Stormwater Review Assistant
 **Project fixture:** Brookside Meadows Residential Subdivision
-**Purpose:** Seed-ready data for v1 — a project object, a document table, a
+**Purpose:** Seed-ready data for v1, a project object, a document table, a
 stormwater checklist, expected findings, and evaluation cases. This is the
 bridge from the Phase 0 story to a real database seed (Phase 2).
 
@@ -66,12 +66,12 @@ bridge from the Phase 0 story to a real database seed (Phase 2).
 | document_id | file_name | document_type | status | purpose | expected_key_information | intentionally_missing_or_conflicting_information |
 | --- | --- | --- | --- | --- | --- |
 | `doc_site_narrative` | `site-plan-narrative.pdf` | site_plan_narrative | present | Describe the project and stormwater approach | Project scope, phasing intent, BMP strategy | References revised sheet C-3.1 (not included) |
-| `doc_existing_conditions` | `existing-conditions-plan.pdf` | existing_conditions_plan | present | Show pre-development site | Topography, wood line, meadow, stream, wetland, culvert | — |
-| `doc_layout_plan` | `layout-plan.pdf` | layout_plan | present | Show lots and roads | 47 lots, Brookside Drive, loop, Meadow Court cul-de-sac, sidewalks | — |
+| `doc_existing_conditions` | `existing-conditions-plan.pdf` | existing_conditions_plan | present | Show pre-development site | Topography, wood line, meadow, stream, wetland, culvert |, |
+| `doc_layout_plan` | `layout-plan.pdf` | layout_plan | present | Show lots and roads | 47 lots, Brookside Drive, loop, Meadow Court cul-de-sac, sidewalks |, |
 | `doc_grading_drainage` | `grading-and-drainage-plan.pdf` | grading_drainage_plan | present | Show grading and storm system | Grading, storm drain, basin locations | Labels basin "Pond A" (conflicts with report's "Basin 1") |
-| `doc_utility_plan` | `utility-plan.pdf` | utility_plan | present | Show utilities | Water main, gravity sewer, pump station, dry utilities | — |
+| `doc_utility_plan` | `utility-plan.pdf` | utility_plan | present | Show utilities | Water main, gravity sewer, pump station, dry utilities |, |
 | `doc_stormwater_report` | `stormwater-management-report.pdf` | stormwater_management_report | present | Describe permanent stormwater controls | BMP selection, treatment train, basin sizing | Uses **25-year** design storm; calls basin "Basin 1"; does not address groundwater separation |
-| `doc_hydrology_calcs` | `hydrology-calculations.pdf` | hydrology_calculations | present | Runoff/peak-flow calcs | CN, Tc, peak flows existing vs. proposed | — |
+| `doc_hydrology_calcs` | `hydrology-calculations.pdf` | hydrology_calculations | present | Runoff/peak-flow calcs | CN, Tc, peak flows existing vs. proposed |, |
 | `doc_hydraulic_calcs` | `hydraulic-calculations.pdf` | hydraulic_calculations | partial | Pipe/outlet sizing | Pipe capacity, outlet structure sizing | **No downstream culvert capacity analysis** |
 | `doc_soils_report` | `soils-geotechnical-report.pdf` | soil_report | present | Subsurface conditions | Soil groups, borings, seasonal high groundwater | Notes seasonal high groundwater (separation never reconciled in stormwater report) |
 | `doc_infiltration_logs` | `infiltration-testing-logs.pdf` | infiltration_testing_documentation | missing | Support the infiltration basin | Test locations, rates, method, date, depth to GW | **Missing/incomplete** for a proposed infiltration practice |
@@ -82,7 +82,7 @@ bridge from the Phase 0 story to a real database seed (Phase 2).
 | `doc_inspection_notes` | `inspection-notes.pdf` | inspection_notes | present | Field observations | Date, inspector, observations | Flags **sediment at basin outlet; no corrective action logged** |
 | `doc_rfi_log` | `rfi-log.pdf` | rfi_log | present | Track questions | RFI number, question, status | RFI asks **pipe material; no response recorded** |
 | `doc_municipal_checklist` | `town-stormwater-checklist.pdf` | municipal_checklist | present | Town submission requirements | Required reports, design-storm standard, O&M requirement | Expects a **different design storm** than the report's 25-year |
-| `doc_comment_response` | `comment-response-letter.pdf` | comment_response_letter | not_yet_submitted | Respond to review comments | Responses to each comment | First submission — none yet |
+| `doc_comment_response` | `comment-response-letter.pdf` | comment_response_letter | not_yet_submitted | Respond to review comments | Responses to each comment | First submission, none yet |
 | `doc_revised_c31` | `grading-sheet-C-3.1-REV.pdf` | grading_drainage_plan | referenced_not_included | Revised grading sheet | Revised grading per narrative | **Referenced but absent from the package** |
 
 ---
@@ -114,7 +114,7 @@ shows the intended ground-truth status for this fixture (drives evaluation).
 | `chk_reference_consistency` | consistency | Basin/sheet/structure references are consistent across documents | Matching labels across plan and report | grading_drainage_plan, stormwater_management_report | medium | always | **conflicting** (I-9) |
 | `chk_referenced_sheets_present` | completeness | Referenced revised sheets are included in the package | All cited sheets present | site_plan_narrative, grading_drainage_plan | medium | always | **missing** (I-10) |
 
-> 19 items, comfortably within the 12–20 target. `applies_when` predicates use
+> 19 items, comfortably within the 12 to 20 target. `applies_when` predicates use
 > the project flags in §1 plus a derived `has_downstream_structure` (true when a
 > `downstream_structure` site condition exists).
 
@@ -140,7 +140,7 @@ evaluation). Each maps to a planted issue (I-#) and a checklist item.
 
 A correct v1 also produces **`supported`** findings for the clean items
 (completeness, drainage areas, runoff calcs, BMP identification, outfalls, soil
-documentation, erosion controls present) — and **never** emits `approved` /
+documentation, erosion controls present), and **never** emits `approved` /
 `compliant` / `safe`.
 
 ---
@@ -226,7 +226,7 @@ citation-accuracy are computed for all.
   },
   {
     "eval_case_id": "eval_clean_control",
-    "name": "Clean control — no false positives",
+    "name": "Clean control, no false positives",
     "input_documents": ["doc_existing_conditions", "doc_layout_plan", "doc_hydrology_calcs"],
     "expected_findings": [],
     "expected_risk_level": "low",
@@ -256,6 +256,6 @@ citation-accuracy are computed for all.
 - **Phase 5 (evaluation):** Section 5 cases plug directly into the evaluation
   harness; Section 4 expected findings are the ground truth.
 
-**Next data task (Phase 1/3):** author short synthetic document bodies (1–2
+**Next data task (Phase 1/3):** author short synthetic document bodies (1 to 2
 pages each) for the `present`/`partial` documents so retrieval has real text to
 chunk. Keep the planted issues intact and keep all content clearly fictional.

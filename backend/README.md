@@ -1,16 +1,17 @@
 # Civil Engineer AI Backend
 
 FastAPI backend for Civil Engineer AI: Stormwater Review Assistant. This is the
-Phase 2 data foundation. It serves seeded Brookside Meadows review data through a
-versioned read API.
+Phase 3 data and retrieval foundation. It serves seeded Brookside Meadows review
+data, document chunks, and source evidence through a versioned read API.
 
 Civil Engineer AI is a review-support and evidence-organization system. It does
 not approve plans, certify compliance, stamp drawings, or replace a licensed
 Professional Engineer. Statuses and finding conclusions never use final-decision
-language.
+language, and retrieval results are framed as source evidence, not conclusions.
 
-Phase 2 does not include live AI calls, embeddings, vector retrieval, or
-authentication. Those are planned for later phases.
+Retrieval is keyword and metadata based. Phase 3 does not include live AI calls,
+embeddings, vector retrieval, or authentication. Those are planned for later
+phases.
 
 ## Requirements
 
@@ -37,7 +38,8 @@ python -m app.db.seed
 ```
 
 This loads the Brookside Meadows fixture: 19 documents, 19 checklist items, 10
-findings, 10 audit events, 8 evaluation cases, and 10 hotspots.
+findings, 10 audit events, 8 evaluation cases, 10 hotspots, 56 document chunks,
+and 21 finding sources.
 
 ## Start the backend
 
@@ -95,6 +97,17 @@ curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/evaluation-cas
 
 # Hotspots
 curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/hotspots
+
+# Document chunks
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/chunks
+curl http://localhost:8000/api/v1/documents/doc_stormwater_report/chunks
+curl http://localhost:8000/api/v1/chunks/chunk_swm_001
+
+# Retrieval and source evidence
+curl "http://localhost:8000/api/v1/projects/proj_brookside_meadows/search?query=infiltration%20testing"
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/checklist/chk_infiltration_testing/evidence
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/findings/find_infiltration_missing/evidence
+curl http://localhost:8000/api/v1/findings/find_infiltration_missing/sources
 ```
 
 ## Project layout
@@ -110,8 +123,9 @@ backend/
       database.py      Engine, session factory, declarative base
       models.py        SQLAlchemy models
       seed.py          Canonical Brookside Meadows seed data and loader
+      seed_evidence.py Seeded chunks, finding sources, retrieval queries
     schemas/           Pydantic response schemas
-    services/          Read service layer (no route logic in routes)
+    services/          Read and retrieval service layer (no route logic in routes)
     api/
       routes.py        Aggregate v1 router
       v1/              One module per resource

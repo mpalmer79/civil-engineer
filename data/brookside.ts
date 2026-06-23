@@ -15,7 +15,7 @@ export type ProposedImprovement = {
   description: string;
 };
 
-export type BooksideProject = {
+export type BrooksideProject = {
   projectId: string;
   projectName: string;
   projectType: string;
@@ -35,7 +35,7 @@ export type BooksideProject = {
   knownConstraints: string[];
 };
 
-export const brookside: BooksideProject = {
+export const brookside: BrooksideProject = {
   projectId: "proj_brookside_meadows",
   projectName: "Brookside Meadows Residential Subdivision",
   projectType: "Residential subdivision",
@@ -63,7 +63,7 @@ export const brookside: BooksideProject = {
       type: "groundwater",
       label: "Seasonal high groundwater",
       description:
-        "Soils report notes seasonal high groundwater within ~2.5–3.5 ft of existing grade in the low southeastern portion of the site — directly relevant to infiltration and bioretention separation.",
+        "Soils report notes seasonal high groundwater within ~2.5 to 3.5 ft of existing grade in the low southeastern portion of the site, directly relevant to infiltration and bioretention separation.",
     },
     {
       type: "wetland_buffer",
@@ -81,7 +81,7 @@ export const brookside: BooksideProject = {
       type: "slope",
       label: "Sloping terrain",
       description:
-        "The site grades from ~412 ft in the northwest to ~358 ft near the southeast corner — ~54 ft of fall — with steeper 8–15% slopes on the western wood line.",
+        "The site grades from ~412 ft in the northwest to ~358 ft near the southeast corner, ~54 ft of fall, with steeper 8 to 15% slopes on the western wood line.",
     },
     {
       type: "downstream_structure",

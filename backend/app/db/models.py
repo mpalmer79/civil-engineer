@@ -162,3 +162,92 @@ class Hotspot(Base):
     position_y_percent: Mapped[float] = mapped_column(Float, nullable=False)
 
     project: Mapped["Project"] = relationship(back_populates="hotspots")
+
+
+class DocumentChunk(Base):
+    """A short, retrievable excerpt of source evidence from a document.
+
+    Phase 3 seeds synthetic chunks rather than parsing real documents. Each
+    chunk carries enough metadata (page, section, keywords, related checklist
+    items and findings) to support keyword and metadata based retrieval.
+    """
+
+    __tablename__ = "document_chunks"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    chunk_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("documents.document_id"), nullable=False
+    )
+    document_type: Mapped[str] = mapped_column(String, nullable=False)
+    file_name: Mapped[str] = mapped_column(String, nullable=False)
+    page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    section_heading: Mapped[str | None] = mapped_column(String, nullable=True)
+    chunk_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    keywords: Mapped[list] = mapped_column(JSON, default=list)
+    related_checklist_items: Mapped[list] = mapped_column(JSON, default=list)
+    related_findings: Mapped[list] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+
+class FindingSource(Base):
+    """Source evidence linking a review-support finding to a document chunk.
+
+    A finding source is not a conclusion. It records where in the submitted
+    documents a reviewer can inspect evidence relevant to a finding, and what
+    role that evidence plays (supports, shows missing evidence, shows a
+    conflict, context only, or requires reviewer confirmation).
+    """
+
+    __tablename__ = "finding_sources"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    finding_source_id: Mapped[str] = mapped_column(
+        String, unique=True, nullable=False
+    )
+    finding_id: Mapped[str] = mapped_column(
+        ForeignKey("findings.finding_id"), nullable=False
+    )
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("documents.document_id"), nullable=False
+    )
+    chunk_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    excerpt: Mapped[str] = mapped_column(Text, nullable=False)
+    evidence_role: Mapped[str] = mapped_column(String, nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+
+class RetrievalQuery(Base):
+    """An audit record of a retrieval query run against the seeded chunks.
+
+    This supports future auditing of retrieval behavior. Phase 3 seeds a few
+    representative queries; later phases can record live queries here.
+    """
+
+    __tablename__ = "retrieval_queries"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    retrieval_query_id: Mapped[str] = mapped_column(
+        String, unique=True, nullable=False
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    query_text: Mapped[str] = mapped_column(String, nullable=False)
+    related_checklist_item_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    result_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )

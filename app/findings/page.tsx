@@ -2,10 +2,13 @@ import PageHeader from "@/components/PageHeader";
 import FindingCard from "@/components/FindingCard";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import MetricCard from "@/components/MetricCard";
-import { getFindings } from "@/lib/api";
+import { getFindings, getEvidenceByFinding } from "@/lib/api";
 
 export default async function FindingsPage() {
   const findings = await getFindings();
+  const evidenceByFinding = await getEvidenceByFinding(
+    findings.map((f) => f.findingId),
+  );
   const high = findings.filter((f) => f.riskLevel === "high").length;
   const medium = findings.filter((f) => f.riskLevel === "medium").length;
 
@@ -33,7 +36,11 @@ export default async function FindingsPage() {
 
         <div className="grid gap-6 lg:grid-cols-2">
           {findings.map((finding) => (
-            <FindingCard key={finding.findingId} finding={finding} />
+            <FindingCard
+              key={finding.findingId}
+              finding={finding}
+              evidence={evidenceByFinding[finding.findingId] ?? []}
+            />
           ))}
         </div>
       </div>

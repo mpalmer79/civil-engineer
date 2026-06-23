@@ -1,11 +1,15 @@
 import { checklist as staticChecklist, type ChecklistItem } from "@/data/checklist";
+import type { ChunkItem } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import RiskBadge from "@/components/RiskBadge";
+import ChunkDisclosure from "@/components/ChunkDisclosure";
 
 export default function ChecklistTable({
   items = staticChecklist,
+  evidenceByItem = {},
 }: {
   items?: ChecklistItem[];
+  evidenceByItem?: Record<string, ChunkItem[]>;
 }) {
   return (
     <div className="surface-card overflow-hidden">
@@ -26,13 +30,13 @@ export default function ChecklistTable({
                 Expected evidence
               </th>
               <th scope="col" className="px-4 py-3">
-                Supporting documents
-              </th>
-              <th scope="col" className="px-4 py-3">
                 Risk
               </th>
               <th scope="col" className="px-4 py-3">
                 Expected Brookside status
+              </th>
+              <th scope="col" className="px-4 py-3">
+                Source evidence
               </th>
             </tr>
           </thead>
@@ -52,9 +56,6 @@ export default function ChecklistTable({
                 <td className="px-4 py-3 text-slate-600">
                   {item.expectedEvidence}
                 </td>
-                <td className="px-4 py-3 font-mono text-xs text-slate-500">
-                  {item.supportingDocuments}
-                </td>
                 <td className="px-4 py-3">
                   <RiskBadge level={item.riskLevel} />
                 </td>
@@ -67,6 +68,12 @@ export default function ChecklistTable({
                       </span>
                     ) : null}
                   </div>
+                </td>
+                <td className="px-4 py-3 min-w-[16rem]">
+                  <ChunkDisclosure
+                    summaryLabel="View source evidence"
+                    chunks={evidenceByItem[item.checklistItemId] ?? []}
+                  />
                 </td>
               </tr>
             ))}

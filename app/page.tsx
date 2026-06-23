@@ -142,6 +142,36 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Evidence-first review */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="surface-card p-6">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+            Evidence-first review
+          </h2>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            Phase 3 adds source chunks and keyword retrieval so every
+            review-support finding can trace back to specific pages and sections
+            of the submitted documents. Each finding lists the evidence behind
+            it, the role that evidence plays (supports, missing, conflict, or
+            context), and a note that the finding still needs reviewer
+            confirmation.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Findings link to source excerpts with document and page
+              references.
+            </div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Checklist items expand to show the seeded chunks linked to them.
+            </div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Retrieval is keyword and metadata based; embeddings and live AI
+              review come later.
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Professional boundary */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <SafetyBoundaryBanner />

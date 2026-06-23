@@ -18,6 +18,7 @@ from app.api.routes import api_router
 from app.core.config import get_settings
 from app.db.database import SessionLocal, init_db
 from app.db.seed import seed_database
+from app.db.seed_evidence import seed_evidence
 
 settings = get_settings()
 
@@ -30,6 +31,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     db = SessionLocal()
     try:
         seed_database(db)
+        seed_evidence(db)
     finally:
         db.close()
     yield
@@ -39,10 +41,11 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
         "Review-support API for stormwater and land development review. "
-        "Phase 2 serves seeded Brookside Meadows data. No live AI calls, "
-        "embeddings, or retrieval are included in this phase."
+        "Phase 3 serves seeded Brookside Meadows data with keyword based "
+        "source evidence retrieval. No live AI calls, embeddings, or vector "
+        "retrieval are included in this phase."
     ),
-    version="0.2.0",
+    version="0.3.0",
     lifespan=lifespan,
 )
 
@@ -50,7 +53,7 @@ app = FastAPI(
 # real allowlist before any non-local deployment.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS,
+    allow_origins=settings.cors_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -64,7 +67,7 @@ def health() -> dict[str, str]:
     return {
         "status": "ok",
         "service": "Civil Engineer AI Backend",
-        "phase": "2",
+        "phase": settings.PHASE,
     }
 
 

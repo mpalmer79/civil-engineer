@@ -59,7 +59,7 @@ export const hotspots: Hotspot[] = [
     shortDescription:
       "Green-infrastructure infiltration basin in the meadow for volume reduction and recharge.",
     civilPurpose:
-      "Runoff volume reduction and groundwater recharge — feasibility depends on infiltration testing and groundwater separation.",
+      "Runoff volume reduction and groundwater recharge, feasibility depends on infiltration testing and groundwater separation.",
     relatedChecklistItems: [
       "chk_infiltration_testing",
       "chk_groundwater_separation",
