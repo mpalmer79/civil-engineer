@@ -1,7 +1,11 @@
-import { documents } from "@/data/documents";
+import { documents as staticDocuments, type ReviewDocument } from "@/data/documents";
 import StatusBadge from "@/components/StatusBadge";
 
-export default function DocumentTable() {
+export default function DocumentTable({
+  documents = staticDocuments,
+}: {
+  documents?: ReviewDocument[];
+}) {
   return (
     <div className="surface-card overflow-hidden">
       <div className="overflow-x-auto">
@@ -51,7 +55,7 @@ export default function DocumentTable() {
                   {doc.knownIssue ? (
                     <span className="text-amber-700">{doc.knownIssue}</span>
                   ) : (
-                    <span className="text-slate-400">—</span>
+                    <span className="text-slate-400">-</span>
                   )}
                 </td>
               </tr>

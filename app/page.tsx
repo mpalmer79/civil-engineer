@@ -3,7 +3,7 @@ import HeroMap from "@/components/HeroMap";
 import MetricCard from "@/components/MetricCard";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import SectionCard from "@/components/SectionCard";
-import { projectMetrics } from "@/data/brookside";
+import { getHotspots, projectMetrics } from "@/lib/api";
 
 const heroCtas = [
   { href: "/project", label: "Project dashboard" },
@@ -43,7 +43,8 @@ const futureModules = [
   "Municipal comment response",
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  const hotspots = await getHotspots();
   return (
     <div>
       {/* Hero */}
@@ -52,7 +53,7 @@ export default function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
               <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
-                Phase 1 · Static portfolio prototype
+                Phase 2 · Backend and data foundation
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Civil Engineer AI
@@ -93,7 +94,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <HeroMap />
+            <HeroMap hotspots={hotspots} />
           </div>
         </div>
       </section>
@@ -101,7 +102,7 @@ export default function HomePage() {
       {/* Metrics */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-          Brookside Meadows — review fixture at a glance
+          Brookside Meadows: review fixture at a glance
         </h2>
         <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-7">
           {metricCards.map((m) => (
@@ -123,7 +124,7 @@ export default function HomePage() {
           </h2>
           <p className="mt-2 max-w-2xl text-slate-600">
             A controlled review workflow wraps the AI model in structure,
-            retrieval, human review, auditability, and evaluation — not a
+            retrieval, human review, auditability, and evaluation, not a
             free-form chatbot.
           </p>
           <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

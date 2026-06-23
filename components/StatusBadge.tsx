@@ -20,7 +20,7 @@ const styles: Record<Status, string> = {
 
 const labels: Partial<Record<Status, string>> = {
   not_applicable: "not applicable",
-  referenced_not_included: "referenced — not included",
+  referenced_not_included: "referenced, not included",
   not_yet_submitted: "not yet submitted",
 };
 

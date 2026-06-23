@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { hotspots } from "@/data/hotspots";
+import { hotspots as staticHotspots, type Hotspot } from "@/data/hotspots";
 import HotspotMarker from "@/components/HotspotMarker";
 
 const categoryLabel: Record<string, string> = {
@@ -14,7 +14,11 @@ const categoryLabel: Record<string, string> = {
   risk: "Review risk",
 };
 
-export default function HeroMap() {
+export default function HeroMap({
+  hotspots = staticHotspots,
+}: {
+  hotspots?: Hotspot[];
+}) {
   const [activeId, setActiveId] = useState<string>(hotspots[0].id);
   const active = hotspots.find((h) => h.id === activeId) ?? hotspots[0];
 

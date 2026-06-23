@@ -2,9 +2,10 @@ import PageHeader from "@/components/PageHeader";
 import FindingCard from "@/components/FindingCard";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import MetricCard from "@/components/MetricCard";
-import { findings } from "@/data/findings";
+import { getFindings } from "@/lib/api";
 
-export default function FindingsPage() {
+export default async function FindingsPage() {
+  const findings = await getFindings();
   const high = findings.filter((f) => f.riskLevel === "high").length;
   const medium = findings.filter((f) => f.riskLevel === "medium").length;
 
@@ -13,7 +14,7 @@ export default function FindingsPage() {
       <PageHeader
         eyebrow="Findings"
         title="Expected review-support findings"
-        description="The ten issues Civil Engineer AI is expected to surface in the Brookside Meadows package. Each is a review-support issue that needs reviewer confirmation — not a final engineering conclusion."
+        description="The ten issues Civil Engineer AI is expected to surface in the Brookside Meadows package. Each is a review-support issue that needs reviewer confirmation, not a final engineering conclusion."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">

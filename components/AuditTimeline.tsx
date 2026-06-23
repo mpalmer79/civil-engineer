@@ -1,4 +1,8 @@
-import { auditEvents, type AuditActorType } from "@/data/auditEvents";
+import {
+  auditEvents as staticAuditEvents,
+  type AuditActorType,
+  type AuditEvent,
+} from "@/data/auditEvents";
 
 const actorStyles: Record<AuditActorType, string> = {
   system: "bg-water-50 text-water-700 ring-water-600/20",
@@ -19,10 +23,14 @@ function formatTimestamp(iso: string): string {
   });
 }
 
-export default function AuditTimeline() {
+export default function AuditTimeline({
+  events = staticAuditEvents,
+}: {
+  events?: AuditEvent[];
+}) {
   return (
     <ol className="relative space-y-6 border-l border-slate-200 pl-6">
-      {auditEvents.map((event) => (
+      {events.map((event) => (
         <li key={event.auditEventId} className="relative">
           <span
             aria-hidden="true"

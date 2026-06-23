@@ -1,14 +1,16 @@
 import PageHeader from "@/components/PageHeader";
 import AuditTimeline from "@/components/AuditTimeline";
 import SectionCard from "@/components/SectionCard";
+import { getAuditEvents } from "@/lib/api";
 
-export default function AuditPage() {
+export default async function AuditPage() {
+  const events = await getAuditEvents();
   return (
     <div>
       <PageHeader
         eyebrow="Audit trail"
         title="Traceable review history"
-        description="Every significant system and human action is recorded so any finding can be reconstructed end to end — from fixture load to evaluation scoring."
+        description="Every significant system and human action is recorded so any finding can be reconstructed end to end, from fixture load to evaluation scoring."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -29,10 +31,10 @@ export default function AuditPage() {
           </ul>
         </SectionCard>
 
-        <AuditTimeline />
+        <AuditTimeline events={events} />
 
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">Phase 1 note:</span>{" "}
+          <span className="font-semibold text-slate-800">Prototype note:</span>{" "}
           This timeline is seeded and illustrative. Later phases will record real
           system events (retrieval queries, model calls, prompt versions) and
           real human review actions.

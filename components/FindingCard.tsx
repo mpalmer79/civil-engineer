@@ -46,7 +46,7 @@ export default function FindingCard({ finding }: { finding: Finding }) {
           <span className="font-mono">{finding.plantedIssue}</span>
         </span>
         <span className="badge bg-yellow-50 text-yellow-700 ring-yellow-600/20">
-          Human review: {finding.humanReviewState} — needs reviewer confirmation
+          Human review: {finding.humanReviewState}, needs reviewer confirmation
         </span>
       </div>
     </article>

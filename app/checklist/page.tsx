@@ -2,7 +2,8 @@ import PageHeader from "@/components/PageHeader";
 import ChecklistTable from "@/components/ChecklistTable";
 import SectionCard from "@/components/SectionCard";
 import MetricCard from "@/components/MetricCard";
-import { checklist, type ChecklistStatus } from "@/data/checklist";
+import { type ChecklistStatus } from "@/data/checklist";
+import { getChecklist } from "@/lib/api";
 
 const statusSummary: { status: ChecklistStatus; label: string }[] = [
   { status: "supported", label: "Supported" },
@@ -12,7 +13,8 @@ const statusSummary: { status: ChecklistStatus; label: string }[] = [
   { status: "unresolved", label: "Unresolved" },
 ];
 
-export default function ChecklistPage() {
+export default async function ChecklistPage() {
+  const checklist = await getChecklist();
   const counts = (status: ChecklistStatus) =>
     checklist.filter((c) => c.expectedStatus === status).length;
 
@@ -21,7 +23,7 @@ export default function ChecklistPage() {
       <PageHeader
         eyebrow="Stormwater checklist"
         title="Structured review logic"
-        description="Nineteen reusable stormwater checklist items applied to Brookside Meadows. The checklist — not a free-form prompt — drives what gets examined."
+        description="Nineteen reusable stormwater checklist items applied to Brookside Meadows. The checklist, not a free-form prompt, drives what gets examined."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -45,7 +47,7 @@ export default function ChecklistPage() {
         <SectionCard title="How the checklist is used">
           <ul className="grid gap-3 text-sm text-slate-600 sm:grid-cols-2">
             <li className="rounded-lg bg-slate-50 px-3 py-2">
-              The checklist drives review structure and applicability — items
+              The checklist drives review structure and applicability: items
               apply based on project flags such as a proposed infiltration
               practice or a downstream structure.
             </li>
@@ -64,7 +66,7 @@ export default function ChecklistPage() {
           </ul>
         </SectionCard>
 
-        <ChecklistTable />
+        <ChecklistTable items={checklist} />
       </div>
     </div>
   );

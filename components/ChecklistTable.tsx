@@ -1,8 +1,12 @@
-import { checklist } from "@/data/checklist";
+import { checklist as staticChecklist, type ChecklistItem } from "@/data/checklist";
 import StatusBadge from "@/components/StatusBadge";
 import RiskBadge from "@/components/RiskBadge";
 
-export default function ChecklistTable() {
+export default function ChecklistTable({
+  items = staticChecklist,
+}: {
+  items?: ChecklistItem[];
+}) {
   return (
     <div className="surface-card overflow-hidden">
       <div className="overflow-x-auto">
@@ -33,7 +37,7 @@ export default function ChecklistTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {checklist.map((item) => (
+            {items.map((item) => (
               <tr
                 key={item.checklistItemId}
                 className="align-top hover:bg-slate-50"

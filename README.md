@@ -4,9 +4,9 @@ Civil Engineer AI is a portfolio GenAI system that assists stormwater and
 site-plan review using document evidence, checklist validation, risk flagging,
 human review, audit logging, and evaluation tracking.
 
-It is a **review-support and evidence-organization** prototype for land
-development workflows. It is **not** a licensed engineering tool and does not
-replace professional engineering judgment.
+It is a **review-support and evidence-organization** system for land development
+workflows. It is **not** a licensed engineering tool and does not replace
+professional engineering judgment.
 
 > **Professional boundary.** Civil Engineer AI assists review. It does not
 > approve plans, certify compliance, stamp or seal drawings, replace a licensed
@@ -15,26 +15,70 @@ replace professional engineering judgment.
 
 ---
 
-## Current phase: Phase 1 — Static Portfolio Prototype
+## Current phase: Phase 2, Backend and Data Model Foundation
 
-Phase 1 is a polished, **static** Next.js prototype driven entirely by seeded
-mock data. It demonstrates the product vision, domain depth, and future
-architecture — with **no live AI calls, backend, database, or authentication.**
+Phase 2 turns the Phase 1 static prototype into a real full-stack foundation.
+It adds:
 
-The prototype reviews a single fictional fixture: **Brookside Meadows**, a
-47-lot single-family subdivision in the Town of Hartwell with a green-and-gray
-stormwater treatment train and ten intentionally planted review issues.
+- A **FastAPI** backend with a versioned read API
+- A **SQLite** local database (with a clean path to PostgreSQL or Supabase)
+- A **SQLAlchemy** data model aligned with the Phase 0 domain model
+- **Seeded Brookside Meadows** data loaded into the database
+- **API endpoints** for projects, documents, checklist items, findings, audit
+  events, evaluation cases, and hotspots
+- **Backend tests** with pytest, including safety-vocabulary checks
+- **Frontend API integration**: pages fetch from the backend when it is
+  available and fall back to local seed data when it is not
+
+Phase 2 does not add live AI calls, embeddings, vector retrieval, or
+authentication. Those are planned for later phases.
+
+The reviewed fixture remains **Brookside Meadows**: a 47-lot single-family
+subdivision in the Town of Hartwell with a green-and-gray stormwater treatment
+train and ten intentionally planted review issues.
 
 ![Brookside Meadows development map](public/development.png)
 
-The homepage hero uses `public/development.png` as an interactive development
-map: HTML/CSS hotspot markers overlay the image, and a side panel updates as you
-hover, focus, or select each site feature. See
-[`docs/HOMEPAGE_HOTSPOT_PLAN.md`](docs/HOMEPAGE_HOTSPOT_PLAN.md).
+---
+
+## Getting started
+
+### Frontend (Next.js)
+
+```bash
+npm install
+npm run dev        # http://localhost:3000
+npm run build
+npm run typecheck
+```
+
+Set the backend URL for the frontend with an environment variable:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
+
+When the backend is reachable, pages render live data from it. When it is not,
+they fall back to the local seed data so the app still works.
+
+### Backend (FastAPI)
+
+```bash
+cd backend
+python -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python -m app.db.seed            # load the Brookside Meadows fixture
+uvicorn app.main:app --reload    # http://localhost:8000
+pytest
+```
+
+See [`backend/README.md`](backend/README.md) for full backend setup and route
+examples.
 
 ---
 
-## Routes
+## Frontend routes
 
 | Route | Page | Purpose |
 | --- | --- | --- |
@@ -46,26 +90,19 @@ hover, focus, or select each site feature. See
 | `/audit` | Audit trail | Seeded, traceable review history |
 | `/evaluation` | Evaluation dashboard | 8 evaluation cases with recall and citation metrics |
 
----
+## Backend endpoints
 
-## Tech stack
+All data routes use the `/api/v1` prefix. Seeded project id:
+`proj_brookside_meadows`.
 
-- **Next.js 14** (App Router) + **React 18**
-- **TypeScript** (strict)
-- **Tailwind CSS**
-- Static seed data in TypeScript under `data/`
-- No backend, database, AI calls, or auth in Phase 1
-
----
-
-## Getting started
-
-```bash
-npm install
-npm run dev      # start the dev server at http://localhost:3000
-npm run build    # production build (all routes prerender as static content)
-npm run typecheck
-```
+- `GET /health`
+- `GET /api/v1/projects` and `GET /api/v1/projects/{project_id}`
+- `GET /api/v1/projects/{project_id}/documents` and `GET /api/v1/documents/{document_id}`
+- `GET /api/v1/projects/{project_id}/checklist` and `GET /api/v1/checklist/{checklist_item_id}`
+- `GET /api/v1/projects/{project_id}/findings` and `GET /api/v1/findings/{finding_id}`
+- `GET /api/v1/projects/{project_id}/audit-events`
+- `GET /api/v1/evaluation-cases` and `GET /api/v1/projects/{project_id}/evaluation-cases`
+- `GET /api/v1/projects/{project_id}/hotspots`
 
 ---
 
@@ -73,48 +110,55 @@ npm run typecheck
 
 ```text
 civil-engineer/
-├── app/              # App Router pages (home, project, documents, checklist, findings, audit, evaluation)
-├── components/       # Reusable UI (HeroMap, badges, tables, cards, banners)
-├── data/             # Static seed data (brookside, documents, checklist, findings, audit, evaluation, hotspots)
-├── public/
-│   └── development.png   # Hero / interactive map base image
-└── docs/             # Phase 0 foundation + Phase 1 hotspot plan
+  app/              Next.js App Router pages
+  components/       Reusable UI components
+  data/             TypeScript seed data (frontend fallback)
+  lib/              Frontend API client
+  public/
+    development.png Hero and interactive map base image
+  backend/          FastAPI backend, SQLAlchemy models, seed data, tests
+  docs/             Phase 0 foundation, hotspot plan, Phase 2 backend notes
 ```
+
+---
+
+## Tech stack
+
+- **Next.js 14** (App Router) and **React 18**, **TypeScript** (strict)
+- **Tailwind CSS**
+- **FastAPI**, **Pydantic**, **SQLAlchemy**, **SQLite** for local storage
+- **pytest** for backend tests
 
 ---
 
 ## Documentation
 
-- [`docs/PHASE_0_FOUNDATION.md`](docs/PHASE_0_FOUNDATION.md) — product definition and boundaries
-- [`docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md`](docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md) — the review fixture
-- [`docs/DOMAIN_MODEL.md`](docs/DOMAIN_MODEL.md) — core entities and ER diagram
-- [`docs/V1_SCOPE.md`](docs/V1_SCOPE.md) — in / out of scope and success criteria
-- [`docs/ROADMAP.md`](docs/ROADMAP.md) — staged path from foundation to platform
-- [`docs/SEED_DATA_PLAN.md`](docs/SEED_DATA_PLAN.md) — seed-ready data
-- [`docs/HOMEPAGE_HOTSPOT_PLAN.md`](docs/HOMEPAGE_HOTSPOT_PLAN.md) — interactive map plan
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — system architecture
-- [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md) — research basis
+- [`docs/PHASE_0_FOUNDATION.md`](docs/PHASE_0_FOUNDATION.md): product definition and boundaries
+- [`docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md`](docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md): the review fixture
+- [`docs/DOMAIN_MODEL.md`](docs/DOMAIN_MODEL.md): core entities and ER diagram
+- [`docs/V1_SCOPE.md`](docs/V1_SCOPE.md): in and out of scope and success criteria
+- [`docs/ROADMAP.md`](docs/ROADMAP.md): staged path from foundation to platform
+- [`docs/SEED_DATA_PLAN.md`](docs/SEED_DATA_PLAN.md): seed-ready data
+- [`docs/HOMEPAGE_HOTSPOT_PLAN.md`](docs/HOMEPAGE_HOTSPOT_PLAN.md): interactive map plan
+- [`docs/PHASE_2_BACKEND_DATA_MODEL.md`](docs/PHASE_2_BACKEND_DATA_MODEL.md): Phase 2 backend and data model
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture
+- [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md): research basis
 
 ---
 
-## What Phase 1 proves
+## What Phase 2 proves
 
-- The product story is immediately understandable: an evidence-first stormwater
-  review assistant for a realistic subdivision.
-- The review is **structured** (a checklist), **evidence-based** (a document
-  package), and **human-controlled** (findings need reviewer confirmation).
-- The system is designed for **auditability** and **evaluation** from the start.
-- The professional boundary holds throughout — no page claims the system
-  approves, certifies, or confirms compliance.
-- Stormwater is module one of a broader land development platform.
+- The product is structurally real: a backend, a data model, validation, seed
+  loading, and a service layer, not only a static mockup.
+- The professional boundary is enforced in code through a central status
+  vocabulary and prohibited-wording checks, verified by tests.
+- The same Brookside Meadows fixture now drives both the API and the UI.
 
 ## What comes next
 
-- **Phase 2** — FastAPI backend, PostgreSQL schema, seed scripts, and read APIs
-  wired to this frontend.
-- **Phase 3** — document chunking, embeddings, and source-evidence retrieval.
-- **Phase 4** — the AI review assistant (structured prompts, JSON validation,
-  safety checks, human review required).
-- **Phase 5** — the live evaluation harness.
+- **Phase 3**: document chunking, embeddings, and source-evidence retrieval.
+- **Phase 4**: the AI review assistant (structured prompts, JSON validation,
+  safety checks, human review required for every finding).
+- **Phase 5**: the live evaluation harness.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full plan.
