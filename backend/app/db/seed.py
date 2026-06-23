@@ -1457,18 +1457,30 @@ def main() -> None:
     """Create tables and load the seed data. Used by python -m app.db.seed."""
 
     from app.db.seed_evidence import CHUNKS, FINDING_SOURCES, seed_evidence
+    from app.db.seed_plan_sheets import (
+        CAD_METADATA,
+        PLAN_REFERENCES,
+        PLAN_SHEETS,
+        seed_plan_sheets,
+    )
+    from app.services import plan_consistency_service
 
     init_db()
     db = SessionLocal()
     try:
         seed_database(db, force=True)
         seed_evidence(db, force=True)
+        seed_plan_sheets(db, force=True)
+        findings = plan_consistency_service.run_consistency_check(db, PROJECT_ID)
         print(
             "Seeded Brookside Meadows: "
             f"{len(DOCUMENTS)} documents, {len(CHECKLIST)} checklist items, "
             f"{len(FINDINGS)} findings, {len(AUDIT_EVENTS)} audit events, "
             f"{len(EVALUATION_CASES)} evaluation cases, {len(HOTSPOTS)} hotspots, "
-            f"{len(CHUNKS)} document chunks, {len(FINDING_SOURCES)} finding sources."
+            f"{len(CHUNKS)} document chunks, {len(FINDING_SOURCES)} finding sources, "
+            f"{len(PLAN_SHEETS)} plan sheets, {len(CAD_METADATA)} CAD metadata "
+            f"records, {len(PLAN_REFERENCES)} plan references, "
+            f"{len(findings)} plan consistency findings."
         )
     finally:
         db.close()

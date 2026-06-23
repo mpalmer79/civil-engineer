@@ -13,8 +13,9 @@ flowchart LR
     P1 --> P2[Phase 2\nBackend & Data]
     P2 --> P3[Phase 3\nRetrieval]
     P3 --> P4[Phase 4\nAI Review]
-    P4 --> P5[Phase 5\nEvaluation]
-    P5 --> P6[Phase 6\nExpansion Modules]
+    P4 --> P5[Phase 5\nHuman Review & Evaluation]
+    P5 --> P6[Phase 6\nPlan Sheet & CAD-Aware Foundation]
+    P6 --> P7[Phase 7+\nCAD Integration & Expansion Modules]
 ```
 
 ---
@@ -150,11 +151,43 @@ accepted. See `PHASE_5_HUMAN_REVIEW_AND_EVALUATION.md`.
 
 ---
 
-## Phase 6, Expansion Modules
+## Phase 6, Plan Sheet and CAD-Aware Review Foundation
 
-**Goal:** Reuse the engine to grow from a stormwater assistant into a land
-development review platform. Each module mostly adds **checklist content,
-document types, and evaluation cases**, not new infrastructure.
+**Goal:** Begin the transition from document-only review into plan sheet and
+CAD-aware review support, without parsing real CAD files.
+
+- Plan sheet data model and a seeded Brookside Meadows plan sheet index
+- CAD-aware metadata model for civil features (basins, pipes, roads, lots,
+  utilities)
+- Plan references connecting documents, sheets, and features
+- Missing sheet detection and a plan consistency check
+- Plan Sheets and CAD-Aware Review frontend pages
+- A staged future CAD integration roadmap
+
+**Exit criteria:** The plan sheet index, CAD-aware metadata, and plan references
+are seeded and queryable, the plan consistency check generates review-support
+findings that require human review, and the frontend renders the Plan Sheets and
+CAD Review pages. No CAD file is parsed and no Autodesk integration exists.
+
+**Delivered in Phase 6:** the `plan_sheets`, `cad_metadata`, `plan_references`,
+and `plan_consistency_findings` tables, seeded Brookside Meadows plan sheets
+(including the referenced but not included sheet C-3.1), CAD-aware feature
+metadata, plan references, a plan consistency service and check that surfaces
+missing sheets and conflicting labels, plan sheet and CAD review API endpoints,
+Plan Sheets and CAD Review pages, an Evaluation page plan consistency panel,
+audit events for the consistency check, and backend tests. See
+`PHASE_6_PLAN_SHEET_CAD_FOUNDATION.md` and `CAD_INTEGRATION_ROADMAP.md`.
+
+---
+
+## Phase 7 and beyond, CAD Integration and Expansion Modules
+
+**Goal:** Extend plan sheet and CAD-aware review (a plan sheet PDF viewer, sheet
+hotspot annotations, DXF metadata extraction, and Autodesk viewer exploration,
+per `CAD_INTEGRATION_ROADMAP.md`) and reuse the engine to grow from a stormwater
+assistant into a land development review platform. Each review module mostly
+adds **checklist content, document types, and evaluation cases**, not new
+infrastructure.
 
 Future expansion areas:
 

@@ -1,11 +1,13 @@
 import PageHeader from "@/components/PageHeader";
 import EvaluationSummary from "@/components/EvaluationSummary";
 import EvaluationScoringClient from "@/components/EvaluationScoringClient";
+import MetricCard from "@/components/MetricCard";
 import SectionCard from "@/components/SectionCard";
-import { getEvaluationData } from "@/lib/api";
+import { getEvaluationData, getPlanConsistencySummary } from "@/lib/api";
 
 export default async function EvaluationPage() {
   const { cases, summary } = await getEvaluationData();
+  const planSummary = await getPlanConsistencySummary();
   return (
     <div>
       <PageHeader
@@ -27,6 +29,46 @@ export default async function EvaluationPage() {
         </SectionCard>
 
         <EvaluationScoringClient />
+
+        <SectionCard
+          title="Phase 6 plan consistency review"
+          description="Plan-sheet-specific review-support findings from the seeded plan set, CAD-aware metadata, and plan references. These findings require human review and are not a design validation."
+        >
+          {planSummary ? (
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+              <MetricCard
+                value={planSummary.totalFindings}
+                label="Plan consistency findings"
+                accent="water"
+              />
+              <MetricCard
+                value={planSummary.missingSheetCount}
+                label="Missing sheet count"
+                accent={planSummary.missingSheetCount > 0 ? "red" : "land"}
+              />
+              <MetricCard
+                value={planSummary.conflictingLabelCount}
+                label="Conflicting label count"
+                accent={planSummary.conflictingLabelCount > 0 ? "amber" : "land"}
+              />
+              <MetricCard
+                value={planSummary.cadMetadataRecords}
+                label="CAD-aware metadata records"
+                accent="water"
+              />
+              <MetricCard
+                value={planSummary.planReferencesRequiringHumanReview}
+                label="Plan references requiring human review"
+                accent="amber"
+              />
+            </div>
+          ) : (
+            <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-700">
+              The backend is not reachable. Plan consistency metrics load from
+              the API. See the CAD Review page to run a plan consistency check.
+            </p>
+          )}
+        </SectionCard>
 
         <SectionCard title="Why evaluation matters">
           <p className="text-sm text-slate-600">

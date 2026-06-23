@@ -1,21 +1,24 @@
 # Civil Engineer AI Backend
 
 FastAPI backend for Civil Engineer AI: Stormwater Review Assistant. This is the
-Phase 5 backend. It serves seeded Brookside Meadows review data, document chunks,
-and source evidence, runs a controlled AI review workflow that produces draft
-review-support findings, persists human review actions on those drafts, and
-scores AI review runs against the expected findings.
+Phase 6 backend. It serves seeded Brookside Meadows review data, document chunks,
+and source evidence, runs a controlled AI review workflow, persists human review
+actions, scores AI review runs against the expected findings, and adds a plan
+sheet index, CAD-aware feature metadata, plan references, and a plan consistency
+check.
 
 Civil Engineer AI is a review-support and evidence-organization system. It does
-not approve plans, certify compliance, stamp drawings, or replace a licensed
-Professional Engineer. Statuses, retrieval results, AI draft findings, and human
-review actions never use final-decision language, there is no action called
-approve, and every AI draft finding requires human review.
+not approve plans, certify compliance, stamp drawings, verify CAD drawings,
+validate a design, or replace a licensed Professional Engineer. Statuses,
+retrieval results, AI draft findings, human review actions, and plan consistency
+findings never use final-decision language, there is no action called approve,
+and every finding requires human review.
 
 The AI Review Assistant uses a deterministic mock provider by default, so the
 backend runs without any API key. Only an OpenAI live provider is implemented,
-and live provider calls are disabled by default. Phase 5 does not include
-embeddings, a vector store, or authentication.
+and live provider calls are disabled by default. Phase 6 does not parse CAD
+files, process DWG or DXF data, integrate with Autodesk, or include embeddings,
+a vector store, or authentication.
 
 ## Requirements
 
@@ -43,7 +46,8 @@ python -m app.db.seed
 
 This loads the Brookside Meadows fixture: 19 documents, 19 checklist items, 10
 findings, 10 audit events, 8 evaluation cases, 10 hotspots, 56 document chunks,
-and 21 finding sources.
+21 finding sources, 12 plan sheets, 16 CAD-aware metadata records, 11 plan
+references, and 6 plan consistency findings.
 
 ## Start the backend
 
@@ -67,7 +71,7 @@ database.
 
 ```bash
 curl http://localhost:8000/health
-# {"status":"ok","service":"Civil Engineer AI Backend","phase":"5"}
+# {"status":"ok","service":"Civil Engineer AI Backend","phase":"6"}
 ```
 
 ## API route examples
@@ -129,6 +133,19 @@ curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/review-actions
 curl -X POST http://localhost:8000/api/v1/ai-review-runs/REVIEW_RUN_ID/evaluate
 curl http://localhost:8000/api/v1/ai-review-runs/REVIEW_RUN_ID/evaluation
 curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/ai-evaluation-results
+
+# Plan sheets and CAD-aware metadata (Phase 6)
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-sheets
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-sheets/summary
+curl http://localhost:8000/api/v1/plan-sheets/sheet_c31
+curl "http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-metadata?entity_type=basin"
+curl http://localhost:8000/api/v1/plan-sheets/sheet_c30/cad-metadata
+
+# Plan references and plan consistency check (Phase 6)
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-references
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-references/inconsistencies
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-consistency-check
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-consistency-findings
 ```
 
 ## AI provider configuration

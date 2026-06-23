@@ -1,9 +1,10 @@
 """SQLAlchemy models for the Civil Engineer AI backend.
 
 The schema includes the Phase 2 core review entities, the Phase 3 source
-evidence entities, and the Phase 4 AI review entities. JSON columns are used for
-arrays and nested values during the local prototype phase, with a clean path to
-normalization later.
+evidence entities, the Phase 4 AI review entities, the Phase 5 human review and
+evaluation entities, and the Phase 6 plan sheet and CAD-aware metadata entities.
+JSON columns are used for arrays and nested values during the local prototype
+phase, with a clean path to normalization later.
 """
 
 from __future__ import annotations
@@ -423,6 +424,136 @@ class AIEvaluationMatch(Base):
     match_confidence: Mapped[float] = mapped_column(Float, default=0.0)
     matched_on: Mapped[str | None] = mapped_column(String, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+
+class PlanSheet(Base):
+    """A civil plan sheet record in a project's plan set.
+
+    Phase 6 seeds a synthetic Brookside Meadows plan sheet index. A plan sheet
+    is review-support metadata about a drawing, not a parsed CAD file and not an
+    approved drawing. Status values such as referenced_not_included keep missing
+    sheets visible without implying any final engineering decision.
+    """
+
+    __tablename__ = "plan_sheets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    sheet_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    sheet_number: Mapped[str] = mapped_column(String, nullable=False)
+    sheet_title: Mapped[str] = mapped_column(String, nullable=False)
+    discipline: Mapped[str] = mapped_column(String, nullable=False)
+    revision: Mapped[str | None] = mapped_column(String, nullable=True)
+    revision_date: Mapped[str | None] = mapped_column(String, nullable=True)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    file_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    sheet_purpose: Mapped[str] = mapped_column(Text, nullable=False)
+    related_documents: Mapped[list] = mapped_column(JSON, default=list)
+    related_checklist_items: Mapped[list] = mapped_column(JSON, default=list)
+    related_findings: Mapped[list] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+
+class CADMetadata(Base):
+    """CAD-aware metadata about a civil feature referenced in the plan set.
+
+    Phase 6 seeds this metadata rather than extracting it from real CAD files.
+    It provides a future-ready abstraction for CAD-derived feature metadata
+    (basins, pipes, roads, lots, utilities) so later phases can populate the
+    same shape from DXF exports or an Autodesk viewer. It is not CAD verified.
+    """
+
+    __tablename__ = "cad_metadata"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    cad_metadata_id: Mapped[str] = mapped_column(
+        String, unique=True, nullable=False
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    sheet_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_type: Mapped[str] = mapped_column(String, nullable=False)
+    entity_type: Mapped[str] = mapped_column(String, nullable=False)
+    entity_label: Mapped[str] = mapped_column(String, nullable=False)
+    layer_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    discipline: Mapped[str | None] = mapped_column(String, nullable=True)
+    related_document_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    related_checklist_item_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    related_finding_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+
+class PlanReference(Base):
+    """A reference between a document, plan sheet, or civil feature.
+
+    Plan references record where one part of the submission points at another,
+    for example a stormwater report citing a grading sheet or a calculation
+    citing a basin. The consistency_status records whether the reference resolves
+    cleanly, is missing its target, conflicts, or needs human review.
+    """
+
+    __tablename__ = "plan_references"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    plan_reference_id: Mapped[str] = mapped_column(
+        String, unique=True, nullable=False
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    source_type: Mapped[str] = mapped_column(String, nullable=False)
+    source_id: Mapped[str] = mapped_column(String, nullable=False)
+    target_type: Mapped[str] = mapped_column(String, nullable=False)
+    target_id: Mapped[str] = mapped_column(String, nullable=False)
+    reference_label: Mapped[str] = mapped_column(String, nullable=False)
+    reference_context: Mapped[str | None] = mapped_column(Text, nullable=True)
+    consistency_status: Mapped[str] = mapped_column(String, nullable=False)
+    review_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+
+class PlanConsistencyFinding(Base):
+    """A plan-sheet-specific review-support finding.
+
+    These findings are generated by the plan consistency check from seeded plan
+    sheets, references, and CAD-aware metadata. They are review-support findings
+    that require human review. They never approve, certify, or validate a design.
+    """
+
+    __tablename__ = "plan_consistency_findings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    plan_finding_id: Mapped[str] = mapped_column(
+        String, unique=True, nullable=False
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    finding_type: Mapped[str] = mapped_column(String, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    summary: Mapped[str] = mapped_column(Text, nullable=False)
+    risk_level: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)
+    related_sheet_ids: Mapped[list] = mapped_column(JSON, default=list)
+    related_document_ids: Mapped[list] = mapped_column(JSON, default=list)
+    related_checklist_items: Mapped[list] = mapped_column(JSON, default=list)
+    related_cad_metadata_ids: Mapped[list] = mapped_column(JSON, default=list)
+    recommended_human_action: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )

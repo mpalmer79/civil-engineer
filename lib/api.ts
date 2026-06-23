@@ -960,4 +960,361 @@ export async function getEvaluationResult(
   return data ? mapEvaluationResult(data) : null;
 }
 
+// Phase 6: plan sheets, CAD-aware metadata, plan references, and plan
+// consistency findings.
+//
+// This data is seeded and backend-canonical. The plan consistency check mutates
+// backend state, so it is never simulated in the browser. When the backend is
+// unreachable, read calls return empty results and the check returns a clear
+// backend-required result.
+
+export type PlanSheet = {
+  sheetId: string;
+  projectId: string;
+  sheetNumber: string;
+  sheetTitle: string;
+  discipline: string;
+  revision: string | null;
+  revisionDate: string | null;
+  status: string;
+  fileName: string | null;
+  sheetPurpose: string;
+  relatedDocuments: string[];
+  relatedChecklistItems: string[];
+  relatedFindings: string[];
+};
+
+export type PlanSheetSummary = {
+  projectId: string;
+  totalSheets: number;
+  presentSheets: number;
+  missingOrReferencedNotIncludedSheets: number;
+  sheetsWithRelatedFindings: number;
+  cadMetadataRecords: number;
+  disciplines: Record<string, number>;
+  missingSheetNumbers: string[];
+};
+
+export type CadMetadata = {
+  cadMetadataId: string;
+  projectId: string;
+  sheetId: string | null;
+  sourceType: string;
+  entityType: string;
+  entityLabel: string;
+  layerName: string | null;
+  discipline: string | null;
+  relatedDocumentId: string | null;
+  relatedChecklistItemId: string | null;
+  relatedFindingId: string | null;
+  notes: string | null;
+};
+
+export type PlanReference = {
+  planReferenceId: string;
+  projectId: string;
+  sourceType: string;
+  sourceId: string;
+  targetType: string;
+  targetId: string;
+  referenceLabel: string;
+  referenceContext: string | null;
+  consistencyStatus: string;
+  reviewNote: string | null;
+};
+
+export type PlanConsistencyFinding = {
+  planFindingId: string;
+  projectId: string;
+  findingType: string;
+  title: string;
+  summary: string;
+  riskLevel: string;
+  status: string;
+  relatedSheetIds: string[];
+  relatedDocumentIds: string[];
+  relatedChecklistItems: string[];
+  relatedCadMetadataIds: string[];
+  recommendedHumanAction: string;
+};
+
+export type PlanConsistencySummary = {
+  projectId: string;
+  totalFindings: number;
+  missingSheetCount: number;
+  conflictingLabelCount: number;
+  cadMetadataRecords: number;
+  planReferencesRequiringHumanReview: number;
+  findingsByType: Record<string, number>;
+};
+
+export type PlanConsistencyCheckResult = {
+  ok: boolean;
+  status: number;
+  backendReachable: boolean;
+  findings?: PlanConsistencyFinding[];
+  error?: string;
+};
+
+type ApiPlanSheet = {
+  sheet_id: string;
+  project_id: string;
+  sheet_number: string;
+  sheet_title: string;
+  discipline: string;
+  revision: string | null;
+  revision_date: string | null;
+  status: string;
+  file_name: string | null;
+  sheet_purpose: string;
+  related_documents: string[];
+  related_checklist_items: string[];
+  related_findings: string[];
+};
+
+type ApiCadMetadata = {
+  cad_metadata_id: string;
+  project_id: string;
+  sheet_id: string | null;
+  source_type: string;
+  entity_type: string;
+  entity_label: string;
+  layer_name: string | null;
+  discipline: string | null;
+  related_document_id: string | null;
+  related_checklist_item_id: string | null;
+  related_finding_id: string | null;
+  notes: string | null;
+};
+
+type ApiPlanReference = {
+  plan_reference_id: string;
+  project_id: string;
+  source_type: string;
+  source_id: string;
+  target_type: string;
+  target_id: string;
+  reference_label: string;
+  reference_context: string | null;
+  consistency_status: string;
+  review_note: string | null;
+};
+
+type ApiPlanFinding = {
+  plan_finding_id: string;
+  project_id: string;
+  finding_type: string;
+  title: string;
+  summary: string;
+  risk_level: string;
+  status: string;
+  related_sheet_ids: string[];
+  related_document_ids: string[];
+  related_checklist_items: string[];
+  related_cad_metadata_ids: string[];
+  recommended_human_action: string;
+};
+
+function mapPlanSheet(s: ApiPlanSheet): PlanSheet {
+  return {
+    sheetId: s.sheet_id,
+    projectId: s.project_id,
+    sheetNumber: s.sheet_number,
+    sheetTitle: s.sheet_title,
+    discipline: s.discipline,
+    revision: s.revision,
+    revisionDate: s.revision_date,
+    status: s.status,
+    fileName: s.file_name,
+    sheetPurpose: s.sheet_purpose,
+    relatedDocuments: s.related_documents,
+    relatedChecklistItems: s.related_checklist_items,
+    relatedFindings: s.related_findings,
+  };
+}
+
+function mapCadMetadata(c: ApiCadMetadata): CadMetadata {
+  return {
+    cadMetadataId: c.cad_metadata_id,
+    projectId: c.project_id,
+    sheetId: c.sheet_id,
+    sourceType: c.source_type,
+    entityType: c.entity_type,
+    entityLabel: c.entity_label,
+    layerName: c.layer_name,
+    discipline: c.discipline,
+    relatedDocumentId: c.related_document_id,
+    relatedChecklistItemId: c.related_checklist_item_id,
+    relatedFindingId: c.related_finding_id,
+    notes: c.notes,
+  };
+}
+
+function mapPlanReference(r: ApiPlanReference): PlanReference {
+  return {
+    planReferenceId: r.plan_reference_id,
+    projectId: r.project_id,
+    sourceType: r.source_type,
+    sourceId: r.source_id,
+    targetType: r.target_type,
+    targetId: r.target_id,
+    referenceLabel: r.reference_label,
+    referenceContext: r.reference_context,
+    consistencyStatus: r.consistency_status,
+    reviewNote: r.review_note,
+  };
+}
+
+function mapPlanFinding(f: ApiPlanFinding): PlanConsistencyFinding {
+  return {
+    planFindingId: f.plan_finding_id,
+    projectId: f.project_id,
+    findingType: f.finding_type,
+    title: f.title,
+    summary: f.summary,
+    riskLevel: f.risk_level,
+    status: f.status,
+    relatedSheetIds: f.related_sheet_ids,
+    relatedDocumentIds: f.related_document_ids,
+    relatedChecklistItems: f.related_checklist_items,
+    relatedCadMetadataIds: f.related_cad_metadata_ids,
+    recommendedHumanAction: f.recommended_human_action,
+  };
+}
+
+export async function getPlanSheets(): Promise<PlanSheet[]> {
+  const data = await safeFetch<ApiPlanSheet[]>(
+    `/api/v1/projects/${PROJECT_ID}/plan-sheets`,
+  );
+  return data ? data.map(mapPlanSheet) : [];
+}
+
+export async function getPlanSheetSummary(): Promise<PlanSheetSummary | null> {
+  const data = await safeFetch<{
+    project_id: string;
+    total_sheets: number;
+    present_sheets: number;
+    missing_or_referenced_not_included_sheets: number;
+    sheets_with_related_findings: number;
+    cad_metadata_records: number;
+    disciplines: Record<string, number>;
+    missing_sheet_numbers: string[];
+  }>(`/api/v1/projects/${PROJECT_ID}/plan-sheets/summary`);
+  if (!data) return null;
+  return {
+    projectId: data.project_id,
+    totalSheets: data.total_sheets,
+    presentSheets: data.present_sheets,
+    missingOrReferencedNotIncludedSheets:
+      data.missing_or_referenced_not_included_sheets,
+    sheetsWithRelatedFindings: data.sheets_with_related_findings,
+    cadMetadataRecords: data.cad_metadata_records,
+    disciplines: data.disciplines,
+    missingSheetNumbers: data.missing_sheet_numbers,
+  };
+}
+
+export async function getCadMetadata(
+  entityType?: string,
+): Promise<CadMetadata[]> {
+  const query = entityType
+    ? `?entity_type=${encodeURIComponent(entityType)}`
+    : "";
+  const data = await safeFetch<ApiCadMetadata[]>(
+    `/api/v1/projects/${PROJECT_ID}/cad-metadata${query}`,
+  );
+  return data ? data.map(mapCadMetadata) : [];
+}
+
+export async function getCadMetadataForSheet(
+  sheetId: string,
+): Promise<CadMetadata[]> {
+  const data = await safeFetch<ApiCadMetadata[]>(
+    `/api/v1/plan-sheets/${sheetId}/cad-metadata`,
+  );
+  return data ? data.map(mapCadMetadata) : [];
+}
+
+export async function getPlanReferences(): Promise<PlanReference[]> {
+  const data = await safeFetch<ApiPlanReference[]>(
+    `/api/v1/projects/${PROJECT_ID}/plan-references`,
+  );
+  return data ? data.map(mapPlanReference) : [];
+}
+
+export async function getPlanReferenceInconsistencies(): Promise<
+  PlanReference[]
+> {
+  const data = await safeFetch<ApiPlanReference[]>(
+    `/api/v1/projects/${PROJECT_ID}/plan-references/inconsistencies`,
+  );
+  return data ? data.map(mapPlanReference) : [];
+}
+
+export async function getPlanConsistencyFindings(): Promise<
+  PlanConsistencyFinding[]
+> {
+  const data = await safeFetch<ApiPlanFinding[]>(
+    `/api/v1/projects/${PROJECT_ID}/plan-consistency-findings`,
+  );
+  return data ? data.map(mapPlanFinding) : [];
+}
+
+export async function getPlanConsistencySummary(): Promise<PlanConsistencySummary | null> {
+  const data = await safeFetch<{
+    project_id: string;
+    total_findings: number;
+    missing_sheet_count: number;
+    conflicting_label_count: number;
+    cad_metadata_records: number;
+    plan_references_requiring_human_review: number;
+    findings_by_type: Record<string, number>;
+  }>(`/api/v1/projects/${PROJECT_ID}/plan-consistency-summary`);
+  if (!data) return null;
+  return {
+    projectId: data.project_id,
+    totalFindings: data.total_findings,
+    missingSheetCount: data.missing_sheet_count,
+    conflictingLabelCount: data.conflicting_label_count,
+    cadMetadataRecords: data.cad_metadata_records,
+    planReferencesRequiringHumanReview:
+      data.plan_references_requiring_human_review,
+    findingsByType: data.findings_by_type,
+  };
+}
+
+export async function runPlanConsistencyCheck(): Promise<PlanConsistencyCheckResult> {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/projects/${PROJECT_ID}/plan-consistency-check`,
+      { method: "POST", cache: "no-store" },
+    );
+    if (!res.ok) {
+      let detail = `Request failed (${res.status}).`;
+      try {
+        const body = (await res.json()) as { detail?: string };
+        if (body.detail) detail = body.detail;
+      } catch {
+        // Keep generic message.
+      }
+      return { ok: false, status: res.status, backendReachable: true, error: detail };
+    }
+    const body = (await res.json()) as ApiPlanFinding[];
+    return {
+      ok: true,
+      status: res.status,
+      backendReachable: true,
+      findings: body.map(mapPlanFinding),
+    };
+  } catch {
+    return {
+      ok: false,
+      status: 0,
+      backendReachable: false,
+      error:
+        "The backend is not reachable. Start the API to run a plan consistency check. Consistency findings are never simulated in the browser.",
+    };
+  }
+}
+
 export { projectMetrics };

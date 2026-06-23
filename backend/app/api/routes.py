@@ -14,6 +14,7 @@ from app.api.v1 import (
     findings,
     hotspots,
     human_review,
+    plan_sheets,
     projects,
     retrieval,
 )
@@ -30,3 +31,4 @@ api_router.include_router(chunks.router)
 api_router.include_router(retrieval.router)
 api_router.include_router(ai_review.router)
 api_router.include_router(human_review.router)
+api_router.include_router(plan_sheets.router)
