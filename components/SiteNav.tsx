@@ -7,6 +7,7 @@ const links = [
   { href: "/checklist", label: "Checklist" },
   { href: "/findings", label: "Findings" },
   { href: "/ai-review", label: "AI Review" },
+  { href: "/human-review", label: "Human Review" },
   { href: "/audit", label: "Audit" },
   { href: "/evaluation", label: "Evaluation" },
 ];
@@ -43,7 +44,7 @@ export default function SiteNav() {
         </div>
         <div className="md:hidden">
           <span className="badge bg-slate-100 text-slate-600 ring-slate-200">
-            Phase 1 prototype
+            Phase 5
           </span>
         </div>
       </nav>

@@ -41,11 +41,13 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
         "Review-support API for stormwater and land development review. "
-        "Phase 3 serves seeded Brookside Meadows data with keyword based "
-        "source evidence retrieval. No live AI calls, embeddings, or vector "
-        "retrieval are included in this phase."
+        "Phase 5 adds a persisted human review queue, reviewer actions with "
+        "status transitions, and evaluation scoring of AI draft findings "
+        "against expected Brookside Meadows findings. The mock provider is the "
+        "default and no live AI calls, embeddings, or vector retrieval are "
+        "included."
     ),
-    version="0.3.0",
+    version="0.5.0",
     lifespan=lifespan,
 )
 

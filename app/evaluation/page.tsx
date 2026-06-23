@@ -1,5 +1,6 @@
 import PageHeader from "@/components/PageHeader";
 import EvaluationSummary from "@/components/EvaluationSummary";
+import EvaluationScoringClient from "@/components/EvaluationScoringClient";
 import SectionCard from "@/components/SectionCard";
 import { getEvaluationData } from "@/lib/api";
 
@@ -10,52 +11,41 @@ export default async function EvaluationPage() {
       <PageHeader
         eyebrow="Evaluation dashboard"
         title="Evaluation-driven AI design"
-        description="Eight evaluation cases test whether the system surfaces the expected findings, cites real evidence, avoids false positives, and never emits prohibited wording."
+        description="Phase 5 scores AI draft findings against the expected Brookside Meadows findings. The dashboard reports recall, precision, citation validity, human review required rate, and validation and safety failure counts."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-        <SectionCard title="Why evaluation comes first">
+        <SectionCard title="Phase 5 evaluation scoring">
+          <p className="text-sm text-slate-600">
+            Evaluation scoring compares the draft findings from an AI review run
+            against the expected findings using related checklist items,
+            category, and title overlap. It calculates recall and precision,
+            checks source citation validity, and counts prohibited wording,
+            validation failures, and safety failures. The matching is
+            heuristic and explainable, not a final engineering determination.
+          </p>
+        </SectionCard>
+
+        <EvaluationScoringClient />
+
+        <SectionCard title="Why evaluation matters">
           <p className="text-sm text-slate-600">
             An evaluation harness is the difference between a serious GenAI system
-            and a demo. Each case isolates one meaningful behavior, from
-            detecting a missing infiltration test to staying silent on a clean
-            control package, and is scored against expected findings.
+            and a demo. Each seeded evaluation case below isolates one meaningful
+            behavior, from detecting a missing infiltration test to staying
+            silent on a clean control package, and is scored against expected
+            findings.
           </p>
         </SectionCard>
 
         <EvaluationSummary evaluationCases={cases} evaluationSummary={summary} />
 
-        <SectionCard
-          title="Phase 4 AI review validation metrics"
-          description="The AI Review Assistant tracks these signals on each run. Phase 5 will score them against expected findings in a live evaluation harness."
-        >
-          <ul className="grid gap-2 text-sm text-slate-600 sm:grid-cols-2">
-            <li className="rounded-lg bg-slate-50 px-3 py-2">
-              Draft finding schema validity (validation passed rate)
-            </li>
-            <li className="rounded-lg bg-slate-50 px-3 py-2">
-              Source chunk citation validity
-            </li>
-            <li className="rounded-lg bg-slate-50 px-3 py-2">
-              Prohibited wording count (target zero)
-            </li>
-            <li className="rounded-lg bg-slate-50 px-3 py-2">
-              Human review requirement rate (target 100 percent)
-            </li>
-            <li className="rounded-lg bg-slate-50 px-3 py-2">
-              Validation failure count and safety check failure count
-            </li>
-            <li className="rounded-lg bg-slate-50 px-3 py-2">
-              Expected finding match rate against the seeded planted issues
-            </li>
-          </ul>
-        </SectionCard>
-
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">Prototype note:</span>{" "}
-          This dashboard displays seeded evaluation outcomes with mock but
-          plausible values. Phase 5 will run evaluation cases against generated
-          draft findings and compute these metrics live.
+          <span className="font-semibold text-slate-800">Scope note:</span>{" "}
+          The seeded evaluation cases above describe expected behaviors with
+          plausible reference values. The Phase 5 scoring panel above computes
+          live recall, precision, and citation metrics from a real AI review run
+          and stores each result in the backend.
         </div>
       </div>
     </div>

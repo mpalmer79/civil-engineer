@@ -119,20 +119,32 @@ and live evaluation scoring are deferred to Phase 5. See
 
 ---
 
-## Phase 5, Evaluation System
+## Phase 5, Human Review Queue and Evaluation System
 
-**Goal:** Prove the system works and keep it from regressing.
+**Goal:** Prove the system works, manage a full review lifecycle, and keep it
+from regressing.
 
-- Evaluation cases with expected findings (from `SEED_DATA_PLAN.md`)
+- Persisted human review actions on AI draft findings
+- Human review queue with status transitions
 - Recall / precision against expected findings
-- False positive and false negative tracking
-- Source-citation accuracy
-- Unsupported-claim and prohibited-wording checks
-- Evaluation dashboard
+- Source-citation validity tracking
+- Validation-failure, safety-failure, and prohibited-wording checks
+- Evaluation result storage and an evaluation dashboard
 
-**Exit criteria:** All seeded evaluation cases run and report metrics; the
-planted Brookside Meadows issues are detected; the clean control case yields no
-false positives.
+**Exit criteria:** Draft findings move through a persisted human review queue
+with audit events, and evaluation scoring runs against a real AI review run and
+reports recall, precision, citation validity, and quality metrics for the
+planted Brookside Meadows issues.
+
+**Delivered in Phase 5:** persisted human review actions (`human_review_actions`)
+with allowed actions (accept, edit, reject, escalate, mark unclear, request more
+information) and review-support status transitions, a Human Review page,
+evaluation scoring (`ai_evaluation_results` and `ai_evaluation_matches`) with
+recall, precision, citation validity, human-review-required rate, and validation
+and safety failure counts, evaluation dashboard updates, separate surfacing of
+failed drafts, audit events for every review action and evaluation run, and
+backend tests. There is no action called approve, and failed drafts cannot be
+accepted. See `PHASE_5_HUMAN_REVIEW_AND_EVALUATION.md`.
 
 > Phases 1 to 5 together constitute the **v1 build** defined in `V1_SCOPE.md`.
 

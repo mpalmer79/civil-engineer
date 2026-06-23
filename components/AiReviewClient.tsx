@@ -7,10 +7,12 @@ import {
   getRunDraftFindings,
   startAiReviewRun,
   getProjectChunks,
+  getProjectReviewActions,
   type ProviderModeInfo,
   type AiReviewRun,
   type AiDraftFinding,
   type ChunkItem,
+  type HumanReviewAction,
 } from "@/lib/api";
 import RiskBadge from "@/components/RiskBadge";
 
@@ -38,6 +40,9 @@ export default function AiReviewClient() {
   const [run, setRun] = useState<AiReviewRun | null>(null);
   const [drafts, setDrafts] = useState<AiDraftFinding[]>([]);
   const [chunks, setChunks] = useState<Record<string, ChunkItem>>({});
+  const [reviewActions, setReviewActions] = useState<
+    Record<string, HumanReviewAction[]>
+  >({});
   const [loading, setLoading] = useState(false);
   const [backendUp, setBackendUp] = useState(true);
 
@@ -48,19 +53,27 @@ export default function AiReviewClient() {
     setChunks(map);
   }, []);
 
+  const loadReviewActions = useCallback(async () => {
+    const acts = await getProjectReviewActions();
+    const grouped: Record<string, HumanReviewAction[]> = {};
+    for (const a of acts) (grouped[a.draftFindingId] ??= []).push(a);
+    setReviewActions(grouped);
+  }, []);
+
   useEffect(() => {
     (async () => {
       const m = await getProviderMode();
       setMode(m);
       setBackendUp(m !== null);
       await loadChunks();
+      await loadReviewActions();
       const runs = await getAiReviewRuns();
       if (runs.length > 0) {
         setRun(runs[0]);
         setDrafts(await getRunDraftFindings(runs[0].reviewRunId));
       }
     })();
-  }, [loadChunks]);
+  }, [loadChunks, loadReviewActions]);
 
   const handleStart = useCallback(async () => {
     setLoading(true);
@@ -69,14 +82,18 @@ export default function AiReviewClient() {
       setBackendUp(true);
       setRun(newRun);
       setDrafts(await getRunDraftFindings(newRun.reviewRunId));
+      await loadReviewActions();
     } else {
       setBackendUp(false);
     }
     setLoading(false);
-  }, []);
+  }, [loadReviewActions]);
 
   const validDrafts = drafts.filter(
     (d) => d.validationStatus === "validation_passed",
+  );
+  const failedDrafts = drafts.filter(
+    (d) => d.validationStatus !== "validation_passed",
   );
 
   return (
@@ -156,6 +173,24 @@ export default function AiReviewClient() {
             Draft findings are review-support output for human evaluation, not
             final engineering conclusions. Every draft requires human review.
           </p>
+          <div className="mt-4 flex flex-wrap gap-3 border-t border-slate-100 pt-4">
+            <a
+              href="/human-review"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            >
+              Open the Human Review Queue
+            </a>
+            <a
+              href="/evaluation"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            >
+              Run evaluation scoring
+            </a>
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            Next steps: route these draft findings through human review, then
+            score the run against the expected findings on the Evaluation page.
+          </p>
         </div>
       ) : null}
 
@@ -230,11 +265,20 @@ export default function AiReviewClient() {
                     ok={d.safetyCheckStatus === "safety_check_passed"}
                     label={`safety: ${d.safetyCheckStatus}`}
                   />
-                  <span className="badge bg-yellow-50 text-yellow-700 ring-yellow-600/20">
-                    {d.status === "requires_human_review"
-                      ? "Human reviewer action required"
-                      : d.status}
-                  </span>
+                  {(reviewActions[d.draftFindingId]?.length ?? 0) > 0 ? (
+                    <span className="badge bg-land-50 text-land-700 ring-land-600/20">
+                      review recorded:{" "}
+                      {reviewActions[d.draftFindingId][
+                        reviewActions[d.draftFindingId].length - 1
+                      ].action.replace(/_/g, " ")}
+                    </span>
+                  ) : (
+                    <span className="badge bg-yellow-50 text-yellow-700 ring-yellow-600/20">
+                      {d.status === "requires_human_review"
+                        ? "Human review pending"
+                        : d.status}
+                    </span>
+                  )}
                   <span className="font-mono text-slate-400">
                     confidence {Math.round(d.confidence * 100)}%
                   </span>
@@ -247,6 +291,76 @@ export default function AiReviewClient() {
         <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
           No valid draft findings in this run.
         </p>
+      ) : null}
+
+      {/* Validation failures, shown separately from valid drafts */}
+      {failedDrafts.length > 0 ? (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <h3 className="text-lg font-semibold text-slate-900">
+              Validation failures ({failedDrafts.length})
+            </h3>
+            <span className="badge bg-red-50 text-red-700 ring-red-600/20">
+              Not valid review findings
+            </span>
+          </div>
+          <p className="text-sm text-slate-600">
+            These outputs failed validation or safety checks and are not usable
+            as review findings until they are regenerated or reviewed. They are
+            shown for transparency and are never counted as valid drafts.
+          </p>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {failedDrafts.map((d) => (
+              <article
+                key={d.draftFindingId}
+                className="surface-card border border-red-100 p-6"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="badge bg-red-50 text-red-700 ring-red-600/20">
+                    Failed draft
+                  </span>
+                  <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
+                    {d.checklistItemId}
+                  </span>
+                </div>
+                <h4 className="mt-3 text-base font-semibold text-slate-900">
+                  {d.title}
+                </h4>
+                <p className="mt-1 font-mono text-xs text-slate-400">
+                  {d.draftFindingId}
+                </p>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                  <StatusPill ok={false} label={`validation: ${d.validationStatus}`} />
+                  <StatusPill
+                    ok={d.safetyCheckStatus === "safety_check_passed"}
+                    label={`safety: ${d.safetyCheckStatus}`}
+                  />
+                </div>
+                {d.validationErrors.length > 0 ? (
+                  <div className="mt-3">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                      Validation errors
+                    </p>
+                    <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-red-700">
+                      {d.validationErrors.map((e, i) => (
+                        <li key={i}>{e}</li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+                {d.sourceChunkIds.length > 0 ? (
+                  <p className="mt-3 text-xs text-slate-500">
+                    Source chunk ids: {d.sourceChunkIds.join(", ")}
+                  </p>
+                ) : null}
+                <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">
+                  This failed draft is not usable as a review finding until it is
+                  reviewed or regenerated.
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
       ) : null}
     </div>
   );

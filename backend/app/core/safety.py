@@ -23,10 +23,12 @@ ALLOWED_REVIEW_STATUSES: set[str] = {
     "unresolved",
     "not_applicable",
     "requires_human_review",
+    "validation_failed",
     "accepted_by_reviewer",
     "edited_by_reviewer",
     "rejected_by_reviewer",
     "escalated",
+    "marked_unclear",
     "requested_more_information",
 }
 
@@ -38,8 +40,38 @@ HUMAN_REVIEW_STATUSES: set[str] = {
     "edited_by_reviewer",
     "rejected_by_reviewer",
     "escalated",
+    "marked_unclear",
     "requested_more_information",
 }
+
+# Human review actions a reviewer may take on an AI draft finding. None of these
+# is a final engineering decision, and none uses approval or certification
+# language. There is intentionally no action called "approve".
+ALLOWED_REVIEW_ACTIONS: set[str] = {
+    "accepted",
+    "edited",
+    "rejected",
+    "escalated",
+    "marked_unclear",
+    "requested_more_information",
+}
+
+# The resulting draft finding status for each allowed review action. These map
+# review-support actions to review-support statuses and never to a final
+# decision.
+REVIEW_ACTION_TO_STATUS: dict[str, str] = {
+    "accepted": "accepted_by_reviewer",
+    "edited": "edited_by_reviewer",
+    "rejected": "rejected_by_reviewer",
+    "escalated": "escalated",
+    "marked_unclear": "marked_unclear",
+    "requested_more_information": "requested_more_information",
+}
+
+# Actions that establish or affirm a usable review-support finding. A failed
+# draft finding may not be accepted or edited; it can only be rejected,
+# escalated, or marked unclear pending regeneration.
+ACTIONS_REQUIRING_VALID_DRAFT: set[str] = {"accepted", "edited"}
 
 # Final-decision language the system must never use as a status or conclusion.
 # Matching is done case insensitively against normalized text.

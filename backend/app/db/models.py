@@ -321,3 +321,108 @@ class AIDraftFinding(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
+
+
+class HumanReviewAction(Base):
+    """A persisted human review decision on an AI draft finding.
+
+    A review action records what a human reviewer did with a draft finding
+    (accepted, edited, rejected, escalated, marked unclear, or requested more
+    information), the status transition it produced, and any edited text. No
+    action approves, certifies, or finalizes an engineering decision. Every
+    action keeps the finding under human control.
+    """
+
+    __tablename__ = "human_review_actions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    review_action_id: Mapped[str] = mapped_column(
+        String, unique=True, nullable=False
+    )
+    draft_finding_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_draft_findings.draft_finding_id"), nullable=False
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    review_run_id: Mapped[str] = mapped_column(String, nullable=False)
+    reviewer_name: Mapped[str] = mapped_column(String, nullable=False)
+    action: Mapped[str] = mapped_column(String, nullable=False)
+    reviewer_note: Mapped[str] = mapped_column(Text, nullable=False)
+    edited_title: Mapped[str | None] = mapped_column(Text, nullable=True)
+    edited_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    edited_recommended_action: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    previous_status: Mapped[str] = mapped_column(String, nullable=False)
+    new_status: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+
+class AIEvaluationResult(Base):
+    """A scored evaluation of one AI review run against expected findings.
+
+    Evaluation is heuristic and explainable, not a mathematically perfect
+    measure. It compares the draft findings from a review run against the
+    expected Brookside Meadows findings and records recall, precision, citation
+    validity, and quality signals so the workflow stays auditable.
+    """
+
+    __tablename__ = "ai_evaluation_results"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    evaluation_result_id: Mapped[str] = mapped_column(
+        String, unique=True, nullable=False
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    review_run_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_review_runs.review_run_id"), nullable=False
+    )
+    expected_findings_count: Mapped[int] = mapped_column(Integer, default=0)
+    draft_findings_count: Mapped[int] = mapped_column(Integer, default=0)
+    matched_findings_count: Mapped[int] = mapped_column(Integer, default=0)
+    unmatched_expected_count: Mapped[int] = mapped_column(Integer, default=0)
+    extra_draft_findings_count: Mapped[int] = mapped_column(Integer, default=0)
+    citation_validity_rate: Mapped[float] = mapped_column(Float, default=0.0)
+    human_review_required_rate: Mapped[float] = mapped_column(Float, default=0.0)
+    prohibited_word_count: Mapped[int] = mapped_column(Integer, default=0)
+    validation_failure_count: Mapped[int] = mapped_column(Integer, default=0)
+    safety_failure_count: Mapped[int] = mapped_column(Integer, default=0)
+    recall: Mapped[float] = mapped_column(Float, default=0.0)
+    precision: Mapped[float] = mapped_column(Float, default=0.0)
+    overall_score: Mapped[float] = mapped_column(Float, default=0.0)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+
+class AIEvaluationMatch(Base):
+    """A single explainable match record produced during evaluation scoring.
+
+    Each record links an expected finding and/or a draft finding and records how
+    the match was made (related checklist item, category, or title similarity)
+    or that an item was unmatched or extra.
+    """
+
+    __tablename__ = "ai_evaluation_matches"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    evaluation_match_id: Mapped[str] = mapped_column(
+        String, unique=True, nullable=False
+    )
+    evaluation_result_id: Mapped[str] = mapped_column(
+        ForeignKey("ai_evaluation_results.evaluation_result_id"), nullable=False
+    )
+    expected_finding_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    draft_finding_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    match_type: Mapped[str] = mapped_column(String, nullable=False)
+    match_confidence: Mapped[float] = mapped_column(Float, default=0.0)
+    matched_on: Mapped[str | None] = mapped_column(String, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )

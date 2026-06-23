@@ -8,7 +8,7 @@ import { getHotspots, projectMetrics } from "@/lib/api";
 const heroCtas = [
   { href: "/project", label: "Project dashboard" },
   { href: "/ai-review", label: "AI Review" },
-  { href: "/findings", label: "Findings" },
+  { href: "/human-review", label: "Human Review" },
   { href: "/evaluation", label: "Evaluation" },
 ];
 
@@ -53,7 +53,7 @@ export default async function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
               <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
-                Phase 4 · AI Review Assistant
+                Phase 5 · Human Review and Evaluation Scoring
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Civil Engineer AI
@@ -182,6 +182,50 @@ export default async function HomePage() {
             </a>{" "}
             page.
           </p>
+        </div>
+      </section>
+
+      {/* Phase 5: human review and evaluation scoring */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="surface-card p-6">
+          <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
+            Phase 5
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+            Human review and evaluation scoring
+          </h2>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            Civil Engineer AI now tracks reviewer actions and compares AI draft
+            findings against the expected review issues. A reviewer can accept,
+            edit, reject, escalate, mark unclear, or request more information on
+            each draft finding, and every action records a status transition and
+            an audit event. Evaluation scoring then measures recall, precision,
+            citation validity, and quality signals against the expected findings.
+            No action approves or certifies the work.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              The{" "}
+              <a
+                href="/human-review"
+                className="font-semibold text-water-700 hover:text-water-600"
+              >
+                Human Review
+              </a>{" "}
+              queue records persisted reviewer actions and status transitions.
+            </div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              The{" "}
+              <a
+                href="/evaluation"
+                className="font-semibold text-water-700 hover:text-water-600"
+              >
+                Evaluation
+              </a>{" "}
+              dashboard scores a review run and stores recall and precision
+              metrics.
+            </div>
+          </div>
         </div>
       </section>
 
