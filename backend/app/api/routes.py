@@ -7,11 +7,13 @@ from fastapi import APIRouter
 from app.api.v1 import (
     audit,
     checklist,
+    chunks,
     documents,
     evaluation,
     findings,
     hotspots,
     projects,
+    retrieval,
 )
 
 api_router = APIRouter()
@@ -22,3 +24,5 @@ api_router.include_router(findings.router)
 api_router.include_router(audit.router)
 api_router.include_router(evaluation.router)
 api_router.include_router(hotspots.router)
+api_router.include_router(chunks.router)
+api_router.include_router(retrieval.router)

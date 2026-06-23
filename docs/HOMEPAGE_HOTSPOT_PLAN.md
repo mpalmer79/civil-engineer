@@ -16,13 +16,13 @@ how the interaction grows from a static overlay (Phase 1) to a drill-down map
 (later phases).
 
 The hotspot overlay is implemented with HTML/CSS markers positioned over the
-image — never with text baked into the image — so it stays accessible,
+image, never with text baked into the image, so it stays accessible,
 responsive, and translatable.
 
 ## Base Image
 
 - **File:** `public/development.png`
-- **Subject:** An illustrative site map of the Brookside Meadows subdivision —
+- **Subject:** An illustrative site map of the Brookside Meadows subdivision, 
   wooded upland (northwest), former hay meadow (center/south), Brook Run and the
   wetland corridor (southeast), the Quarry Road culvert (downstream edge),
   internal roads and lots, and the stormwater facilities.
@@ -68,7 +68,7 @@ behavior · future behavior.
 - **Visual location:** Lower-right, southeast low area (~68%, ~72%).
 - **Civil purpose:** Peak-flow attenuation and water-quality settling before
   discharge toward the Quarry Road culvert.
-- **Story element:** Basin 1 — also labeled "Pond A" on the grading plan.
+- **Story element:** Basin 1, also labeled "Pond A" on the grading plan.
 - **Checklist items:** `chk_bmp_identified`, `chk_outfall_identified`,
   `chk_reference_consistency`.
 - **Planted issues:** I-9 (Pond A vs. Basin 1 naming conflict).
@@ -200,7 +200,7 @@ behavior · future behavior.
 - Ten numbered markers render over the image from `data/hotspots.ts`.
 - Hover, focus, or click updates the side panel; the first hotspot is selected
   by default so the panel is never empty.
-- No navigation occurs on click in Phase 1 — the panel is the interaction.
+- No navigation occurs on click in Phase 1, the panel is the interaction.
 - Markers are color-coded by category and sized to avoid clutter.
 
 ## Future Interactive Behavior
@@ -221,7 +221,7 @@ behavior · future behavior.
 - The side panel uses `aria-live="polite"` so updates are announced.
 - Activation works via mouse hover, keyboard focus (Tab), and click/Enter.
 - The base image has meaningful, descriptive alt text.
-- Color is never the only signal — every marker has a number and the panel
+- Color is never the only signal, every marker has a number and the panel
   carries the full text. Risk tags include text labels, not just color.
 
 ## Implementation Notes

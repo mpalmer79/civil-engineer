@@ -15,23 +15,32 @@ professional engineering judgment.
 
 ---
 
-## Current phase: Phase 2, Backend and Data Model Foundation
+## Current phase: Phase 3, Document Evidence and Retrieval Foundation
 
-Phase 2 turns the Phase 1 static prototype into a real full-stack foundation.
-It adds:
+Phase 3 adds the foundation for source evidence and retrieval so every
+review-support finding can trace back to specific pages and sections of the
+submitted documents. It adds:
 
-- A **FastAPI** backend with a versioned read API
-- A **SQLite** local database (with a clean path to PostgreSQL or Supabase)
-- A **SQLAlchemy** data model aligned with the Phase 0 domain model
-- **Seeded Brookside Meadows** data loaded into the database
-- **API endpoints** for projects, documents, checklist items, findings, audit
-  events, evaluation cases, and hotspots
-- **Backend tests** with pytest, including safety-vocabulary checks
-- **Frontend API integration**: pages fetch from the backend when it is
-  available and fall back to local seed data when it is not
+- A **document chunk** data model and 56 seeded synthetic chunks
+- **Finding sources** that link the ten findings to chunks with an evidence role
+  and confidence
+- A keyword and metadata **retrieval service**
+- **API endpoints** for chunks, search, checklist evidence, finding evidence, and
+  finding sources
+- **Frontend evidence display** on the findings, checklist, and documents pages,
+  and an evidence-first section on the homepage
+- **Backend tests** proving retrieval works on the seeded fixture
 
-Phase 2 does not add live AI calls, embeddings, vector retrieval, or
-authentication. Those are planned for later phases.
+Retrieval is keyword and metadata based in this phase. Phase 3 does not add live
+AI-generated findings, embeddings, a vector store, or authentication. Those are
+planned for later phases.
+
+Earlier phases established the product foundation:
+
+- Phase 0: research, domain model, and the Brookside Meadows project story
+- Phase 1: a static Next.js prototype driven by seed data
+- Phase 2: a FastAPI backend, SQLite database, SQLAlchemy models, seeded data,
+  API endpoints, tests, and frontend integration
 
 The reviewed fixture remains **Brookside Meadows**: a 47-lot single-family
 subdivision in the Town of Hartwell with a green-and-gray stormwater treatment
@@ -103,6 +112,11 @@ All data routes use the `/api/v1` prefix. Seeded project id:
 - `GET /api/v1/projects/{project_id}/audit-events`
 - `GET /api/v1/evaluation-cases` and `GET /api/v1/projects/{project_id}/evaluation-cases`
 - `GET /api/v1/projects/{project_id}/hotspots`
+- `GET /api/v1/projects/{project_id}/chunks` and `GET /api/v1/documents/{document_id}/chunks` and `GET /api/v1/chunks/{chunk_id}`
+- `GET /api/v1/projects/{project_id}/search?query=...`
+- `GET /api/v1/projects/{project_id}/checklist/{checklist_item_id}/evidence`
+- `GET /api/v1/projects/{project_id}/findings/{finding_id}/evidence`
+- `GET /api/v1/findings/{finding_id}/sources`
 
 ---
 
@@ -141,24 +155,27 @@ civil-engineer/
 - [`docs/SEED_DATA_PLAN.md`](docs/SEED_DATA_PLAN.md): seed-ready data
 - [`docs/HOMEPAGE_HOTSPOT_PLAN.md`](docs/HOMEPAGE_HOTSPOT_PLAN.md): interactive map plan
 - [`docs/PHASE_2_BACKEND_DATA_MODEL.md`](docs/PHASE_2_BACKEND_DATA_MODEL.md): Phase 2 backend and data model
+- [`docs/PHASE_3_RETRIEVAL_FOUNDATION.md`](docs/PHASE_3_RETRIEVAL_FOUNDATION.md): Phase 3 evidence and retrieval
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture
 - [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md): research basis
 
 ---
 
-## What Phase 2 proves
+## What Phase 3 proves
 
-- The product is structurally real: a backend, a data model, validation, seed
-  loading, and a service layer, not only a static mockup.
-- The professional boundary is enforced in code through a central status
-  vocabulary and prohibited-wording checks, verified by tests.
-- The same Brookside Meadows fixture now drives both the API and the UI.
+- Review is evidence-first: every finding traces back to specific document
+  chunks with page and section references.
+- Retrieval is transparent and testable: keyword and metadata ranking with a
+  plain relevance reason for each result.
+- The professional boundary holds in retrieval output: every result is framed as
+  source evidence for reviewer evaluation, not a conclusion, and no prohibited
+  final-decision language is used.
 
 ## What comes next
 
-- **Phase 3**: document chunking, embeddings, and source-evidence retrieval.
 - **Phase 4**: the AI review assistant (structured prompts, JSON validation,
-  safety checks, human review required for every finding).
+  safety checks, findings that cite retrieved evidence, human review required for
+  every finding).
 - **Phase 5**: the live evaluation harness.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full plan.

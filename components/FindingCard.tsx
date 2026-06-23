@@ -1,8 +1,16 @@
 import type { Finding } from "@/data/findings";
+import type { EvidenceItem } from "@/lib/api";
 import StatusBadge from "@/components/StatusBadge";
 import RiskBadge from "@/components/RiskBadge";
+import SourceEvidence from "@/components/SourceEvidence";
 
-export default function FindingCard({ finding }: { finding: Finding }) {
+export default function FindingCard({
+  finding,
+  evidence = [],
+}: {
+  finding: Finding;
+  evidence?: EvidenceItem[];
+}) {
   return (
     <article className="surface-card flex flex-col p-6">
       <div className="flex flex-wrap items-center gap-2">
@@ -38,6 +46,15 @@ export default function FindingCard({ finding }: { finding: Finding }) {
           </dd>
         </div>
       </dl>
+
+      <div className="mt-4 border-t border-slate-100 pt-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Source evidence
+        </p>
+        <div className="mt-2">
+          <SourceEvidence evidence={evidence} />
+        </div>
+      </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4 text-xs">
         <span className="flex items-center gap-2 text-slate-500">

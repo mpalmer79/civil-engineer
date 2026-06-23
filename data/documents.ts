@@ -191,7 +191,7 @@ export const documents: ReviewDocument[] = [
     status: "not_yet_submitted",
     purpose: "Respond to review comments",
     expectedKeyInformation: "Responses to each comment",
-    knownIssue: "First submission — none yet",
+    knownIssue: "First submission, none yet",
   },
   {
     documentId: "doc_revised_c31",

@@ -1,9 +1,9 @@
-import { brookside as defaultProject, type BooksideProject } from "@/data/brookside";
+import { brookside as defaultProject, type BrooksideProject } from "@/data/brookside";
 
 export default function ProjectSummaryCard({
   project: brookside = defaultProject,
 }: {
-  project?: BooksideProject;
+  project?: BrooksideProject;
 }) {
   return (
     <div className="surface-card p-6">

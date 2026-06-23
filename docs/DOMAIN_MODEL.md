@@ -1,4 +1,4 @@
-# Domain Model — Civil Engineer AI
+# Domain Model, Civil Engineer AI
 
 **Product:** Civil Engineer AI: Stormwater Review Assistant
 **Scope:** Core domain entities for v1 (stormwater) designed to extend to the
@@ -106,7 +106,7 @@ infiltration/groundwater checklist item applies).
 | `site_condition_id` | string/uuid | PK |
 | `project_id` | fk | → DevelopmentProject |
 | `condition_type` | enum | `soils`, `groundwater`, `wetland_buffer`, `stream`, `slope`, `downstream_structure`, `vegetation`, `adjacent_use` |
-| `description` | text | "Seasonal high groundwater ~2.5–3.5 ft in SE meadow" |
+| `description` | text | "Seasonal high groundwater ~2.5 to 3.5 ft in SE meadow" |
 | `source_document_id` | fk (nullable) | → Document that established the fact |
 | `severity_hint` | enum (nullable) | `low` / `medium` / `high` |
 
@@ -142,7 +142,7 @@ consistency checks (e.g., basin naming).
 | `project_id` | fk | → DevelopmentProject |
 | `improvement_type` | enum | `infiltration_basin`, `detention_basin`, `bioretention`, `storm_drain`, `outfall`, `road`, `cul_de_sac`, `sidewalk`, `water_main`, `sanitary_sewer`, `riprap_apron`, `construction_entrance` |
 | `label` | string | Canonical label, e.g., "Basin 1" |
-| `aliases` | string[] | Known alternate labels, e.g., ["Pond A"] — supports naming-conflict detection |
+| `aliases` | string[] | Known alternate labels, e.g., ["Pond A"], supports naming-conflict detection |
 | `review_domain` | enum `[future]` | `stormwater`, `roadway`, `utility`, … |
 | `description` | text | |
 
@@ -189,7 +189,7 @@ comment-response tracking.
 
 ### 2.5 ReviewPackage
 
-**Purpose.** A versioned set of documents reviewed together — the unit of a
+**Purpose.** A versioned set of documents reviewed together, the unit of a
 submission or resubmission. Lets the platform compare submission vs.
 resubmission later.
 
@@ -297,7 +297,7 @@ what makes the review structured rather than an open prompt.
 
 ### 2.9 ProjectChecklistItem
 
-**Purpose.** The per-project status of a checklist item — separates the reusable
+**Purpose.** The per-project status of a checklist item, separates the reusable
 requirement from this project's evaluated result.
 
 **Key fields**
@@ -357,7 +357,7 @@ finding tied to a checklist item. Always draft until a human acts on it.
 | `summary` | text | Source-grounded explanation (safe wording only) |
 | `status` | enum | same status vocabulary as ProjectChecklistItem |
 | `risk_level` | enum | `low` / `medium` / `high` |
-| `confidence` | decimal | 0–1, AI self-reported, treated as advisory |
+| `confidence` | decimal | 0 to 1, AI self-reported, treated as advisory |
 | `recommended_action` | text | Draft reviewer follow-up |
 | `human_review_state` | enum | `pending`, `accepted`, `edited`, `rejected`, `escalated` |
 | `created_at` | timestamp | |
@@ -365,7 +365,7 @@ finding tied to a checklist item. Always draft until a human acts on it.
 **Relationships.** Belongs to project/run/checklist item; has many
 `FindingSource`; has one `RiskFlag` (optional); has many `HumanReviewAction`.
 
-**Example** — see `ARCHITECTURE.md` Section 5.6 for the full JSON finding
+**Example**, see `ARCHITECTURE.md` Section 5.6 for the full JSON finding
 schema, including the `safety_boundary_check` block.
 
 ---
@@ -412,7 +412,7 @@ used for dashboards, heatmaps, and prioritization.
 
 ### 2.14 HumanReviewAction
 
-**Purpose.** The recorded human decision on a finding — the heart of
+**Purpose.** The recorded human decision on a finding, the heart of
 human-in-the-loop. No finding is final without one.
 
 **Key fields**
@@ -482,7 +482,7 @@ claim.
 ### 2.17 EvaluationResult
 
 **Purpose.** The measured outcome of running an evaluation case against a review
-run — the metrics shown on the evaluation dashboard.
+run, the metrics shown on the evaluation dashboard.
 
 **Key fields**
 

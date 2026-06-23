@@ -145,7 +145,7 @@ export const evaluationCases: EvaluationCase[] = [
   },
   {
     evalCaseId: "eval_clean_control",
-    name: "Clean control — no false positives",
+    name: "Clean control, no false positives",
     inputDocuments: [
       "doc_existing_conditions",
       "doc_layout_plan",

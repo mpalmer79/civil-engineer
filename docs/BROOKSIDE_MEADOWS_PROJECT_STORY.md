@@ -1,4 +1,4 @@
-# Brookside Meadows — Project Story
+# Brookside Meadows, Project Story
 
 **Project:** Brookside Meadows Residential Subdivision
 **Used by:** Civil Engineer AI: Stormwater Review Assistant
@@ -25,7 +25,7 @@ demo, the seed data, and the evaluation cases.
 | Total site area | 38.5 acres |
 | Disturbed area | ~22 acres (phased) |
 | Proposed lots | 47 single-family lots |
-| Existing land use | Vacant — mixed wooded upland and an old hay meadow, formerly a single farmstead |
+| Existing land use | Vacant, mixed wooded upland and an old hay meadow, formerly a single farmstead |
 | Proposed use | Detached single-family homes, internal subdivision roads, shared stormwater facilities |
 | Review context | Preliminary subdivision + site plan review with a post-construction stormwater management review and an erosion & sediment control review |
 | Review stage modeled in v1 | Completeness + technical stormwater review (intake through comment letter) |
@@ -58,11 +58,11 @@ control, phasing).
   lots; tree-clearing limits and stabilization timing matter for erosion
   control.
 - **Existing meadow / open field.** About 12 acres of old hay meadow in the
-  central and southern portions — the former farm field. Lower infiltration in
+  central and southern portions, the former farm field. Lower infiltration in
   places due to a compacted plow pan.
 - **Sloping terrain.** The site grades from roughly elevation 412 ft in the
-  northwest down to about 358 ft near the southeast corner — a fall of ~54 ft
-  across the parcel, with steeper 8–15% slopes on the western wood line.
+  northwest down to about 358 ft near the southeast corner, a fall of ~54 ft
+  across the parcel, with steeper 8 to 15% slopes on the western wood line.
 - **Existing drainage path / stream.** An intermittent stream (locally "Brook
   Run") crosses the southeast corner and conveys site runoff toward the Quarry
   Road culvert. Existing condition is predominantly sheet flow and shallow
@@ -80,8 +80,8 @@ control, phasing).
   restrictive layer in the lower meadow. Infiltration feasibility varies sharply
   across the site.
 - **Seasonal high groundwater concern.** The soils report notes seasonal high
-  groundwater within ~2.5–3.5 ft of existing grade in the low southeastern
-  portion of the site — directly relevant to whether infiltration and
+  groundwater within ~2.5 to 3.5 ft of existing grade in the low southeastern
+  portion of the site, directly relevant to whether infiltration and
   bioretention have adequate separation to groundwater.
 - **Adjacent residential neighborhood.** An established neighborhood
   ("Quarry Road Estates") abuts the south and east property lines. Abutters are
@@ -98,7 +98,7 @@ control, phasing).
 - **Cul-de-sac / loop road.** Two residential branches: a loop road serving the
   upland lots and a cul-de-sac ("Meadow Court") serving the lower lots near the
   buffer.
-- **Residential lots.** 47 single-family lots, typical 0.4–0.7 acre, with
+- **Residential lots.** 47 single-family lots, typical 0.4 to 0.7 acre, with
   proposed impervious cover from rooftops and driveways.
 - **Sidewalks / pedestrian paths.** Concrete sidewalk along one side of Brookside
   Drive and a short gravel path connection toward an open-space parcel.
@@ -109,13 +109,13 @@ A mixed green-and-gray treatment train:
 
 - **Storm drain network.** Curb inlets, catch basins, and reinforced concrete /
   HDPE storm drain pipe conveying runoff from the roads toward the management
-  facilities. (Pipe material is one of the planted inconsistencies — see §7.)
+  facilities. (Pipe material is one of the planted inconsistencies, see §7.)
 - **Wet detention basin (Basin 1 / "Pond A").** A gray-infrastructure detention
   basin in the southeast low area providing peak-flow attenuation before the
   Quarry Road culvert outfall.
 - **Infiltration basin (Basin 2).** A green-infrastructure infiltration basin
   proposed in the meadow to reduce runoff volume and provide groundwater
-  recharge — feasibility hinges on infiltration testing and groundwater
+  recharge, feasibility hinges on infiltration testing and groundwater
   separation that are intentionally underdocumented.
 - **Bioretention areas / rain gardens.** Two roadside bioretention cells along
   Brookside Drive for water-quality treatment of road runoff.
@@ -149,9 +149,9 @@ A mixed green-and-gray treatment train:
 | Stakeholder | Role | Relevance to Review |
 | --- | --- | --- |
 | Meadowline Communities LLC | Developer / applicant | Submits the package; responds to comments |
-| Hartwell Civil Group (fictional) — Engineer of Record, "J. Okafor, PE" | Civil engineer of record | Prepares plans, calculations, stormwater report; stamps the design |
+| Hartwell Civil Group (fictional), Engineer of Record, "J. Okafor, PE" | Civil engineer of record | Prepares plans, calculations, stormwater report; stamps the design |
 | Town of Hartwell Planning Board | Approving authority | Acts on subdivision/site plan after technical review |
-| Town Engineer — "R. Alvarez, PE" | Primary reviewer (the v1 user) | Reviews completeness and technical adequacy; issues comments |
+| Town Engineer, "R. Alvarez, PE" | Primary reviewer (the v1 user) | Reviews completeness and technical adequacy; issues comments |
 | Hartwell Conservation Commission | Wetland/buffer authority | Reviews buffer impacts and outfalls near the wetland |
 | Department of Public Works (DPW) | Public infrastructure owner | Reviews road, drainage, and utility acceptance |
 | Fire Department | Life-safety reviewer | Reviews access, turnarounds, hydrants (future module relevance) |
@@ -173,9 +173,9 @@ Full seed records (IDs, expected key information, planted issues) are in
 | 1 | Site plan narrative / project description | Present | Describes project, phasing intent, stormwater approach |
 | 2 | Existing conditions plan | Present | Topography, wood line, meadow, stream, wetland, culvert |
 | 3 | Layout plan | Present | Lots, roads, cul-de-sac, sidewalks |
-| 4 | Grading and drainage plan | Present | Grading, storm drain, basins — uses "Pond A" label |
+| 4 | Grading and drainage plan | Present | Grading, storm drain, basins, uses "Pond A" label |
 | 5 | Utility plan | Present | Water, sewer, pump station, dry utilities |
-| 6 | Stormwater management report | Present | Design approach, BMPs — references a 25-year design storm; uses "Basin 1" label |
+| 6 | Stormwater management report | Present | Design approach, BMPs, references a 25-year design storm; uses "Basin 1" label |
 | 7 | Hydrology calculations | Present | Runoff/peak-flow calcs for existing and proposed |
 | 8 | Hydraulic calculations | Partial | Pipe/outlet sizing; **no downstream culvert capacity analysis** |
 | 9 | Soils / geotechnical report | Present | Soil groups, borings, **seasonal high groundwater noted** |
@@ -186,7 +186,7 @@ Full seed records (IDs, expected key information, planted issues) are in
 | 14 | Construction phasing plan | Present | Two-phase concept; inconsistent with E&SC plan |
 | 15 | Inspection notes | Present | One note flags **sediment at the basin outlet, no corrective action logged** |
 | 16 | RFI log | Present | RFI asks about **pipe material; no response recorded** |
-| 17 | Municipal review checklist | Present | Town's stormwater submission checklist — expects a **different design storm** than the report uses |
+| 17 | Municipal review checklist | Present | Town's stormwater submission checklist, expects a **different design storm** than the report uses |
 | 18 | Comment response letter | **Not yet submitted** | First submission; no responses yet |
 | 19 | Revised grading sheet C-3.1 (referenced) | **Referenced but not included** | Plan set cites a revised sheet C-3.1 that is absent |
 
@@ -202,7 +202,7 @@ They give the project depth beyond the planted document defects:
   groundwater is the controlling question.
 - **Downstream culvert capacity.** The existing 36-inch Quarry Road culvert and
   reported downstream ponding mean post-development peak flows must not worsen
-  downstream conditions — a downstream capacity discussion is expected.
+  downstream conditions, a downstream capacity discussion is expected.
 - **Wetland buffer encroachment.** Outfalls, riprap, and grading near the
   100-ft buffer require Conservation Commission coordination.
 - **Phased disturbance and stabilization timing.** Clearing 22 acres in phases
@@ -230,10 +230,10 @@ Each maps to a checklist item and an evaluation case in `SEED_DATA_PLAN.md`.
 | I-6 | Erosion & sediment control plan **does not clearly show construction phasing** consistent with the phasing plan. | Missing / conflicting | E&SC sequencing not tied to phasing. |
 | I-7 | Inspection note identifies **sediment at the basin outlet**, but **no corrective action is logged**. | Unresolved issue | Inspection deficiency without corrective-action closeout. |
 | I-8 | RFI asks about **pipe material**, but **no response is recorded**. | Unresolved RFI | Open RFI with no response. |
-| I-9 | Grading plan labels the basin **"Pond A"**; stormwater report calls it **"Basin 1"** — **inconsistent basin names**. | Conflicting reference | Inconsistent basin naming across documents. |
+| I-9 | Grading plan labels the basin **"Pond A"**; stormwater report calls it **"Basin 1"**, **inconsistent basin names**. | Conflicting reference | Inconsistent basin naming across documents. |
 | I-10 | Plan set **references a revised sheet C-3.1** that is **not included** in the package. | Missing document | Referenced revised sheet absent from submission. |
 
-A well-built v1 should also **avoid false positives** — for example, it should
+A well-built v1 should also **avoid false positives**, for example, it should
 *not* flag erosion controls as entirely missing (the E&SC plan exists; only its
 phasing linkage is weak), and it should *not* claim the project is "approved" or
 "compliant" anywhere.
@@ -255,5 +255,5 @@ Brookside Meadows is intentionally richer than the v1 review needs:
   Conservation Commission, DPW, Fire.
 
 The same seed project therefore carries every future module without new
-storytelling — exactly the "narrow v1, obvious platform" goal from
+storytelling, exactly the "narrow v1, obvious platform" goal from
 `PHASE_0_FOUNDATION.md`.

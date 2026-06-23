@@ -1456,15 +1456,19 @@ def seed_database(db: Session, *, force: bool = False) -> None:
 def main() -> None:
     """Create tables and load the seed data. Used by python -m app.db.seed."""
 
+    from app.db.seed_evidence import CHUNKS, FINDING_SOURCES, seed_evidence
+
     init_db()
     db = SessionLocal()
     try:
         seed_database(db, force=True)
+        seed_evidence(db, force=True)
         print(
             "Seeded Brookside Meadows: "
             f"{len(DOCUMENTS)} documents, {len(CHECKLIST)} checklist items, "
             f"{len(FINDINGS)} findings, {len(AUDIT_EVENTS)} audit events, "
-            f"{len(EVALUATION_CASES)} evaluation cases, {len(HOTSPOTS)} hotspots."
+            f"{len(EVALUATION_CASES)} evaluation cases, {len(HOTSPOTS)} hotspots, "
+            f"{len(CHUNKS)} document chunks, {len(FINDING_SOURCES)} finding sources."
         )
     finally:
         db.close()

@@ -53,6 +53,22 @@ PROHIBITED_FINAL_DECISION_WORDS: set[str] = {
     "meets all requirements",
 }
 
+# Evidence roles a finding source may carry. None of these is a conclusion.
+ALLOWED_EVIDENCE_ROLES: set[str] = {
+    "supports_finding",
+    "shows_missing_evidence",
+    "shows_conflict",
+    "context_only",
+    "requires_reviewer_confirmation",
+}
+
+# Standard note attached to retrieval and evidence responses to keep the
+# professional boundary explicit in API payloads and the UI.
+EVIDENCE_SAFETY_NOTE: str = (
+    "This is source evidence for reviewer evaluation, not a final engineering "
+    "conclusion."
+)
+
 # Sanctioned review-support phrasing, kept here for reference and reuse.
 SANCTIONED_REVIEW_LANGUAGE: set[str] = {
     "potential issue",
