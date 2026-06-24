@@ -38,6 +38,27 @@ def _short() -> str:
     return uuid.uuid4().hex[:8]
 
 
+# The AI review run id has the form "airun_<token>". A draft finding id reuses
+# the run token (without the "airun_" prefix) so it stays stable and readable.
+_RUN_ID_PREFIX = "airun_"
+_DRAFT_FINDING_PREFIX = "draft_"
+
+
+def _make_draft_finding_id(review_run_id: str, checklist_item_id: str) -> str:
+    """Compose a draft finding id from the run id and checklist item id.
+
+    The run token is the run id with its "airun_" prefix removed. Composing from
+    the named prefix keeps the historical id format exactly
+    ("draft_<token>_<checklist_item_id>") while staying robust if the run id
+    prefix scheme changes, unlike a hardcoded slice offset.
+    """
+
+    run_token = review_run_id
+    if run_token.startswith(_RUN_ID_PREFIX):
+        run_token = run_token[len(_RUN_ID_PREFIX) :]
+    return f"{_DRAFT_FINDING_PREFIX}{run_token}_{checklist_item_id}"
+
+
 def _audit(
     db: Session,
     *,
@@ -223,7 +244,9 @@ def start_ai_review_run(
             continue
 
         outcome = validate_ai_output(raw, set(chunk_ids))
-        draft_finding_id = f"draft_{review_run_id[6:]}_{item.checklist_item_id}"
+        draft_finding_id = _make_draft_finding_id(
+            review_run_id, item.checklist_item_id
+        )
 
         if outcome.ok and outcome.parsed is not None:
             parsed = outcome.parsed
