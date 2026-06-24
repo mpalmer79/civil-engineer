@@ -1,27 +1,29 @@
 # Civil Engineer AI Backend
 
 FastAPI backend for Civil Engineer AI: Stormwater Review Assistant. This is the
-Phase 7 backend. It serves seeded Brookside Meadows review data, document chunks,
+Phase 8 backend. It serves seeded Brookside Meadows review data, document chunks,
 and source evidence, runs a controlled AI review workflow that produces draft
 review-support findings, persists human review actions on those drafts, scores
 AI review runs against the expected findings, adds a plan sheet and CAD-aware
 review foundation (a plan sheet index, CAD-aware feature metadata, plan
-references, missing sheet detection, and plan consistency findings), and adds a
+references, missing sheet detection, and plan consistency findings), adds a
 plan sheet viewer layer (seeded sheet hotspots, a sheet viewer context, and
-human review actions on plan consistency findings).
+human review actions on plan consistency findings), and adds a review packet
+builder (a review-support packet draft with sections, items, evidence links, an
+evidence traceability matrix, and a printable summary).
 
 Civil Engineer AI is a review-support and evidence-organization system. It does
 not approve plans, certify compliance, stamp drawings, or replace a licensed
 Professional Engineer. Statuses, retrieval results, AI draft findings, human
-review actions, plan consistency findings, and sheet hotspots never use
-final-decision language, there is no action called approve, and every finding
-requires human review. The CAD-aware metadata and the sheet hotspots are seeded,
-not extracted from real CAD files, and the backend does not parse PDF, DWG, or
-DXF drawings or verify CAD.
+review actions, plan consistency findings, sheet hotspots, and review packet
+items never use final-decision language, there is no action called approve, and
+every finding requires human review. The CAD-aware metadata, the sheet hotspots,
+and the review packet are seeded, not extracted from real CAD files, and the
+backend does not parse PDF, DWG, or DXF drawings or verify CAD.
 
 The AI Review Assistant uses a deterministic mock provider by default, so the
 backend runs without any API key. Only an OpenAI live provider is implemented,
-and live provider calls are disabled by default. Phase 7 does not include
+and live provider calls are disabled by default. Phase 8 does not include
 embeddings, a vector store, PDF or CAD parsing, or authentication.
 
 ## Requirements
@@ -83,7 +85,7 @@ database.
 
 ```bash
 curl http://localhost:8000/health
-# {"status":"ok","service":"Civil Engineer AI Backend","phase":"7"}
+# {"status":"ok","service":"Civil Engineer AI Backend","phase":"8"}
 ```
 
 ## API route examples
@@ -167,7 +169,25 @@ curl -X POST http://localhost:8000/api/v1/plan-consistency-findings/plan_find_pr
   -H "Content-Type: application/json" \
   -d '{"action":"needs_follow_up","reviewer_name":"Town Engineer","reviewer_note":"Confirm basin label."}'
 curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-consistency-review-actions
+
+# Review packet builder (Phase 8)
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/review-packets/generate
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/review-packets
+curl http://localhost:8000/api/v1/review-packets/PACKET_ID
+curl http://localhost:8000/api/v1/review-packets/PACKET_ID/summary
+curl http://localhost:8000/api/v1/review-packets/PACKET_ID/traceability
+curl http://localhost:8000/api/v1/review-packets/PACKET_ID/print-view
+curl -X POST http://localhost:8000/api/v1/review-packets/PACKET_ID/items/ITEM_ID/review-actions \
+  -H "Content-Type: application/json" \
+  -d '{"action_type":"reviewer_checked","reviewer_name":"Town Engineer","reviewer_note":"Checked."}'
+curl -X PATCH http://localhost:8000/api/v1/review-packets/PACKET_ID/items/ITEM_ID/status \
+  -H "Content-Type: application/json" \
+  -d '{"new_status":"needs_follow_up","reviewer_note":"Follow up needed."}'
 ```
+
+The `GET /review-packets/{packet_id}`, `/traceability`, and `/print-view`
+endpoints write an audit event recording reviewer access. This read side effect
+is intentional so the decision history shows access to the packet.
 
 ## AI provider configuration
 
@@ -205,7 +225,7 @@ backend/
       seed_evidence.py Seeded chunks, finding sources, retrieval queries
       seed_plansheets.py Seeded plan sheets, CAD metadata, references, and hotspots
     schemas/           Pydantic response schemas
-    services/          Read and retrieval service layer (no route logic in routes)
+    services/          Service layer including the review packet builder
     api/
       routes.py        Aggregate v1 router
       v1/              One module per resource

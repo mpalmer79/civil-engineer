@@ -17,9 +17,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import api_router
 from app.core.config import get_settings
 from app.db.database import SessionLocal, init_db
-from app.db.seed import seed_database
+from app.db.seed import PROJECT_ID, seed_database
 from app.db.seed_evidence import seed_evidence
 from app.db.seed_plansheets import seed_plansheets
+from app.services import review_packet_service
 
 settings = get_settings()
 
@@ -34,6 +35,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         seed_database(db)
         seed_evidence(db)
         seed_plansheets(db)
+        # Generate a review-support packet draft once so the Phase 8 read
+        # endpoints and frontend have data without a manual generate call.
+        review_packet_service.ensure_packet(db, PROJECT_ID)
     finally:
         db.close()
     yield
@@ -43,15 +47,15 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
         "Review-support API for stormwater and land development review. "
-        "Phase 7 adds a reviewer-facing plan sheet viewer: seeded sheet "
-        "hotspots over a synthetic plan sheet preview, a sheet viewer context, "
-        "and human review actions on plan consistency findings. The sheet "
-        "preview and hotspots are seeded review-support metadata, not parsed "
-        "PDF, DWG, DXF, or Autodesk data. The mock AI provider remains the "
-        "default and no live AI calls, embeddings, vector retrieval, or CAD "
-        "parsing are included."
+        "Phase 8 adds a review packet builder: a review-support packet draft "
+        "assembled from seeded documents, checklist items, findings, plan "
+        "sheets, CAD-aware metadata, hotspots, plan consistency findings, and "
+        "review actions, plus an evidence traceability matrix and a printable "
+        "draft view. The packet does not approve plans, certify compliance, "
+        "verify CAD, or validate a design. The mock AI provider remains the "
+        "default and no live AI calls, PDF or CAD parsing are included."
     ),
-    version="0.7.0",
+    version="0.8.0",
     lifespan=lifespan,
 )
 

@@ -1,10 +1,10 @@
 # CAD Integration Roadmap
 
 This document describes a staged path for CAD integration in Civil Engineer AI.
-It is a plan, not a statement of current capability. As of Phase 7, no Autodesk
+It is a plan, not a statement of current capability. As of Phase 8, no Autodesk
 integration exists, and the system does not parse PDF, DWG, or DXF files, verify
-CAD drawings, or perform final design review. The CAD-aware metadata and the
-plan sheet viewer hotspots are seeded and synthetic.
+CAD drawings, or perform final design review. The CAD-aware metadata, the plan
+sheet viewer hotspots, and the review packet are seeded and synthetic.
 
 Civil Engineer AI is a review-support and evidence-organization system at every
 stage below. None of these stages changes that boundary: the system organizes
@@ -35,7 +35,7 @@ with seeded hotspots and does not parse real PDF, DWG, DXF, or Autodesk data and
 does not extract CAD geometry. Real sheet rendering from submitted PDFs is
 deferred to a later stage. See `PHASE_7_PLAN_SHEET_VIEWER.md`.
 
-## Stage 3: Phase 8, DXF metadata extraction or structured plan exports
+## Stage 3: a later phase, DXF metadata extraction or structured plan exports
 
 - Read structured metadata from DXF files or structured plan exports.
 - Populate the existing `cad_metadata` records with a `future_cad_extraction`
@@ -45,7 +45,7 @@ deferred to a later stage. See `PHASE_7_PLAN_SHEET_VIEWER.md`.
 This stage begins reading real CAD-derived metadata, still as review-support
 evidence, not as a verified or certified drawing.
 
-## Stage 4: Phase 9, Autodesk Platform Services viewer exploration
+## Stage 4: a later phase, Autodesk Platform Services viewer exploration
 
 - Explore Autodesk Platform Services for viewing and deriving metadata from CAD
   models.
@@ -55,7 +55,7 @@ evidence, not as a verified or certified drawing.
 This stage is exploratory. It does not imply that Autodesk integration is
 production ready, and any work here remains review-support only.
 
-## Stage 5: Phase 10, CAD and document cross-reference automation
+## Stage 5: a later phase, CAD and document cross-reference automation
 
 - Automate the cross-reference between CAD-derived metadata and document
   evidence.

@@ -16,7 +16,8 @@ flowchart LR
     P4 --> P5[Phase 5\nEvaluation]
     P5 --> P6[Phase 6\nPlan Sheet & CAD]
     P6 --> P7[Phase 7\nSheet Viewer & Hotspots]
-    P7 --> P8[Phase 8+\nCAD Extraction & Expansion]
+    P7 --> P8[Phase 8\nReview Packet Builder]
+    P8 --> P9[Phase 9+\nCAD Extraction & Expansion]
 ```
 
 ---
@@ -213,7 +214,35 @@ or validates a design. See `PHASE_7_PLAN_SHEET_VIEWER.md` and
 
 ---
 
-## Phase 8 and beyond, CAD Extraction and Expansion Modules
+## Phase 8, Review Packet Builder and Evidence Traceability
+
+**Goal:** Assemble the evidence from prior phases into a structured
+review-support packet draft for a human reviewer, without parsing real files.
+
+- Review packet, section, item, evidence link, and reviewer action models
+- A packet generation service that builds a packet draft from seeded data
+- An evidence traceability matrix and a printable review-support summary
+- Reviewer actions and item status updates on packet items
+- Audit events for packet generation, viewing, traceability and print requests,
+  reviewer actions, and status changes
+
+**Exit criteria:** A reviewer can generate a Brookside Meadows review-support
+packet draft, inspect issue groups and linked evidence, view the traceability
+matrix, record reviewer actions, and open a printable draft summary. The packet
+is a draft assembled from seeded review-support data and does not approve plans,
+certify compliance, verify CAD, or validate the design.
+
+**Delivered in Phase 8:** the `review_packets`, `review_packet_sections`,
+`review_packet_items`, `review_packet_evidence_links`, and
+`review_packet_reviewer_actions` tables, a packet generation service producing an
+eight-section packet, the traceability and print-view endpoints, reviewer action
+and status endpoints, the Review Packet pages and components, audit events, and
+backend tests. There is no action called approve. See
+`PHASE_8_REVIEW_PACKET_BUILDER.md`.
+
+---
+
+## Phase 9 and beyond, CAD Extraction and Expansion Modules
 
 **Goal:** Begin reading real CAD-derived metadata (DXF extraction or structured
 plan exports, then Autodesk viewer exploration, per
