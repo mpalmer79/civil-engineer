@@ -6,6 +6,7 @@ import SectionCard from "@/components/SectionCard";
 import { getHotspots, projectMetrics } from "@/lib/api";
 
 const heroCtas = [
+  { href: "/cad-intake", label: "CAD Intake" },
   { href: "/response-package", label: "Response Package" },
   { href: "/workflow-board", label: "Workflow Board" },
   { href: "/review-packet", label: "Review Packet" },
@@ -53,7 +54,7 @@ export default async function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
               <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
-                Phase 10 · External Review Response Package
+                Phase 11 · Real CAD File Intake and DXF Parsing Foundation
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Civil Engineer AI
@@ -435,6 +436,50 @@ export default async function HomePage() {
               The real workflow runs review packet, workflow board, response
               package, then human review. Civil Engineer AI never issues the
               response itself.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Phase 11: real CAD file intake and DXF parsing foundation */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="surface-card p-6">
+            <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
+              Phase 11
+            </span>
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+              Real CAD file intake and DXF parsing foundation
+            </h2>
+            <p className="mt-3 max-w-3xl text-slate-600">
+              Civil Engineer AI now parses a real DXF file. It extracts layers,
+              entities, blocks, and text, detects sheet references, detail
+              references, pipe, basin, outfall, and wetland buffer labels with
+              confidence labels, compares extracted references against the
+              seeded plan sheets, and raises review-support findings for missing
+              matches, unclear details, possible label conflicts, and
+              uncategorized layers. Findings can become workflow items. This is
+              DXF metadata extraction only. It does not verify CAD, validate
+              geometry or design, certify compliance, approve plans, or replace
+              a licensed Professional Engineer. DXF is the only supported file
+              type; DWG, Autodesk, OCR, and GIS remain future work.
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                The{" "}
+                <a
+                  href="/cad-intake"
+                  className="font-semibold text-water-700 hover:text-water-600"
+                >
+                  CAD Intake
+                </a>{" "}
+                page parses the bundled Brookside Meadows sample DXF and shows
+                the extracted metadata and findings.
+              </div>
+              <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                Browser DXF upload is a later enhancement. This phase uses safe
+                backend fixture-based parsing with real DXF extraction.
+              </div>
             </div>
           </div>
         </div>
