@@ -64,7 +64,7 @@ export default async function ChecklistPage() {
             </li>
             <li className="rounded-lg bg-slate-50 px-3 py-2">
               Human review is required before any final action. Statuses never
-              include "approved" or "compliant."
+              include &quot;approved&quot; or &quot;compliant.&quot;
             </li>
           </ul>
         </SectionCard>
