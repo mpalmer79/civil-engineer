@@ -1,7 +1,7 @@
 # Civil Engineer AI Backend
 
 FastAPI backend for Civil Engineer AI: Stormwater Review Assistant. This is the
-Phase 10 backend. It serves seeded Brookside Meadows review data, document
+Phase 11 backend. It serves seeded Brookside Meadows review data, document
 chunks, and source evidence, runs a controlled AI review workflow that produces
 draft review-support findings, persists human review actions on those drafts,
 scores AI review runs against the expected findings, adds a plan sheet and
@@ -13,26 +13,30 @@ builder (a review-support packet draft with sections, items, evidence links, an
 evidence traceability matrix, and a printable summary), adds a reviewer
 workflow board (workflow items promoted from the packet, with status
 transitions, reviewer notes, follow-up requests, and a ready-for-handoff
-summary), and adds an external review response package (ready-for-handoff
-workflow items turned into a draft external response grouped by topic, with
-draft wording, an attachment checklist, a printable draft, a package history,
-and a human review sign-off checklist).
+summary), adds an external review response package (ready-for-handoff workflow
+items turned into a draft external response grouped by topic, with draft
+wording, an attachment checklist, a printable draft, a package history, and a
+human review sign-off checklist), and adds real CAD intake for DXF files (parsed
+with ezdxf into layers, entities, blocks, text, reference candidates, and
+review-support findings, compared against the seeded plan sheets).
 
 Civil Engineer AI is a review-support and evidence-organization system. It does
 not send email, approve plans, certify compliance, stamp drawings, or replace a
 licensed Professional Engineer. Statuses, retrieval results, AI draft findings,
 human review actions, plan consistency findings, sheet hotspots, review packet
-items, workflow items, and response items never use final-decision language,
-there is no action called approve, and every finding requires human review. The
-CAD-aware metadata, the sheet hotspots, the review packet, the workflow board,
-and the response package are seeded, not extracted from real CAD files, and the
-backend does not parse PDF, DWG, or DXF drawings or verify CAD.
+items, workflow items, response items, and CAD review findings never use
+final-decision language, there is no action called approve, and every finding
+requires human review. The seeded CAD-aware metadata, sheet hotspots, review
+packet, workflow board, and response package remain synthetic. Phase 11 parses
+real DXF files for review-support metadata only; it does not verify CAD, validate
+the design, or parse DWG, PDF, GIS, or run OCR.
 
 The AI Review Assistant uses a deterministic mock provider by default, so the
 backend runs without any API key. Only an OpenAI live provider is implemented,
-and live provider calls are disabled by default. Phase 10 does not include
-embeddings, a vector store, PDF or CAD parsing, authentication, or email
-sending.
+and live provider calls are disabled by default. Phase 11 parses DXF files with
+ezdxf (a lightweight pure-Python library) but does not include embeddings, a
+vector store, DWG or PDF parsing, Autodesk or GIS integration, OCR, computer
+vision, authentication, or email sending.
 
 ## Requirements
 
@@ -230,14 +234,36 @@ curl -X PATCH http://localhost:8000/api/v1/response-packages/RESPONSE_PACKAGE_ID
 curl -X POST http://localhost:8000/api/v1/response-packages/RESPONSE_PACKAGE_ID/items/RESPONSE_ITEM_ID/notes \
   -H "Content-Type: application/json" \
   -d '{"reviewer_name":"Town Engineer","reviewer_note":"Discuss with the applicant first."}'
+
+# Real CAD (DXF) intake (Phase 11)
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-files \
+  -H "Content-Type: application/json" \
+  -d '{"sample_key":"brookside_meadows","uploaded_by":"Town Engineer"}'
+curl -X POST http://localhost:8000/api/v1/cad-files/CAD_FILE_ID/parse
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-files
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-parse-runs
+curl http://localhost:8000/api/v1/cad-parse-runs/PARSE_RUN_ID/summary
+curl http://localhost:8000/api/v1/cad-parse-runs/PARSE_RUN_ID/layers
+curl http://localhost:8000/api/v1/cad-parse-runs/PARSE_RUN_ID/text
+curl http://localhost:8000/api/v1/cad-parse-runs/PARSE_RUN_ID/reference-candidates
+curl -X POST http://localhost:8000/api/v1/cad-parse-runs/PARSE_RUN_ID/compare-plan-sheets
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-review-findings
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/workflow-items/from-cad-findings
+curl http://localhost:8000/api/v1/cad-files/CAD_FILE_ID/review-context
 ```
 
 The `GET /review-packets/{packet_id}`, `/traceability`, and `/print-view`
 endpoints write an audit event recording reviewer access. The workflow item
 detail, item history, board summary, and ready-for-handoff endpoints do the
 same, as do the response package detail, print view, attachments, and history
+endpoints, and the CAD parse summary, layers, text, and CAD file review context
 endpoints. This read side effect is intentional so the decision history shows
 reviewer access.
+
+DXF is the only supported CAD file type. For this phase, intake uses the bundled
+Brookside Meadows sample DXF resolved by sample_key, so no arbitrary path is read
+from the client. Browser DXF upload is a later enhancement. DWG parsing is out of
+scope.
 
 ## AI provider configuration
 
@@ -275,7 +301,8 @@ backend/
       seed_evidence.py Seeded chunks, finding sources, retrieval queries
       seed_plansheets.py Seeded plan sheets, CAD metadata, references, and hotspots
     schemas/           Pydantic response schemas
-    services/          Service layer including the review packet builder, workflow board, and response package
+    services/          Service layer including the review packet builder, workflow board, response package, and CAD intake
+    cad_samples/       Bundled sample DXF fixture and its generator
     api/
       routes.py        Aggregate v1 router
       v1/              One module per resource

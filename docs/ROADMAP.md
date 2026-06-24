@@ -19,7 +19,8 @@ flowchart LR
     P7 --> P8[Phase 8\nReview Packet Builder]
     P8 --> P9[Phase 9\nReviewer Workflow Board]
     P9 --> P10[Phase 10\nResponse Package]
-    P10 --> P11[Phase 11+\nCAD Extraction & Expansion]
+    P10 --> P11[Phase 11\nDXF Intake Foundation]
+    P11 --> P12[Phase 12+\nCAD Extraction & Expansion]
 ```
 
 ---
@@ -311,14 +312,52 @@ correspondence. See `PHASE_10_RESPONSE_PACKAGE.md`.
 
 ---
 
-## Phase 11 and beyond, CAD Extraction and Expansion Modules
+## Phase 11, Real CAD File Intake and DXF Parsing Foundation
 
-**Goal:** Begin reading real CAD-derived metadata (DXF extraction or structured
-plan exports, then Autodesk viewer exploration, per
-`CAD_INTEGRATION_ROADMAP.md`) and reuse the engine to grow from a stormwater
-assistant into a land development review platform. Each review module mostly
-adds **checklist content, document types, and evaluation cases**, not new
-infrastructure.
+**Goal:** Begin reading real CAD files by parsing DXF metadata and connecting it
+to the existing plan sheet and review workflows, without claiming CAD
+verification or design validation.
+
+- A DXF parser dependency (ezdxf, a lightweight pure-Python library)
+- CAD file, parse run, layer, entity, block, text, reference candidate, and
+  review finding models
+- A parsing service that extracts layers, entities, blocks, and text, detects
+  sheet, detail, pipe, basin, outfall, and wetland buffer references with
+  confidence labels, and raises review-support findings
+- Reference comparison against the seeded Phase 6 plan sheets
+- Workflow items created from CAD findings
+- A small synthetic Brookside Meadows DXF fixture
+- CAD Intake pages and components
+- Audit events for file creation, parse start, parse completion or failure,
+  reads, comparison, finding creation, and workflow item creation
+
+**Exit criteria:** A reviewer can load and parse the sample Brookside Meadows
+DXF, inspect extracted layers, text, blocks, reference candidates, and review
+findings, compare extracted references against the seeded plan sheets, and
+create workflow items from CAD findings. DXF is the only supported file type.
+Parsing extracts review-support metadata and does not verify CAD, validate
+geometry or design, certify compliance, or approve plans.
+
+**Delivered in Phase 11:** the `cad_file_uploads`, `cad_parse_runs`,
+`cad_layer_extracts`, `cad_entity_extracts`, `cad_block_extracts`,
+`cad_text_extracts`, `cad_reference_candidates`, and `cad_review_findings`
+tables, a DXF parsing service built on ezdxf, the CAD intake endpoints, the CAD
+Intake pages and components, a synthetic sample DXF fixture, audit events, and
+backend tests. There is no action called approve, and parsing does not verify
+CAD or validate the design. DWG parsing, Autodesk and Civil 3D integration,
+GIS, OCR, and computer vision remain out of scope. See
+`PHASE_11_CAD_INTAKE_DXF_PARSING.md` and `CAD_INTEGRATION_ROADMAP.md`.
+
+---
+
+## Phase 12 and beyond, CAD Extraction and Expansion Modules
+
+**Goal:** Build on the Phase 11 DXF parsing foundation toward broader CAD
+extraction (DWG support, Autodesk and Civil 3D object intelligence, and
+structured plan exports, per `CAD_INTEGRATION_ROADMAP.md`) and reuse the engine
+to grow from a stormwater assistant into a land development review platform.
+Each review module mostly adds **checklist content, document types, and
+evaluation cases**, not new infrastructure.
 
 Future expansion areas:
 
