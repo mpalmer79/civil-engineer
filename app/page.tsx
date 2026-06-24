@@ -6,7 +6,7 @@ import SectionCard from "@/components/SectionCard";
 import { getHotspots, projectMetrics } from "@/lib/api";
 
 const heroCtas = [
-  { href: "/project", label: "Project dashboard" },
+  { href: "/response-package", label: "Response Package" },
   { href: "/workflow-board", label: "Workflow Board" },
   { href: "/review-packet", label: "Review Packet" },
   { href: "/sheet-viewer", label: "Sheet Viewer" },
@@ -53,7 +53,7 @@ export default async function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
               <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
-                Phase 9 · Reviewer Workflow Board and Issue Resolution Tracking
+                Phase 10 · External Review Response Package
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Civil Engineer AI
@@ -393,6 +393,48 @@ export default async function HomePage() {
                 Reviewers open follow-up requests, record notes, and review the
                 ready-for-handoff summary, all under human control.
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Phase 10: external review response package */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="surface-card p-6">
+          <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
+            Phase 10
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+            External review response package
+          </h2>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            A reviewer can now turn the ready-for-handoff workflow items into a
+            structured draft external response package for an applicant, design
+            engineer, municipal reviewer, or internal review team. The package
+            groups items by topic, drafts plain review-support wording, keeps
+            traceability to the workflow item, packet item, and source evidence,
+            and adds an attachment checklist, a printable draft, a package
+            history, and a human review sign-off checklist. The package is draft
+            external communication support. It does not send email, approve
+            plans, certify compliance, stamp drawings, verify CAD, or validate
+            the design, and there is no approve action.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              The{" "}
+              <a
+                href="/response-package"
+                className="font-semibold text-water-700 hover:text-water-600"
+              >
+                Response Package
+              </a>{" "}
+              page generates the draft, groups items into sections, and lets a
+              reviewer edit draft wording and manage statuses.
+            </div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              The real workflow runs review packet, workflow board, response
+              package, then human review. Civil Engineer AI never issues the
+              response itself.
             </div>
           </div>
         </div>
