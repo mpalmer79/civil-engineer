@@ -28,6 +28,10 @@ const styles: Record<string, string> = {
   reviewer_confirmed: "bg-water-50 text-water-700 ring-water-600/20",
   not_applicable: "bg-slate-100 text-slate-600 ring-slate-300",
   needs_more_information: "bg-yellow-50 text-yellow-700 ring-yellow-600/20",
+  // Phase 8 review packet statuses
+  draft: "bg-slate-100 text-slate-600 ring-slate-300",
+  reviewer_checked: "bg-water-50 text-water-700 ring-water-600/20",
+  excluded_from_packet: "bg-slate-100 text-slate-500 ring-slate-300",
 };
 
 const labels: Record<string, string> = {
@@ -46,6 +50,8 @@ const labels: Record<string, string> = {
   reviewer_confirmed: "reviewer confirmed",
   not_applicable: "not applicable",
   needs_more_information: "needs more information",
+  reviewer_checked: "reviewer checked",
+  excluded_from_packet: "excluded from packet",
 };
 
 export default function PlanStatusBadge({ status }: { status: string }) {

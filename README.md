@@ -15,31 +15,33 @@ professional engineering judgment.
 
 ---
 
-## Current phase: Phase 7, Plan Sheet Viewer and Sheet Hotspot Review
+## Current phase: Phase 8, Review Packet Builder and Evidence Traceability
 
-Phase 7 adds a reviewer-facing plan sheet viewer on top of the Phase 6 plan
-sheet and CAD-aware foundation. It adds plan sheet intelligence in a viewer,
-not real PDF or CAD parsing. It adds:
+Phase 8 adds a reviewer-facing Review Packet Builder. It assembles documents,
+checklist items, findings, plan sheets, CAD-aware metadata, sheet hotspots, plan
+consistency findings, human review actions, and audit evidence into a structured
+review-support packet draft. It adds:
 
-- A **plan sheet viewer** with a synthetic sheet preview and a numbered hotspot
-  overlay
-- **Seeded sheet hotspots** placed with percentage coordinates and linked to
-  plan references, CAD-aware metadata, plan consistency findings, documents, and
-  checklist items
-- A **sheet viewer context** endpoint that bundles a sheet with its hotspots and
-  related evidence
-- **Plan consistency review actions** (needs follow up, reviewer confirmed, not
-  applicable, needs more information), persisted with status transitions
-- **Audit events** for viewer context requests, hotspot inspection, and plan
-  review actions
-- Backend tests for the hotspots, the viewer context, and the review actions
+- A **review packet builder** that generates a Brookside Meadows packet draft
+  from seeded data
+- **Packet sections and items** that connect back to existing entities through
+  evidence links
+- An **evidence traceability matrix** that traces each item to its source
+  evidence
+- A **printable review-support summary** with professional limitation language
+- **Reviewer actions and item status updates** (needs follow up, reviewer
+  checked, excluded from packet, needs more information)
+- **Audit events** for packet generation, viewing, traceability and print
+  requests, reviewer actions, and status changes
+- Backend tests for packet generation, evidence links, traceability, print view,
+  reviewer actions, status updates, and the safety language boundary
 
-Phase 7 keeps the professional boundary: the sheet preview and hotspots are
-seeded review-support metadata, not parsed PDF, DWG, DXF, or Autodesk data, and
-the system does not verify CAD, validate the design, certify compliance, or make
-final engineering decisions. There is no action called approve and no status
-such as approved, certified, fully compliant, or safe. Live AI calls are
-disabled by default, so the project runs without any API key.
+Phase 8 keeps the professional boundary: the packet is a draft assembled from
+seeded review-support data, not parsed PDF, DWG, DXF, or Autodesk files, and it
+does not approve plans, certify compliance, stamp drawings, verify CAD, validate
+the design, or make final engineering decisions. There is no action called
+approve and no status such as approved, certified, verified, compliant, or safe.
+Live AI calls are disabled by default, so the project runs without any API key.
 
 Earlier phases established the product foundation:
 
@@ -58,6 +60,8 @@ Earlier phases established the product foundation:
 - Phase 6: a plan sheet index, CAD-aware civil feature metadata, plan
   references, missing sheet detection, and plan consistency findings, with Plan
   Sheets and CAD Review pages
+- Phase 7: a plan sheet viewer with seeded sheet hotspots, a sheet viewer
+  context, and plan consistency review actions
 
 The reviewed fixture remains **Brookside Meadows**: a 47-lot single-family
 subdivision in the Town of Hartwell with a green-and-gray stormwater treatment
@@ -159,10 +163,20 @@ All data routes use the `/api/v1` prefix. Seeded project id:
 - `GET /api/v1/plan-sheets/{sheet_id}/sheet-hotspots` and `GET /api/v1/plan-sheets/{sheet_id}/viewer-context` and `GET /api/v1/sheet-hotspots/{hotspot_id}`
 - `POST /api/v1/plan-consistency-findings/{plan_finding_id}/review-actions` and `GET /api/v1/plan-consistency-findings/{plan_finding_id}/review-actions`
 - `GET /api/v1/projects/{project_id}/plan-consistency-review-actions`
+- `POST /api/v1/projects/{project_id}/review-packets/generate` and `GET /api/v1/projects/{project_id}/review-packets`
+- `GET /api/v1/review-packets/{packet_id}` and `GET /api/v1/review-packets/{packet_id}/summary`
+- `GET /api/v1/review-packets/{packet_id}/traceability` and `GET /api/v1/review-packets/{packet_id}/print-view`
+- `POST /api/v1/review-packets/{packet_id}/items/{item_id}/review-actions` and `PATCH /api/v1/review-packets/{packet_id}/items/{item_id}/status`
 
 The frontend adds a `/sheet-viewer` page (sheet picker) and a
 `/sheet-viewer/{sheetId}` page (the plan sheet viewer with hotspots and review
-panels), alongside the existing `/plan-sheets` and `/cad-review` pages.
+panels), plus a `/review-packet` page and a `/review-packet/{packetId}` page (the
+review packet builder), alongside the existing `/plan-sheets` and `/cad-review`
+pages.
+
+The `GET /api/v1/review-packets/{packet_id}`, `/traceability`, and `/print-view`
+endpoints write an audit event recording reviewer access. This read side effect
+is intentional so the decision history shows access to the packet.
 
 ---
 
@@ -206,35 +220,37 @@ civil-engineer/
 - [`docs/PHASE_5_HUMAN_REVIEW_AND_EVALUATION.md`](docs/PHASE_5_HUMAN_REVIEW_AND_EVALUATION.md): Phase 5 human review and evaluation scoring
 - [`docs/PHASE_6_PLAN_SHEET_CAD_FOUNDATION.md`](docs/PHASE_6_PLAN_SHEET_CAD_FOUNDATION.md): Phase 6 plan sheet and CAD-aware review foundation
 - [`docs/PHASE_7_PLAN_SHEET_VIEWER.md`](docs/PHASE_7_PLAN_SHEET_VIEWER.md): Phase 7 plan sheet viewer and sheet hotspot review
+- [`docs/PHASE_8_REVIEW_PACKET_BUILDER.md`](docs/PHASE_8_REVIEW_PACKET_BUILDER.md): Phase 8 review packet builder and evidence traceability
 - [`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md): staged CAD integration path
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture
 - [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md): research basis
 
 ---
 
-## What Phase 7 proves
+## What Phase 8 proves
 
-- The product gives reviewers spatial context: a reviewer can open a plan sheet,
-  see numbered hotspots over a synthetic preview, and inspect the connected plan
-  references, CAD-aware metadata, documents, checklist items, and plan
-  consistency findings in place.
-- The review lifecycle extends to plan findings: a reviewer records needs follow
-  up, reviewer confirmed, not applicable, or needs more information on a plan
-  consistency finding, persisted with a status transition.
-- The professional boundary holds: the sheet preview and hotspots are seeded
-  review-support metadata, not parsed PDF, DWG, DXF, or Autodesk data, and the
-  system does not verify CAD, validate the design, or approve plans. There is no
-  action called approve.
-- The decision history is preserved: viewer context requests, hotspot
-  inspection, and plan review actions all write audit events.
-- The project runs without any API key: the mock provider is the default and
-  live calls are disabled.
+- The product can assemble a review-support packet: a reviewer generates a draft
+  that groups documents, checklist items, findings, plan sheets, CAD-aware
+  metadata, hotspots, plan consistency findings, and reviewer actions into
+  structured sections.
+- Evidence is traceable: every packet item links back to its source entities,
+  and the traceability matrix shows the links row by row.
+- The review lifecycle extends to packet items: a reviewer records needs follow
+  up, reviewer checked, excluded from packet, or needs more information, and the
+  item status updates.
+- The professional boundary holds: the packet is a draft from seeded
+  review-support data, not parsed PDF, DWG, DXF, or Autodesk files, and it does
+  not approve plans, certify compliance, verify CAD, or validate the design.
+  There is no action called approve.
+- The decision history is preserved: packet generation, viewing, traceability
+  and print requests, reviewer actions, and status changes all write audit
+  events.
 
 ## What comes next
 
-- **Phase 8**: DXF metadata extraction or structured plan exports that populate
-  the existing CAD-aware metadata, with real sheet rendering and Autodesk viewer
-  exploration as later stages.
+- A later phase could let a reviewer compose a packet from a chosen subset of
+  findings, export the printable summary to a file, and track packet revisions.
+  Real CAD-derived metadata extraction remains a separate, later track.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) and
 [`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md) for the full

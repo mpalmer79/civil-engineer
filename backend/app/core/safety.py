@@ -171,6 +171,33 @@ ALLOWED_SHEET_HOTSPOT_TYPES: set[str] = {
 # safety determination.
 ALLOWED_SHEET_HOTSPOT_SEVERITIES: set[str] = {"low", "medium", "high"}
 
+# Phase 8 review packet statuses. These apply to packets, sections, and items.
+# None implies a final engineering decision, approval, or certification.
+ALLOWED_REVIEW_PACKET_STATUSES: set[str] = {
+    "draft",
+    "needs_follow_up",
+    "reviewer_checked",
+    "excluded_from_packet",
+    "needs_more_information",
+}
+
+# Phase 8 review packet reviewer actions a reviewer may record on a packet item.
+# There is intentionally no action called approve, and each maps to a packet
+# status of the same name.
+ALLOWED_REVIEW_PACKET_ACTIONS: set[str] = {
+    "needs_follow_up",
+    "reviewer_checked",
+    "excluded_from_packet",
+    "needs_more_information",
+}
+
+PACKET_ACTION_TO_STATUS: dict[str, str] = {
+    "needs_follow_up": "needs_follow_up",
+    "reviewer_checked": "reviewer_checked",
+    "excluded_from_packet": "excluded_from_packet",
+    "needs_more_information": "needs_more_information",
+}
+
 # Evidence roles a finding source may carry. None of these is a conclusion.
 ALLOWED_EVIDENCE_ROLES: set[str] = {
     "supports_finding",

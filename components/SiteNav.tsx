@@ -9,6 +9,7 @@ const links = [
   { href: "/plan-sheets", label: "Plan Sheets" },
   { href: "/cad-review", label: "CAD Review" },
   { href: "/sheet-viewer", label: "Sheet Viewer" },
+  { href: "/review-packet", label: "Review Packet" },
   { href: "/ai-review", label: "AI Review" },
   { href: "/human-review", label: "Human Review" },
   { href: "/audit", label: "Audit" },
@@ -47,7 +48,7 @@ export default function SiteNav() {
         </div>
         <div className="md:hidden">
           <span className="badge bg-slate-100 text-slate-600 ring-slate-200">
-            Phase 7
+            Phase 8
           </span>
         </div>
       </nav>
