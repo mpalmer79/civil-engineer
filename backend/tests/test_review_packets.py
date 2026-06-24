@@ -197,6 +197,34 @@ def test_item_status_update(client: TestClient, packet: dict) -> None:
     assert response.json()["reviewer_status"] == "reviewer_checked"
 
 
+def test_stored_action_types_are_in_allowed_set(
+    client: TestClient, packet: dict
+) -> None:
+    # Cleanup fix: a PATCH status update must record the target status as the
+    # action_type, never a synthetic "status_update". Every stored reviewer
+    # action_type must be in the allowed packet action set.
+    from app.core.safety import ALLOWED_REVIEW_PACKET_ACTIONS
+    from app.db import models
+    from app.db.database import SessionLocal
+
+    pid = packet["packet_id"]
+    item = _first_finding_item(packet)
+    client.patch(
+        f"/api/v1/review-packets/{pid}/items/{item['item_id']}/status",
+        json={"new_status": "needs_more_information", "reviewer_note": "More info."},
+    )
+
+    db = SessionLocal()
+    try:
+        actions = db.query(models.ReviewPacketReviewerAction).all()
+        assert actions
+        for action in actions:
+            assert action.action_type in ALLOWED_REVIEW_PACKET_ACTIONS
+            assert action.action_type != "status_update"
+    finally:
+        db.close()
+
+
 def test_invalid_action_rejected(client: TestClient, packet: dict) -> None:
     pid = packet["packet_id"]
     item = _first_finding_item(packet)

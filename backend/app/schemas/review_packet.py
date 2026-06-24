@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ReviewPacketEvidenceLinkRead(BaseModel):
@@ -42,7 +42,7 @@ class ReviewPacketItemRead(BaseModel):
     reviewer_note: str | None
     requires_human_review: bool
     display_order: int
-    evidence_links: list[ReviewPacketEvidenceLinkRead] = []
+    evidence_links: list[ReviewPacketEvidenceLinkRead] = Field(default_factory=list)
 
 
 class ReviewPacketSectionRead(BaseModel):
@@ -56,7 +56,7 @@ class ReviewPacketSectionRead(BaseModel):
     summary: str
     status: str
     requires_human_review: bool
-    items: list[ReviewPacketItemRead] = []
+    items: list[ReviewPacketItemRead] = Field(default_factory=list)
 
 
 class ReviewPacketRead(BaseModel):
@@ -76,7 +76,7 @@ class ReviewPacketRead(BaseModel):
 
 
 class ReviewPacketDetail(ReviewPacketRead):
-    sections: list[ReviewPacketSectionRead] = []
+    sections: list[ReviewPacketSectionRead] = Field(default_factory=list)
 
 
 class ReviewPacketReviewerActionRead(BaseModel):

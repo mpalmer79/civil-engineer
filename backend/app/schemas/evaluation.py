@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class SeededResult(BaseModel):
@@ -68,4 +68,4 @@ class AIEvaluationResultRead(BaseModel):
 
 
 class AIEvaluationResultDetail(AIEvaluationResultRead):
-    matches: list[AIEvaluationMatchRead] = []
+    matches: list[AIEvaluationMatchRead] = Field(default_factory=list)

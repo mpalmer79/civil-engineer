@@ -49,7 +49,7 @@ def generate_review_packet(
         raise HTTPException(
             status_code=exc.status_code, detail=exc.message
         ) from exc
-    detail = review_packet_service._assemble_detail(db, packet)
+    detail = review_packet_service.assemble_packet_detail(db, packet)
     return ReviewPacketDetail.model_validate(detail)
 
 

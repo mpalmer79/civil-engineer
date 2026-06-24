@@ -20,7 +20,7 @@ from app.db.database import SessionLocal, init_db
 from app.db.seed import PROJECT_ID, seed_database
 from app.db.seed_evidence import seed_evidence
 from app.db.seed_plansheets import seed_plansheets
-from app.services import review_packet_service
+from app.services import review_packet_service, workflow_service
 
 settings = get_settings()
 
@@ -38,6 +38,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         # Generate a review-support packet draft once so the Phase 8 read
         # endpoints and frontend have data without a manual generate call.
         review_packet_service.ensure_packet(db, PROJECT_ID)
+        # Generate the reviewer workflow board once so the Phase 9 read
+        # endpoints and frontend have data without a manual generate call.
+        workflow_service.ensure_workflow_board(db, PROJECT_ID)
     finally:
         db.close()
     yield
@@ -47,15 +50,16 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
         "Review-support API for stormwater and land development review. "
-        "Phase 8 adds a review packet builder: a review-support packet draft "
-        "assembled from seeded documents, checklist items, findings, plan "
-        "sheets, CAD-aware metadata, hotspots, plan consistency findings, and "
-        "review actions, plus an evidence traceability matrix and a printable "
-        "draft view. The packet does not approve plans, certify compliance, "
-        "verify CAD, or validate a design. The mock AI provider remains the "
-        "default and no live AI calls, PDF or CAD parsing are included."
+        "Phase 9 adds a reviewer workflow board: it promotes the review packet "
+        "items into an operational board where a human reviewer can triage "
+        "items, request follow-up or more information, record notes, mark items "
+        "reviewer checked or excluded, and mark items ready for handoff to a "
+        "licensed Professional Engineer. The board does not approve plans, "
+        "certify compliance, verify CAD, or validate a design. The mock AI "
+        "provider remains the default and no live AI calls, PDF or CAD parsing "
+        "are included."
     ),
-    version="0.8.0",
+    version="0.9.0",
     lifespan=lifespan,
 )
 

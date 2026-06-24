@@ -576,6 +576,20 @@ def list_review_packets(db: Session, project_id: str) -> list[models.ReviewPacke
     return list(db.scalars(stmt).all())
 
 
+def list_evidence_links_for_item(
+    db: Session, item_id: str
+) -> list[models.ReviewPacketEvidenceLink]:
+    """Return the evidence links for one packet item (public accessor)."""
+
+    return list(
+        db.scalars(
+            select(models.ReviewPacketEvidenceLink).where(
+                models.ReviewPacketEvidenceLink.item_id == item_id
+            )
+        ).all()
+    )
+
+
 def _links_by_item(db: Session, packet_id: str) -> dict[str, list]:
     links = db.scalars(
         select(models.ReviewPacketEvidenceLink).where(
@@ -600,7 +614,7 @@ def _items_by_section(db: Session, packet_id: str) -> dict[str, list]:
     return grouped
 
 
-def _assemble_detail(db: Session, packet: models.ReviewPacket) -> dict:
+def assemble_packet_detail(db: Session, packet: models.ReviewPacket) -> dict:
     sections = db.scalars(
         select(models.ReviewPacketSection)
         .where(models.ReviewPacketSection.packet_id == packet.packet_id)
@@ -682,7 +696,7 @@ def get_review_packet(db: Session, packet_id: str) -> dict | None:
         metadata={"packet_id": packet_id},
     )
     db.commit()
-    return _assemble_detail(db, packet)
+    return assemble_packet_detail(db, packet)
 
 
 def get_review_packet_traceability(db: Session, packet_id: str) -> dict | None:
@@ -768,7 +782,7 @@ def get_review_packet_print_view(db: Session, packet_id: str) -> dict | None:
     if packet is None:
         return None
 
-    detail = _assemble_detail(db, packet)
+    detail = assemble_packet_detail(db, packet)
     print_sections = [
         {
             "title": s["title"],
@@ -1009,7 +1023,7 @@ def update_review_packet_item_status(
     _record_action(
         db,
         item=item,
-        action_type="status_update",
+        action_type=new_status,
         new_status=new_status,
         reviewer_note=note or "Status updated by reviewer.",
         reviewer_name=(reviewer_name or "reviewer").strip(),
