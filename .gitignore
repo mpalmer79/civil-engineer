@@ -149,3 +149,9 @@ __pycache__/
 .pytest_cache/
 *.db
 .env
+
+# Python coverage artifacts
+.coverage
+backend/.coverage
+htmlcov/
+coverage.xml
