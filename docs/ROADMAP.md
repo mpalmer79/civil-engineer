@@ -18,7 +18,8 @@ flowchart LR
     P6 --> P7[Phase 7\nSheet Viewer & Hotspots]
     P7 --> P8[Phase 8\nReview Packet Builder]
     P8 --> P9[Phase 9\nReviewer Workflow Board]
-    P9 --> P10[Phase 10+\nCAD Extraction & Expansion]
+    P9 --> P10[Phase 10\nResponse Package]
+    P10 --> P11[Phase 11+\nCAD Extraction & Expansion]
 ```
 
 ---
@@ -276,7 +277,41 @@ evidence to a human reviewer, not issuing a decision. See
 
 ---
 
-## Phase 10 and beyond, CAD Extraction and Expansion Modules
+## Phase 10, External Review Response Package
+
+**Goal:** Turn the ready-for-handoff workflow items into a structured draft
+external response package a human reviewer can prepare for an applicant, design
+engineer, municipal reviewer, or internal review team, without sending any
+correspondence.
+
+- Response package, section, item, evidence link, attachment, and action models
+- A generation service that promotes workflow items, groups them by topic, and
+  drafts plain external-review wording
+- Response item draft text editing and item and package status management
+- An attachment checklist, a printable draft response, a package history, and a
+  human review sign-off checklist
+- Audit events for generation, viewing, print view, attachments, history, and
+  status, draft text, and note changes
+
+**Exit criteria:** A reviewer can generate a Brookside Meadows draft response
+package, group items into topical sections, edit draft wording, manage item and
+package statuses, review linked evidence and attachments, inspect package
+history, complete a human review sign-off checklist, and open a printable draft.
+The package is draft external communication support and does not send email,
+approve plans, certify compliance, verify CAD, or validate the design.
+
+**Delivered in Phase 10:** the `response_packages`, `response_package_sections`,
+`response_package_items`, `response_package_evidence_links`,
+`response_package_attachments`, and `response_package_actions` tables, a
+generation service with topical grouping and draft wording, the package, print
+view, attachments, history, summary, status, item status, draft text, and note
+endpoints, the Response Package pages and components, audit events, and backend
+tests. There is no action called approve, and the system does not send
+correspondence. See `PHASE_10_RESPONSE_PACKAGE.md`.
+
+---
+
+## Phase 11 and beyond, CAD Extraction and Expansion Modules
 
 **Goal:** Begin reading real CAD-derived metadata (DXF extraction or structured
 plan exports, then Autodesk viewer exploration, per
