@@ -247,6 +247,73 @@ ALLOWED_FOLLOW_UP_STATUSES: set[str] = {
     "closed_without_decision",
 }
 
+# Phase 10 external review response package statuses. These describe where a
+# draft external response package sits in the reviewer's preparation workflow.
+# None implies a final engineering decision, approval, certification, or
+# compliance state. archived means the reviewer set the draft aside.
+ALLOWED_RESPONSE_PACKAGE_STATUSES: set[str] = {
+    "draft",
+    "needs_revision",
+    "reviewer_checked",
+    "ready_for_handoff",
+    "archived",
+}
+
+# Phase 10 response item statuses. These describe whether a draft response item
+# is part of the draft communication and whether a reviewer has checked it. None
+# implies a final engineering decision.
+ALLOWED_RESPONSE_ITEM_STATUSES: set[str] = {
+    "draft",
+    "included",
+    "excluded",
+    "needs_revision",
+    "reviewer_checked",
+}
+
+# Phase 10 response action types recorded when a reviewer acts on a response
+# package or item. There is intentionally no action called approve, and none
+# approves, certifies, verifies, or validates anything.
+ALLOWED_RESPONSE_ACTIONS: set[str] = {
+    "package_generated",
+    "item_included",
+    "item_excluded",
+    "item_revised",
+    "reviewer_checked",
+    "note_added",
+    "package_marked_ready_for_handoff",
+    "package_archived",
+}
+
+# Maps a requested response item status transition to the action type it
+# records. draft is the seeded initial status and is not a manual transition
+# target, so it is intentionally absent: requesting it is rejected.
+RESPONSE_ITEM_STATUS_TO_ACTION: dict[str, str] = {
+    "included": "item_included",
+    "excluded": "item_excluded",
+    "needs_revision": "item_revised",
+    "reviewer_checked": "reviewer_checked",
+}
+
+# Maps a requested response package status transition to the action type it
+# records. draft is the seeded initial status and is not a manual transition
+# target. needs_revision reuses the item_revised action because the action set
+# has a single revision action and the audit metadata records the status pair.
+RESPONSE_PACKAGE_STATUS_TO_ACTION: dict[str, str] = {
+    "needs_revision": "item_revised",
+    "reviewer_checked": "reviewer_checked",
+    "ready_for_handoff": "package_marked_ready_for_handoff",
+    "archived": "package_archived",
+}
+
+# Phase 10 response package audience types. These describe who a draft response
+# is addressed to. They are routing labels, not engineering authority.
+ALLOWED_RESPONSE_AUDIENCE_TYPES: set[str] = {
+    "applicant",
+    "design_engineer",
+    "municipal_reviewer",
+    "internal_review_team",
+}
+
 # Evidence roles a finding source may carry. None of these is a conclusion.
 ALLOWED_EVIDENCE_ROLES: set[str] = {
     "supports_finding",

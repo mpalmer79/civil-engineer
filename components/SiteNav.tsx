@@ -11,6 +11,7 @@ const links = [
   { href: "/sheet-viewer", label: "Sheet Viewer" },
   { href: "/review-packet", label: "Review Packet" },
   { href: "/workflow-board", label: "Workflow Board" },
+  { href: "/response-package", label: "Response Package" },
   { href: "/ai-review", label: "AI Review" },
   { href: "/human-review", label: "Human Review" },
   { href: "/audit", label: "Audit" },
@@ -49,7 +50,7 @@ export default function SiteNav() {
         </div>
         <div className="md:hidden">
           <span className="badge bg-slate-100 text-slate-600 ring-slate-200">
-            Phase 9
+            Phase 10
           </span>
         </div>
       </nav>

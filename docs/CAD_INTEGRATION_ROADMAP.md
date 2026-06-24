@@ -1,10 +1,11 @@
 # CAD Integration Roadmap
 
 This document describes a staged path for CAD integration in Civil Engineer AI.
-It is a plan, not a statement of current capability. As of Phase 8, no Autodesk
+It is a plan, not a statement of current capability. As of Phase 10, no Autodesk
 integration exists, and the system does not parse PDF, DWG, or DXF files, verify
 CAD drawings, or perform final design review. The CAD-aware metadata, the plan
-sheet viewer hotspots, and the review packet are seeded and synthetic.
+sheet viewer hotspots, the review packet, the workflow board, and the response
+package are seeded and synthetic.
 
 Civil Engineer AI is a review-support and evidence-organization system at every
 stage below. None of these stages changes that boundary: the system organizes

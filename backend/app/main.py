@@ -20,7 +20,11 @@ from app.db.database import SessionLocal, init_db
 from app.db.seed import PROJECT_ID, seed_database
 from app.db.seed_evidence import seed_evidence
 from app.db.seed_plansheets import seed_plansheets
-from app.services import review_packet_service, workflow_service
+from app.services import (
+    response_package_service,
+    review_packet_service,
+    workflow_service,
+)
 
 settings = get_settings()
 
@@ -41,6 +45,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         # Generate the reviewer workflow board once so the Phase 9 read
         # endpoints and frontend have data without a manual generate call.
         workflow_service.ensure_workflow_board(db, PROJECT_ID)
+        # Generate the draft external response package once so the Phase 10 read
+        # endpoints and frontend have data without a manual generate call.
+        response_package_service.ensure_response_package(db, PROJECT_ID)
     finally:
         db.close()
     yield
@@ -50,16 +57,17 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
         "Review-support API for stormwater and land development review. "
-        "Phase 9 adds a reviewer workflow board: it promotes the review packet "
-        "items into an operational board where a human reviewer can triage "
-        "items, request follow-up or more information, record notes, mark items "
-        "reviewer checked or excluded, and mark items ready for handoff to a "
-        "licensed Professional Engineer. The board does not approve plans, "
+        "Phase 10 adds an external review response package: it turns "
+        "ready-for-handoff workflow items into a structured draft response a "
+        "human reviewer can prepare for an applicant, design engineer, municipal "
+        "reviewer, or internal review team, with grouped sections, draft "
+        "wording, an attachment checklist, a printable draft view, and a human "
+        "review sign-off checklist. It does not send email, approve plans, "
         "certify compliance, verify CAD, or validate a design. The mock AI "
         "provider remains the default and no live AI calls, PDF or CAD parsing "
         "are included."
     ),
-    version="0.9.0",
+    version="0.10.0",
     lifespan=lifespan,
 )
 
