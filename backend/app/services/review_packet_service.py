@@ -576,6 +576,20 @@ def list_review_packets(db: Session, project_id: str) -> list[models.ReviewPacke
     return list(db.scalars(stmt).all())
 
 
+def list_evidence_links_for_item(
+    db: Session, item_id: str
+) -> list[models.ReviewPacketEvidenceLink]:
+    """Return the evidence links for one packet item (public accessor)."""
+
+    return list(
+        db.scalars(
+            select(models.ReviewPacketEvidenceLink).where(
+                models.ReviewPacketEvidenceLink.item_id == item_id
+            )
+        ).all()
+    )
+
+
 def _links_by_item(db: Session, packet_id: str) -> dict[str, list]:
     links = db.scalars(
         select(models.ReviewPacketEvidenceLink).where(

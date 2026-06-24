@@ -22,6 +22,7 @@ from app.api.v1 import (
     projects,
     retrieval,
     review_packets,
+    workflow,
 )
 
 api_router = APIRouter()
@@ -42,3 +43,4 @@ api_router.include_router(plan_references.router)
 api_router.include_router(plan_consistency.router)
 api_router.include_router(plan_sheet_hotspots.router)
 api_router.include_router(review_packets.router)
+api_router.include_router(workflow.router)
