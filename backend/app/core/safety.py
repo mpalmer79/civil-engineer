@@ -128,7 +128,48 @@ ALLOWED_PLAN_FINDING_STATUSES: set[str] = {
     "rejected_by_reviewer",
     "escalated",
     "requested_more_information",
+    # Phase 7 plan consistency review action outcomes.
+    "needs_follow_up",
+    "reviewer_confirmed",
+    "not_applicable",
+    "needs_more_information",
 }
+
+# Phase 7 plan consistency review actions a reviewer may record on a plan
+# consistency finding. None of these is a final engineering decision, and there
+# is intentionally no action called "approve". Each maps to a review-support
+# finding status of the same name.
+ALLOWED_PLAN_REVIEW_ACTIONS: set[str] = {
+    "needs_follow_up",
+    "reviewer_confirmed",
+    "not_applicable",
+    "needs_more_information",
+}
+
+PLAN_REVIEW_ACTION_TO_STATUS: dict[str, str] = {
+    "needs_follow_up": "needs_follow_up",
+    "reviewer_confirmed": "reviewer_confirmed",
+    "not_applicable": "not_applicable",
+    "needs_more_information": "needs_more_information",
+}
+
+# Phase 7 sheet hotspot types. Each is a descriptive review-support annotation
+# category placed over a seeded plan sheet preview. None implies a final
+# decision, CAD verification, or design validation.
+ALLOWED_SHEET_HOTSPOT_TYPES: set[str] = {
+    "missing_referenced_sheet",
+    "basin_label_conflict",
+    "maintenance_ownership",
+    "pipe_reference",
+    "unclear_revision",
+    "erosion_control_detail",
+    "basin_outlet_detail",
+    "wetland_buffer_setback",
+}
+
+# Phase 7 sheet hotspot severities. These describe review attention, not a
+# safety determination.
+ALLOWED_SHEET_HOTSPOT_SEVERITIES: set[str] = {"low", "medium", "high"}
 
 # Evidence roles a finding source may carry. None of these is a conclusion.
 ALLOWED_EVIDENCE_ROLES: set[str] = {

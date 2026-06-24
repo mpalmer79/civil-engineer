@@ -12,6 +12,9 @@ nothing here verifies a drawing as correct or a design as sound.
 
 from __future__ import annotations
 
+import uuid
+from datetime import datetime, timezone
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -631,6 +634,222 @@ PLAN_REFERENCES = [
 ]
 
 
+# Phase 7 sheet hotspots. Each hotspot is a seeded review-support annotation
+# placed over a synthetic plan sheet preview using percentage coordinates. The
+# related_plan_finding_ids use the deterministic id form plan_find_<reference_id>
+# produced by the plan consistency service. None of this is extracted CAD data.
+PLAN_SHEET_HOTSPOTS = [
+    {
+        "hotspot_id": "hs_c30_missing_c31",
+        "sheet_id": "sheet_c30",
+        "hotspot_type": "missing_referenced_sheet",
+        "label": "Revised sheet C-3.1 referenced but not included",
+        "description": (
+            "The grading and narrative cite a revised grading sheet C-3.1 that "
+            "is not in the package. Confirm the revised sheet is submitted "
+            "before relying on this grading area."
+        ),
+        "x_percent": 8.0,
+        "y_percent": 10.0,
+        "width_percent": 26.0,
+        "height_percent": 12.0,
+        "severity": "high",
+        "related_plan_reference_ids": ["pref_report_c31"],
+        "related_cad_metadata_ids": [],
+        "related_plan_finding_ids": ["plan_find_pref_report_c31"],
+        "related_document_ids": ["doc_site_narrative", "doc_revised_c31"],
+        "related_checklist_item_ids": ["chk_referenced_sheets_present"],
+        "review_note": (
+            "Referenced revised grading sheet is missing from the submitted "
+            "package."
+        ),
+        "requires_human_review": True,
+    },
+    {
+        "hotspot_id": "hs_c30_basin_conflict",
+        "sheet_id": "sheet_c30",
+        "hotspot_type": "basin_label_conflict",
+        "label": "Basin label conflict: Basin A vs Basin 1",
+        "description": (
+            "The grading plan and drainage calculations label the wet "
+            "detention basin Basin A, while the stormwater report labels the "
+            "same feature Basin 1. Confirm a single consistent label."
+        ),
+        "x_percent": 54.0,
+        "y_percent": 58.0,
+        "width_percent": 22.0,
+        "height_percent": 16.0,
+        "severity": "medium",
+        "related_plan_reference_ids": ["pref_calcs_basin_a"],
+        "related_cad_metadata_ids": ["cad_basin_a", "cad_basin_1"],
+        "related_plan_finding_ids": ["plan_find_pref_calcs_basin_a"],
+        "related_document_ids": [
+            "doc_grading_drainage",
+            "doc_stormwater_report",
+        ],
+        "related_checklist_item_ids": ["chk_reference_consistency"],
+        "review_note": (
+            "Conflicting basin labels across the plan set and report need a "
+            "single consistent label."
+        ),
+        "requires_human_review": True,
+    },
+    {
+        "hotspot_id": "hs_c30_wet_basin_oem",
+        "sheet_id": "sheet_c30",
+        "hotspot_type": "maintenance_ownership",
+        "label": "Wet detention basin maintenance ownership unclear",
+        "description": (
+            "The O&M plan references wet detention basin maintenance, but plan "
+            "sheet ownership notes for the facility are unclear. Confirm the "
+            "responsible maintenance party."
+        ),
+        "x_percent": 60.0,
+        "y_percent": 30.0,
+        "width_percent": 20.0,
+        "height_percent": 12.0,
+        "severity": "high",
+        "related_plan_reference_ids": ["pref_oem_wet_basin"],
+        "related_cad_metadata_ids": ["cad_wet_detention_basin"],
+        "related_plan_finding_ids": ["plan_find_pref_oem_wet_basin"],
+        "related_document_ids": ["doc_oem_plan"],
+        "related_checklist_item_ids": ["chk_oem_owner"],
+        "review_note": (
+            "Maintenance ownership for the wet detention basin is not clearly "
+            "documented on the plan set."
+        ),
+        "requires_human_review": True,
+    },
+    {
+        "hotspot_id": "hs_c40_pipe_p12",
+        "sheet_id": "sheet_c40",
+        "hotspot_type": "pipe_reference",
+        "label": "Pipe P-12 material response missing",
+        "description": (
+            "The RFI log references Pipe P-12 and asks about pipe material, but "
+            "no material response is recorded. Confirm the pipe material before "
+            "relying on this segment."
+        ),
+        "x_percent": 30.0,
+        "y_percent": 44.0,
+        "width_percent": 24.0,
+        "height_percent": 10.0,
+        "severity": "medium",
+        "related_plan_reference_ids": ["pref_rfi_pipe_p12"],
+        "related_cad_metadata_ids": ["cad_pipe_p12"],
+        "related_plan_finding_ids": ["plan_find_pref_rfi_pipe_p12"],
+        "related_document_ids": ["doc_rfi_log"],
+        "related_checklist_item_ids": ["chk_rfi_closure"],
+        "review_note": "Open RFI on Pipe P-12 material has no recorded response.",
+        "requires_human_review": True,
+    },
+    {
+        "hotspot_id": "hs_c60_outfall_detail",
+        "sheet_id": "sheet_c60",
+        "hotspot_type": "basin_outlet_detail",
+        "label": "Outfall 1 corrective action not shown",
+        "description": (
+            "An inspection note flags sediment at Outfall 1, but the corrective "
+            "action is not shown on a current plan sheet. Confirm where the "
+            "corrective action is documented."
+        ),
+        "x_percent": 18.0,
+        "y_percent": 62.0,
+        "width_percent": 22.0,
+        "height_percent": 14.0,
+        "severity": "high",
+        "related_plan_reference_ids": ["pref_inspection_outfall"],
+        "related_cad_metadata_ids": ["cad_outfall_1"],
+        "related_plan_finding_ids": ["plan_find_pref_inspection_outfall"],
+        "related_document_ids": ["doc_inspection_notes"],
+        "related_checklist_item_ids": ["chk_inspection_closeout"],
+        "review_note": (
+            "Corrective action for the Outfall 1 sediment note is not located "
+            "on a current plan sheet."
+        ),
+        "requires_human_review": True,
+    },
+    {
+        "hotspot_id": "hs_c51_unclear_phasing",
+        "sheet_id": "sheet_c51",
+        "hotspot_type": "unclear_revision",
+        "label": "Construction sequence notes unclear on C-5.1",
+        "description": (
+            "The erosion control plan references Sheet C-5.1 for construction "
+            "sequencing, but the sequence notes are incomplete or unclear. "
+            "Request clarified sequence notes."
+        ),
+        "x_percent": 40.0,
+        "y_percent": 20.0,
+        "width_percent": 28.0,
+        "height_percent": 14.0,
+        "severity": "medium",
+        "related_plan_reference_ids": ["pref_escp_c51"],
+        "related_cad_metadata_ids": [],
+        "related_plan_finding_ids": ["plan_find_pref_escp_c51"],
+        "related_document_ids": ["doc_escp", "doc_phasing_plan"],
+        "related_checklist_item_ids": ["chk_escp_phasing"],
+        "review_note": (
+            "Construction sequence notes on Sheet C-5.1 are incomplete or "
+            "unclear."
+        ),
+        "requires_human_review": True,
+    },
+    {
+        "hotspot_id": "hs_c50_construction_entrance",
+        "sheet_id": "sheet_c50",
+        "hotspot_type": "erosion_control_detail",
+        "label": "Construction entrance and silt fence detail review",
+        "description": (
+            "The stabilized construction entrance and perimeter silt fence are "
+            "shown on the erosion control plan. Confirm the details align with "
+            "the construction sequencing on Sheet C-5.1."
+        ),
+        "x_percent": 12.0,
+        "y_percent": 70.0,
+        "width_percent": 24.0,
+        "height_percent": 12.0,
+        "severity": "low",
+        "related_plan_reference_ids": ["pref_escp_entrance"],
+        "related_cad_metadata_ids": ["cad_construction_entrance", "cad_silt_fence"],
+        "related_plan_finding_ids": ["plan_find_pref_escp_c51"],
+        "related_document_ids": ["doc_escp"],
+        "related_checklist_item_ids": ["chk_erosion_controls"],
+        "review_note": (
+            "Erosion control entrance and silt fence details to confirm against "
+            "phasing."
+        ),
+        "requires_human_review": True,
+    },
+    {
+        "hotspot_id": "hs_c80_wetland_buffer",
+        "sheet_id": "sheet_c80",
+        "hotspot_type": "wetland_buffer_setback",
+        "label": "Wetland buffer setback near outfall",
+        "description": (
+            "The 100-ft town wetland buffer runs along the southeast boundary "
+            "near the stream and an outfall. Confirm proposed work respects the "
+            "buffer setback."
+        ),
+        "x_percent": 66.0,
+        "y_percent": 72.0,
+        "width_percent": 26.0,
+        "height_percent": 16.0,
+        "severity": "medium",
+        "related_plan_reference_ids": [],
+        "related_cad_metadata_ids": ["cad_wetland_buffer"],
+        "related_plan_finding_ids": [],
+        "related_document_ids": ["doc_existing_conditions"],
+        "related_checklist_item_ids": ["chk_outfall_identified"],
+        "review_note": (
+            "Wetland buffer setback near the outfall needs reviewer "
+            "confirmation."
+        ),
+        "requires_human_review": True,
+    },
+]
+
+
 def plan_data_is_loaded(db: Session) -> bool:
     """Return True if plan sheets are already seeded for the project."""
 
@@ -656,6 +875,8 @@ def seed_plansheets(db: Session, *, force: bool = False) -> None:
         if not force:
             return
         for model in (
+            models.PlanConsistencyReviewAction,
+            models.PlanSheetHotspot,
             models.PlanConsistencyFinding,
             models.PlanReference,
             models.CadMetadata,
@@ -681,6 +902,30 @@ def seed_plansheets(db: Session, *, force: bool = False) -> None:
     # sheets so the findings endpoints return data immediately after seeding.
     plan_consistency_service.run_consistency_check(db, PROJECT_ID)
 
+    # Seed the Phase 7 sheet hotspots after the findings exist, since hotspots
+    # reference plan consistency findings.
+    db.add_all(
+        models.PlanSheetHotspot(project_id=PROJECT_ID, **hotspot)
+        for hotspot in PLAN_SHEET_HOTSPOTS
+    )
+    db.add(
+        models.AuditEvent(
+            audit_event_id=f"audit_plan_{uuid.uuid4().hex[:12]}",
+            project_id=PROJECT_ID,
+            event_type="sheet_hotspot_review_data_seeded",
+            actor_type="system",
+            related_entity_type="plan_sheet_hotspots",
+            related_entity_id=PROJECT_ID,
+            description=(
+                f"Seeded {len(PLAN_SHEET_HOTSPOTS)} plan sheet hotspots as "
+                "review-support annotations, not extracted CAD geometry."
+            ),
+            timestamp=datetime.now(timezone.utc),
+            event_metadata={"hotspot_count": len(PLAN_SHEET_HOTSPOTS)},
+        )
+    )
+    db.commit()
+
 
 def main() -> None:
     """Create tables and load the plan data. Used by python -m app.db.seed_plansheets."""
@@ -692,7 +937,8 @@ def main() -> None:
         print(
             "Seeded Brookside Meadows plan data: "
             f"{len(PLAN_SHEETS)} plan sheets, {len(CAD_METADATA)} CAD metadata "
-            f"records, {len(PLAN_REFERENCES)} plan references."
+            f"records, {len(PLAN_REFERENCES)} plan references, "
+            f"{len(PLAN_SHEET_HOTSPOTS)} sheet hotspots."
         )
     finally:
         db.close()

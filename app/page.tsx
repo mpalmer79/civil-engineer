@@ -7,9 +7,9 @@ import { getHotspots, projectMetrics } from "@/lib/api";
 
 const heroCtas = [
   { href: "/project", label: "Project dashboard" },
+  { href: "/sheet-viewer", label: "Sheet Viewer" },
   { href: "/plan-sheets", label: "Plan Sheets" },
   { href: "/cad-review", label: "CAD Review" },
-  { href: "/ai-review", label: "AI Review" },
 ];
 
 const metricCards = [
@@ -53,7 +53,7 @@ export default async function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
               <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
-                Phase 6 · Plan Sheet and CAD-Aware Review Foundation
+                Phase 7 · Plan Sheet Viewer and Sheet Hotspot Review
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Civil Engineer AI
@@ -272,6 +272,45 @@ export default async function HomePage() {
                 page shows CAD-aware feature metadata, plan references, and plan
                 consistency findings.
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Phase 7: plan sheet viewer and sheet hotspot review */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="surface-card p-6">
+          <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
+            Phase 7
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+            Plan sheet viewer and sheet hotspot review
+          </h2>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            A reviewer can now open a plan sheet, see seeded visual hotspots over
+            a synthetic sheet preview, and inspect the connected plan references,
+            CAD-aware metadata, documents, checklist items, and plan consistency
+            findings in place. Reviewers record review-support actions on plan
+            consistency findings. The sheet preview and hotspots are seeded
+            review-support metadata, not parsed PDF, DWG, DXF, or Autodesk data,
+            and nothing here verifies CAD, certifies compliance, or replaces a
+            licensed engineer.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              The{" "}
+              <a
+                href="/sheet-viewer"
+                className="font-semibold text-water-700 hover:text-water-600"
+              >
+                Sheet Viewer
+              </a>{" "}
+              opens a Brookside Meadows sheet with seeded hotspot annotations.
+            </div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Each hotspot links to plan consistency findings a reviewer can
+              mark needs follow up, reviewer confirmed, not applicable, or needs
+              more information.
             </div>
           </div>
         </div>

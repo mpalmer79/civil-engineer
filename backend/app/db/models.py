@@ -565,3 +565,77 @@ class PlanConsistencyFinding(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow
     )
+
+
+class PlanSheetHotspot(Base):
+    """A seeded review-support annotation placed over a plan sheet preview.
+
+    Phase 7 adds a reviewer-facing plan sheet viewer. A hotspot is a seeded
+    rectangular annotation (percentage coordinates) over a synthetic plan sheet
+    preview that points a reviewer at a civil feature, plan reference, or plan
+    consistency finding. Hotspots are seeded review-support metadata, not
+    extracted CAD geometry or verified plan locations. They never carry final
+    approval, certification, or CAD verification language.
+    """
+
+    __tablename__ = "plan_sheet_hotspots"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    hotspot_id: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    sheet_id: Mapped[str] = mapped_column(
+        ForeignKey("plan_sheets.sheet_id"), nullable=False
+    )
+    hotspot_type: Mapped[str] = mapped_column(String, nullable=False)
+    label: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    x_percent: Mapped[float] = mapped_column(Float, nullable=False)
+    y_percent: Mapped[float] = mapped_column(Float, nullable=False)
+    width_percent: Mapped[float] = mapped_column(Float, nullable=False)
+    height_percent: Mapped[float] = mapped_column(Float, nullable=False)
+    severity: Mapped[str] = mapped_column(String, nullable=False)
+    related_plan_reference_ids: Mapped[list] = mapped_column(JSON, default=list)
+    related_cad_metadata_ids: Mapped[list] = mapped_column(JSON, default=list)
+    related_plan_finding_ids: Mapped[list] = mapped_column(JSON, default=list)
+    related_document_ids: Mapped[list] = mapped_column(JSON, default=list)
+    related_checklist_item_ids: Mapped[list] = mapped_column(JSON, default=list)
+    review_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    requires_human_review: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )
+
+
+class PlanConsistencyReviewAction(Base):
+    """A persisted human review action on a plan consistency finding.
+
+    Phase 7 lets a reviewer record an action on a plan consistency finding:
+    needs_follow_up, reviewer_confirmed, not_applicable, or
+    needs_more_information. There is intentionally no action called approve, and
+    no action approves a plan, certifies compliance, verifies CAD, or validates
+    a design. Every action keeps the finding a review-support finding under
+    human control.
+    """
+
+    __tablename__ = "plan_consistency_review_actions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    review_action_id: Mapped[str] = mapped_column(
+        String, unique=True, nullable=False
+    )
+    plan_finding_id: Mapped[str] = mapped_column(
+        ForeignKey("plan_consistency_findings.plan_finding_id"), nullable=False
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    reviewer_name: Mapped[str] = mapped_column(String, nullable=False)
+    action: Mapped[str] = mapped_column(String, nullable=False)
+    reviewer_note: Mapped[str] = mapped_column(Text, nullable=False)
+    previous_status: Mapped[str] = mapped_column(String, nullable=False)
+    new_status: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow
+    )

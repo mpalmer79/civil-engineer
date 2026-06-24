@@ -23,6 +23,11 @@ const styles: Record<string, string> = {
   unclear_revision: "bg-yellow-50 text-yellow-700 ring-yellow-600/20",
   cad_metadata_gap: "bg-amber-50 text-amber-700 ring-amber-600/20",
   requires_human_review: "bg-amber-50 text-amber-700 ring-amber-600/20",
+  // Phase 7 plan consistency review action statuses
+  needs_follow_up: "bg-amber-50 text-amber-700 ring-amber-600/20",
+  reviewer_confirmed: "bg-water-50 text-water-700 ring-water-600/20",
+  not_applicable: "bg-slate-100 text-slate-600 ring-slate-300",
+  needs_more_information: "bg-yellow-50 text-yellow-700 ring-yellow-600/20",
 };
 
 const labels: Record<string, string> = {
@@ -37,6 +42,10 @@ const labels: Record<string, string> = {
   unclear_revision: "unclear revision",
   cad_metadata_gap: "CAD metadata gap",
   requires_human_review: "requires human review",
+  needs_follow_up: "needs follow up",
+  reviewer_confirmed: "reviewer confirmed",
+  not_applicable: "not applicable",
+  needs_more_information: "needs more information",
 };
 
 export default function PlanStatusBadge({ status }: { status: string }) {
