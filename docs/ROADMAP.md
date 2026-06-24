@@ -17,12 +17,13 @@ flowchart LR
     P5 --> P6[Phase 6\nPlan Sheet & CAD]
     P6 --> P7[Phase 7\nSheet Viewer & Hotspots]
     P7 --> P8[Phase 8\nReview Packet Builder]
-    P8 --> P9[Phase 9+\nCAD Extraction & Expansion]
+    P8 --> P9[Phase 9\nReviewer Workflow Board]
+    P9 --> P10[Phase 10+\nCAD Extraction & Expansion]
 ```
 
 ---
 
-## Phase 0, Foundation  *(this phase)*
+## Phase 0, Foundation  *(complete)*
 
 **Goal:** Build the strongest possible foundation before any code.
 
@@ -242,7 +243,40 @@ backend tests. There is no action called approve. See
 
 ---
 
-## Phase 9 and beyond, CAD Extraction and Expansion Modules
+## Phase 9, Reviewer Workflow Board and Issue Resolution Tracking
+
+**Goal:** Add an operational workflow layer that manages review-support items
+from packet generation through triage, follow-up, and handoff to a human
+reviewer, without parsing real files.
+
+- Workflow item, workflow action, and follow-up request models
+- A board generation service that promotes review packet items into workflow
+  items
+- Workflow board statuses (draft, needs triage, needs follow up, needs more
+  information, reviewer checked, excluded from packet, ready for handoff)
+- Status transitions, reviewer notes, and follow-up requests on workflow items
+- A board summary and a ready-for-handoff summary
+- Audit events for board generation, item viewing, status changes, notes,
+  follow-up requests, history requests, and summary requests
+
+**Exit criteria:** A reviewer can generate the Brookside Meadows reviewer
+workflow board, move each item through the workflow, record notes and follow-up
+requests, and review which items are ready for handoff to a licensed
+Professional Engineer. The board is built from seeded review-support data and
+does not approve plans, certify compliance, verify CAD, or validate the design.
+
+**Delivered in Phase 9:** the `workflow_items`, `workflow_actions`, and
+`workflow_follow_up_requests` tables, a board generation service that promotes
+the review packet items that require human review, the workflow board, item,
+status, note, follow-up, history, summary, and ready-for-handoff endpoints, the
+Workflow Board pages and components, audit events, and backend tests. There is
+no action called approve, and ready for handoff means handing organized
+evidence to a human reviewer, not issuing a decision. See
+`PHASE_9_WORKFLOW_BOARD.md`.
+
+---
+
+## Phase 10 and beyond, CAD Extraction and Expansion Modules
 
 **Goal:** Begin reading real CAD-derived metadata (DXF extraction or structured
 plan exports, then Autodesk viewer exploration, per

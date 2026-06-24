@@ -1,29 +1,33 @@
 # Civil Engineer AI Backend
 
 FastAPI backend for Civil Engineer AI: Stormwater Review Assistant. This is the
-Phase 8 backend. It serves seeded Brookside Meadows review data, document chunks,
+Phase 9 backend. It serves seeded Brookside Meadows review data, document chunks,
 and source evidence, runs a controlled AI review workflow that produces draft
 review-support findings, persists human review actions on those drafts, scores
 AI review runs against the expected findings, adds a plan sheet and CAD-aware
 review foundation (a plan sheet index, CAD-aware feature metadata, plan
 references, missing sheet detection, and plan consistency findings), adds a
 plan sheet viewer layer (seeded sheet hotspots, a sheet viewer context, and
-human review actions on plan consistency findings), and adds a review packet
+human review actions on plan consistency findings), adds a review packet
 builder (a review-support packet draft with sections, items, evidence links, an
-evidence traceability matrix, and a printable summary).
+evidence traceability matrix, and a printable summary), and adds a reviewer
+workflow board (workflow items promoted from the packet, with status
+transitions, reviewer notes, follow-up requests, and a ready-for-handoff
+summary).
 
 Civil Engineer AI is a review-support and evidence-organization system. It does
 not approve plans, certify compliance, stamp drawings, or replace a licensed
 Professional Engineer. Statuses, retrieval results, AI draft findings, human
-review actions, plan consistency findings, sheet hotspots, and review packet
-items never use final-decision language, there is no action called approve, and
-every finding requires human review. The CAD-aware metadata, the sheet hotspots,
-and the review packet are seeded, not extracted from real CAD files, and the
-backend does not parse PDF, DWG, or DXF drawings or verify CAD.
+review actions, plan consistency findings, sheet hotspots, review packet items,
+and workflow items never use final-decision language, there is no action called
+approve, and every finding requires human review. The CAD-aware metadata, the
+sheet hotspots, the review packet, and the workflow board are seeded, not
+extracted from real CAD files, and the backend does not parse PDF, DWG, or DXF
+drawings or verify CAD.
 
 The AI Review Assistant uses a deterministic mock provider by default, so the
 backend runs without any API key. Only an OpenAI live provider is implemented,
-and live provider calls are disabled by default. Phase 8 does not include
+and live provider calls are disabled by default. Phase 9 does not include
 embeddings, a vector store, PDF or CAD parsing, or authentication.
 
 ## Requirements
@@ -183,11 +187,31 @@ curl -X POST http://localhost:8000/api/v1/review-packets/PACKET_ID/items/ITEM_ID
 curl -X PATCH http://localhost:8000/api/v1/review-packets/PACKET_ID/items/ITEM_ID/status \
   -H "Content-Type: application/json" \
   -d '{"new_status":"needs_follow_up","reviewer_note":"Follow up needed."}'
+
+# Reviewer workflow board (Phase 9)
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/workflow-board/generate
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/workflow-board
+curl "http://localhost:8000/api/v1/projects/proj_brookside_meadows/workflow-board?status=needs_follow_up"
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/workflow-board/summary
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/workflow-board/ready-for-handoff
+curl http://localhost:8000/api/v1/workflow-items/WORKFLOW_ITEM_ID
+curl http://localhost:8000/api/v1/workflow-items/WORKFLOW_ITEM_ID/history
+curl -X PATCH http://localhost:8000/api/v1/workflow-items/WORKFLOW_ITEM_ID/status \
+  -H "Content-Type: application/json" \
+  -d '{"new_status":"needs_triage","reviewer_name":"Town Engineer","reviewer_note":"Starting triage."}'
+curl -X POST http://localhost:8000/api/v1/workflow-items/WORKFLOW_ITEM_ID/notes \
+  -H "Content-Type: application/json" \
+  -d '{"reviewer_name":"Town Engineer","reviewer_note":"Reviewer needs to check the basin outlet detail."}'
+curl -X POST http://localhost:8000/api/v1/workflow-items/WORKFLOW_ITEM_ID/follow-ups \
+  -H "Content-Type: application/json" \
+  -d '{"requested_from":"Applicant","request_reason":"Need the updated drainage report.","requested_information":"Revised drainage report.","reviewer_name":"Town Engineer"}'
 ```
 
 The `GET /review-packets/{packet_id}`, `/traceability`, and `/print-view`
-endpoints write an audit event recording reviewer access. This read side effect
-is intentional so the decision history shows access to the packet.
+endpoints write an audit event recording reviewer access. The workflow item
+detail, item history, board summary, and ready-for-handoff endpoints do the
+same. This read side effect is intentional so the decision history shows
+reviewer access.
 
 ## AI provider configuration
 
@@ -225,7 +249,7 @@ backend/
       seed_evidence.py Seeded chunks, finding sources, retrieval queries
       seed_plansheets.py Seeded plan sheets, CAD metadata, references, and hotspots
     schemas/           Pydantic response schemas
-    services/          Service layer including the review packet builder
+    services/          Service layer including the review packet builder and workflow board
     api/
       routes.py        Aggregate v1 router
       v1/              One module per resource

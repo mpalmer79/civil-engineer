@@ -10,6 +10,7 @@ export * from "./retrieval";
 export * from "./humanReview";
 export * from "./planSheets";
 export * from "./reviewPackets";
+export * from "./workflow";
 // aiReview and cad export a few internal mappers and snake_case Api types for
 // cross-module use (humanReview and planSheets import them). Re-export only
 // their public names here so the mapping-layer internals stay out of the

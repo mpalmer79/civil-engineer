@@ -15,33 +15,33 @@ professional engineering judgment.
 
 ---
 
-## Current phase: Phase 8, Review Packet Builder and Evidence Traceability
+## Current phase: Phase 9, Reviewer Workflow Board and Issue Resolution Tracking
 
-Phase 8 adds a reviewer-facing Review Packet Builder. It assembles documents,
-checklist items, findings, plan sheets, CAD-aware metadata, sheet hotspots, plan
-consistency findings, human review actions, and audit evidence into a structured
-review-support packet draft. It adds:
+Phase 9 adds a reviewer-facing workflow board. It promotes the review packet
+items that require human review into an operational board so a reviewer can move
+each item from packet generation through triage, follow-up, and handoff. It
+adds:
 
-- A **review packet builder** that generates a Brookside Meadows packet draft
-  from seeded data
-- **Packet sections and items** that connect back to existing entities through
-  evidence links
-- An **evidence traceability matrix** that traces each item to its source
-  evidence
-- A **printable review-support summary** with professional limitation language
-- **Reviewer actions and item status updates** (needs follow up, reviewer
-  checked, excluded from packet, needs more information)
-- **Audit events** for packet generation, viewing, traceability and print
-  requests, reviewer actions, and status changes
-- Backend tests for packet generation, evidence links, traceability, print view,
-  reviewer actions, status updates, and the safety language boundary
+- A **workflow board** that generates Brookside Meadows workflow items from the
+  latest review packet
+- **Status columns** (draft, needs triage, needs follow up, needs more
+  information, reviewer checked, excluded from packet, ready for handoff)
+- **Status transitions, reviewer notes, and follow-up requests** on workflow
+  items, each recorded as a workflow action
+- A **board summary** and a **ready-for-handoff summary**
+- **Audit events** for board generation, item viewing, status changes, notes,
+  follow-up requests, history requests, and summary requests
+- Backend tests for board generation, status transitions, notes, follow-up
+  requests, summaries, and the safety language boundary
 
-Phase 8 keeps the professional boundary: the packet is a draft assembled from
-seeded review-support data, not parsed PDF, DWG, DXF, or Autodesk files, and it
-does not approve plans, certify compliance, stamp drawings, verify CAD, validate
-the design, or make final engineering decisions. There is no action called
-approve and no status such as approved, certified, verified, compliant, or safe.
-Live AI calls are disabled by default, so the project runs without any API key.
+Phase 9 keeps the professional boundary: the board is built from seeded
+review-support data, not parsed PDF, DWG, DXF, or Autodesk files, and it does
+not approve plans, certify compliance, stamp drawings, verify CAD, validate the
+design, or make final engineering decisions. There is no action called approve
+and no status such as approved, certified, verified, compliant, or safe. Ready
+for handoff means handing organized evidence to a licensed Professional
+Engineer, not issuing a decision. Live AI calls are disabled by default, so the
+project runs without any API key.
 
 Earlier phases established the product foundation:
 
@@ -62,6 +62,11 @@ Earlier phases established the product foundation:
   Sheets and CAD Review pages
 - Phase 7: a plan sheet viewer with seeded sheet hotspots, a sheet viewer
   context, and plan consistency review actions
+- Phase 8: a review packet builder that assembles documents, checklist items,
+  findings, plan sheets, CAD-aware metadata, hotspots, plan consistency
+  findings, human review actions, and audit evidence into a structured
+  review-support packet draft, with an evidence traceability matrix and a
+  printable summary
 
 The reviewed fixture remains **Brookside Meadows**: a 47-lot single-family
 subdivision in the Town of Hartwell with a green-and-gray stormwater treatment
@@ -122,6 +127,8 @@ examples.
 | `/findings` | Findings | The 10 expected review-support findings |
 | `/plan-sheets` | Plan Sheets | The Brookside Meadows plan sheet index with revisions and missing sheet detection |
 | `/cad-review` | CAD Review | CAD-aware feature metadata, plan references, and plan consistency findings |
+| `/review-packet` | Review Packet | Generate a review-support packet draft, group issues into sections, and view the traceability matrix |
+| `/workflow-board` | Workflow Board | Track review-support items through triage, follow-up, and handoff |
 | `/ai-review` | AI Review Assistant | Run a controlled AI review and view draft findings and validation failures |
 | `/human-review` | Human Review queue | Record reviewer actions and status transitions on draft findings |
 | `/audit` | Audit trail | Seeded, traceable review history |
@@ -167,16 +174,24 @@ All data routes use the `/api/v1` prefix. Seeded project id:
 - `GET /api/v1/review-packets/{packet_id}` and `GET /api/v1/review-packets/{packet_id}/summary`
 - `GET /api/v1/review-packets/{packet_id}/traceability` and `GET /api/v1/review-packets/{packet_id}/print-view`
 - `POST /api/v1/review-packets/{packet_id}/items/{item_id}/review-actions` and `PATCH /api/v1/review-packets/{packet_id}/items/{item_id}/status`
+- `POST /api/v1/projects/{project_id}/workflow-board/generate` and `GET /api/v1/projects/{project_id}/workflow-board`
+- `GET /api/v1/projects/{project_id}/workflow-board/summary` and `GET /api/v1/projects/{project_id}/workflow-board/ready-for-handoff`
+- `GET /api/v1/workflow-items/{workflow_item_id}` and `GET /api/v1/workflow-items/{workflow_item_id}/history`
+- `GET /api/v1/workflow-items/{workflow_item_id}/actions` and `GET /api/v1/workflow-items/{workflow_item_id}/follow-ups`
+- `PATCH /api/v1/workflow-items/{workflow_item_id}/status` and `POST /api/v1/workflow-items/{workflow_item_id}/notes` and `POST /api/v1/workflow-items/{workflow_item_id}/follow-ups`
 
 The frontend adds a `/sheet-viewer` page (sheet picker) and a
 `/sheet-viewer/{sheetId}` page (the plan sheet viewer with hotspots and review
-panels), plus a `/review-packet` page and a `/review-packet/{packetId}` page (the
-review packet builder), alongside the existing `/plan-sheets` and `/cad-review`
-pages.
+panels), a `/review-packet` page and a `/review-packet/{packetId}` page (the
+review packet builder), and a `/workflow-board` page and a
+`/workflow-board/{workflowItemId}` page (the reviewer workflow board), alongside
+the existing `/plan-sheets` and `/cad-review` pages.
 
 The `GET /api/v1/review-packets/{packet_id}`, `/traceability`, and `/print-view`
-endpoints write an audit event recording reviewer access. This read side effect
-is intentional so the decision history shows access to the packet.
+endpoints write an audit event recording reviewer access. The workflow item
+detail, item history, board summary, and ready-for-handoff endpoints do the
+same. This read side effect is intentional so the decision history shows
+reviewer access.
 
 ---
 
@@ -221,35 +236,35 @@ civil-engineer/
 - [`docs/PHASE_6_PLAN_SHEET_CAD_FOUNDATION.md`](docs/PHASE_6_PLAN_SHEET_CAD_FOUNDATION.md): Phase 6 plan sheet and CAD-aware review foundation
 - [`docs/PHASE_7_PLAN_SHEET_VIEWER.md`](docs/PHASE_7_PLAN_SHEET_VIEWER.md): Phase 7 plan sheet viewer and sheet hotspot review
 - [`docs/PHASE_8_REVIEW_PACKET_BUILDER.md`](docs/PHASE_8_REVIEW_PACKET_BUILDER.md): Phase 8 review packet builder and evidence traceability
+- [`docs/PHASE_9_WORKFLOW_BOARD.md`](docs/PHASE_9_WORKFLOW_BOARD.md): Phase 9 reviewer workflow board and issue resolution tracking
 - [`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md): staged CAD integration path
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture
 - [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md): research basis
 
 ---
 
-## What Phase 8 proves
+## What Phase 9 proves
 
-- The product can assemble a review-support packet: a reviewer generates a draft
-  that groups documents, checklist items, findings, plan sheets, CAD-aware
-  metadata, hotspots, plan consistency findings, and reviewer actions into
-  structured sections.
-- Evidence is traceable: every packet item links back to its source entities,
-  and the traceability matrix shows the links row by row.
-- The review lifecycle extends to packet items: a reviewer records needs follow
-  up, reviewer checked, excluded from packet, or needs more information, and the
-  item status updates.
-- The professional boundary holds: the packet is a draft from seeded
-  review-support data, not parsed PDF, DWG, DXF, or Autodesk files, and it does
-  not approve plans, certify compliance, verify CAD, or validate the design.
-  There is no action called approve.
-- The decision history is preserved: packet generation, viewing, traceability
-  and print requests, reviewer actions, and status changes all write audit
-  events.
+- The product can manage a review workflow: a reviewer promotes the packet items
+  that require human review into a board and moves each item through triage,
+  follow-up, more information, reviewer checked, excluded, and ready for handoff.
+- Issue resolution is tracked: each status transition, reviewer note, and
+  follow-up request is recorded as a workflow action with full history.
+- Handoff is explicit and bounded: ready for handoff means handing organized
+  evidence to a licensed Professional Engineer, not a final decision, and a
+  follow-up request can be closed without a decision.
+- The professional boundary holds: the board is built from seeded review-support
+  data, not parsed PDF, DWG, DXF, or Autodesk files, and it does not approve
+  plans, certify compliance, verify CAD, or validate the design. There is no
+  action called approve.
+- The decision history is preserved: board generation, item viewing, status
+  changes, notes, follow-up requests, history requests, and summary requests all
+  write audit events.
 
 ## What comes next
 
-- A later phase could let a reviewer compose a packet from a chosen subset of
-  findings, export the printable summary to a file, and track packet revisions.
+- A later phase could add assignment to named reviewers, due-date reminders, and
+  board filtering presets, and could begin reading real CAD-derived metadata.
   Real CAD-derived metadata extraction remains a separate, later track.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) and
