@@ -15,37 +15,37 @@ professional engineering judgment.
 
 ---
 
-## Current phase: Phase 10, External Review Response Package
+## Current phase: Phase 11, Real CAD File Intake and DXF Parsing Foundation
 
-Phase 10 adds an external review response package. It turns the ready-for-handoff
-workflow items into a structured draft external response a reviewer can prepare
-for an applicant, design engineer, municipal reviewer, or internal review team.
-It adds:
+Phase 11 adds real CAD file intake for DXF files. It parses a real DXF file with
+the ezdxf library, extracts review-support metadata, connects it to the existing
+plan sheet and review workflows, and raises review-support findings. It adds:
 
-- A **response package builder** that generates a Brookside Meadows draft from
-  the workflow board, grouping items by topic
-- **Draft response wording** per item in plain external-review language, with
-  evidence traceability to the workflow item, packet item, and source entities
-- **Item and package status management** (item: draft, included, excluded, needs
-  revision, reviewer checked; package: draft, needs revision, reviewer checked,
-  ready for handoff, archived)
-- An **attachment checklist**, a **printable draft response**, a **package
-  history**, and a **human review sign-off checklist**
-- **Audit events** for generation, viewing, print view, attachments, history,
-  and status, draft text, and note changes
-- Backend tests for generation, fallback generation, grouping, traceability,
-  attachments, status and draft text updates, idempotency, and the safety
-  language boundary
+- **Real DXF parsing** with ezdxf that extracts layers, entities, blocks, and
+  text from a real DXF file
+- **Reference detection** for sheet, detail, pipe, basin, outfall, and wetland
+  buffer references, each with a confidence label and human-review flag
+- **Plan sheet comparison** of extracted sheet and detail references against the
+  seeded Phase 6 plan sheets
+- **CAD review findings** for missing sheet matches, unclear detail references,
+  possible label conflicts, and uncategorized layers, which can become workflow
+  items
+- A small synthetic **Brookside Meadows DXF fixture** used in the demo and tests
+- **Audit events** for file creation, parse start, parse completion or failure,
+  reads, comparison, finding creation, and workflow item creation
+- Backend tests for parsing, extraction, reference detection, findings, plan
+  sheet comparison, parse failure handling, and the safety language boundary
 
-Phase 10 keeps the professional boundary: the package is draft external
-communication support built from seeded review-support data, not parsed PDF,
-DWG, DXF, or Autodesk files, and it does not send email, approve plans, certify
-compliance, stamp drawings, verify CAD, validate the design, or make final
-engineering decisions. There is no action called approve and no status such as
-approved, certified, verified, compliant, or safe. The real workflow runs review
-packet, workflow board, response package, then human review, and a licensed
-Professional Engineer issues any response outside the system. Live AI calls are
-disabled by default, so the project runs without any API key.
+Phase 11 keeps the professional boundary: parsing extracts review-support
+metadata from a real DXF file and does not verify CAD, validate geometry,
+hydraulic calculations, grading, stormwater design, or legal boundaries, certify
+compliance, approve plans, stamp drawings, or replace a licensed Professional
+Engineer. There is no action called approve and no status such as approved,
+certified, verified, compliant, or safe. Reference matching uses confidence
+labels (high, medium, low, needs_human_review) and never a verified label. DXF
+is the only supported file type; DWG parsing, Autodesk and Civil 3D integration,
+GIS, OCR, and computer vision remain future work. Live AI calls are disabled by
+default, so the project runs without any API key.
 
 Earlier phases established the product foundation:
 
@@ -74,6 +74,9 @@ Earlier phases established the product foundation:
 - Phase 9: a reviewer workflow board that promotes packet items into an
   operational board with triage, follow-up requests, reviewer notes, item
   history, and ready-for-handoff summaries
+- Phase 10: an external review response package that turns ready-for-handoff
+  workflow items into a structured draft response with editable wording, an
+  attachment checklist, package history, and a human review sign-off checklist
 
 The reviewed fixture remains **Brookside Meadows**: a 47-lot single-family
 subdivision in the Town of Hartwell with a green-and-gray stormwater treatment
@@ -137,6 +140,7 @@ examples.
 | `/review-packet` | Review Packet | Generate a review-support packet draft, group issues into sections, and view the traceability matrix |
 | `/workflow-board` | Workflow Board | Track review-support items through triage, follow-up, and handoff |
 | `/response-package` | Response Package | Generate a draft external response package, edit draft wording, and review attachments and sign-off |
+| `/cad-intake` | CAD Intake | Parse a real Brookside Meadows DXF and inspect layers, text, blocks, reference candidates, and CAD review findings |
 | `/ai-review` | AI Review Assistant | Run a controlled AI review and view draft findings and validation failures |
 | `/human-review` | Human Review queue | Record reviewer actions and status transitions on draft findings |
 | `/audit` | Audit trail | Seeded, traceable review history |
@@ -192,20 +196,28 @@ All data routes use the `/api/v1` prefix. Seeded project id:
 - `GET /api/v1/response-packages/{response_package_id}/print-view` and `GET /api/v1/response-packages/{response_package_id}/attachments` and `GET /api/v1/response-packages/{response_package_id}/history`
 - `PATCH /api/v1/response-packages/{response_package_id}/status` and `PATCH /api/v1/response-packages/{response_package_id}/items/{response_item_id}/status`
 - `PATCH /api/v1/response-packages/{response_package_id}/items/{response_item_id}/draft-text` and `POST /api/v1/response-packages/{response_package_id}/items/{response_item_id}/notes`
+- `POST /api/v1/projects/{project_id}/cad-files` and `POST /api/v1/cad-files/{cad_file_id}/parse`
+- `GET /api/v1/projects/{project_id}/cad-files` and `GET /api/v1/projects/{project_id}/cad-parse-runs`
+- `GET /api/v1/cad-parse-runs/{parse_run_id}` and `GET /api/v1/cad-parse-runs/{parse_run_id}/summary`
+- `GET /api/v1/cad-parse-runs/{parse_run_id}/layers`, `/entities`, `/blocks`, `/text`, and `/reference-candidates`
+- `POST /api/v1/cad-parse-runs/{parse_run_id}/compare-plan-sheets` and `GET /api/v1/projects/{project_id}/cad-review-findings`
+- `POST /api/v1/projects/{project_id}/workflow-items/from-cad-findings` and `GET /api/v1/cad-files/{cad_file_id}/review-context`
 
 The frontend adds a `/sheet-viewer` page (sheet picker) and a
 `/sheet-viewer/{sheetId}` page (the plan sheet viewer with hotspots and review
 panels), a `/review-packet` page and a `/review-packet/{packetId}` page (the
 review packet builder), a `/workflow-board` page and a
-`/workflow-board/{workflowItemId}` page (the reviewer workflow board), and a
+`/workflow-board/{workflowItemId}` page (the reviewer workflow board), a
 `/response-package` page and a `/response-package/{responsePackageId}` page (the
-response package builder), alongside the existing `/plan-sheets` and
-`/cad-review` pages.
+response package builder), and a `/cad-intake` page and a
+`/cad-intake/{cadFileId}` page (real DXF intake and parsing), alongside the
+existing `/plan-sheets` and `/cad-review` pages.
 
 The `GET /api/v1/review-packets/{packet_id}`, `/traceability`, and `/print-view`
 endpoints write an audit event recording reviewer access. The workflow item
 detail, item history, board summary, and ready-for-handoff endpoints do the
 same, as do the response package detail, print view, attachments, and history
+endpoints, and the CAD parse summary, layers, text, and CAD file review context
 endpoints. This read side effect is intentional so the decision history shows
 reviewer access.
 
@@ -232,6 +244,7 @@ civil-engineer/
 - **Next.js 14** (App Router) and **React 18**, **TypeScript** (strict)
 - **Tailwind CSS**
 - **FastAPI**, **Pydantic**, **SQLAlchemy**, **SQLite** for local storage
+- **ezdxf** for real DXF parsing (lightweight, pure-Python, no paid services)
 - **pytest** for backend tests
 
 ---
@@ -254,35 +267,36 @@ civil-engineer/
 - [`docs/PHASE_8_REVIEW_PACKET_BUILDER.md`](docs/PHASE_8_REVIEW_PACKET_BUILDER.md): Phase 8 review packet builder and evidence traceability
 - [`docs/PHASE_9_WORKFLOW_BOARD.md`](docs/PHASE_9_WORKFLOW_BOARD.md): Phase 9 reviewer workflow board and issue resolution tracking
 - [`docs/PHASE_10_RESPONSE_PACKAGE.md`](docs/PHASE_10_RESPONSE_PACKAGE.md): Phase 10 external review response package
+- [`docs/PHASE_11_CAD_INTAKE_DXF_PARSING.md`](docs/PHASE_11_CAD_INTAKE_DXF_PARSING.md): Phase 11 real CAD file intake and DXF parsing foundation
 - [`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md): staged CAD integration path
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture
 - [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md): research basis
 
 ---
 
-## What Phase 10 proves
+## What Phase 11 proves
 
-- The product can translate internal findings into outward communication: a
-  reviewer turns ready-for-handoff workflow items into a structured draft
-  external response grouped by topic, with plain review-support wording.
-- The full review desk loop is in place: review packet, workflow board, response
-  package, then human review, with the system never issuing the response itself.
-- Traceability is preserved end to end: each response item links back to its
-  workflow item, packet item, and source evidence.
-- The professional boundary holds: the package is draft external communication
-  support built from seeded review-support data, and it does not send email,
-  approve plans, certify compliance, verify CAD, or validate the design. There
-  is no action called approve.
-- The decision history is preserved: generation, viewing, print view,
-  attachments, history, and status, draft text, and note changes all write audit
-  events.
+- The product can read real CAD files: a reviewer parses a real DXF and inspects
+  extracted layers, entities, blocks, and text rather than only seeded metadata.
+- Extraction is transparent and bounded: references carry confidence labels and
+  human-review flags, and there is no verified label.
+- CAD metadata connects to the existing workflow: extracted references are
+  compared against the seeded plan sheets, findings are raised for gaps, and
+  those findings can become workflow board items.
+- The professional boundary holds: parsing extracts review-support metadata and
+  does not verify CAD, validate geometry or design, certify compliance, or
+  approve plans. There is no action called approve. DXF is the only supported
+  file type; DWG, Autodesk, GIS, OCR, and computer vision remain out of scope.
+- The decision history is preserved: file creation, parse start, parse
+  completion or failure, reads, comparison, finding creation, and workflow item
+  creation all write audit events.
 
 ## What comes next
 
-- A later phase could let a reviewer choose the audience and a subset of items,
-  export the printable draft to a file, and track response revisions over time,
-  and could begin reading real CAD-derived metadata. Real CAD-derived metadata
-  extraction remains a separate, later track.
+- A later phase could add browser DXF upload with validation, DWG support
+  through appropriate tooling, structured plan exports, and broader CAD
+  extraction. DWG, Autodesk and Civil 3D integration, GIS, OCR, and computer
+  vision remain a separate, later track.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) and
 [`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md) for the full
