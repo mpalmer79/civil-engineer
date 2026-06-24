@@ -9,12 +9,22 @@ phase, with a clean path to normalization later.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import JSON, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
+
+
+def _utcnow() -> datetime:
+    """Return a timezone-aware UTC timestamp for column defaults.
+
+    Used instead of datetime.utcnow, which is deprecated on Python 3.12 and
+    returns a naive datetime. The stored value and column type are unchanged.
+    """
+
+    return datetime.now(timezone.utc)
 
 
 class Project(Base):
@@ -197,7 +207,7 @@ class DocumentChunk(Base):
     related_checklist_items: Mapped[list] = mapped_column(JSON, default=list)
     related_findings: Mapped[list] = mapped_column(JSON, default=list)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -228,7 +238,7 @@ class FindingSource(Base):
     evidence_role: Mapped[str] = mapped_column(String, nullable=False)
     confidence: Mapped[float] = mapped_column(Float, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -254,7 +264,7 @@ class RetrievalQuery(Base):
     )
     result_count: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -284,7 +294,7 @@ class AIReviewRun(Base):
     started_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -321,7 +331,7 @@ class AIDraftFinding(Base):
     safety_check_status: Mapped[str] = mapped_column(String, nullable=False)
     validation_errors: Mapped[list] = mapped_column(JSON, default=list)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -359,7 +369,7 @@ class HumanReviewAction(Base):
     previous_status: Mapped[str] = mapped_column(String, nullable=False)
     new_status: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -398,7 +408,7 @@ class AIEvaluationResult(Base):
     precision: Mapped[float] = mapped_column(Float, default=0.0)
     overall_score: Mapped[float] = mapped_column(Float, default=0.0)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -426,7 +436,7 @@ class AIEvaluationMatch(Base):
     matched_on: Mapped[str | None] = mapped_column(String, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -460,7 +470,7 @@ class PlanSheet(Base):
     related_checklist_items: Mapped[list] = mapped_column(JSON, default=list)
     related_findings: Mapped[list] = mapped_column(JSON, default=list)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
     project: Mapped["Project"] = relationship(back_populates="plan_sheets")
@@ -498,7 +508,7 @@ class CadMetadata(Base):
     related_finding_id: Mapped[str | None] = mapped_column(String, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -529,7 +539,7 @@ class PlanReference(Base):
     consistency_status: Mapped[str] = mapped_column(String, nullable=False)
     review_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -563,7 +573,7 @@ class PlanConsistencyFinding(Base):
     related_cad_metadata_ids: Mapped[list] = mapped_column(JSON, default=list)
     recommended_human_action: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -604,7 +614,7 @@ class PlanSheetHotspot(Base):
     review_note: Mapped[str | None] = mapped_column(Text, nullable=True)
     requires_human_review: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -637,7 +647,7 @@ class PlanConsistencyReviewAction(Base):
     previous_status: Mapped[str] = mapped_column(String, nullable=False)
     new_status: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -667,10 +677,10 @@ class ReviewPacket(Base):
     created_by: Mapped[str] = mapped_column(String, nullable=False)
     limitations_note: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -691,7 +701,7 @@ class ReviewPacketSection(Base):
     status: Mapped[str] = mapped_column(String, nullable=False)
     requires_human_review: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -719,7 +729,7 @@ class ReviewPacketItem(Base):
     requires_human_review: Mapped[bool] = mapped_column(default=True)
     display_order: Mapped[int] = mapped_column(Integer, default=0)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -744,7 +754,7 @@ class ReviewPacketEvidenceLink(Base):
     label: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
 
 
@@ -772,5 +782,5 @@ class ReviewPacketReviewerAction(Base):
     new_status: Mapped[str] = mapped_column(String, nullable=False)
     reviewer_name: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow
+        DateTime, default=_utcnow
     )
