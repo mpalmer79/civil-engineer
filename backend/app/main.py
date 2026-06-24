@@ -21,6 +21,7 @@ from app.db.seed import PROJECT_ID, seed_database
 from app.db.seed_evidence import seed_evidence
 from app.db.seed_plansheets import seed_plansheets
 from app.services import (
+    cad_intake_service,
     response_package_service,
     review_packet_service,
     workflow_service,
@@ -48,6 +49,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         # Generate the draft external response package once so the Phase 10 read
         # endpoints and frontend have data without a manual generate call.
         response_package_service.ensure_response_package(db, PROJECT_ID)
+        # Register and parse the sample DXF once so the Phase 11 CAD intake read
+        # endpoints and frontend have data without a manual upload or parse call.
+        cad_intake_service.ensure_cad_intake(db, PROJECT_ID)
     finally:
         db.close()
     yield
@@ -57,17 +61,17 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
         "Review-support API for stormwater and land development review. "
-        "Phase 10 adds an external review response package: it turns "
-        "ready-for-handoff workflow items into a structured draft response a "
-        "human reviewer can prepare for an applicant, design engineer, municipal "
-        "reviewer, or internal review team, with grouped sections, draft "
-        "wording, an attachment checklist, a printable draft view, and a human "
-        "review sign-off checklist. It does not send email, approve plans, "
-        "certify compliance, verify CAD, or validate a design. The mock AI "
-        "provider remains the default and no live AI calls, PDF or CAD parsing "
-        "are included."
+        "Phase 11 adds real CAD intake for DXF files: it parses a real DXF file "
+        "with the ezdxf library and extracts review-support metadata (layers, "
+        "entities, blocks, text, reference candidates), compares extracted sheet "
+        "and detail references against the seeded plan sheets, and raises "
+        "review-support findings. It does not verify CAD, validate geometry or "
+        "design, certify compliance, approve plans, or replace a licensed "
+        "Professional Engineer. DXF is the only supported file type; DWG, "
+        "Autodesk, OCR, and GIS remain out of scope. The mock AI provider "
+        "remains the default and no live AI calls are included."
     ),
-    version="0.10.0",
+    version="0.11.0",
     lifespan=lifespan,
 )
 
