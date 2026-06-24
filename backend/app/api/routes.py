@@ -20,6 +20,7 @@ from app.api.v1 import (
     plan_sheet_hotspots,
     plan_sheets,
     projects,
+    response_packages,
     retrieval,
     review_packets,
     workflow,
@@ -44,3 +45,4 @@ api_router.include_router(plan_consistency.router)
 api_router.include_router(plan_sheet_hotspots.router)
 api_router.include_router(review_packets.router)
 api_router.include_router(workflow.router)
+api_router.include_router(response_packages.router)
