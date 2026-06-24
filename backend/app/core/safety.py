@@ -182,9 +182,11 @@ ALLOWED_REVIEW_PACKET_STATUSES: set[str] = {
 }
 
 # Phase 8 review packet reviewer actions a reviewer may record on a packet item.
-# There is intentionally no action called approve, and each maps to a packet
-# status of the same name.
+# There is intentionally no action called approve. Each action type is the
+# target status it sets, so a stored action_type is always one of the allowed
+# packet statuses (there is no synthetic status_update action type).
 ALLOWED_REVIEW_PACKET_ACTIONS: set[str] = {
+    "draft",
     "needs_follow_up",
     "reviewer_checked",
     "excluded_from_packet",
@@ -192,6 +194,7 @@ ALLOWED_REVIEW_PACKET_ACTIONS: set[str] = {
 }
 
 PACKET_ACTION_TO_STATUS: dict[str, str] = {
+    "draft": "draft",
     "needs_follow_up": "needs_follow_up",
     "reviewer_checked": "reviewer_checked",
     "excluded_from_packet": "excluded_from_packet",
