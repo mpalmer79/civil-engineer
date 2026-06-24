@@ -43,14 +43,15 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
         "Review-support API for stormwater and land development review. "
-        "Phase 6 adds a plan sheet and CAD-aware review foundation: a seeded "
-        "plan sheet index, CAD-aware feature metadata, plan references, missing "
-        "sheet detection, and plan consistency findings that require human "
-        "review. The CAD-aware metadata is seeded, not extracted from real CAD "
-        "files. The mock AI provider remains the default and no live AI calls, "
-        "embeddings, vector retrieval, or CAD parsing are included."
+        "Phase 7 adds a reviewer-facing plan sheet viewer: seeded sheet "
+        "hotspots over a synthetic plan sheet preview, a sheet viewer context, "
+        "and human review actions on plan consistency findings. The sheet "
+        "preview and hotspots are seeded review-support metadata, not parsed "
+        "PDF, DWG, DXF, or Autodesk data. The mock AI provider remains the "
+        "default and no live AI calls, embeddings, vector retrieval, or CAD "
+        "parsing are included."
     ),
-    version="0.6.0",
+    version="0.7.0",
     lifespan=lifespan,
 )
 

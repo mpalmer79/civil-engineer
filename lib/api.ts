@@ -1353,4 +1353,247 @@ export async function runPlanConsistencyCheck(): Promise<PlanConsistencyCheckRes
   }
 }
 
+// Phase 7: plan sheet viewer, sheet hotspots, and plan consistency review
+// actions.
+//
+// Phase 7 data is backend-canonical, consistent with Phase 6. The frontend does
+// not simulate hotspots or review actions. Read calls return empty results when
+// the backend is unavailable, and the review action mutation returns a clear
+// backend-required result.
+
+export type PlanSheetHotspot = {
+  hotspotId: string;
+  projectId: string;
+  sheetId: string;
+  hotspotType: string;
+  label: string;
+  description: string;
+  xPercent: number;
+  yPercent: number;
+  widthPercent: number;
+  heightPercent: number;
+  severity: string;
+  relatedPlanReferenceIds: string[];
+  relatedCadMetadataIds: string[];
+  relatedPlanFindingIds: string[];
+  relatedDocumentIds: string[];
+  relatedChecklistItemIds: string[];
+  reviewNote: string | null;
+  requiresHumanReview: boolean;
+};
+
+export type SheetViewerContext = {
+  sheet: PlanSheet;
+  hotspots: PlanSheetHotspot[];
+  cadMetadata: CadMetadata[];
+  planReferences: PlanReference[];
+  planConsistencyFindings: PlanConsistencyFinding[];
+  previewNote: string;
+};
+
+export type PlanConsistencyReviewAction = {
+  reviewActionId: string;
+  planFindingId: string;
+  projectId: string;
+  reviewerName: string;
+  action: string;
+  reviewerNote: string;
+  previousStatus: string;
+  newStatus: string;
+  createdAt: string;
+};
+
+export type PlanReviewActionInput = {
+  action: string;
+  reviewerName: string;
+  reviewerNote: string;
+};
+
+export type PlanReviewActionResult = {
+  ok: boolean;
+  status: number;
+  backendReachable: boolean;
+  action?: PlanConsistencyReviewAction;
+  finding?: PlanConsistencyFinding;
+  error?: string;
+};
+
+type ApiPlanSheetHotspot = {
+  hotspot_id: string;
+  project_id: string;
+  sheet_id: string;
+  hotspot_type: string;
+  label: string;
+  description: string;
+  x_percent: number;
+  y_percent: number;
+  width_percent: number;
+  height_percent: number;
+  severity: string;
+  related_plan_reference_ids: string[];
+  related_cad_metadata_ids: string[];
+  related_plan_finding_ids: string[];
+  related_document_ids: string[];
+  related_checklist_item_ids: string[];
+  review_note: string | null;
+  requires_human_review: boolean;
+};
+
+type ApiSheetViewerContext = {
+  sheet: ApiPlanSheet;
+  hotspots: ApiPlanSheetHotspot[];
+  cad_metadata: ApiCadMetadata[];
+  plan_references: ApiPlanReference[];
+  plan_consistency_findings: ApiPlanConsistencyFinding[];
+  preview_note: string;
+};
+
+type ApiPlanReviewAction = {
+  review_action_id: string;
+  plan_finding_id: string;
+  project_id: string;
+  reviewer_name: string;
+  action: string;
+  reviewer_note: string;
+  previous_status: string;
+  new_status: string;
+  created_at: string;
+};
+
+function mapSheetHotspot(h: ApiPlanSheetHotspot): PlanSheetHotspot {
+  return {
+    hotspotId: h.hotspot_id,
+    projectId: h.project_id,
+    sheetId: h.sheet_id,
+    hotspotType: h.hotspot_type,
+    label: h.label,
+    description: h.description,
+    xPercent: h.x_percent,
+    yPercent: h.y_percent,
+    widthPercent: h.width_percent,
+    heightPercent: h.height_percent,
+    severity: h.severity,
+    relatedPlanReferenceIds: h.related_plan_reference_ids,
+    relatedCadMetadataIds: h.related_cad_metadata_ids,
+    relatedPlanFindingIds: h.related_plan_finding_ids,
+    relatedDocumentIds: h.related_document_ids,
+    relatedChecklistItemIds: h.related_checklist_item_ids,
+    reviewNote: h.review_note,
+    requiresHumanReview: h.requires_human_review,
+  };
+}
+
+function mapPlanReviewAction(
+  a: ApiPlanReviewAction,
+): PlanConsistencyReviewAction {
+  return {
+    reviewActionId: a.review_action_id,
+    planFindingId: a.plan_finding_id,
+    projectId: a.project_id,
+    reviewerName: a.reviewer_name,
+    action: a.action,
+    reviewerNote: a.reviewer_note,
+    previousStatus: a.previous_status,
+    newStatus: a.new_status,
+    createdAt: a.created_at,
+  };
+}
+
+export async function getSheetHotspots(): Promise<PlanSheetHotspot[]> {
+  const data = await safeFetch<ApiPlanSheetHotspot[]>(
+    `/api/v1/projects/${PROJECT_ID}/sheet-hotspots`,
+  );
+  return data ? data.map(mapSheetHotspot) : [];
+}
+
+export async function getSheetHotspotsForSheet(
+  sheetId: string,
+): Promise<PlanSheetHotspot[]> {
+  const data = await safeFetch<ApiPlanSheetHotspot[]>(
+    `/api/v1/plan-sheets/${sheetId}/sheet-hotspots`,
+  );
+  return data ? data.map(mapSheetHotspot) : [];
+}
+
+export async function getSheetViewerContext(
+  sheetId: string,
+): Promise<SheetViewerContext | null> {
+  const data = await safeFetch<ApiSheetViewerContext>(
+    `/api/v1/plan-sheets/${sheetId}/viewer-context`,
+  );
+  if (!data) return null;
+  return {
+    sheet: mapPlanSheet(data.sheet),
+    hotspots: data.hotspots.map(mapSheetHotspot),
+    cadMetadata: data.cad_metadata.map(mapCadMetadata),
+    planReferences: data.plan_references.map(mapPlanReference),
+    planConsistencyFindings: data.plan_consistency_findings.map(
+      mapPlanConsistencyFinding,
+    ),
+    previewNote: data.preview_note,
+  };
+}
+
+export async function getPlanConsistencyReviewActions(
+  planFindingId?: string,
+): Promise<PlanConsistencyReviewAction[]> {
+  const query = planFindingId
+    ? `?plan_finding_id=${encodeURIComponent(planFindingId)}`
+    : "";
+  const data = await safeFetch<ApiPlanReviewAction[]>(
+    `/api/v1/projects/${PROJECT_ID}/plan-consistency-review-actions${query}`,
+  );
+  return data ? data.map(mapPlanReviewAction) : [];
+}
+
+export async function createPlanConsistencyReviewAction(
+  planFindingId: string,
+  input: PlanReviewActionInput,
+): Promise<PlanReviewActionResult> {
+  try {
+    const res = await fetch(
+      `${API_BASE_URL}/api/v1/plan-consistency-findings/${planFindingId}/review-actions`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: input.action,
+          reviewer_name: input.reviewerName,
+          reviewer_note: input.reviewerNote,
+        }),
+        cache: "no-store",
+      },
+    );
+    if (!res.ok) {
+      let detail = `Request failed (${res.status}).`;
+      try {
+        const body = (await res.json()) as { detail?: string };
+        if (body.detail) detail = body.detail;
+      } catch {
+        // Keep generic message.
+      }
+      return { ok: false, status: res.status, backendReachable: true, error: detail };
+    }
+    const body = (await res.json()) as {
+      action: ApiPlanReviewAction;
+      finding: ApiPlanConsistencyFinding;
+    };
+    return {
+      ok: true,
+      status: res.status,
+      backendReachable: true,
+      action: mapPlanReviewAction(body.action),
+      finding: mapPlanConsistencyFinding(body.finding),
+    };
+  } catch {
+    return {
+      ok: false,
+      status: 0,
+      backendReachable: false,
+      error:
+        "The backend is not reachable. Start the API to record a plan review action. Review actions are not simulated in the browser.",
+    };
+  }
+}
+
 export { projectMetrics };

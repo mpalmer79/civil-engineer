@@ -15,7 +15,8 @@ flowchart LR
     P3 --> P4[Phase 4\nAI Review]
     P4 --> P5[Phase 5\nEvaluation]
     P5 --> P6[Phase 6\nPlan Sheet & CAD]
-    P6 --> P7[Phase 7+\nExpansion Modules]
+    P6 --> P7[Phase 7\nSheet Viewer & Hotspots]
+    P7 --> P8[Phase 8+\nCAD Extraction & Expansion]
 ```
 
 ---
@@ -181,13 +182,45 @@ backend tests. See `PHASE_6_PLAN_SHEET_CAD_FOUNDATION.md` and
 
 ---
 
-## Phase 7 and beyond, Expansion Modules
+## Phase 7, Plan Sheet Viewer and Sheet Hotspot Review
 
-**Goal:** Reuse the engine to grow from a stormwater assistant into a land
-development review platform. Each module mostly adds **checklist content,
-document types, and evaluation cases**, not new infrastructure. Phase 7 also
-begins the plan sheet PDF viewer and sheet hotspot work described in
+**Goal:** Give reviewers a plan sheet viewer with seeded hotspot annotations on
+top of the Phase 6 foundation, without parsing real PDF or CAD files.
+
+- A plan sheet hotspot model with percentage coordinates and links to Phase 6
+  entities
+- A sheet viewer context that bundles a sheet with its hotspots and related
+  evidence
+- Human review actions on plan consistency findings (needs follow up, reviewer
+  confirmed, not applicable, needs more information)
+- A reviewer-facing Sheet Viewer with a synthetic preview, hotspot overlay, and
+  review panels
+- Audit events for viewer context requests, hotspot inspection, and plan review
+  actions
+
+**Exit criteria:** A reviewer can open a Brookside Meadows sheet, see seeded
+hotspots over a synthetic preview, inspect connected evidence, and record
+review-support actions on plan consistency findings. The preview and hotspots
+are seeded review-support metadata, not parsed PDF, DWG, DXF, or Autodesk data.
+
+**Delivered in Phase 7:** the `plan_sheet_hotspots` and
+`plan_consistency_review_actions` tables, eight seeded hotspots across six
+Brookside Meadows sheets, sheet hotspot, sheet viewer context, and plan review
+action endpoints, the Sheet Viewer pages and viewer components, audit events,
+and backend tests. There is no action called approve, and nothing verifies CAD
+or validates a design. See `PHASE_7_PLAN_SHEET_VIEWER.md` and
 `CAD_INTEGRATION_ROADMAP.md`.
+
+---
+
+## Phase 8 and beyond, CAD Extraction and Expansion Modules
+
+**Goal:** Begin reading real CAD-derived metadata (DXF extraction or structured
+plan exports, then Autodesk viewer exploration, per
+`CAD_INTEGRATION_ROADMAP.md`) and reuse the engine to grow from a stormwater
+assistant into a land development review platform. Each review module mostly
+adds **checklist content, document types, and evaluation cases**, not new
+infrastructure.
 
 Future expansion areas:
 

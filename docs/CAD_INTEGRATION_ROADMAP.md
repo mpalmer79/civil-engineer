@@ -1,10 +1,10 @@
 # CAD Integration Roadmap
 
 This document describes a staged path for CAD integration in Civil Engineer AI.
-It is a plan, not a statement of current capability. As of Phase 6, no Autodesk
-integration exists, and the system does not parse DWG or DXF files, verify CAD
-drawings, or perform final design review. The CAD-aware metadata is seeded and
-synthetic.
+It is a plan, not a statement of current capability. As of Phase 7, no Autodesk
+integration exists, and the system does not parse PDF, DWG, or DXF files, verify
+CAD drawings, or perform final design review. The CAD-aware metadata and the
+plan sheet viewer hotspots are seeded and synthetic.
 
 Civil Engineer AI is a review-support and evidence-organization system at every
 stage below. None of these stages changes that boundary: the system organizes
@@ -21,14 +21,19 @@ certifies compliance, or replaces a Professional Engineer.
 This stage establishes the data model and review workflow that later stages
 build on.
 
-## Stage 2: Phase 7, plan sheet PDF viewer and sheet hotspot annotations
+## Stage 2: Phase 7, plan sheet viewer and sheet hotspot annotations (implemented)
 
-- Display plan sheet PDFs in the review UI.
-- Annotate sheets with hotspots tied to plan consistency findings and civil
-  feature references.
-- Let a reviewer open a sheet and see related findings in place.
+- A reviewer-facing plan sheet viewer with a synthetic sheet preview.
+- Seeded hotspot annotations tied to plan consistency findings and civil feature
+  references, placed with percentage coordinates over the preview.
+- A reviewer can open a sheet, inspect the connected references, CAD-aware
+  metadata, documents, checklist items, and plan consistency findings in place,
+  and record review-support actions on plan consistency findings.
 
-This stage is a viewing and annotation layer. It does not extract CAD data.
+This stage is a viewing and annotation layer. It renders a synthetic preview
+with seeded hotspots and does not parse real PDF, DWG, DXF, or Autodesk data and
+does not extract CAD geometry. Real sheet rendering from submitted PDFs is
+deferred to a later stage. See `PHASE_7_PLAN_SHEET_VIEWER.md`.
 
 ## Stage 3: Phase 8, DXF metadata extraction or structured plan exports
 

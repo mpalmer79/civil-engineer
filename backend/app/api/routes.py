@@ -17,6 +17,7 @@ from app.api.v1 import (
     human_review,
     plan_consistency,
     plan_references,
+    plan_sheet_hotspots,
     plan_sheets,
     projects,
     retrieval,
@@ -38,3 +39,4 @@ api_router.include_router(plan_sheets.router)
 api_router.include_router(cad_metadata.router)
 api_router.include_router(plan_references.router)
 api_router.include_router(plan_consistency.router)
+api_router.include_router(plan_sheet_hotspots.router)

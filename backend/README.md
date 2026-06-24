@@ -1,25 +1,28 @@
 # Civil Engineer AI Backend
 
 FastAPI backend for Civil Engineer AI: Stormwater Review Assistant. This is the
-Phase 6 backend. It serves seeded Brookside Meadows review data, document chunks,
+Phase 7 backend. It serves seeded Brookside Meadows review data, document chunks,
 and source evidence, runs a controlled AI review workflow that produces draft
 review-support findings, persists human review actions on those drafts, scores
-AI review runs against the expected findings, and adds a plan sheet and
-CAD-aware review foundation (a plan sheet index, CAD-aware feature metadata, plan
-references, missing sheet detection, and plan consistency findings).
+AI review runs against the expected findings, adds a plan sheet and CAD-aware
+review foundation (a plan sheet index, CAD-aware feature metadata, plan
+references, missing sheet detection, and plan consistency findings), and adds a
+plan sheet viewer layer (seeded sheet hotspots, a sheet viewer context, and
+human review actions on plan consistency findings).
 
 Civil Engineer AI is a review-support and evidence-organization system. It does
 not approve plans, certify compliance, stamp drawings, or replace a licensed
 Professional Engineer. Statuses, retrieval results, AI draft findings, human
-review actions, and plan consistency findings never use final-decision language,
-there is no action called approve, and every finding requires human review. The
-CAD-aware metadata is seeded, not extracted from real CAD files, and the backend
-does not parse DWG or DXF drawings or verify CAD.
+review actions, plan consistency findings, and sheet hotspots never use
+final-decision language, there is no action called approve, and every finding
+requires human review. The CAD-aware metadata and the sheet hotspots are seeded,
+not extracted from real CAD files, and the backend does not parse PDF, DWG, or
+DXF drawings or verify CAD.
 
 The AI Review Assistant uses a deterministic mock provider by default, so the
 backend runs without any API key. Only an OpenAI live provider is implemented,
-and live provider calls are disabled by default. Phase 6 does not include
-embeddings, a vector store, CAD parsing, or authentication.
+and live provider calls are disabled by default. Phase 7 does not include
+embeddings, a vector store, PDF or CAD parsing, or authentication.
 
 ## Requirements
 
@@ -55,7 +58,8 @@ python -m app.db.seed_plansheets
 ```
 
 This loads 12 plan sheets, 16 CAD-aware metadata records, and 11 plan
-references, then generates the plan consistency findings.
+references, generates the plan consistency findings, and seeds 8 plan sheet
+hotspots for the Phase 7 viewer.
 
 ## Start the backend
 
@@ -79,7 +83,7 @@ database.
 
 ```bash
 curl http://localhost:8000/health
-# {"status":"ok","service":"Civil Engineer AI Backend","phase":"6"}
+# {"status":"ok","service":"Civil Engineer AI Backend","phase":"7"}
 ```
 
 ## API route examples
@@ -152,6 +156,17 @@ curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-reference
 curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-references/inconsistencies
 curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-consistency-check
 curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-consistency-findings
+
+# Plan sheet viewer and sheet hotspots (Phase 7)
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/sheet-hotspots
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/sheet-hotspots/summary
+curl http://localhost:8000/api/v1/plan-sheets/sheet_c30/sheet-hotspots
+curl http://localhost:8000/api/v1/plan-sheets/sheet_c30/viewer-context
+curl http://localhost:8000/api/v1/sheet-hotspots/hs_c30_basin_conflict
+curl -X POST http://localhost:8000/api/v1/plan-consistency-findings/plan_find_pref_calcs_basin_a/review-actions \
+  -H "Content-Type: application/json" \
+  -d '{"action":"needs_follow_up","reviewer_name":"Town Engineer","reviewer_note":"Confirm basin label."}'
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/plan-consistency-review-actions
 ```
 
 ## AI provider configuration
@@ -188,7 +203,7 @@ backend/
       models.py        SQLAlchemy models
       seed.py          Canonical Brookside Meadows seed data and loader
       seed_evidence.py Seeded chunks, finding sources, retrieval queries
-      seed_plansheets.py Seeded plan sheets, CAD metadata, and plan references
+      seed_plansheets.py Seeded plan sheets, CAD metadata, references, and hotspots
     schemas/           Pydantic response schemas
     services/          Read and retrieval service layer (no route logic in routes)
     api/
