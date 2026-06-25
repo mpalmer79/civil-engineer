@@ -73,6 +73,9 @@ SAMPLE_DIR = Path(__file__).resolve().parent.parent / "cad_samples"
 # no arbitrary filesystem path is read. Browser upload is a later enhancement.
 SAMPLE_DXF_FILES: dict[str, Path] = {
     "brookside_meadows": SAMPLE_DIR / "brookside_meadows.dxf",
+    # Phase 13 resubmittal (round 2) revision of the Brookside Meadows sample,
+    # used by the revision comparison demo and tests.
+    "brookside_meadows_r2": SAMPLE_DIR / "brookside_meadows_r2.dxf",
 }
 
 LIMITATIONS_NOTE = (

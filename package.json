@@ -2,7 +2,7 @@
   "name": "civil-engineer",
   "version": "0.1.0",
   "private": true,
-  "description": "Civil Engineer AI: Stormwater Review Assistant with browser DXF upload, CAD intake validation, parse review queue, workflow tracking, response packages, review packets, sheet viewer, and evidence traceability.",
+  "description": "Civil Engineer AI: Stormwater Review Assistant with multi-round resubmittal intake, DXF metadata revision comparison, applicant response cycle, browser DXF upload, CAD intake, workflow tracking, response packages, review packets, sheet viewer, and evidence traceability.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
