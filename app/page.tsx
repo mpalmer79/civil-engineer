@@ -6,6 +6,7 @@ import SectionCard from "@/components/SectionCard";
 import { getHotspots, projectMetrics } from "@/lib/api";
 
 const heroCtas = [
+  { href: "/review-cycles", label: "Review Cycles" },
   { href: "/cad-intake", label: "CAD Intake" },
   { href: "/response-package", label: "Response Package" },
   { href: "/workflow-board", label: "Workflow Board" },
@@ -54,7 +55,7 @@ export default async function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
               <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
-                Phase 12 · Browser CAD Upload and Parse Review Queue
+                Phase 13 · Resubmittal Intake, Revision Comparison, and Applicant Response Cycle
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Civil Engineer AI
@@ -526,6 +527,53 @@ export default async function HomePage() {
               Promote selected CAD findings into the Workflow Board. The system
               keeps each finding under human review and never approves,
               certifies, or validates anything.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Phase 13: resubmittal intake, revision comparison, and response cycle */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="surface-card p-6">
+          <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
+            Phase 13
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+            Resubmittal intake, revision comparison, and applicant response cycle
+          </h2>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            Civil Engineer AI now tracks multiple review rounds. After the initial
+            review produces findings, a review packet, a workflow board, and a
+            response package, the applicant returns a resubmittal. A reviewer
+            records the resubmittal, links the revised DXF file and applicant
+            response notes, compares the new DXF parse metadata against the
+            previous round, reviews added, removed, changed, unchanged, and
+            carried-forward references, maps applicant responses to prior response
+            or workflow items, marks review-support resolution statuses, carries
+            unresolved items forward without duplication, and prepares the next
+            review cycle. Revision comparison uses extracted DXF metadata only. It
+            does not verify CAD, validate geometry or design, certify compliance,
+            approve plans, send official correspondence, or replace a licensed
+            Professional Engineer. Resolution statuses such as addressed for
+            review are review-support states, never final decisions like resolved,
+            closed, or approved.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              The{" "}
+              <a
+                href="/review-cycles"
+                className="font-semibold text-water-700 hover:text-water-600"
+              >
+                Review Cycles
+              </a>{" "}
+              page tracks rounds in a timeline, records resubmittals and applicant
+              responses, and runs DXF metadata revision comparison.
+            </div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Carry unresolved items forward and prepare the next response cycle.
+              Every status stays under human review and nothing is a final
+              engineering decision.
             </div>
           </div>
         </div>

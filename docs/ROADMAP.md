@@ -21,7 +21,8 @@ flowchart LR
     P9 --> P10[Phase 10\nResponse Package]
     P10 --> P11[Phase 11\nDXF Intake Foundation]
     P11 --> P12[Phase 12\nBrowser CAD Upload & Parse Queue]
-    P12 --> P13[Phase 13+\nCAD Extraction & Expansion]
+    P12 --> P13[Phase 13\nResubmittal & Revision Cycle]
+    P13 --> P14[Phase 14+\nCAD Extraction & Expansion]
 ```
 
 ---
@@ -386,7 +387,43 @@ remain out of scope. See `PHASE_12_BROWSER_CAD_UPLOAD.md` and
 
 ---
 
-## Phase 13 and beyond, CAD Extraction and Expansion Modules
+## Phase 13, Resubmittal Intake, Revision Comparison, and Applicant Response Cycle
+
+**Goal:** Make Civil Engineer AI a multi-round review-support system. A reviewer
+can track multiple review rounds, record resubmittals, compare DXF parse rounds,
+map applicant responses, carry unresolved items forward, and prepare the next
+round, without issuing any final closure decision.
+
+- Review cycles with a timeline, dashboard, and summary
+- Resubmittal packages that link uploaded DXF files and applicant response notes
+- DXF metadata revision comparison that surfaces added, removed, changed,
+  unchanged, and carried-forward references from layers, references, blocks, and
+  review findings
+- Deterministic applicant response mapping to prior response and workflow items
+- Response resolution statuses and issue carry-forward without duplication
+- Next-cycle preparation, ten new models, allowed statuses, audit events, and
+  backend and frontend tests
+
+**Exit criteria:** A reviewer can create or load a review cycle, record a
+resubmittal, link a revised DXF file and applicant responses, run a revision
+comparison between two parse rounds, review the change records, map responses to
+prior items, mark review-support resolution statuses, carry unresolved items
+forward, and prepare the next cycle. Revision comparison compares extracted DXF
+metadata only and does not verify CAD, validate design, certify compliance, or
+approve plans. No status uses final-decision language and there is no action
+called approve.
+
+**Delivered in Phase 13:** the review cycle, resubmittal, applicant response and
+mapping, revision comparison and change record, issue carry-forward, response
+resolution, and next-cycle preparation models, services, and endpoints, a second
+synthetic resubmittal DXF fixture, audit events, a Review Cycles page with detail
+routes, and backend and frontend tests. DWG parsing, Autodesk and Civil 3D
+integration, PDF parsing, GIS, OCR, and computer vision remain out of scope. See
+`PHASE_13_RESUBMITTAL_REVISION_CYCLE.md` and `CAD_INTEGRATION_ROADMAP.md`.
+
+---
+
+## Phase 14 and beyond, CAD Extraction and Expansion Modules
 
 **Goal:** Build on the Phase 11 and Phase 12 DXF intake foundation toward broader
 CAD extraction (DWG support, Autodesk and Civil 3D object intelligence, and

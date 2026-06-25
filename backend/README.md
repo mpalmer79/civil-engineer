@@ -1,7 +1,7 @@
 # Civil Engineer AI Backend
 
 FastAPI backend for Civil Engineer AI: Stormwater Review Assistant. This is the
-Phase 12 backend. It serves seeded Brookside Meadows review data, document
+Phase 13 backend. It serves seeded Brookside Meadows review data, document
 chunks, and source evidence, runs a controlled AI review workflow that produces
 draft review-support findings, persists human review actions on those drafts,
 scores AI review runs against the expected findings, adds a plan sheet and
@@ -21,7 +21,10 @@ with ezdxf into layers, entities, blocks, text, reference candidates, and
 review-support findings, compared against the seeded plan sheets), and adds
 browser DXF upload with intake validation, a manual parse review queue, a CAD
 intake dashboard, and promotion of selected CAD findings into the workflow
-board.
+board, and adds multi-round resubmittal intake, DXF metadata revision comparison,
+and an applicant response cycle (review cycles, resubmittal packages, applicant
+responses and mappings, revision change records, issue carry-forward, response
+resolution, and next-cycle preparation).
 
 Civil Engineer AI is a review-support and evidence-organization system. It does
 not send email, approve plans, certify compliance, stamp drawings, or replace a
@@ -102,7 +105,7 @@ database.
 
 ```bash
 curl http://localhost:8000/health
-# {"status":"ok","service":"Civil Engineer AI Backend","phase":"12"}
+# {"status":"ok","service":"Civil Engineer AI Backend","phase":"13"}
 ```
 
 ## API route examples
@@ -271,6 +274,29 @@ curl -X POST http://localhost:8000/api/v1/cad-review-findings/CAD_REVIEW_FINDING
 curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-review-findings/promote-selected \
   -H "Content-Type: application/json" \
   -d '{"cad_review_finding_ids":["CAD_REVIEW_FINDING_ID"],"reviewer_name":"Town Engineer"}'
+
+# Multi-round resubmittal and revision cycle (Phase 13)
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/review-cycles
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/review-cycles \
+  -H "Content-Type: application/json" -d '{"cycle_name":"Review round 2"}'
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/review-cycle-dashboard
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/resubmittals \
+  -H "Content-Type: application/json" \
+  -d '{"review_cycle_id":"REVIEW_CYCLE_ID","package_name":"Resubmittal 1","submitted_by":"Design Engineer"}'
+curl -X POST http://localhost:8000/api/v1/resubmittals/RESUBMITTAL_ID/cad-files/CAD_FILE_ID
+curl -X POST http://localhost:8000/api/v1/resubmittals/RESUBMITTAL_ID/applicant-responses \
+  -H "Content-Type: application/json" \
+  -d '{"response_text":"Revised the basin outlet detail.","response_topic":"stormwater basin"}'
+curl -X POST http://localhost:8000/api/v1/review-cycles/REVIEW_CYCLE_ID/suggest-response-mappings
+curl -X POST http://localhost:8000/api/v1/review-cycles/REVIEW_CYCLE_ID/revision-comparisons \
+  -H "Content-Type: application/json" \
+  -d '{"previous_parse_run_id":"PREV_RUN","current_parse_run_id":"CUR_RUN"}'
+curl http://localhost:8000/api/v1/revision-comparisons/COMPARISON_RUN_ID/changes
+curl -X POST http://localhost:8000/api/v1/review-cycles/REVIEW_CYCLE_ID/carry-forward
+curl -X POST http://localhost:8000/api/v1/review-cycles/REVIEW_CYCLE_ID/resolution-records \
+  -H "Content-Type: application/json" \
+  -d '{"status":"addressed_for_review","reviewer_name":"Town Engineer"}'
+curl -X POST http://localhost:8000/api/v1/review-cycles/REVIEW_CYCLE_ID/prepare-next-cycle
 ```
 
 The `GET /review-packets/{packet_id}`, `/traceability`, and `/print-view`
@@ -278,9 +304,18 @@ endpoints write an audit event recording reviewer access. The workflow item
 detail, item history, board summary, and ready-for-handoff endpoints do the
 same, as do the response package detail, print view, attachments, and history
 endpoints, the CAD parse summary, layers, text, and CAD file review context
-endpoints, and the Phase 12 CAD parse queue, CAD intake dashboard, and unpromoted
-findings endpoints. This read side effect is intentional so the decision history
-shows reviewer access.
+endpoints, the Phase 12 CAD parse queue, CAD intake dashboard, and unpromoted
+findings endpoints, and the Phase 13 review cycle, review cycle dashboard,
+revision comparison run and changes, response mapping summary, carry-forward
+summary, resolution summary, and next-cycle preparation endpoints. This read side
+effect is intentional so the decision history shows reviewer access.
+
+Phase 13 revision comparison compares extracted DXF metadata only (layers,
+references, blocks, and review findings) between two parse rounds. It does not
+verify CAD, validate design, or compare geometry in a way that implies
+engineering validation. Resolution statuses such as addressed_for_review are
+review-support states, not final decisions, and there is no action called
+approve.
 
 DXF is the only supported CAD file type. A reviewer can upload a DXF file through
 the browser at `POST /projects/{project_id}/cad-files/upload`. The upload is

@@ -23,6 +23,7 @@ from app.db.seed_plansheets import seed_plansheets
 from app.services import (
     cad_intake_service,
     response_package_service,
+    review_cycle_service,
     review_packet_service,
     workflow_service,
 )
@@ -52,6 +53,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         # Register and parse the sample DXF once so the Phase 11 CAD intake read
         # endpoints and frontend have data without a manual upload or parse call.
         cad_intake_service.ensure_cad_intake(db, PROJECT_ID)
+        # Create the initial review cycle once so the Phase 13 read endpoints and
+        # frontend have a current cycle without a manual create call.
+        review_cycle_service.ensure_review_cycle(db, PROJECT_ID)
     finally:
         db.close()
     yield
@@ -61,19 +65,20 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
         "Review-support API for stormwater and land development review. "
-        "Phase 12 adds browser DXF upload and a parse review queue on top of the "
-        "real DXF parsing foundation: a reviewer can upload a DXF file through "
-        "the browser, validate it, request a parse, inspect parse status and "
-        "parse failures, view a CAD intake dashboard and parse queue, review "
-        "unpromoted CAD findings, and promote selected CAD findings into the "
-        "workflow board. It does not verify CAD, validate geometry or design, "
-        "certify compliance, approve plans, or replace a licensed Professional "
-        "Engineer. DXF is the only supported file type; DWG, Autodesk, OCR, and "
-        "GIS remain out of scope. A parse queue status of failed means a "
-        "technical parse failure, not an engineering failure. The mock AI "
+        "Phase 13 adds multi-round resubmittal intake, DXF metadata revision "
+        "comparison, and an applicant response cycle: a reviewer can create or "
+        "load a review cycle, record a resubmittal package, link uploaded DXF "
+        "files and applicant responses, compare current and previous DXF parse "
+        "metadata, map applicant responses to prior response or workflow items, "
+        "mark review-support resolution statuses, carry unresolved items "
+        "forward, and prepare the next review cycle. Revision comparison compares "
+        "extracted DXF metadata only. It does not verify CAD, validate geometry "
+        "or design, certify compliance, approve plans, send correspondence, or "
+        "replace a licensed Professional Engineer. DXF is the only supported file "
+        "type; DWG, Autodesk, OCR, and GIS remain out of scope. The mock AI "
         "provider remains the default and no live AI calls are included."
     ),
-    version="0.12.0",
+    version="0.13.0",
     lifespan=lifespan,
 )
 

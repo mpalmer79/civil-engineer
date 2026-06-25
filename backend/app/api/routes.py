@@ -23,6 +23,7 @@ from app.api.v1 import (
     projects,
     response_packages,
     retrieval,
+    review_cycle,
     review_packets,
     workflow,
 )
@@ -48,3 +49,4 @@ api_router.include_router(review_packets.router)
 api_router.include_router(workflow.router)
 api_router.include_router(response_packages.router)
 api_router.include_router(cad_intake.router)
+api_router.include_router(review_cycle.router)

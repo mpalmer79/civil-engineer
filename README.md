@@ -15,35 +15,40 @@ professional engineering judgment.
 
 ---
 
-## Current phase: Phase 12, Browser CAD Upload and Parse Review Queue
+## Current phase: Phase 13, Resubmittal Intake, Revision Comparison, and Applicant Response Cycle
 
-Phase 12 makes the Phase 11 DXF parsing usable from the browser. A reviewer can
-upload a real DXF file, validate it, request a parse, inspect parse status and
-parse failures, and promote CAD findings into the workflow. It adds:
+Phase 13 turns Civil Engineer AI into a multi-round review-support system. A
+reviewer can create or load a review cycle, record a resubmittal, compare DXF
+parse rounds, map applicant responses, and prepare the next round. It adds:
 
-- **Browser DXF upload** with intake validation (extension, size, content type,
-  and readability) and clear review-support error messages for rejected files
-- **Safe storage** under a generated file name that prevents path traversal,
-  keeping the original user file name as metadata only
-- **A parse review queue** and **CAD intake dashboard** with manual parse
-  triggering, parse status visibility, and a parse failure panel
-- **Unpromoted CAD findings** review with single and batch **promotion into the
-  Workflow Board**, with duplicate promotion prevented per finding
-- **Audit events** for accepted and rejected uploads, parse requests, queue and
-  dashboard views, unpromoted findings views, and finding promotion
-- Backend and frontend tests for upload validation, storage safety, the parse
-  queue and dashboard, promotion, and the safety language boundary
+- **Review cycles** that track multiple review rounds for the project in a
+  timeline, with a review cycle dashboard and summary
+- **Resubmittal intake** that records a resubmittal package and links uploaded
+  DXF files and applicant response notes
+- **DXF metadata revision comparison** between two parse rounds that surfaces
+  added, removed, changed, unchanged, and carried-forward references from
+  extracted layers, references, blocks, and review findings
+- **Applicant response mapping** with deterministic keyword suggestions to prior
+  response package and workflow items, each with a confidence label and reason
+- **Response resolution** statuses (addressed_for_review, still_open,
+  needs_more_information, carried_forward, reviewer_checked, excluded_from_cycle)
+  and **issue carry-forward** without duplication
+- **Next-cycle preparation** that summarizes what should move into the next round
+- **Audit events** across cycle, resubmittal, response, mapping, comparison,
+  carry-forward, resolution, and next-cycle actions
+- Backend and frontend tests for the cycle workflow, revision comparison,
+  carry-forward, resolution, and the safety language boundary
 
-Phase 12 keeps the professional boundary: uploading and parsing a DXF file
-extracts review-support metadata and references only and does not verify CAD,
-validate geometry, hydraulic calculations, grading, stormwater design, or legal
-boundaries, certify compliance, approve plans, stamp drawings, or replace a
-licensed Professional Engineer. There is no action called approve and no status
-such as approved, certified, verified, compliant, or safe. A parse queue status
-of failed means a technical parse failure, not an engineering failure. DXF is the
-only supported file type; DWG parsing, Autodesk and Civil 3D integration, GIS,
-OCR, and computer vision remain future work. Live AI calls are disabled by
-default, so the project runs without any API key.
+Phase 13 keeps the professional boundary: revision comparison compares extracted
+DXF metadata only and does not verify CAD, validate geometry, hydraulic
+calculations, grading, stormwater design, or legal boundaries, certify
+compliance, approve plans, send official correspondence, or replace a licensed
+Professional Engineer. There is no action called approve and no status such as
+approved, certified, verified, compliant, safe, resolved, or closed.
+addressed_for_review means an item appears addressed for human review, never a
+final decision. DXF is the only supported file type; DWG parsing, Autodesk and
+Civil 3D integration, GIS, OCR, and computer vision remain future work. Live AI
+calls are disabled by default, so the project runs without any API key.
 
 Earlier phases established the product foundation:
 
@@ -79,6 +84,9 @@ Earlier phases established the product foundation:
   layers, entities, blocks, and text, detecting references with confidence
   labels, comparing them against the seeded plan sheets, and raising CAD review
   findings that can become workflow items
+- Phase 12: browser DXF upload with intake validation and safe storage, a parse
+  review queue and CAD intake dashboard, and promotion of CAD findings into the
+  workflow board
 
 The reviewed fixture remains **Brookside Meadows**: a 47-lot single-family
 subdivision in the Town of Hartwell with a green-and-gray stormwater treatment
@@ -271,34 +279,34 @@ civil-engineer/
 - [`docs/PHASE_10_RESPONSE_PACKAGE.md`](docs/PHASE_10_RESPONSE_PACKAGE.md): Phase 10 external review response package
 - [`docs/PHASE_11_CAD_INTAKE_DXF_PARSING.md`](docs/PHASE_11_CAD_INTAKE_DXF_PARSING.md): Phase 11 real CAD file intake and DXF parsing foundation
 - [`docs/PHASE_12_BROWSER_CAD_UPLOAD.md`](docs/PHASE_12_BROWSER_CAD_UPLOAD.md): Phase 12 browser CAD upload and parse review queue
+- [`docs/PHASE_13_RESUBMITTAL_REVISION_CYCLE.md`](docs/PHASE_13_RESUBMITTAL_REVISION_CYCLE.md): Phase 13 resubmittal intake, revision comparison, and applicant response cycle
 - [`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md): staged CAD integration path
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture
 - [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md): research basis
 
 ---
 
-## What Phase 12 proves
+## What Phase 13 proves
 
-- The CAD intake feature is usable by a reviewer: a real DXF file is uploaded
-  through the browser, validated, parsed on request, and inspected rather than
-  only loaded from a bundled fixture.
-- Intake is safe and bounded: uploads are validated by extension, size, content
-  type, and readability, stored under a generated file name that prevents path
-  traversal, and rejected files return clear review-support error messages.
-- Parse transparency holds: a parse review queue and CAD intake dashboard show
-  parse status and parse failures, and a failed status means a technical parse
-  failure, not an engineering failure.
-- CAD findings flow into the workflow: a reviewer promotes selected CAD findings
-  into the Workflow Board, and the system prevents duplicate workflow items from
-  the same finding.
-- The professional boundary holds: upload and parsing extract review-support
-  metadata only and do not verify CAD, validate geometry or design, certify
-  compliance, or approve plans. There is no action called approve. DXF is the
-  only supported file type; DWG, Autodesk, GIS, OCR, and computer vision remain
-  out of scope.
-- The decision history is preserved: accepted and rejected uploads, parse
-  requests, queue and dashboard views, unpromoted findings views, and finding
-  promotion all write audit events.
+- The product handles multiple rounds: a reviewer creates or loads a review
+  cycle, records a resubmittal, and tracks the project across review rounds in a
+  timeline rather than as a single pass.
+- Revision comparison is bounded and transparent: it compares extracted DXF
+  metadata (layers, references, blocks, and review findings) between two parse
+  rounds and surfaces added, removed, changed, unchanged, and carried-forward
+  references without claiming CAD verification or design validation.
+- Applicant responses connect to prior work: deterministic keyword suggestions
+  map responses to prior response package and workflow items, each with a
+  confidence label, a reason, and a human-review flag, with no live AI calls.
+- Issue lifecycle holds across rounds: unresolved items carry forward without
+  duplication, resolution statuses stay review-support only, and a next-cycle
+  preparation summary organizes the next round.
+- The professional boundary holds: nothing approves plans, certifies compliance,
+  verifies CAD, validates design, or sends correspondence. There is no action
+  called approve, and addressed_for_review is not a final decision.
+- The decision history is preserved: cycle, resubmittal, response, mapping,
+  comparison, carry-forward, resolution, and next-cycle actions all write audit
+  events.
 
 ## What comes next
 

@@ -71,6 +71,21 @@ plans, or certify compliance. DXF remains the only supported file type; DWG,
 Autodesk, Civil 3D, GIS, OCR, and computer vision remain future work below. See
 `PHASE_12_BROWSER_CAD_UPLOAD.md`.
 
+## Stage 3c: Phase 13, DXF metadata revision comparison across review rounds (implemented)
+
+- Compare the extracted DXF metadata of two parse rounds: layer names and review
+  categories, sheet, detail, pipe, basin, outfall, and wetland buffer references,
+  other text references, block names, and CAD review findings.
+- Surface added, removed, changed, unchanged, and carried-forward references,
+  including a sheet reference that is still missing in both rounds and a new
+  reference to a missing sheet.
+
+This is a metadata comparison for review support across review rounds. It does
+not parse DWG, run OCR or GIS, use computer vision, compare geometry in a way that
+implies engineering validation, verify CAD, or validate design. DWG, Autodesk,
+Civil 3D, GIS, OCR, and computer vision remain future work in the stages below.
+See `PHASE_13_RESUBMITTAL_REVISION_CYCLE.md`.
+
 ## Stage 4: a later phase, DWG support and Autodesk Platform Services exploration
 
 - Add DWG support through appropriate tooling, which usually requires
