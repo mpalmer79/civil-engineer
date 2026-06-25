@@ -1,3 +1,5 @@
+import BoundaryMark from "@/components/illustrations/BoundaryMark";
+
 export default function SafetyBoundaryBanner({
   variant = "default",
 }: {
@@ -23,20 +25,26 @@ export default function SafetyBoundaryBanner({
 
   return (
     <div className="rounded-xl border border-water-100 bg-water-50 p-6">
-      <div className="flex items-center gap-2">
-        <span aria-hidden="true" className="text-water-700">
-          ⚖
-        </span>
-        <h2 className="text-base font-semibold text-slate-900">
-          Professional boundary
-        </h2>
+      <div className="flex items-start gap-4">
+        <BoundaryMark className="hidden h-16 w-16 shrink-0 sm:block" />
+        <div>
+          <div className="flex items-center gap-2">
+            <span aria-hidden="true" className="text-water-700">
+              ⚖
+            </span>
+            <h2 className="text-base font-semibold text-slate-900">
+              Professional boundary
+            </h2>
+          </div>
+          <p className="mt-3 text-sm text-slate-700">
+            Civil Engineer AI assists review. It does not approve plans, certify
+            compliance, stamp drawings, or replace a licensed Professional
+            Engineer. The human reviewer remains the final decision-maker. Every
+            finding is a review-support issue that needs reviewer confirmation and
+            human judgment.
+          </p>
+        </div>
       </div>
-      <p className="mt-3 text-sm text-slate-700">
-        Civil Engineer AI assists review. It does not approve plans, certify
-        compliance, stamp drawings, or replace a licensed Professional Engineer.
-        Every finding is a review-support issue that needs reviewer confirmation
-        and human judgment.
-      </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-land-700">

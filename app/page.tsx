@@ -4,6 +4,14 @@ import MetricCard from "@/components/MetricCard";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import SectionCard from "@/components/SectionCard";
 import BackendStatusBanner from "@/components/BackendStatusBanner";
+import SitePlanIllustration from "@/components/illustrations/SitePlanIllustration";
+import WorkflowStepIcon, {
+  type WorkflowStepKey,
+} from "@/components/illustrations/WorkflowStepIcon";
+import MetricIcon, {
+  type MetricIconKey,
+} from "@/components/illustrations/MetricIcon";
+import ArchitectureDiagram from "@/components/illustrations/ArchitectureDiagram";
 import { getHotspots, projectMetrics } from "@/lib/api";
 
 const heroCtas = [
@@ -16,56 +24,73 @@ const heroCtas = [
   { href: "/review-packet", label: "View Review Packet" },
 ];
 
-const metricCards = [
-  { value: `${projectMetrics.acreage}`, label: "Site acres", accent: "land" as const },
-  { value: projectMetrics.proposedLots, label: "Proposed lots", accent: "land" as const },
-  { value: projectMetrics.disturbedAcres, label: "Disturbed acres", accent: "land" as const },
-  { value: projectMetrics.documents, label: "Submitted / referenced documents", accent: "water" as const },
-  { value: projectMetrics.checklistItems, label: "Stormwater checklist items", accent: "water" as const },
-  { value: projectMetrics.plantedIssues, label: "Planted review issues", accent: "amber" as const },
-  { value: projectMetrics.evaluationCases, label: "Evaluation cases", accent: "water" as const },
+const metricCards: {
+  value: string | number;
+  label: string;
+  accent: "land" | "water" | "amber";
+  icon: MetricIconKey;
+}[] = [
+  { value: `${projectMetrics.acreage}`, label: "Site acres", accent: "land", icon: "site-acres" },
+  { value: projectMetrics.proposedLots, label: "Proposed lots", accent: "land", icon: "proposed-lots" },
+  { value: projectMetrics.disturbedAcres, label: "Disturbed acres", accent: "land", icon: "disturbed-acres" },
+  { value: projectMetrics.documents, label: "Submitted / referenced documents", accent: "water", icon: "documents" },
+  { value: projectMetrics.checklistItems, label: "Stormwater checklist items", accent: "water", icon: "checklist" },
+  { value: projectMetrics.plantedIssues, label: "Planted review issues", accent: "amber", icon: "review-issues" },
+  { value: projectMetrics.evaluationCases, label: "Evaluation cases", accent: "water", icon: "evaluation" },
 ];
 
-const workflowSteps = [
+const workflowSteps: {
+  title: string;
+  detail: string;
+  icon: WorkflowStepKey;
+}[] = [
   {
     title: "Upload and parse DXF files",
     detail:
       "Upload a DXF file in the browser, validate it, and parse review-support metadata.",
+    icon: "intake",
   },
   {
     title: "Review extracted CAD metadata",
     detail:
       "Inspect layers, text, blocks, and reference candidates with confidence labels.",
+    icon: "metadata",
   },
   {
     title: "Organize findings",
     detail:
       "Turn checklist gaps and CAD findings into review-support findings with evidence.",
+    icon: "findings",
   },
   {
     title: "Build review packets",
     detail:
       "Assemble documents, sheets, findings, and audit evidence into a packet draft.",
+    icon: "packet",
   },
   {
     title: "Track workflow items",
     detail:
       "Move items through triage, follow-up, and ready for handoff on the board.",
+    icon: "workflow",
   },
   {
     title: "Generate draft response packages",
     detail:
       "Draft an external response grouped by topic with an attachment checklist.",
+    icon: "response",
   },
   {
     title: "Manage resubmittals and revision comparisons",
     detail:
       "Record resubmittals and compare DXF metadata between review rounds.",
+    icon: "resubmittal",
   },
   {
     title: "View the reviewer command center",
     detail:
       "See attention items, health metrics, a timeline, and recommended next steps.",
+    icon: "command-center",
   },
 ];
 
@@ -135,8 +160,12 @@ export default async function HomePage() {
   return (
     <div>
       {/* Hero */}
-      <section className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <section className="relative overflow-hidden border-b border-slate-200 bg-white">
+        {/* Decorative blueprint site-plan backdrop. Purely illustrative and
+            review-support only; it reinforces human-led plan review rather than
+            automated approval. Kept very faint so hero text stays readable. */}
+        <SitePlanIllustration className="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-2/3 text-slate-500 opacity-[0.07] lg:block" />
+        <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
               <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
@@ -223,6 +252,7 @@ export default async function HomePage() {
               value={m.value}
               label={m.label}
               accent={m.accent}
+              icon={<MetricIcon icon={m.icon} />}
             />
           ))}
         </div>
@@ -241,8 +271,13 @@ export default async function HomePage() {
           <ol className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {workflowSteps.map((step, i) => (
               <li key={step.title} className="surface-card p-5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-water-50 text-sm font-bold text-water-700">
-                  {i + 1}
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-water-50 text-sm font-bold text-water-700">
+                    {i + 1}
+                  </div>
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-50 text-water-700 ring-1 ring-inset ring-slate-200">
+                    <WorkflowStepIcon step={step.icon} />
+                  </span>
                 </div>
                 <p className="mt-3 text-sm font-semibold text-slate-800">
                   {step.title}
@@ -295,6 +330,30 @@ export default async function HomePage() {
               </p>
             </div>
             <SectionCard title="Technical architecture">
+              {/* Decorative system diagram. The labels below the diagram carry
+                  the meaning for assistive technology; the SVG itself has no
+                  embedded text. */}
+              <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <ArchitectureDiagram className="mx-auto h-auto w-full max-w-md text-slate-500" />
+                <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs text-slate-500">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true" className="h-2 w-2 rounded-sm bg-slate-400" />
+                    Next.js frontend
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true" className="h-2 w-2 rounded-sm bg-water-600" />
+                    FastAPI backend
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true" className="h-2 w-2 rounded-sm bg-slate-400" />
+                    DXF parser
+                  </span>
+                  <span className="inline-flex items-center gap-1.5">
+                    <span aria-hidden="true" className="h-2 w-2 rounded-sm bg-land-700" />
+                    Testing and coverage
+                  </span>
+                </div>
+              </div>
               <ul className="space-y-2">
                 {architecture.map((item) => (
                   <li
