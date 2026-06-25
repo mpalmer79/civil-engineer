@@ -9,6 +9,21 @@ Civil Engineer AI is a review-support platform for stormwater plan review that h
 
 The demo reviews the Brookside Meadows fixture, a synthetic 47-lot subdivision in the Town of Hartwell with a green-and-gray stormwater treatment train and intentionally planted review issues.
 
+### Checking the backend
+
+The frontend reads the backend origin from `NEXT_PUBLIC_API_BASE_URL`. This must be the backend origin only, with no `/api/v1` path, because the frontend API modules append `/api/v1/...` themselves:
+
+```
+NEXT_PUBLIC_API_BASE_URL=https://your-backend-service.up.railway.app
+```
+
+To confirm a deployed backend is serving the review-support API, open these URLs against the backend origin:
+
+- `/health` returns the health JSON (status, service name, version, demo mode).
+- `/api/v1/projects/proj_brookside_meadows` returns the seeded Brookside Meadows project payload.
+
+A `404` on the backend root `/` is not necessarily a failure. The backend does not serve a page at `/`; if `/health` and the `/api/v1` routes respond, the backend is working as expected.
+
 ## What the system does
 
 Civil Engineer AI structures the work a reviewer does on a stormwater submission. It takes a real DXF file and seeded review data and turns them into organized, traceable, review-support evidence:

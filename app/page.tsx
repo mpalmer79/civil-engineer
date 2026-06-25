@@ -7,6 +7,7 @@ import BackendStatusBanner from "@/components/BackendStatusBanner";
 import { getHotspots, projectMetrics } from "@/lib/api";
 
 const heroCtas = [
+  { href: "/guided-demo", label: "See the Guided Demo" },
   { href: "/project-dashboard", label: "Open Project Dashboard" },
   { href: "/cad-intake", label: "Start CAD Intake" },
   { href: "/review-cycles", label: "View Review Cycles" },
@@ -200,6 +201,13 @@ export default async function HomePage() {
             center. The demo project is Brookside Meadows, a synthetic 47-lot
             subdivision with intentionally planted review issues.
           </p>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            Real DXF upload and metadata extraction live in CAD Intake. The other
+            CAD-aware pages, such as CAD Review and the Sheet Viewer, organize
+            extracted or seeded CAD-aware metadata for review-support workflows.
+            Civil Engineer AI does not parse DWG, verify CAD, validate geometry,
+            certify compliance, or approve plans.
+          </p>
         </div>
       </section>
 
@@ -318,16 +326,25 @@ export default async function HomePage() {
               Where to start
             </h2>
             <p className="mt-3 max-w-3xl text-slate-600">
-              Open the Project Dashboard for the unified command center, or start
-              with CAD Intake to upload and parse a DXF file. From there, work
-              the findings into a review packet, track them on the workflow
-              board, draft a response package, and manage resubmittals across
-              review cycles.
+              New here? The Guided Demo follows one concern end to end, from
+              checklist requirement to draft response, so you can see a complete
+              review-support workflow without learning every module first.
+              Otherwise, open the Project Dashboard for the unified command
+              center, or start with CAD Intake to upload and parse a DXF file.
+              From there, work the findings into a review packet, track them on
+              the workflow board, draft a response package, and manage
+              resubmittals across review cycles.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
-                href="/project-dashboard"
+                href="/guided-demo"
                 className="rounded-lg bg-water-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-water-700"
+              >
+                See the Guided Demo
+              </Link>
+              <Link
+                href="/project-dashboard"
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               >
                 Open Project Dashboard
               </Link>
