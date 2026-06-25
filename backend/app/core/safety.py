@@ -331,6 +331,29 @@ ALLOWED_CAD_UPLOAD_STATUSES: set[str] = {
     "needs_human_review",
 }
 
+# Phase 12 browser upload validation statuses. These record whether a browser
+# DXF upload passed intake validation (extension, size, content type, and
+# readability), never whether a design is sound. needs_human_review means the
+# file was stored but a reviewer should confirm it before relying on it.
+ALLOWED_CAD_VALIDATION_STATUSES: set[str] = {
+    "accepted",
+    "rejected",
+    "needs_human_review",
+}
+
+# Phase 12 parse queue statuses. These describe where an uploaded DXF file sits
+# in the manual parse queue. "failed" here means the parser could not read the
+# file (a technical parse failure), not an engineering failure or a final
+# decision about the plan. None of these values uses final-decision language.
+ALLOWED_CAD_QUEUE_STATUSES: set[str] = {
+    "queued",
+    "parsing",
+    "completed",
+    "completed_with_warnings",
+    "failed",
+    "needs_human_review",
+}
+
 # DXF parse run states. completed_with_warnings records a successful parse that
 # surfaced review-support warnings, never a pass or fail determination.
 ALLOWED_CAD_PARSE_STATUSES: set[str] = {

@@ -15,36 +15,34 @@ professional engineering judgment.
 
 ---
 
-## Current phase: Phase 11, Real CAD File Intake and DXF Parsing Foundation
+## Current phase: Phase 12, Browser CAD Upload and Parse Review Queue
 
-Phase 11 adds real CAD file intake for DXF files. It parses a real DXF file with
-the ezdxf library, extracts review-support metadata, connects it to the existing
-plan sheet and review workflows, and raises review-support findings. It adds:
+Phase 12 makes the Phase 11 DXF parsing usable from the browser. A reviewer can
+upload a real DXF file, validate it, request a parse, inspect parse status and
+parse failures, and promote CAD findings into the workflow. It adds:
 
-- **Real DXF parsing** with ezdxf that extracts layers, entities, blocks, and
-  text from a real DXF file
-- **Reference detection** for sheet, detail, pipe, basin, outfall, and wetland
-  buffer references, each with a confidence label and human-review flag
-- **Plan sheet comparison** of extracted sheet and detail references against the
-  seeded Phase 6 plan sheets
-- **CAD review findings** for missing sheet matches, unclear detail references,
-  possible label conflicts, and uncategorized layers, which can become workflow
-  items
-- A small synthetic **Brookside Meadows DXF fixture** used in the demo and tests
-- **Audit events** for file creation, parse start, parse completion or failure,
-  reads, comparison, finding creation, and workflow item creation
-- Backend tests for parsing, extraction, reference detection, findings, plan
-  sheet comparison, parse failure handling, and the safety language boundary
+- **Browser DXF upload** with intake validation (extension, size, content type,
+  and readability) and clear review-support error messages for rejected files
+- **Safe storage** under a generated file name that prevents path traversal,
+  keeping the original user file name as metadata only
+- **A parse review queue** and **CAD intake dashboard** with manual parse
+  triggering, parse status visibility, and a parse failure panel
+- **Unpromoted CAD findings** review with single and batch **promotion into the
+  Workflow Board**, with duplicate promotion prevented per finding
+- **Audit events** for accepted and rejected uploads, parse requests, queue and
+  dashboard views, unpromoted findings views, and finding promotion
+- Backend and frontend tests for upload validation, storage safety, the parse
+  queue and dashboard, promotion, and the safety language boundary
 
-Phase 11 keeps the professional boundary: parsing extracts review-support
-metadata from a real DXF file and does not verify CAD, validate geometry,
-hydraulic calculations, grading, stormwater design, or legal boundaries, certify
-compliance, approve plans, stamp drawings, or replace a licensed Professional
-Engineer. There is no action called approve and no status such as approved,
-certified, verified, compliant, or safe. Reference matching uses confidence
-labels (high, medium, low, needs_human_review) and never a verified label. DXF
-is the only supported file type; DWG parsing, Autodesk and Civil 3D integration,
-GIS, OCR, and computer vision remain future work. Live AI calls are disabled by
+Phase 12 keeps the professional boundary: uploading and parsing a DXF file
+extracts review-support metadata and references only and does not verify CAD,
+validate geometry, hydraulic calculations, grading, stormwater design, or legal
+boundaries, certify compliance, approve plans, stamp drawings, or replace a
+licensed Professional Engineer. There is no action called approve and no status
+such as approved, certified, verified, compliant, or safe. A parse queue status
+of failed means a technical parse failure, not an engineering failure. DXF is the
+only supported file type; DWG parsing, Autodesk and Civil 3D integration, GIS,
+OCR, and computer vision remain future work. Live AI calls are disabled by
 default, so the project runs without any API key.
 
 Earlier phases established the product foundation:
@@ -77,6 +75,10 @@ Earlier phases established the product foundation:
 - Phase 10: an external review response package that turns ready-for-handoff
   workflow items into a structured draft response with editable wording, an
   attachment checklist, package history, and a human review sign-off checklist
+- Phase 11: real CAD file intake for DXF files with the ezdxf library, extracting
+  layers, entities, blocks, and text, detecting references with confidence
+  labels, comparing them against the seeded plan sheets, and raising CAD review
+  findings that can become workflow items
 
 The reviewed fixture remains **Brookside Meadows**: a 47-lot single-family
 subdivision in the Town of Hartwell with a green-and-gray stormwater treatment
@@ -268,35 +270,41 @@ civil-engineer/
 - [`docs/PHASE_9_WORKFLOW_BOARD.md`](docs/PHASE_9_WORKFLOW_BOARD.md): Phase 9 reviewer workflow board and issue resolution tracking
 - [`docs/PHASE_10_RESPONSE_PACKAGE.md`](docs/PHASE_10_RESPONSE_PACKAGE.md): Phase 10 external review response package
 - [`docs/PHASE_11_CAD_INTAKE_DXF_PARSING.md`](docs/PHASE_11_CAD_INTAKE_DXF_PARSING.md): Phase 11 real CAD file intake and DXF parsing foundation
+- [`docs/PHASE_12_BROWSER_CAD_UPLOAD.md`](docs/PHASE_12_BROWSER_CAD_UPLOAD.md): Phase 12 browser CAD upload and parse review queue
 - [`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md): staged CAD integration path
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture
 - [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md): research basis
 
 ---
 
-## What Phase 11 proves
+## What Phase 12 proves
 
-- The product can read real CAD files: a reviewer parses a real DXF and inspects
-  extracted layers, entities, blocks, and text rather than only seeded metadata.
-- Extraction is transparent and bounded: references carry confidence labels and
-  human-review flags, and there is no verified label.
-- CAD metadata connects to the existing workflow: extracted references are
-  compared against the seeded plan sheets, findings are raised for gaps, and
-  those findings can become workflow board items.
-- The professional boundary holds: parsing extracts review-support metadata and
-  does not verify CAD, validate geometry or design, certify compliance, or
-  approve plans. There is no action called approve. DXF is the only supported
-  file type; DWG, Autodesk, GIS, OCR, and computer vision remain out of scope.
-- The decision history is preserved: file creation, parse start, parse
-  completion or failure, reads, comparison, finding creation, and workflow item
-  creation all write audit events.
+- The CAD intake feature is usable by a reviewer: a real DXF file is uploaded
+  through the browser, validated, parsed on request, and inspected rather than
+  only loaded from a bundled fixture.
+- Intake is safe and bounded: uploads are validated by extension, size, content
+  type, and readability, stored under a generated file name that prevents path
+  traversal, and rejected files return clear review-support error messages.
+- Parse transparency holds: a parse review queue and CAD intake dashboard show
+  parse status and parse failures, and a failed status means a technical parse
+  failure, not an engineering failure.
+- CAD findings flow into the workflow: a reviewer promotes selected CAD findings
+  into the Workflow Board, and the system prevents duplicate workflow items from
+  the same finding.
+- The professional boundary holds: upload and parsing extract review-support
+  metadata only and do not verify CAD, validate geometry or design, certify
+  compliance, or approve plans. There is no action called approve. DXF is the
+  only supported file type; DWG, Autodesk, GIS, OCR, and computer vision remain
+  out of scope.
+- The decision history is preserved: accepted and rejected uploads, parse
+  requests, queue and dashboard views, unpromoted findings views, and finding
+  promotion all write audit events.
 
 ## What comes next
 
-- A later phase could add browser DXF upload with validation, DWG support
-  through appropriate tooling, structured plan exports, and broader CAD
-  extraction. DWG, Autodesk and Civil 3D integration, GIS, OCR, and computer
-  vision remain a separate, later track.
+- A later phase could add DWG support through appropriate tooling, structured
+  plan exports, and broader CAD extraction. DWG, Autodesk and Civil 3D
+  integration, GIS, OCR, and computer vision remain a separate, later track.
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) and
 [`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md) for the full

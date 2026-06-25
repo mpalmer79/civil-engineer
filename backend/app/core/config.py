@@ -19,11 +19,18 @@ class Settings(BaseSettings):
     )
 
     PROJECT_NAME: str = "Civil Engineer AI Backend"
-    PHASE: str = "11"
+    PHASE: str = "12"
     API_V1_PREFIX: str = "/api/v1"
 
     DATABASE_URL: str = "sqlite:///./civil_engineer_ai.db"
     CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
+
+    # Phase 12 browser DXF upload. Uploaded files are stored under this directory
+    # using a safe generated file name (never the raw user file name), one
+    # subdirectory per project. The size limit is enforced during intake
+    # validation. DXF is the only supported file type in this phase.
+    CAD_UPLOAD_DIR: str = "./cad_uploads"
+    CAD_MAX_UPLOAD_BYTES: int = 5_000_000
 
     # AI provider configuration. The default is the deterministic mock provider
     # so the project runs and tests pass without any paid API key. Live calls

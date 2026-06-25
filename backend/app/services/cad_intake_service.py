@@ -1,4 +1,4 @@
-"""Real CAD (DXF) intake and parsing service for Phase 11.
+"""Real CAD (DXF) intake and parsing service.
 
 This service registers a real DXF file, parses it with the ezdxf library, and
 extracts review-support metadata: layers, entities, blocks, text, reference
@@ -7,13 +7,21 @@ references against the seeded Phase 6 plan sheets and raises review-support
 findings when a reference has no match, a detail reference is ambiguous, a basin
 label may conflict, or a layer cannot be categorized.
 
+Phase 12 adds browser DXF upload, intake validation, a manual parse queue, a CAD
+intake dashboard, and promotion of selected CAD findings into the workflow board.
+Uploaded files are validated (extension, size, content type, readability), stored
+under a safe generated file name (never the raw user file name), and registered
+as a CAD file. Parse is triggered manually; there is no background worker.
+
 Parsing extracts metadata from a real DXF file. It does not verify CAD, validate
 geometry or design, certify compliance, or make final engineering decisions. DXF
 is the only supported file type in this phase; DWG parsing is out of scope. There
-is no action called approve.
+is no action called approve. A parse queue status of "failed" means the parser
+could not read the file (a technical parse failure), not an engineering failure.
 
-Read side effects: get_cad_parse_summary, list_cad_layers, list_cad_text, and
-get_cad_file_review_context each write an audit event recording the access. This
+Read side effects: get_cad_parse_summary, list_cad_layers, list_cad_text,
+get_cad_file_review_context, get_cad_parse_queue, get_cad_intake_dashboard, and
+list_unpromoted_cad_findings each write an audit event recording the access. This
 is intentional so the decision history shows reviewer access.
 """
 
@@ -28,11 +36,37 @@ import ezdxf
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
+from app.core.safety import (
+    ALLOWED_CAD_VALIDATION_STATUSES,
+    ALLOWED_CAD_QUEUE_STATUSES,
+)
 from app.db import models
 from app.services import plan_sheet_service, workflow_service
 
 PARSER_NAME = "ezdxf"
 PARSER_VERSION = ezdxf.__version__
+
+# Supported upload surface for this phase. DXF only; DWG parsing is future work.
+SUPPORTED_UPLOAD_EXTENSIONS: set[str] = {".dxf"}
+# DXF files are sent by browsers with a wide range of content types (or none at
+# all). We accept the common DXF media types plus generic binary and text types,
+# and rely on extension and the DXF readability check as authoritative. Clearly
+# wrong types (for example application/pdf) are rejected.
+DXF_CONTENT_TYPES: set[str] = {
+    "application/dxf",
+    "application/x-dxf",
+    "image/vnd.dxf",
+    "image/x-dxf",
+    "application/x-autocad",
+    "text/plain",
+}
+GENERIC_CONTENT_TYPES: set[str] = {
+    "",
+    "application/octet-stream",
+    "binary/octet-stream",
+}
+ALLOWED_UPLOAD_CONTENT_TYPES: set[str] = DXF_CONTENT_TYPES | GENERIC_CONTENT_TYPES
 
 SAMPLE_DIR = Path(__file__).resolve().parent.parent / "cad_samples"
 # Whitelisted bundled sample DXF fixtures. The client selects a sample by key so
@@ -137,6 +171,13 @@ def create_cad_file_upload(
     file_size_bytes: int,
     storage_path: str,
     uploaded_by: str,
+    original_file_name: str | None = None,
+    stored_file_name: str | None = None,
+    content_type: str | None = None,
+    upload_source: str = "sample",
+    validation_status: str = "accepted",
+    validation_message: str = "DXF registered for review-support parsing.",
+    max_file_size_bytes: int | None = None,
 ) -> models.CadFileUpload:
     """Register a CAD file record. Only the dxf file type is accepted."""
 
@@ -149,6 +190,11 @@ def create_cad_file_upload(
             status_code=422,
         )
 
+    upload_status = (
+        "needs_human_review"
+        if validation_status == "needs_human_review"
+        else "uploaded"
+    )
     cad_file = models.CadFileUpload(
         cad_file_id=f"cad_{_short()}",
         project_id=project_id,
@@ -156,9 +202,20 @@ def create_cad_file_upload(
         file_type=file_type,
         file_size_bytes=file_size_bytes,
         storage_path=storage_path,
-        upload_status="uploaded",
+        upload_status=upload_status,
         uploaded_by=uploaded_by,
         limitations_note=LIMITATIONS_NOTE,
+        original_file_name=original_file_name or file_name,
+        stored_file_name=stored_file_name or file_name,
+        content_type=content_type,
+        upload_source=upload_source,
+        validation_status=validation_status,
+        validation_message=validation_message,
+        max_file_size_bytes=(
+            max_file_size_bytes
+            if max_file_size_bytes is not None
+            else get_settings().CAD_MAX_UPLOAD_BYTES
+        ),
     )
     db.add(cad_file)
     _audit(
@@ -168,7 +225,12 @@ def create_cad_file_upload(
         related_entity_type="cad_file",
         related_entity_id=cad_file.cad_file_id,
         description=f"CAD file record created for {file_name}.",
-        metadata={"cad_file_id": cad_file.cad_file_id, "file_type": file_type},
+        metadata={
+            "cad_file_id": cad_file.cad_file_id,
+            "file_type": file_type,
+            "upload_source": upload_source,
+            "validation_status": validation_status,
+        },
     )
     db.commit()
     db.refresh(cad_file)
@@ -201,6 +263,230 @@ def create_cad_file_from_sample(
         storage_path=str(path),
         uploaded_by=uploaded_by,
     )
+
+
+def get_cad_upload_limits() -> dict:
+    """Return the documented browser DXF upload limits and validation rules."""
+
+    settings = get_settings()
+    max_bytes = settings.CAD_MAX_UPLOAD_BYTES
+    return {
+        "supported_extensions": sorted(SUPPORTED_UPLOAD_EXTENSIONS),
+        "supported_file_types": ["dxf"],
+        "max_file_size_bytes": max_bytes,
+        "max_file_size_mb": round(max_bytes / 1_000_000, 2),
+        "allowed_validation_statuses": sorted(ALLOWED_CAD_VALIDATION_STATUSES),
+        "allowed_queue_statuses": sorted(ALLOWED_CAD_QUEUE_STATUSES),
+        "note": (
+            "DXF is the only supported file type. Uploaded files are stored "
+            "under a safe generated file name and parsed for review-support "
+            "metadata only. Upload does not verify CAD, validate geometry or "
+            "design, certify compliance, or replace a licensed Professional "
+            "Engineer."
+        ),
+    }
+
+
+def validate_cad_upload_file(
+    *,
+    file_name: str | None,
+    content_type: str | None,
+    size_bytes: int,
+    content_bytes: bytes | None = None,
+) -> tuple[str, str]:
+    """Validate a browser DXF upload.
+
+    Returns a (validation_status, validation_message) pair. validation_status is
+    one of accepted, rejected, or needs_human_review. The file name is used only
+    to read the extension; it never affects where the file is stored. These
+    checks are review-support intake checks, not an engineering determination.
+    """
+
+    extension = Path(file_name or "").suffix.lower()
+    if extension not in SUPPORTED_UPLOAD_EXTENSIONS:
+        return (
+            "rejected",
+            (
+                f"Unsupported file extension '{extension or '(none)'}'. Only "
+                "DXF files are supported in this phase. DWG parsing is future "
+                "work."
+            ),
+        )
+    if size_bytes <= 0:
+        return ("rejected", "The uploaded file is empty (zero bytes).")
+    max_bytes = get_settings().CAD_MAX_UPLOAD_BYTES
+    if size_bytes > max_bytes:
+        return (
+            "rejected",
+            (
+                f"The uploaded file is {size_bytes} bytes, which exceeds the "
+                f"{max_bytes} byte limit."
+            ),
+        )
+    normalized_type = (content_type or "").strip().lower()
+    if normalized_type and normalized_type not in ALLOWED_UPLOAD_CONTENT_TYPES:
+        return (
+            "rejected",
+            (
+                f"Unsupported content type '{content_type}'. Upload a DXF file."
+            ),
+        )
+    if content_bytes is not None:
+        text = content_bytes.decode("utf-8", errors="ignore").upper()
+        if "SECTION" not in text or "EOF" not in text:
+            return (
+                "needs_human_review",
+                (
+                    "The file was stored but does not look like a readable DXF "
+                    "text file. A reviewer should confirm it before parsing."
+                ),
+            )
+    return (
+        "accepted",
+        "DXF upload accepted for review-support parsing.",
+    )
+
+
+def save_uploaded_dxf_file(
+    *, content_bytes: bytes, project_id: str
+) -> tuple[str, str]:
+    """Write uploaded bytes to disk under a safe generated file name.
+
+    The stored file name is generated and never derived from the user file name,
+    which prevents path traversal. Returns (stored_file_name, storage_path).
+    """
+
+    settings = get_settings()
+    # Resolve the per-project upload directory under the configured root. Both
+    # parts are server controlled, so no user input reaches the path.
+    upload_root = Path(settings.CAD_UPLOAD_DIR).resolve()
+    project_dir = upload_root / project_id
+    project_dir.mkdir(parents=True, exist_ok=True)
+    stored_file_name = f"cad_{_short()}.dxf"
+    storage_path = project_dir / stored_file_name
+    storage_path.write_bytes(content_bytes)
+    return stored_file_name, str(storage_path)
+
+
+def create_cad_file_from_upload(
+    db: Session,
+    *,
+    project_id: str,
+    original_file_name: str | None,
+    content_type: str | None,
+    content_bytes: bytes,
+    uploaded_by: str = "reviewer",
+) -> models.CadFileUpload:
+    """Validate, store, and register a browser-uploaded DXF file.
+
+    Rejected uploads raise CadIntakeError and are not stored. Accepted and
+    needs_human_review uploads are stored under a safe generated file name and
+    registered. Writes a cad_upload_accepted or cad_upload_rejected audit event.
+    """
+
+    if db.get(models.Project, project_id) is None:
+        raise CadIntakeError("Project not found.", status_code=404)
+
+    size_bytes = len(content_bytes)
+    validation_status, validation_message = validate_cad_upload_file(
+        file_name=original_file_name,
+        content_type=content_type,
+        size_bytes=size_bytes,
+        content_bytes=content_bytes,
+    )
+    # Keep only the base name as metadata. Any directory components in the user
+    # file name (for example a path traversal attempt) are dropped here and never
+    # reach the storage path.
+    safe_original = Path(original_file_name or "uploaded.dxf").name
+
+    if validation_status == "rejected":
+        _audit(
+            db,
+            project_id=project_id,
+            event_type="cad_upload_rejected",
+            related_entity_type="cad_file",
+            related_entity_id=project_id,
+            description=f"DXF upload rejected: {validation_message}",
+            actor_type="reviewer",
+            metadata={
+                "original_file_name": safe_original,
+                "validation_status": validation_status,
+                "size_bytes": size_bytes,
+            },
+        )
+        db.commit()
+        raise CadIntakeError(validation_message, status_code=422)
+
+    stored_file_name, storage_path = save_uploaded_dxf_file(
+        content_bytes=content_bytes, project_id=project_id
+    )
+    cad_file = create_cad_file_upload(
+        db,
+        project_id=project_id,
+        file_name=safe_original,
+        file_type="dxf",
+        file_size_bytes=size_bytes,
+        storage_path=storage_path,
+        uploaded_by=uploaded_by,
+        original_file_name=safe_original,
+        stored_file_name=stored_file_name,
+        content_type=content_type,
+        upload_source="browser_upload",
+        validation_status=validation_status,
+        validation_message=validation_message,
+    )
+    _audit(
+        db,
+        project_id=project_id,
+        event_type="cad_upload_accepted",
+        related_entity_type="cad_file",
+        related_entity_id=cad_file.cad_file_id,
+        description=(
+            f"DXF upload {validation_status} for {safe_original}."
+        ),
+        actor_type="reviewer",
+        metadata={
+            "cad_file_id": cad_file.cad_file_id,
+            "validation_status": validation_status,
+            "stored_file_name": stored_file_name,
+        },
+    )
+    db.commit()
+    db.refresh(cad_file)
+    return cad_file
+
+
+def request_cad_parse(db: Session, cad_file_id: str) -> models.CadParseRun:
+    """Record a manual parse request for an uploaded DXF file and parse it.
+
+    Parsing runs inline (there is no background worker). Sets parse_requested_at
+    and parse_completed_at on the CAD file and writes a cad_parse_requested audit
+    event in addition to the parse run's own audit events.
+    """
+
+    cad_file = get_cad_file(db, cad_file_id)
+    if cad_file is None:
+        raise CadIntakeError("CAD file not found.", status_code=404)
+
+    cad_file.parse_requested_at = _now()
+    _audit(
+        db,
+        project_id=cad_file.project_id,
+        event_type="cad_parse_requested",
+        related_entity_type="cad_file",
+        related_entity_id=cad_file_id,
+        description=f"Parse requested for {cad_file.file_name}.",
+        actor_type="reviewer",
+        metadata={"cad_file_id": cad_file_id},
+    )
+    db.commit()
+
+    run = parse_dxf_file(db, cad_file_id)
+
+    cad_file.parse_completed_at = _now()
+    db.commit()
+    db.refresh(run)
+    return run
 
 
 def get_cad_file(db: Session, cad_file_id: str) -> models.CadFileUpload | None:
@@ -1156,6 +1442,8 @@ def create_workflow_items_from_cad_findings(
         )
         db.add(item)
         finding.linked_workflow_item_id = item.workflow_item_id
+        finding.promoted_to_workflow = True
+        finding.promoted_workflow_item_id = item.workflow_item_id
         created_ids.append(item.workflow_item_id)
 
     _audit(
@@ -1229,6 +1517,400 @@ def get_cad_file_review_context(db: Session, cad_file_id: str) -> dict | None:
         "reference_candidates": candidates,
         "findings": findings,
         "note": CONTEXT_NOTE,
+    }
+
+
+def _latest_parse_run(
+    db: Session, cad_file_id: str
+) -> models.CadParseRun | None:
+    return db.scalars(
+        select(models.CadParseRun)
+        .where(models.CadParseRun.cad_file_id == cad_file_id)
+        .order_by(models.CadParseRun.started_at.desc())
+    ).first()
+
+
+def _queue_status_for(
+    cad_file: models.CadFileUpload, run: models.CadParseRun | None
+) -> str:
+    """Derive the parse queue status for a CAD file from its latest parse run.
+
+    A status of "failed" means the parser could not read the file (a technical
+    parse failure), not an engineering failure or a final decision about the plan.
+    """
+
+    if run is None:
+        if cad_file.validation_status == "needs_human_review":
+            return "needs_human_review"
+        return "queued"
+    if run.status == "started":
+        return "parsing"
+    if run.status in ALLOWED_CAD_QUEUE_STATUSES:
+        return run.status
+    return "queued"
+
+
+def get_cad_parse_queue(db: Session, project_id: str) -> list[dict]:
+    """Return the parse queue for a project: one row per uploaded CAD file.
+
+    Each row carries the upload and validation state, the derived queue status,
+    and the latest parse run summary so a reviewer can see files needing parse,
+    files being parsed, parse failures, and runs needing human review.
+
+    Read side effect: writes a cad_parse_queue_viewed audit event.
+    """
+
+    if db.get(models.Project, project_id) is None:
+        raise CadIntakeError("Project not found.", status_code=404)
+
+    files = list_cad_files(db, project_id)
+    rows: list[dict] = []
+    for cad_file in files:
+        run = _latest_parse_run(db, cad_file.cad_file_id)
+        queue_status = _queue_status_for(cad_file, run)
+        finding_count = 0
+        if run is not None:
+            finding_count = len(
+                list(
+                    db.scalars(
+                        select(models.CadReviewFinding).where(
+                            models.CadReviewFinding.parse_run_id
+                            == run.parse_run_id
+                        )
+                    ).all()
+                )
+            )
+        rows.append(
+            {
+                "cad_file_id": cad_file.cad_file_id,
+                "project_id": project_id,
+                "file_name": cad_file.original_file_name or cad_file.file_name,
+                "upload_source": cad_file.upload_source,
+                "upload_status": cad_file.upload_status,
+                "validation_status": cad_file.validation_status,
+                "validation_message": cad_file.validation_message,
+                "queue_status": queue_status,
+                "parse_run_id": run.parse_run_id if run else None,
+                "parse_status": run.status if run else None,
+                "warning_count": run.warning_count if run else 0,
+                "error_message": run.error_message if run else None,
+                "finding_count": finding_count,
+                "parse_requested_at": cad_file.parse_requested_at,
+                "parse_completed_at": cad_file.parse_completed_at,
+                "requires_human_review": queue_status
+                in {"needs_human_review", "failed"},
+            }
+        )
+
+    _audit(
+        db,
+        project_id=project_id,
+        event_type="cad_parse_queue_viewed",
+        related_entity_type="project",
+        related_entity_id=project_id,
+        description="CAD parse queue viewed.",
+        actor_type="reviewer",
+        metadata={"file_count": len(rows)},
+    )
+    db.commit()
+    return rows
+
+
+def list_unpromoted_cad_findings(
+    db: Session, project_id: str, *, audit: bool = True
+) -> list[models.CadReviewFinding]:
+    """Return CAD review findings not yet promoted to a workflow item.
+
+    A finding is unpromoted when it has no linked workflow item and has not been
+    flagged promoted. Excluded findings are skipped. Read side effect (when audit
+    is True): writes a cad_unpromoted_findings_viewed audit event.
+    """
+
+    findings = [
+        f
+        for f in list_cad_review_findings(db, project_id)
+        if f.linked_workflow_item_id is None
+        and not f.promoted_to_workflow
+        and f.status != "excluded_from_packet"
+    ]
+    if audit:
+        _audit(
+            db,
+            project_id=project_id,
+            event_type="cad_unpromoted_findings_viewed",
+            related_entity_type="project",
+            related_entity_id=project_id,
+            description="Unpromoted CAD review findings viewed.",
+            actor_type="reviewer",
+            metadata={"unpromoted_count": len(findings)},
+        )
+        db.commit()
+    return findings
+
+
+def get_cad_intake_dashboard(db: Session, project_id: str) -> dict:
+    """Return a CAD intake dashboard summary for a project.
+
+    Counts uploaded files, queue statuses, validation statuses, parse runs by
+    status, CAD findings, and unpromoted versus promoted findings. Read side
+    effect: writes a cad_intake_dashboard_viewed audit event.
+    """
+
+    if db.get(models.Project, project_id) is None:
+        raise CadIntakeError("Project not found.", status_code=404)
+
+    files = list_cad_files(db, project_id)
+    queue_status_counts: dict[str, int] = {}
+    validation_status_counts: dict[str, int] = {}
+    files_needing_parse = 0
+    files_with_parse_failures = 0
+    for cad_file in files:
+        run = _latest_parse_run(db, cad_file.cad_file_id)
+        queue_status = _queue_status_for(cad_file, run)
+        queue_status_counts[queue_status] = (
+            queue_status_counts.get(queue_status, 0) + 1
+        )
+        validation = cad_file.validation_status or "unknown"
+        validation_status_counts[validation] = (
+            validation_status_counts.get(validation, 0) + 1
+        )
+        if queue_status in {"queued", "needs_human_review"}:
+            files_needing_parse += 1
+        if queue_status == "failed":
+            files_with_parse_failures += 1
+
+    parse_runs = list_cad_parse_runs(db, project_id)
+    parse_status_counts: dict[str, int] = {}
+    for run in parse_runs:
+        parse_status_counts[run.status] = (
+            parse_status_counts.get(run.status, 0) + 1
+        )
+    parse_runs_needing_human_review = sum(
+        1
+        for run in parse_runs
+        if run.status in {"needs_human_review", "failed", "completed_with_warnings"}
+    )
+
+    all_findings = list_cad_review_findings(db, project_id)
+    unpromoted = [
+        f
+        for f in all_findings
+        if f.linked_workflow_item_id is None
+        and not f.promoted_to_workflow
+        and f.status != "excluded_from_packet"
+    ]
+    promoted_count = sum(
+        1
+        for f in all_findings
+        if f.linked_workflow_item_id is not None or f.promoted_to_workflow
+    )
+
+    _audit(
+        db,
+        project_id=project_id,
+        event_type="cad_intake_dashboard_viewed",
+        related_entity_type="project",
+        related_entity_id=project_id,
+        description="CAD intake dashboard viewed.",
+        actor_type="reviewer",
+        metadata={"file_count": len(files)},
+    )
+    db.commit()
+
+    return {
+        "project_id": project_id,
+        "total_files": len(files),
+        "files_needing_parse": files_needing_parse,
+        "files_with_parse_failures": files_with_parse_failures,
+        "parse_runs_needing_human_review": parse_runs_needing_human_review,
+        "total_findings": len(all_findings),
+        "unpromoted_findings_count": len(unpromoted),
+        "promoted_findings_count": promoted_count,
+        "queue_status_counts": queue_status_counts,
+        "validation_status_counts": validation_status_counts,
+        "parse_status_counts": parse_status_counts,
+        "limitations_note": LIMITATIONS_NOTE,
+    }
+
+
+def _build_workflow_item_from_finding(
+    finding: models.CadReviewFinding, reviewer_note: str | None
+) -> models.WorkflowItem:
+    return models.WorkflowItem(
+        workflow_item_id=f"wfi_{_short()}",
+        project_id=finding.project_id,
+        packet_id=None,
+        packet_item_id=None,
+        title=finding.title,
+        description=finding.description,
+        source_type="cad_review_finding",
+        source_id=finding.cad_review_finding_id,
+        severity=finding.severity,
+        status="draft",
+        assigned_role="plan_reviewer",
+        reviewer_note=reviewer_note or None,
+        target_date=None,
+        section_type="plan_sheet_cad",
+        evidence_types=["cad_file"],
+        requires_human_review=True,
+    )
+
+
+def promote_cad_finding_to_workflow(
+    db: Session,
+    cad_review_finding_id: str,
+    *,
+    reviewer_name: str = "reviewer",
+    reviewer_note: str | None = None,
+    commit: bool = True,
+) -> dict:
+    """Promote a single CAD review finding into a workflow board item.
+
+    Idempotent: a finding already linked to a workflow item is not promoted
+    again, which prevents duplicate workflow items from the same CAD finding.
+    Writes a cad_finding_promoted audit event when a new item is created.
+    """
+
+    finding = db.scalars(
+        select(models.CadReviewFinding).where(
+            models.CadReviewFinding.cad_review_finding_id == cad_review_finding_id
+        )
+    ).first()
+    if finding is None:
+        raise CadIntakeError("CAD review finding not found.", status_code=404)
+
+    workflow_service.ensure_workflow_board(db, finding.project_id)
+
+    if finding.linked_workflow_item_id is not None or finding.promoted_to_workflow:
+        return {
+            "cad_review_finding_id": cad_review_finding_id,
+            "workflow_item_id": finding.linked_workflow_item_id
+            or finding.promoted_workflow_item_id,
+            "created": False,
+            "already_promoted": True,
+            "note": (
+                "This CAD finding is already promoted to a workflow item. No "
+                "duplicate workflow item was created."
+            ),
+        }
+
+    item = _build_workflow_item_from_finding(finding, reviewer_note)
+    db.add(item)
+    finding.linked_workflow_item_id = item.workflow_item_id
+    finding.promoted_to_workflow = True
+    finding.promoted_workflow_item_id = item.workflow_item_id
+    _audit(
+        db,
+        project_id=finding.project_id,
+        event_type="cad_finding_promoted",
+        related_entity_type="cad_review_finding",
+        related_entity_id=cad_review_finding_id,
+        description=(
+            f"CAD finding promoted to workflow item by {reviewer_name}."
+        ),
+        actor_type="reviewer",
+        metadata={
+            "cad_review_finding_id": cad_review_finding_id,
+            "workflow_item_id": item.workflow_item_id,
+        },
+    )
+    if commit:
+        db.commit()
+    return {
+        "cad_review_finding_id": cad_review_finding_id,
+        "workflow_item_id": item.workflow_item_id,
+        "created": True,
+        "already_promoted": False,
+        "note": (
+            "Workflow item created from CAD review finding. It needs human "
+            "review and does not approve, certify, or validate anything."
+        ),
+    }
+
+
+def promote_selected_cad_findings_to_workflow(
+    db: Session,
+    project_id: str,
+    cad_review_finding_ids: list[str],
+    *,
+    reviewer_name: str = "reviewer",
+    reviewer_note: str | None = None,
+) -> dict:
+    """Promote selected CAD review findings into workflow items.
+
+    Each finding is promoted at most once, so re-promoting an already promoted
+    finding does not create a duplicate workflow item. Writes a
+    cad_findings_promoted_selected audit event.
+    """
+
+    if db.get(models.Project, project_id) is None:
+        raise CadIntakeError("Project not found.", status_code=404)
+
+    results: list[dict] = []
+    created_ids: list[str] = []
+    created_count = 0
+    already_promoted_count = 0
+    not_found_count = 0
+    for finding_id in cad_review_finding_ids:
+        try:
+            result = promote_cad_finding_to_workflow(
+                db,
+                finding_id,
+                reviewer_name=reviewer_name,
+                reviewer_note=reviewer_note,
+                commit=False,
+            )
+        except CadIntakeError:
+            not_found_count += 1
+            results.append(
+                {
+                    "cad_review_finding_id": finding_id,
+                    "workflow_item_id": None,
+                    "created": False,
+                    "already_promoted": False,
+                    "note": "CAD review finding not found.",
+                }
+            )
+            continue
+        results.append(result)
+        if result["created"]:
+            created_count += 1
+            if result["workflow_item_id"]:
+                created_ids.append(result["workflow_item_id"])
+        elif result["already_promoted"]:
+            already_promoted_count += 1
+
+    _audit(
+        db,
+        project_id=project_id,
+        event_type="cad_findings_promoted_selected",
+        related_entity_type="workflow_board",
+        related_entity_id=project_id,
+        description=(
+            f"{created_count} workflow item(s) created from selected CAD "
+            f"findings by {reviewer_name}."
+        ),
+        actor_type="reviewer",
+        metadata={
+            "requested_count": len(cad_review_finding_ids),
+            "created_count": created_count,
+            "already_promoted_count": already_promoted_count,
+            "not_found_count": not_found_count,
+        },
+    )
+    db.commit()
+    return {
+        "project_id": project_id,
+        "requested_count": len(cad_review_finding_ids),
+        "created_count": created_count,
+        "already_promoted_count": already_promoted_count,
+        "not_found_count": not_found_count,
+        "workflow_item_ids": created_ids,
+        "results": results,
+        "note": (
+            "Selected CAD findings promoted to workflow items. Each needs human "
+            "review and does not approve, certify, or validate anything."
+        ),
     }
 
 

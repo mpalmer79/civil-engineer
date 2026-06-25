@@ -54,7 +54,7 @@ export default async function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
               <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
-                Phase 11 · Real CAD File Intake and DXF Parsing Foundation
+                Phase 12 · Browser CAD Upload and Parse Review Queue
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Civil Engineer AI
@@ -477,9 +477,55 @@ export default async function HomePage() {
                 the extracted metadata and findings.
               </div>
               <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                Browser DXF upload is a later enhancement. This phase uses safe
-                backend fixture-based parsing with real DXF extraction.
+                Phase 11 established safe backend DXF extraction with the bundled
+                Brookside Meadows sample. Phase 12 adds browser upload on top.
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Phase 12: browser CAD upload and parse review queue */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="surface-card p-6">
+          <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
+            Phase 12
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+            Browser CAD upload and parse review queue
+          </h2>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            A reviewer can now upload a real DXF file through the browser. The
+            system validates the file by extension, size, content type, and
+            readability, stores it under a safe generated file name to prevent
+            path traversal, and registers it for review. Parsing is requested
+            manually and tracked in a parse review queue with a CAD intake
+            dashboard. A reviewer can inspect parse status and parse failures,
+            review unpromoted CAD findings, and promote selected findings into
+            the workflow board without creating duplicates. A parse queue status
+            of failed means a technical parse failure, not an engineering
+            failure. This is DXF metadata extraction for review support only. It
+            does not verify CAD, validate geometry or design, certify
+            compliance, approve plans, or replace a licensed Professional
+            Engineer. DXF is the only supported file type; DWG, Autodesk, OCR,
+            and GIS remain future work.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              The{" "}
+              <a
+                href="/cad-intake"
+                className="font-semibold text-water-700 hover:text-water-600"
+              >
+                CAD Intake
+              </a>{" "}
+              page uploads a DXF file, shows validation results and the parse
+              queue, and surfaces the CAD intake dashboard.
+            </div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Promote selected CAD findings into the Workflow Board. The system
+              keeps each finding under human review and never approves,
+              certifies, or validates anything.
             </div>
           </div>
         </div>
