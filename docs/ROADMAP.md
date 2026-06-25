@@ -20,7 +20,8 @@ flowchart LR
     P8 --> P9[Phase 9\nReviewer Workflow Board]
     P9 --> P10[Phase 10\nResponse Package]
     P10 --> P11[Phase 11\nDXF Intake Foundation]
-    P11 --> P12[Phase 12+\nCAD Extraction & Expansion]
+    P11 --> P12[Phase 12\nBrowser CAD Upload & Parse Queue]
+    P12 --> P13[Phase 13+\nCAD Extraction & Expansion]
 ```
 
 ---
@@ -350,10 +351,45 @@ GIS, OCR, and computer vision remain out of scope. See
 
 ---
 
-## Phase 12 and beyond, CAD Extraction and Expansion Modules
+## Phase 12, Browser CAD Upload and Parse Review Queue
 
-**Goal:** Build on the Phase 11 DXF parsing foundation toward broader CAD
-extraction (DWG support, Autodesk and Civil 3D object intelligence, and
+**Goal:** Make the Phase 11 DXF parsing usable by a reviewer through the browser,
+with safe upload intake, parse transparency, and promotion of CAD findings into
+the workflow, without claiming CAD verification or design validation.
+
+- Browser DXF upload with intake validation (extension, size, content type, and
+  readability) and safe storage under a generated file name that prevents path
+  traversal
+- A manual parse review queue and a CAD intake dashboard with parse status and
+  parse failure visibility
+- An unpromoted CAD findings view with single and batch promotion into the
+  workflow board, with duplicate promotion prevented per finding
+- New CAD file and CAD review finding fields, allowed validation and queue
+  statuses, upload and promotion endpoints, audit events, and backend and
+  frontend tests
+
+**Exit criteria:** A reviewer can upload a DXF file through the browser, see
+validation results, request a parse, inspect parse status and parse failures,
+view a CAD intake dashboard and parse queue, review unpromoted CAD findings, and
+promote selected CAD findings into the Workflow Board. DXF is the only supported
+file type. A parse queue status of failed means a technical parse failure, not an
+engineering failure. Upload and parsing extract review-support metadata only and
+do not verify CAD, validate design, certify compliance, or approve plans.
+
+**Delivered in Phase 12:** the browser upload endpoint with validation and safe
+storage, the parse review queue and CAD intake dashboard, the unpromoted findings
+and promotion endpoints, new `cad_file_uploads` and `cad_review_findings` fields,
+audit events, and backend and frontend tests. There is no action called approve.
+DWG parsing, Autodesk and Civil 3D integration, GIS, OCR, and computer vision
+remain out of scope. See `PHASE_12_BROWSER_CAD_UPLOAD.md` and
+`CAD_INTEGRATION_ROADMAP.md`.
+
+---
+
+## Phase 13 and beyond, CAD Extraction and Expansion Modules
+
+**Goal:** Build on the Phase 11 and Phase 12 DXF intake foundation toward broader
+CAD extraction (DWG support, Autodesk and Civil 3D object intelligence, and
 structured plan exports, per `CAD_INTEGRATION_ROADMAP.md`) and reuse the engine
 to grow from a stormwater assistant into a land development review platform.
 Each review module mostly adds **checklist content, document types, and

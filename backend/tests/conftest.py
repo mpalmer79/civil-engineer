@@ -18,6 +18,11 @@ _db_fd, _db_path = tempfile.mkstemp(prefix="civil_engineer_test_", suffix=".db")
 os.close(_db_fd)
 os.environ["DATABASE_URL"] = f"sqlite:///{_db_path}"
 
+# Isolate Phase 12 browser DXF upload storage in a temp directory so tests never
+# write uploaded files into the working tree.
+_upload_dir = tempfile.mkdtemp(prefix="civil_engineer_cad_uploads_")
+os.environ["CAD_UPLOAD_DIR"] = _upload_dir
+
 from fastapi.testclient import TestClient  # noqa: E402
 
 from app.main import app  # noqa: E402

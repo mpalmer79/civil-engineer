@@ -150,6 +150,10 @@ __pycache__/
 *.db
 .env
 
+# Phase 12 browser DXF upload storage (generated at runtime)
+backend/cad_uploads/
+cad_uploads/
+
 # Python coverage artifacts
 .coverage
 backend/.coverage

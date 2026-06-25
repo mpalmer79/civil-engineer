@@ -1,7 +1,7 @@
 # Civil Engineer AI Backend
 
 FastAPI backend for Civil Engineer AI: Stormwater Review Assistant. This is the
-Phase 11 backend. It serves seeded Brookside Meadows review data, document
+Phase 12 backend. It serves seeded Brookside Meadows review data, document
 chunks, and source evidence, runs a controlled AI review workflow that produces
 draft review-support findings, persists human review actions on those drafts,
 scores AI review runs against the expected findings, adds a plan sheet and
@@ -16,9 +16,12 @@ transitions, reviewer notes, follow-up requests, and a ready-for-handoff
 summary), adds an external review response package (ready-for-handoff workflow
 items turned into a draft external response grouped by topic, with draft
 wording, an attachment checklist, a printable draft, a package history, and a
-human review sign-off checklist), and adds real CAD intake for DXF files (parsed
+human review sign-off checklist), adds real CAD intake for DXF files (parsed
 with ezdxf into layers, entities, blocks, text, reference candidates, and
-review-support findings, compared against the seeded plan sheets).
+review-support findings, compared against the seeded plan sheets), and adds
+browser DXF upload with intake validation, a manual parse review queue, a CAD
+intake dashboard, and promotion of selected CAD findings into the workflow
+board.
 
 Civil Engineer AI is a review-support and evidence-organization system. It does
 not send email, approve plans, certify compliance, stamp drawings, or replace a
@@ -27,16 +30,18 @@ human review actions, plan consistency findings, sheet hotspots, review packet
 items, workflow items, response items, and CAD review findings never use
 final-decision language, there is no action called approve, and every finding
 requires human review. The seeded CAD-aware metadata, sheet hotspots, review
-packet, workflow board, and response package remain synthetic. Phase 11 parses
-real DXF files for review-support metadata only; it does not verify CAD, validate
-the design, or parse DWG, PDF, GIS, or run OCR.
+packet, workflow board, and response package remain synthetic. The backend
+parses real DXF files for review-support metadata only; it does not verify CAD,
+validate the design, or parse DWG, PDF, GIS, or run OCR. A parse queue or parse
+run status of failed means a technical parse failure, not an engineering failure.
 
 The AI Review Assistant uses a deterministic mock provider by default, so the
 backend runs without any API key. Only an OpenAI live provider is implemented,
-and live provider calls are disabled by default. Phase 11 parses DXF files with
-ezdxf (a lightweight pure-Python library) but does not include embeddings, a
-vector store, DWG or PDF parsing, Autodesk or GIS integration, OCR, computer
-vision, authentication, or email sending.
+and live provider calls are disabled by default. The backend parses DXF files
+with ezdxf (a lightweight pure-Python library) and accepts browser DXF uploads
+with python-multipart, but does not include embeddings, a vector store, DWG or
+PDF parsing, Autodesk or GIS integration, OCR, computer vision, authentication,
+or email sending.
 
 ## Requirements
 
@@ -97,7 +102,7 @@ database.
 
 ```bash
 curl http://localhost:8000/health
-# {"status":"ok","service":"Civil Engineer AI Backend","phase":"8"}
+# {"status":"ok","service":"Civil Engineer AI Backend","phase":"12"}
 ```
 
 ## API route examples
@@ -250,20 +255,48 @@ curl -X POST http://localhost:8000/api/v1/cad-parse-runs/PARSE_RUN_ID/compare-pl
 curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-review-findings
 curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/workflow-items/from-cad-findings
 curl http://localhost:8000/api/v1/cad-files/CAD_FILE_ID/review-context
+
+# Browser DXF upload and parse review queue (Phase 12)
+curl http://localhost:8000/api/v1/cad-upload-limits
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-files/upload \
+  -F "file=@app/cad_samples/brookside_meadows.dxf;type=application/dxf" \
+  -F "uploaded_by=Town Engineer"
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-intake/dashboard
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-parse-queue
+curl -X POST http://localhost:8000/api/v1/cad-files/CAD_FILE_ID/request-parse
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-review-findings/unpromoted
+curl -X POST http://localhost:8000/api/v1/cad-review-findings/CAD_REVIEW_FINDING_ID/promote-to-workflow \
+  -H "Content-Type: application/json" \
+  -d '{"reviewer_name":"Town Engineer","reviewer_note":"Track this CAD finding."}'
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/cad-review-findings/promote-selected \
+  -H "Content-Type: application/json" \
+  -d '{"cad_review_finding_ids":["CAD_REVIEW_FINDING_ID"],"reviewer_name":"Town Engineer"}'
 ```
 
 The `GET /review-packets/{packet_id}`, `/traceability`, and `/print-view`
 endpoints write an audit event recording reviewer access. The workflow item
 detail, item history, board summary, and ready-for-handoff endpoints do the
 same, as do the response package detail, print view, attachments, and history
-endpoints, and the CAD parse summary, layers, text, and CAD file review context
-endpoints. This read side effect is intentional so the decision history shows
-reviewer access.
+endpoints, the CAD parse summary, layers, text, and CAD file review context
+endpoints, and the Phase 12 CAD parse queue, CAD intake dashboard, and unpromoted
+findings endpoints. This read side effect is intentional so the decision history
+shows reviewer access.
 
-DXF is the only supported CAD file type. For this phase, intake uses the bundled
-Brookside Meadows sample DXF resolved by sample_key, so no arbitrary path is read
-from the client. Browser DXF upload is a later enhancement. DWG parsing is out of
-scope.
+DXF is the only supported CAD file type. A reviewer can upload a DXF file through
+the browser at `POST /projects/{project_id}/cad-files/upload`. The upload is
+validated by extension, size, content type, and readability, and the documented
+size limit is 5 MB (configurable with `CAD_MAX_UPLOAD_BYTES`, returned by
+`GET /cad-upload-limits`). Allowed validation statuses are accepted, rejected,
+and needs_human_review. A rejected upload is not stored and returns HTTP 422 with
+a clear review-support error message. Accepted files are stored under a safe
+generated file name in a per-project directory under `CAD_UPLOAD_DIR` (default
+`./cad_uploads`); the original user file name is reduced to its base name and
+kept as metadata only, so a path traversal attempt in the file name cannot affect
+the storage path. Parsing is triggered manually through the parse review queue
+(`request-parse`); there is no background worker. A parse queue status of failed
+means a technical parse failure, not an engineering failure. The bundled
+Brookside Meadows sample DXF remains available through the Phase 11
+sample_key endpoint. DWG parsing is out of scope.
 
 ## AI provider configuration
 

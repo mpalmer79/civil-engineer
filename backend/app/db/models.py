@@ -1057,11 +1057,17 @@ class ResponsePackageAction(Base):
 
 
 class CadFileUpload(Base):
-    """A real CAD file (DXF only in Phase 11) registered for review-support intake.
+    """A real CAD file (DXF only) registered for review-support intake.
 
     Intake parses a real DXF file and extracts review-support metadata. It does
     not verify CAD, validate geometry or design, certify compliance, or make
     final engineering decisions. DWG parsing is out of scope for this phase.
+
+    Phase 12 adds browser upload support. A browser-uploaded file is stored under
+    a safe generated stored_file_name (never the raw user file name), and the
+    original user file name is kept as original_file_name metadata only.
+    validation_status records whether the upload passed intake validation. It
+    never records an engineering decision.
     """
 
     __tablename__ = "cad_file_uploads"
@@ -1078,6 +1084,21 @@ class CadFileUpload(Base):
     upload_status: Mapped[str] = mapped_column(String, nullable=False)
     uploaded_by: Mapped[str] = mapped_column(String, nullable=False)
     limitations_note: Mapped[str] = mapped_column(Text, nullable=False)
+    # Phase 12 browser upload metadata. Nullable so Phase 11 sample-based intake
+    # and existing rows keep working without a migration.
+    original_file_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    stored_file_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    content_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    upload_source: Mapped[str] = mapped_column(String, default="sample")
+    validation_status: Mapped[str | None] = mapped_column(String, nullable=True)
+    validation_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    max_file_size_bytes: Mapped[int] = mapped_column(Integer, default=0)
+    parse_requested_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+    parse_completed_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=_utcnow
     )
@@ -1284,6 +1305,13 @@ class CadReviewFinding(Base):
         String, nullable=True
     )
     linked_workflow_item_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    # Phase 12 workflow promotion tracking. promoted_to_workflow guards against
+    # duplicate workflow items from the same CAD finding. promoted_workflow_item_id
+    # mirrors linked_workflow_item_id for the promotion path.
+    promoted_to_workflow: Mapped[bool] = mapped_column(default=False)
+    promoted_workflow_item_id: Mapped[str | None] = mapped_column(
         String, nullable=True
     )
     status: Mapped[str] = mapped_column(String, nullable=False)

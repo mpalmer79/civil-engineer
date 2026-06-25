@@ -1,13 +1,14 @@
 # CAD Integration Roadmap
 
 This document describes a staged path for CAD integration in Civil Engineer AI.
-It is a plan, not a statement of current capability. As of Phase 11, the system
-parses real DXF files for review-support metadata, but no Autodesk or Civil 3D
+It is a plan, not a statement of current capability. As of Phase 12, the system
+parses real DXF files for review-support metadata and accepts browser DXF uploads
+with intake validation and a parse review queue, but no Autodesk or Civil 3D
 integration exists, and the system does not parse DWG or PDF files, run OCR or
 GIS, verify CAD drawings, or perform final design review. The seeded plan
 sheets, CAD-aware metadata, plan sheet viewer hotspots, review packet, workflow
-board, and response package remain synthetic; the Phase 11 DXF extraction reads
-a real DXF file but is review-support metadata only.
+board, and response package remain synthetic; the DXF extraction reads a real
+DXF file but is review-support metadata only.
 
 Civil Engineer AI is a review-support and evidence-organization system at every
 stage below. None of these stages changes that boundary: the system organizes
@@ -52,6 +53,23 @@ not as a verified or certified drawing. DXF is the only supported file type.
 DWG parsing, Autodesk and Civil 3D object intelligence, structured plan exports,
 GIS, OCR, and computer vision remain future work in the stages below. See
 `PHASE_11_CAD_INTAKE_DXF_PARSING.md`.
+
+## Stage 3b: Phase 12, browser DXF upload and parse review queue (implemented)
+
+- Upload a real DXF file through the browser with intake validation (extension,
+  size, content type, and readability) and safe storage under a generated file
+  name that prevents path traversal.
+- Trigger parsing manually through a parse review queue and a CAD intake
+  dashboard, with parse status and parse failure visibility. A queue status of
+  failed means a technical parse failure, not an engineering failure.
+- Review unpromoted CAD findings and promote selected findings into the workflow
+  board without creating duplicate workflow items.
+
+This stage makes the Phase 11 DXF parsing usable by a reviewer. It still extracts
+review-support metadata only and does not verify CAD, validate design, approve
+plans, or certify compliance. DXF remains the only supported file type; DWG,
+Autodesk, Civil 3D, GIS, OCR, and computer vision remain future work below. See
+`PHASE_12_BROWSER_CAD_UPLOAD.md`.
 
 ## Stage 4: a later phase, DWG support and Autodesk Platform Services exploration
 

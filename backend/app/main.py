@@ -61,17 +61,19 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
         "Review-support API for stormwater and land development review. "
-        "Phase 11 adds real CAD intake for DXF files: it parses a real DXF file "
-        "with the ezdxf library and extracts review-support metadata (layers, "
-        "entities, blocks, text, reference candidates), compares extracted sheet "
-        "and detail references against the seeded plan sheets, and raises "
-        "review-support findings. It does not verify CAD, validate geometry or "
-        "design, certify compliance, approve plans, or replace a licensed "
-        "Professional Engineer. DXF is the only supported file type; DWG, "
-        "Autodesk, OCR, and GIS remain out of scope. The mock AI provider "
-        "remains the default and no live AI calls are included."
+        "Phase 12 adds browser DXF upload and a parse review queue on top of the "
+        "real DXF parsing foundation: a reviewer can upload a DXF file through "
+        "the browser, validate it, request a parse, inspect parse status and "
+        "parse failures, view a CAD intake dashboard and parse queue, review "
+        "unpromoted CAD findings, and promote selected CAD findings into the "
+        "workflow board. It does not verify CAD, validate geometry or design, "
+        "certify compliance, approve plans, or replace a licensed Professional "
+        "Engineer. DXF is the only supported file type; DWG, Autodesk, OCR, and "
+        "GIS remain out of scope. A parse queue status of failed means a "
+        "technical parse failure, not an engineering failure. The mock AI "
+        "provider remains the default and no live AI calls are included."
     ),
-    version="0.11.0",
+    version="0.12.0",
     lifespan=lifespan,
 )
 

@@ -37,6 +37,15 @@ class CadFileUploadRead(BaseModel):
     upload_status: str
     uploaded_by: str
     limitations_note: str
+    original_file_name: str | None = None
+    stored_file_name: str | None = None
+    content_type: str | None = None
+    upload_source: str = "sample"
+    validation_status: str | None = None
+    validation_message: str | None = None
+    max_file_size_bytes: int = 0
+    parse_requested_at: datetime | None = None
+    parse_completed_at: datetime | None = None
     created_at: datetime
 
 
@@ -165,6 +174,8 @@ class CadReviewFindingRead(BaseModel):
     source_text_extract_id: str | None = None
     linked_plan_sheet_id: str | None = None
     linked_workflow_item_id: str | None = None
+    promoted_to_workflow: bool = False
+    promoted_workflow_item_id: str | None = None
     status: str
     requires_human_review: bool
     created_at: datetime
@@ -226,4 +237,89 @@ class CadFileReviewContext(BaseModel):
 class CadWorkflowItemsResult(BaseModel):
     created_count: int
     workflow_item_ids: list[str] = Field(default_factory=list)
+    note: str
+
+
+# Phase 12 browser upload, parse queue, dashboard, and promotion schemas.
+
+
+class CadUploadLimits(BaseModel):
+    supported_extensions: list[str] = Field(default_factory=list)
+    supported_file_types: list[str] = Field(default_factory=list)
+    max_file_size_bytes: int
+    max_file_size_mb: float
+    allowed_validation_statuses: list[str] = Field(default_factory=list)
+    allowed_queue_statuses: list[str] = Field(default_factory=list)
+    note: str
+
+
+class CadUploadResponse(BaseModel):
+    cad_file: CadFileUploadRead
+    validation_status: str
+    validation_message: str
+    next_action: str
+    note: str
+
+
+class CadParseQueueItem(BaseModel):
+    cad_file_id: str
+    project_id: str
+    file_name: str
+    upload_source: str
+    upload_status: str
+    validation_status: str | None = None
+    validation_message: str | None = None
+    queue_status: str
+    parse_run_id: str | None = None
+    parse_status: str | None = None
+    warning_count: int = 0
+    error_message: str | None = None
+    finding_count: int = 0
+    parse_requested_at: datetime | None = None
+    parse_completed_at: datetime | None = None
+    requires_human_review: bool = False
+
+
+class CadIntakeDashboard(BaseModel):
+    project_id: str
+    total_files: int
+    files_needing_parse: int
+    files_with_parse_failures: int
+    parse_runs_needing_human_review: int
+    total_findings: int
+    unpromoted_findings_count: int
+    promoted_findings_count: int
+    queue_status_counts: dict[str, int] = Field(default_factory=dict)
+    validation_status_counts: dict[str, int] = Field(default_factory=dict)
+    parse_status_counts: dict[str, int] = Field(default_factory=dict)
+    limitations_note: str
+
+
+class CadFindingPromotionRequest(BaseModel):
+    reviewer_name: str = "reviewer"
+    reviewer_note: str | None = None
+
+
+class CadFindingPromotionResponse(BaseModel):
+    cad_review_finding_id: str
+    workflow_item_id: str | None = None
+    created: bool
+    already_promoted: bool
+    note: str
+
+
+class CadSelectedPromotionRequest(BaseModel):
+    cad_review_finding_ids: list[str] = Field(default_factory=list)
+    reviewer_name: str = "reviewer"
+    reviewer_note: str | None = None
+
+
+class CadSelectedPromotionResponse(BaseModel):
+    project_id: str
+    requested_count: int
+    created_count: int
+    already_promoted_count: int
+    not_found_count: int
+    workflow_item_ids: list[str] = Field(default_factory=list)
+    results: list[CadFindingPromotionResponse] = Field(default_factory=list)
     note: str
