@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     )
 
     PROJECT_NAME: str = "Civil Engineer AI Backend"
-    PHASE: str = "13"
+    PHASE: str = "14"
     API_V1_PREFIX: str = "/api/v1"
 
     DATABASE_URL: str = "sqlite:///./civil_engineer_ai.db"

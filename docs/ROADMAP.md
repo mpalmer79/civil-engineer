@@ -22,7 +22,8 @@ flowchart LR
     P10 --> P11[Phase 11\nDXF Intake Foundation]
     P11 --> P12[Phase 12\nBrowser CAD Upload & Parse Queue]
     P12 --> P13[Phase 13\nResubmittal & Revision Cycle]
-    P13 --> P14[Phase 14+\nCAD Extraction & Expansion]
+    P13 --> P14[Phase 14\nReviewer Command Center]
+    P14 --> P15[Phase 15+\nCAD Extraction & Expansion]
 ```
 
 ---
@@ -423,7 +424,41 @@ integration, PDF parsing, GIS, OCR, and computer vision remain out of scope. See
 
 ---
 
-## Phase 14 and beyond, CAD Extraction and Expansion Modules
+## Phase 14, Reviewer Command Center and Project Health Dashboard
+
+**Goal:** Unify the system into one operational command center that aggregates
+the review-support state across every phase, so a reviewer can see what needs
+attention, what changed, what is ready for handoff, and what to do next, without
+making any engineering decision.
+
+- A command center snapshot with an overall review-support status and summary
+- Project health metrics, a reviewer attention queue, recommended next steps, a
+  project timeline, review readiness checks, reviewer notes, and module links
+- Attention items aggregated from workflow, CAD intake, review cycle, response
+  package, and evidence data, with no duplication across regeneration
+- Six new models, allowed statuses, thirteen endpoints, audit events, a Project
+  Dashboard page, and backend and frontend tests
+
+**Exit criteria:** A reviewer can open the Project Dashboard, generate or refresh
+a command center snapshot, read the health metrics and attention queue, mark
+attention items reviewer_checked, deferred, or not_applicable, read the
+recommended next steps, review the timeline and readiness checks, record reviewer
+notes, and deep link into every module. The dashboard organizes review-support
+work and links into existing modules rather than replacing them. It does not
+approve, certify, verify, validate, close, or resolve anything, and
+ready_for_human_review is not a final decision.
+
+**Delivered in Phase 14:** the command center snapshot, health metric, attention
+item, timeline event, readiness check, and reviewer note models, an aggregation
+service, thirteen endpoints, audit events, a Project Dashboard page with its
+components, and backend and frontend tests. Phase 14 adds no new parsing, AI, or
+external integration; it aggregates existing data. DWG parsing, Autodesk and Civil
+3D integration, PDF parsing, GIS, OCR, and computer vision remain out of scope.
+See `PHASE_14_COMMAND_CENTER_DASHBOARD.md` and `CAD_INTEGRATION_ROADMAP.md`.
+
+---
+
+## Phase 15 and beyond, CAD Extraction and Expansion Modules
 
 **Goal:** Build on the Phase 11 and Phase 12 DXF intake foundation toward broader
 CAD extraction (DWG support, Autodesk and Civil 3D object intelligence, and

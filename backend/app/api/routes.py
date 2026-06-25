@@ -11,6 +11,7 @@ from app.api.v1 import (
     cad_metadata,
     checklist,
     chunks,
+    command_center,
     documents,
     evaluation,
     findings,
@@ -50,3 +51,4 @@ api_router.include_router(workflow.router)
 api_router.include_router(response_packages.router)
 api_router.include_router(cad_intake.router)
 api_router.include_router(review_cycle.router)
+api_router.include_router(command_center.router)

@@ -86,6 +86,13 @@ implies engineering validation, verify CAD, or validate design. DWG, Autodesk,
 Civil 3D, GIS, OCR, and computer vision remain future work in the stages below.
 See `PHASE_13_RESUBMITTAL_REVISION_CYCLE.md`.
 
+The Phase 14 reviewer command center aggregates the CAD intake status (CAD files,
+parse failures, and unpromoted CAD findings) and the revision comparison status
+(revision changes needing review) alongside every other module into the project
+health dashboard. It only reads and links to the existing CAD data; it adds no
+CAD parsing or extraction capability and does not verify CAD or validate design.
+See `PHASE_14_COMMAND_CENTER_DASHBOARD.md`.
+
 ## Stage 4: a later phase, DWG support and Autodesk Platform Services exploration
 
 - Add DWG support through appropriate tooling, which usually requires
