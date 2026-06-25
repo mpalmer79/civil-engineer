@@ -68,26 +68,24 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
-        "Review-support API for stormwater and land development review. "
-        "Phase 14 adds a reviewer command center and project health dashboard "
-        "that aggregates the review-support data across all phases into one "
-        "operational view: a command center snapshot, project health metrics, "
-        "reviewer attention items with recommended next steps, a project "
-        "timeline, review readiness checks, reviewer notes, and module links into "
-        "the existing modules. The dashboard organizes review-support work and "
-        "links into existing modules rather than replacing them. It does not "
-        "approve plans, certify compliance, verify CAD, validate design, declare "
-        "a project safe, or close or resolve issues, and there is no action "
-        "called approve. DXF is the only supported file type; DWG, Autodesk, OCR, "
-        "and GIS remain out of scope. The mock AI provider remains the default "
-        "and no live AI calls are included."
+        "Review-support API for stormwater and land development review. Civil "
+        "Engineer AI organizes review-support evidence for a human reviewer: "
+        "browser DXF upload and metadata parsing, CAD intake, plan sheet review, "
+        "findings and evidence traceability, review packets, a workflow board, "
+        "draft response packages, resubmittal and DXF metadata revision "
+        "comparison, and a reviewer command center that aggregates the whole "
+        "review state. It does not approve plans, certify compliance, verify "
+        "CAD, validate design, declare a project safe, or close or resolve "
+        "issues, and there is no action called approve. DXF is the only "
+        "supported file type; DWG, Autodesk, OCR, and GIS are out of scope. The "
+        "mock AI provider is the default and no live AI calls are included."
     ),
-    version="0.14.0",
+    version=settings.APP_VERSION,
     lifespan=lifespan,
 )
 
-# CORS is configured for the local Next.js dev server only. Tighten this with a
-# real allowlist before any non-local deployment.
+# CORS allows the configured local dev origins plus the deployed frontend origin
+# (FRONTEND_ORIGIN). Set FRONTEND_ORIGIN to the deployed frontend URL.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -98,13 +96,14 @@ app.add_middleware(
 
 
 @app.get("/health", tags=["health"])
-def health() -> dict[str, str]:
+def health() -> dict[str, str | bool]:
     """Liveness and identity check for the backend."""
 
     return {
         "status": "ok",
         "service": "Civil Engineer AI Backend",
-        "phase": settings.PHASE,
+        "version": settings.APP_VERSION,
+        "demo_mode": settings.DEMO_MODE,
     }
 
 

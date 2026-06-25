@@ -29,7 +29,7 @@ export default function SheetViewerDetailPage({
         <SafetyBoundaryBanner />
 
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">Phase 7 note:</span>{" "}
+          <span className="font-semibold text-slate-800">Note:</span>{" "}
           Plan consistency review actions are persisted by the backend. No action
           approves a plan, certifies compliance, verifies CAD, or validates a
           design.

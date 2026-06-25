@@ -9,7 +9,7 @@ export default function CadIntakeRoute() {
       <PageHeader
         eyebrow="Browser CAD upload and parse review queue"
         title="Brookside Meadows DXF intake and parsing"
-        description="Phase 12 lets a reviewer upload a real DXF file through the browser, validate it, request a parse, inspect parse status and parse failures, view a CAD intake dashboard and parse queue, review unpromoted CAD findings, and promote selected CAD findings into the workflow board. DXF parsing extracts metadata and references only. It does not verify CAD, validate geometry or design, certify compliance, approve plans, or replace a licensed Professional Engineer. DXF is the only supported file type; DWG parsing is future work."
+        description="Civil Engineer AI lets a reviewer upload a real DXF file through the browser, validate it, request a parse, inspect parse status and parse failures, view a CAD intake dashboard and parse queue, review unpromoted CAD findings, and promote selected CAD findings into the workflow board. DXF parsing extracts metadata and references only. It does not verify CAD, validate geometry or design, certify compliance, approve plans, or replace a licensed Professional Engineer. DXF is the only supported file type; DWG parsing is future work."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">

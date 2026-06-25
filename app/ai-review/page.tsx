@@ -9,7 +9,7 @@ export default function AiReviewPage() {
       <PageHeader
         eyebrow="AI Review Assistant"
         title="Controlled AI review with retrieved evidence"
-        description="Phase 4 runs a constrained AI review workflow. For each checklist item the backend retrieves source evidence, builds a constrained prompt from that evidence only, validates the structured output, runs safety checks, and saves a draft review-support finding that requires human review."
+        description="Civil Engineer AI runs a constrained AI review workflow. For each checklist item the backend retrieves source evidence, builds a constrained prompt from that evidence only, validates the structured output, runs safety checks, and saves a draft review-support finding that requires human review."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -42,10 +42,10 @@ export default function AiReviewPage() {
         <SafetyBoundaryBanner />
 
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">Phase 4 note:</span>{" "}
+          <span className="font-semibold text-slate-800">Note:</span>{" "}
           The default provider is a deterministic mock, so the workflow runs
           without any API key. Optional live provider configuration is documented
-          in the Phase 4 notes. The AI does not approve plans, certify
+          in the notes below. The AI does not approve plans, certify
           compliance, or make final engineering decisions.
         </div>
       </div>

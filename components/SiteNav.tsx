@@ -53,7 +53,7 @@ export default function SiteNav() {
         </div>
         <div className="md:hidden">
           <span className="badge bg-slate-100 text-slate-600 ring-slate-200">
-            Phase 14
+            Review Support
           </span>
         </div>
       </nav>
