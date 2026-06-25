@@ -58,7 +58,7 @@ export default async function DocumentsPage() {
 
         <SectionCard
           title="Seeded source chunks"
-          description="Phase 3 seeds short synthetic excerpts for each document so retrieval can trace findings back to specific pages and sections. Expand a document to view its chunks."
+          description="Civil Engineer AI seeds short synthetic excerpts for each document so retrieval can trace findings back to specific pages and sections. Expand a document to view its chunks."
         >
           {documentsWithChunks.length === 0 ? (
             <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
@@ -88,7 +88,7 @@ export default async function DocumentsPage() {
         </SectionCard>
 
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">Phase 3 note:</span>{" "}
+          <span className="font-semibold text-slate-800">Note:</span>{" "}
           Document records and source chunks are served by the backend. Retrieval
           is keyword and metadata based in this phase; embeddings and live AI
           review are planned for later phases.

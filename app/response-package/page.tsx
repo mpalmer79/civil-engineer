@@ -9,7 +9,7 @@ export default function ResponsePackagePage() {
       <PageHeader
         eyebrow="External review response package"
         title="Brookside Meadows draft response package"
-        description="Phase 10 turns ready-for-handoff workflow items into a structured draft external response package for an applicant, design engineer, municipal reviewer, or internal review team. It groups items by topic, drafts plain review-support wording, keeps evidence traceability, and builds an attachment checklist and a human review sign-off checklist. It does not send email, approve plans, certify compliance, stamp drawings, verify CAD, or validate the design."
+        description="Civil Engineer AI turns ready-for-handoff workflow items into a structured draft external response package for an applicant, design engineer, municipal reviewer, or internal review team. It groups items by topic, drafts plain review-support wording, keeps evidence traceability, and builds an attachment checklist and a human review sign-off checklist. It does not send email, approve plans, certify compliance, stamp drawings, verify CAD, or validate the design."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">

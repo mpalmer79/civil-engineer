@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   title: "Civil Engineer AI: Stormwater Review Assistant",
   description:
-    "Evidence-first GenAI review support for stormwater and land development workflows. A static portfolio prototype reviewing the Brookside Meadows subdivision fixture.",
+    "Review-support platform for stormwater plan review: DXF intake and metadata parsing, evidence traceability, review packets, a workflow board, response packages, resubmittal and revision comparison, and a reviewer command center. Reviewing the Brookside Meadows subdivision fixture.",
 };
 
 export default function RootLayout({

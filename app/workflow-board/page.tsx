@@ -9,7 +9,7 @@ export default function WorkflowBoardPage() {
       <PageHeader
         eyebrow="Reviewer workflow board"
         title="Brookside Meadows reviewer workflow board"
-        description="Phase 9 promotes the review packet items into an operational board so a human reviewer can triage each item, request follow-up or more information, record reviewer notes, mark items reviewer checked or excluded, and mark items ready for handoff to a licensed Professional Engineer. The board organizes review-support work. It does not approve plans, certify compliance, stamp drawings, verify CAD, or validate the design."
+        description="Civil Engineer AI promotes the review packet items into an operational board so a human reviewer can triage each item, request follow-up or more information, record reviewer notes, mark items reviewer checked or excluded, and mark items ready for handoff to a licensed Professional Engineer. The board organizes review-support work. It does not approve plans, certify compliance, stamp drawings, verify CAD, or validate the design."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">

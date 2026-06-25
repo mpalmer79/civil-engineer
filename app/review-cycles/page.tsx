@@ -9,7 +9,7 @@ export default function ReviewCyclesRoute() {
       <PageHeader
         eyebrow="Resubmittal intake and revision cycle"
         title="Brookside Meadows review cycles"
-        description="Phase 13 tracks multiple review rounds. A reviewer can create or load a review cycle, record a resubmittal package, link uploaded DXF files and applicant responses, compare current and previous DXF parse metadata, map applicant responses to prior response items, mark review-support resolution statuses, carry unresolved items forward, and prepare the next review cycle. Revision comparison compares extracted DXF metadata only. It does not verify CAD, validate design, approve plans, certify compliance, send correspondence, or replace a licensed Professional Engineer."
+        description="Civil Engineer AI tracks multiple review rounds. A reviewer can create or load a review cycle, record a resubmittal package, link uploaded DXF files and applicant responses, compare current and previous DXF parse metadata, map applicant responses to prior response items, mark review-support resolution statuses, carry unresolved items forward, and prepare the next review cycle. Revision comparison compares extracted DXF metadata only. It does not verify CAD, validate design, approve plans, certify compliance, send correspondence, or replace a licensed Professional Engineer."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">

@@ -9,7 +9,7 @@ export default function HumanReviewPage() {
       <PageHeader
         eyebrow="Human review queue"
         title="Reviewer actions on AI draft findings"
-        description="Phase 5 persists human review actions. A reviewer can accept, edit, reject, escalate, mark unclear, or request more information on each AI draft finding. Every action records a status transition and an audit event, and no action approves or certifies the work."
+        description="Civil Engineer AI persists human review actions. A reviewer can accept, edit, reject, escalate, mark unclear, or request more information on each AI draft finding. Every action records a status transition and an audit event, and no action approves or certifies the work."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -43,7 +43,7 @@ export default function HumanReviewPage() {
         <SafetyBoundaryBanner />
 
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">Phase 5 note:</span>{" "}
+          <span className="font-semibold text-slate-800">Note:</span>{" "}
           Review actions are persisted by the backend. If the API is not
           running, the queue and actions are unavailable and review actions are
           never simulated in the browser. No action approves a plan, certifies

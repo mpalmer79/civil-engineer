@@ -4,10 +4,10 @@ import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import CadReviewClient from "@/components/CadReviewClient";
 
 const futureStages = [
-  "Phase 7: plan sheet PDF viewer and sheet hotspot annotations",
-  "Phase 8: DXF metadata extraction or structured plan exports",
-  "Phase 9: Autodesk Platform Services viewer exploration",
-  "Phase 10: CAD and document cross-reference automation",
+  "Plan sheet PDF viewer and sheet hotspot annotations",
+  "DXF metadata extraction or structured plan exports",
+  "Autodesk Platform Services viewer exploration",
+  "CAD and document cross-reference automation",
 ];
 
 export default function CadReviewPage() {
@@ -16,13 +16,13 @@ export default function CadReviewPage() {
       <PageHeader
         eyebrow="CAD-aware review"
         title="CAD-aware metadata and plan consistency review"
-        description="Phase 6 uses seeded CAD-aware metadata, not live CAD parsing. It connects civil feature references to plan sheets and surfaces plan consistency findings that need reviewer confirmation."
+        description="Civil Engineer AI uses seeded CAD-aware metadata, not live CAD parsing. It connects civil feature references to plan sheets and surfaces plan consistency findings that need reviewer confirmation."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-        <SectionCard title="What CAD-aware review means in Phase 6">
+        <SectionCard title="What CAD-aware review means">
           <p className="text-sm text-slate-600">
-            Phase 6 lays a CAD-aware foundation without processing real CAD
+            Civil Engineer AI lays a CAD-aware foundation without processing real CAD
             files. The civil feature metadata below is seeded, not extracted from
             DWG or DXF drawings. The plan consistency check compares plan
             references against the plan sheet index to surface missing targets,
@@ -39,7 +39,7 @@ export default function CadReviewPage() {
 
         <SectionCard title="Future CAD and Autodesk integration path">
           <p className="text-sm text-slate-600">
-            Phase 6 prepares for staged CAD integration. None of the following is
+            Civil Engineer AI prepares for staged CAD integration. None of the following is
             implemented yet, and no Autodesk integration exists today.
           </p>
           <ul className="mt-4 grid gap-3 sm:grid-cols-2">

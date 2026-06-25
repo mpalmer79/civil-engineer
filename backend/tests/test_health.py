@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import re
+
 from fastapi.testclient import TestClient
 
 
@@ -11,4 +13,8 @@ def test_health_returns_ok(client: TestClient) -> None:
     body = response.json()
     assert body["status"] == "ok"
     assert body["service"] == "Civil Engineer AI Backend"
-    assert body["phase"] == "14"
+    # The health payload reports a product version, not a development phase
+    # number, so the public health URL carries no phase chronology.
+    assert "phase" not in body
+    assert re.match(r"^\d+\.\d+\.\d+$", body["version"])
+    assert isinstance(body["demo_mode"], bool)

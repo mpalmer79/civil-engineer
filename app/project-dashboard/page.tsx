@@ -9,7 +9,7 @@ export default function ProjectDashboardRoute() {
       <PageHeader
         eyebrow="Reviewer command center"
         title="Brookside Meadows project dashboard"
-        description="Phase 14 aggregates the entire review-support state into one command center: project health metrics, reviewer attention items with recommended next steps, a project timeline, review readiness checks, reviewer notes, and links into the existing modules. The dashboard organizes review-support work and links into existing modules rather than replacing them. It does not approve plans, certify compliance, verify CAD, validate design, close or resolve issues, or replace a licensed Professional Engineer."
+        description="Civil Engineer AI aggregates the entire review-support state into one command center: project health metrics, reviewer attention items with recommended next steps, a project timeline, review readiness checks, reviewer notes, and links into the existing modules. The dashboard organizes review-support work and links into existing modules rather than replacing them. It does not approve plans, certify compliance, verify CAD, validate design, close or resolve issues, or replace a licensed Professional Engineer."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">

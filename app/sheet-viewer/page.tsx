@@ -21,7 +21,7 @@ export default async function SheetViewerPage() {
       <PageHeader
         eyebrow="Plan sheet viewer"
         title="Open a Brookside Meadows plan sheet"
-        description="Phase 7 adds a reviewer-facing plan sheet viewer. Select a sheet to see seeded hotspot annotations over a synthetic preview and inspect connected plan references, CAD-aware metadata, documents, checklist items, and plan consistency findings. The preview and hotspots are seeded review-support metadata, not extracted CAD or verified plan geometry."
+        description="Civil Engineer AI adds a reviewer-facing plan sheet viewer. Select a sheet to see seeded hotspot annotations over a synthetic preview and inspect connected plan references, CAD-aware metadata, documents, checklist items, and plan consistency findings. The preview and hotspots are seeded review-support metadata, not extracted CAD or verified plan geometry."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -80,7 +80,7 @@ export default async function SheetViewerPage() {
         )}
 
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-          <span className="font-semibold text-slate-800">Phase 7 note:</span>{" "}
+          <span className="font-semibold text-slate-800">Note:</span>{" "}
           The sheet viewer does not parse real PDF, DWG, DXF, or Autodesk data.
           It renders a synthetic preview with seeded review-support hotspots and
           does not verify CAD, certify compliance, or replace a licensed

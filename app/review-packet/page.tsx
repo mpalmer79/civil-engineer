@@ -9,7 +9,7 @@ export default function ReviewPacketPage() {
       <PageHeader
         eyebrow="Review packet builder"
         title="Brookside Meadows review-support packet"
-        description="Phase 8 assembles documents, checklist items, findings, plan sheets, CAD-aware metadata, hotspots, plan consistency findings, human review actions, and audit evidence into a structured review-support packet draft. The packet organizes evidence for a human reviewer. It does not approve plans, certify compliance, stamp drawings, verify CAD, or validate the design."
+        description="Civil Engineer AI assembles documents, checklist items, findings, plan sheets, CAD-aware metadata, hotspots, plan consistency findings, human review actions, and audit evidence into a structured review-support packet draft. The packet organizes evidence for a human reviewer. It does not approve plans, certify compliance, stamp drawings, verify CAD, or validate the design."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
