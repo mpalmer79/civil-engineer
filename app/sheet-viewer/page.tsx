@@ -81,10 +81,11 @@ export default async function SheetViewerPage() {
 
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
           <span className="font-semibold text-slate-800">Note:</span>{" "}
-          The sheet viewer does not parse real PDF, DWG, DXF, or Autodesk data.
-          It renders a synthetic preview with seeded review-support hotspots and
-          does not verify CAD, certify compliance, or replace a licensed
-          engineer.
+          Real DXF upload and metadata extraction live in CAD Intake. The sheet
+          viewer itself renders a synthetic preview with seeded review-support
+          hotspots; it does not parse PDF, DWG, or Autodesk data, and does not
+          verify CAD, validate geometry, certify compliance, or replace a
+          licensed engineer.
         </div>
       </div>
     </div>

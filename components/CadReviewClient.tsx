@@ -161,7 +161,8 @@ export default function CadReviewClient() {
               Civil feature metadata
             </h3>
             <p className="mt-1 text-xs text-slate-500">
-              CAD-aware metadata is seeded, not extracted from live CAD files.
+              Seeded or derived CAD-aware review metadata. Real DXF extraction
+              happens in CAD Intake.
             </p>
           </div>
           <label className="flex items-center gap-2 text-sm text-slate-600">

@@ -42,6 +42,15 @@ uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
 The backend exposes a `/health` endpoint that returns a status, the service name, a product version, and the demo mode flag. Railway uses it to confirm the service is live.
 
+### Verifying the backend after deploy
+
+Open these URLs against the deployed backend origin to confirm it is serving the review-support API:
+
+- `https://your-backend-service.up.railway.app/health` returns the health JSON (status, service name, version, demo mode).
+- `https://your-backend-service.up.railway.app/api/v1/projects/proj_brookside_meadows` returns the seeded Brookside Meadows project payload.
+
+A `404` on the backend root `/` is not necessarily a failure. The backend does not serve a page at `/`. If `/health` and the `/api/v1` routes respond, the backend is working as expected. Check `/health` and an `/api/v1` route before concluding the backend is down.
+
 ### Backend environment variables
 
 Set these as service variables on the backend service. Local defaults work without them; a deployment sets the ones it needs.
@@ -99,7 +108,7 @@ NEXT_PUBLIC_API_BASE_URL=https://your-backend-service.up.railway.app
 
 Notes:
 
-- `NEXT_PUBLIC_API_BASE_URL` is the public origin of the backend service, with no trailing slash and no `/api` path. The frontend appends API paths itself.
+- `NEXT_PUBLIC_API_BASE_URL` is the public origin of the backend service only, with no trailing slash and no `/api` or `/api/v1` path. The frontend API modules append `/api/v1/...` paths themselves, so adding it here would produce a double prefix and break every call. For example, set `NEXT_PUBLIC_API_BASE_URL=https://your-backend-service.up.railway.app`, not `.../api/v1`.
 - This variable is read at build and run time. If the backend URL changes, redeploy the frontend so the new value is built in.
 - Locally the default is `http://localhost:8000`, so the frontend works in development without setting anything.
 
