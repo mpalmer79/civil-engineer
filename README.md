@@ -15,40 +15,39 @@ professional engineering judgment.
 
 ---
 
-## Current phase: Phase 13, Resubmittal Intake, Revision Comparison, and Applicant Response Cycle
+## Current phase: Phase 14, Reviewer Command Center and Project Health Dashboard
 
-Phase 13 turns Civil Engineer AI into a multi-round review-support system. A
-reviewer can create or load a review cycle, record a resubmittal, compare DXF
-parse rounds, map applicant responses, and prepare the next round. It adds:
+Phase 14 unifies Civil Engineer AI into one reviewer command center. The Project
+Dashboard aggregates the review-support data from every prior phase into a single
+operational view. It adds:
 
-- **Review cycles** that track multiple review rounds for the project in a
-  timeline, with a review cycle dashboard and summary
-- **Resubmittal intake** that records a resubmittal package and links uploaded
-  DXF files and applicant response notes
-- **DXF metadata revision comparison** between two parse rounds that surfaces
-  added, removed, changed, unchanged, and carried-forward references from
-  extracted layers, references, blocks, and review findings
-- **Applicant response mapping** with deterministic keyword suggestions to prior
-  response package and workflow items, each with a confidence label and reason
-- **Response resolution** statuses (addressed_for_review, still_open,
-  needs_more_information, carried_forward, reviewer_checked, excluded_from_cycle)
-  and **issue carry-forward** without duplication
-- **Next-cycle preparation** that summarizes what should move into the next round
-- **Audit events** across cycle, resubmittal, response, mapping, comparison,
-  carry-forward, resolution, and next-cycle actions
-- Backend and frontend tests for the cycle workflow, revision comparison,
-  carry-forward, resolution, and the safety language boundary
+- **A command center snapshot** with an overall review-support status and summary
+- **Project health metrics** aggregated from workflow, CAD intake, response
+  package, and review cycle data, each linking into its module
+- **A reviewer attention queue** grouped by severity, with attention items for
+  workflow follow-ups, unpromoted CAD findings, applicant response mapping gaps,
+  resubmittals awaiting comparison, revision changes needing review,
+  carry-forward items, response items needing revision, and evidence gaps
+- **Recommended next steps**, a **project timeline** of meaningful events, and a
+  **review readiness checklist** that always keeps human review signoff required
+- **Module links** into CAD Intake, Review Cycles, Workflow Board, Response
+  Package, Review Packet, Sheet Viewer, Plan Sheets, and CAD Review, plus
+  **reviewer notes** and a **health summary**
+- **Audit events** across snapshot generation and every dashboard view, and
+  attention items that do not duplicate across regeneration
+- Backend and frontend tests for snapshot generation, multi-module attention
+  items, readiness checks, the timeline, and the safety language boundary
 
-Phase 13 keeps the professional boundary: revision comparison compares extracted
-DXF metadata only and does not verify CAD, validate geometry, hydraulic
-calculations, grading, stormwater design, or legal boundaries, certify
-compliance, approve plans, send official correspondence, or replace a licensed
-Professional Engineer. There is no action called approve and no status such as
-approved, certified, verified, compliant, safe, resolved, or closed.
-addressed_for_review means an item appears addressed for human review, never a
-final decision. DXF is the only supported file type; DWG parsing, Autodesk and
-Civil 3D integration, GIS, OCR, and computer vision remain future work. Live AI
-calls are disabled by default, so the project runs without any API key.
+Phase 14 keeps the professional boundary: the dashboard organizes review-support
+work and links into existing modules rather than replacing them. It does not
+approve plans, certify compliance, verify CAD, validate design, declare a project
+safe, send official correspondence, or close or resolve issues. There is no
+action called approve, and no status uses final-decision language.
+ready_for_human_review means an area is organized for human review, never that it
+is complete or approved. DXF is the only supported file type; DWG parsing,
+Autodesk and Civil 3D integration, GIS, OCR, and computer vision remain future
+work. Live AI calls are disabled by default, so the project runs without any API
+key.
 
 Earlier phases established the product foundation:
 
@@ -87,6 +86,9 @@ Earlier phases established the product foundation:
 - Phase 12: browser DXF upload with intake validation and safe storage, a parse
   review queue and CAD intake dashboard, and promotion of CAD findings into the
   workflow board
+- Phase 13: multi-round resubmittal intake, DXF metadata revision comparison,
+  applicant response mapping, response resolution tracking, issue carry-forward,
+  and next-cycle preparation
 
 The reviewed fixture remains **Brookside Meadows**: a 47-lot single-family
 subdivision in the Town of Hartwell with a green-and-gray stormwater treatment
@@ -280,33 +282,31 @@ civil-engineer/
 - [`docs/PHASE_11_CAD_INTAKE_DXF_PARSING.md`](docs/PHASE_11_CAD_INTAKE_DXF_PARSING.md): Phase 11 real CAD file intake and DXF parsing foundation
 - [`docs/PHASE_12_BROWSER_CAD_UPLOAD.md`](docs/PHASE_12_BROWSER_CAD_UPLOAD.md): Phase 12 browser CAD upload and parse review queue
 - [`docs/PHASE_13_RESUBMITTAL_REVISION_CYCLE.md`](docs/PHASE_13_RESUBMITTAL_REVISION_CYCLE.md): Phase 13 resubmittal intake, revision comparison, and applicant response cycle
+- [`docs/PHASE_14_COMMAND_CENTER_DASHBOARD.md`](docs/PHASE_14_COMMAND_CENTER_DASHBOARD.md): Phase 14 reviewer command center and project health dashboard
 - [`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md): staged CAD integration path
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture
 - [`docs/RESEARCH_AND_SYSTEM_DESIGN.md`](docs/RESEARCH_AND_SYSTEM_DESIGN.md): research basis
 
 ---
 
-## What Phase 13 proves
+## What Phase 14 proves
 
-- The product handles multiple rounds: a reviewer creates or loads a review
-  cycle, records a resubmittal, and tracks the project across review rounds in a
-  timeline rather than as a single pass.
-- Revision comparison is bounded and transparent: it compares extracted DXF
-  metadata (layers, references, blocks, and review findings) between two parse
-  rounds and surfaces added, removed, changed, unchanged, and carried-forward
-  references without claiming CAD verification or design validation.
-- Applicant responses connect to prior work: deterministic keyword suggestions
-  map responses to prior response package and workflow items, each with a
-  confidence label, a reason, and a human-review flag, with no live AI calls.
-- Issue lifecycle holds across rounds: unresolved items carry forward without
-  duplication, resolution statuses stay review-support only, and a next-cycle
-  preparation summary organizes the next round.
-- The professional boundary holds: nothing approves plans, certifies compliance,
-  verifies CAD, validates design, or sends correspondence. There is no action
-  called approve, and addressed_for_review is not a final decision.
-- The decision history is preserved: cycle, resubmittal, response, mapping,
-  comparison, carry-forward, resolution, and next-cycle actions all write audit
-  events.
+- The product is operational, not just a set of modules: a reviewer opens one
+  dashboard and sees what needs attention now, what changed, what is carried
+  forward, what is ready for handoff, and what to do next.
+- Aggregation is real and bounded: the command center reads workflow, CAD intake,
+  review cycle, response package, and evidence data and turns it into attention
+  items, health metrics, a timeline, and readiness checks.
+- Triage holds across refreshes: regenerating the snapshot does not duplicate
+  attention items and preserves each item's reviewer status by source.
+- The dashboard links rather than replaces: every attention item, metric, next
+  step, and module link deep links into the underlying module where the reviewer
+  acts.
+- The professional boundary holds: the dashboard does not approve, certify,
+  verify, validate, close, or resolve anything. ready_for_human_review is not a
+  final decision, and human review signoff is always required.
+- The decision history is preserved: snapshot generation, every dashboard view,
+  attention status changes, and reviewer notes all write audit events.
 
 ## What comes next
 

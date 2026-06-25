@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const links = [
   { href: "/", label: "Home" },
+  { href: "/project-dashboard", label: "Project Dashboard" },
   { href: "/project", label: "Project" },
   { href: "/documents", label: "Documents" },
   { href: "/checklist", label: "Checklist" },
@@ -52,7 +53,7 @@ export default function SiteNav() {
         </div>
         <div className="md:hidden">
           <span className="badge bg-slate-100 text-slate-600 ring-slate-200">
-            Phase 13
+            Phase 14
           </span>
         </div>
       </nav>

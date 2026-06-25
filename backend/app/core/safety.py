@@ -566,6 +566,55 @@ ALLOWED_NEXT_CYCLE_STATUSES: set[str] = {
     "archived",
 }
 
+# Phase 14 reviewer command center and project health dashboard vocabulary. The
+# dashboard aggregates existing review-support data into one operational view. It
+# organizes review-support work and never approves plans, certifies compliance,
+# verifies CAD, validates design, closes or resolves issues, or makes final
+# engineering decisions.
+
+# Overall command center status. None implies a final engineering decision,
+# approval, compliance state, or that any issue is resolved or closed.
+ALLOWED_COMMAND_CENTER_STATUSES: set[str] = {
+    "draft",
+    "active_review",
+    "needs_attention",
+    "ready_for_handoff",
+    "needs_more_information",
+    "reviewer_checked",
+}
+
+# Severity labels for health metrics and attention items. These describe review
+# attention, not a safety determination.
+ALLOWED_DASHBOARD_SEVERITIES: set[str] = {
+    "info",
+    "low",
+    "medium",
+    "high",
+    "needs_human_review",
+}
+
+# Reviewer attention item statuses. A reviewer may mark an attention item
+# reviewer_checked, deferred, or not_applicable. None of these closes, resolves,
+# or approves anything.
+ALLOWED_ATTENTION_ITEM_STATUSES: set[str] = {
+    "open",
+    "reviewer_checked",
+    "deferred",
+    "not_applicable",
+}
+
+# Review readiness statuses. ready_for_human_review means an area is organized
+# enough for human review, never that it is complete, passed, or approved. There
+# is intentionally no complete, completed, passed, failed, approved, certified,
+# verified, compliant, safe, resolved, or closed value.
+ALLOWED_READINESS_STATUSES: set[str] = {
+    "not_started",
+    "needs_attention",
+    "in_review",
+    "ready_for_human_review",
+    "reviewer_checked",
+}
+
 # Standard note attached to retrieval and evidence responses to keep the
 # professional boundary explicit in API payloads and the UI.
 EVIDENCE_SAFETY_NOTE: str = (

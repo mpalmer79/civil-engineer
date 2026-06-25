@@ -6,6 +6,7 @@ import SectionCard from "@/components/SectionCard";
 import { getHotspots, projectMetrics } from "@/lib/api";
 
 const heroCtas = [
+  { href: "/project-dashboard", label: "Project Dashboard" },
   { href: "/review-cycles", label: "Review Cycles" },
   { href: "/cad-intake", label: "CAD Intake" },
   { href: "/response-package", label: "Response Package" },
@@ -55,7 +56,7 @@ export default async function HomePage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
               <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
-                Phase 13 · Resubmittal Intake, Revision Comparison, and Applicant Response Cycle
+                Phase 14 · Reviewer Command Center and Project Health Dashboard
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Civil Engineer AI
@@ -574,6 +575,52 @@ export default async function HomePage() {
               Carry unresolved items forward and prepare the next response cycle.
               Every status stays under human review and nothing is a final
               engineering decision.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Phase 14: reviewer command center and project health dashboard */}
+      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="surface-card p-6">
+          <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
+            Phase 14
+          </span>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900">
+            Reviewer command center and project health dashboard
+          </h2>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            Civil Engineer AI now unifies the whole review into one command
+            center. The Project Dashboard aggregates project health metrics,
+            reviewer attention items with recommended next steps, a project
+            timeline, review readiness checks, reviewer notes, and links into the
+            existing modules. It answers what needs attention now, what changed
+            since the last round, what is carried forward, what CAD findings still
+            need review, what applicant responses need mapping, what is ready for
+            handoff, where evidence is incomplete, and what the reviewer should do
+            next. The dashboard organizes review-support work and links into the
+            existing modules rather than replacing them. It does not approve
+            plans, certify compliance, verify CAD, validate design, close or
+            resolve issues, or replace a licensed Professional Engineer. ready for
+            human review means an area is organized for human review, never that
+            it is complete or approved.
+          </p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              The{" "}
+              <a
+                href="/project-dashboard"
+                className="font-semibold text-water-700 hover:text-water-600"
+              >
+                Project Dashboard
+              </a>{" "}
+              shows the unified Brookside Meadows command center with attention
+              items, health metrics, a timeline, and readiness checks.
+            </div>
+            <div className="rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700">
+              Every attention item deep links into its module. Marking an item is
+              review-support tracking and never approves, certifies, closes, or
+              resolves anything.
             </div>
           </div>
         </div>

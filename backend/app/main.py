@@ -22,6 +22,7 @@ from app.db.seed_evidence import seed_evidence
 from app.db.seed_plansheets import seed_plansheets
 from app.services import (
     cad_intake_service,
+    command_center_service,
     response_package_service,
     review_cycle_service,
     review_packet_service,
@@ -56,6 +57,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         # Create the initial review cycle once so the Phase 13 read endpoints and
         # frontend have a current cycle without a manual create call.
         review_cycle_service.ensure_review_cycle(db, PROJECT_ID)
+        # Generate the initial command center snapshot once so the Phase 14
+        # dashboard read endpoints and frontend have data without a manual call.
+        command_center_service.ensure_command_center(db, PROJECT_ID)
     finally:
         db.close()
     yield
@@ -65,20 +69,20 @@ app = FastAPI(
     title=settings.PROJECT_NAME,
     description=(
         "Review-support API for stormwater and land development review. "
-        "Phase 13 adds multi-round resubmittal intake, DXF metadata revision "
-        "comparison, and an applicant response cycle: a reviewer can create or "
-        "load a review cycle, record a resubmittal package, link uploaded DXF "
-        "files and applicant responses, compare current and previous DXF parse "
-        "metadata, map applicant responses to prior response or workflow items, "
-        "mark review-support resolution statuses, carry unresolved items "
-        "forward, and prepare the next review cycle. Revision comparison compares "
-        "extracted DXF metadata only. It does not verify CAD, validate geometry "
-        "or design, certify compliance, approve plans, send correspondence, or "
-        "replace a licensed Professional Engineer. DXF is the only supported file "
-        "type; DWG, Autodesk, OCR, and GIS remain out of scope. The mock AI "
-        "provider remains the default and no live AI calls are included."
+        "Phase 14 adds a reviewer command center and project health dashboard "
+        "that aggregates the review-support data across all phases into one "
+        "operational view: a command center snapshot, project health metrics, "
+        "reviewer attention items with recommended next steps, a project "
+        "timeline, review readiness checks, reviewer notes, and module links into "
+        "the existing modules. The dashboard organizes review-support work and "
+        "links into existing modules rather than replacing them. It does not "
+        "approve plans, certify compliance, verify CAD, validate design, declare "
+        "a project safe, or close or resolve issues, and there is no action "
+        "called approve. DXF is the only supported file type; DWG, Autodesk, OCR, "
+        "and GIS remain out of scope. The mock AI provider remains the default "
+        "and no live AI calls are included."
     ),
-    version="0.13.0",
+    version="0.14.0",
     lifespan=lifespan,
 )
 

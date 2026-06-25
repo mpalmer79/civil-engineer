@@ -1,7 +1,7 @@
 # Civil Engineer AI Backend
 
 FastAPI backend for Civil Engineer AI: Stormwater Review Assistant. This is the
-Phase 13 backend. It serves seeded Brookside Meadows review data, document
+Phase 14 backend. It serves seeded Brookside Meadows review data, document
 chunks, and source evidence, runs a controlled AI review workflow that produces
 draft review-support findings, persists human review actions on those drafts,
 scores AI review runs against the expected findings, adds a plan sheet and
@@ -24,7 +24,11 @@ intake dashboard, and promotion of selected CAD findings into the workflow
 board, and adds multi-round resubmittal intake, DXF metadata revision comparison,
 and an applicant response cycle (review cycles, resubmittal packages, applicant
 responses and mappings, revision change records, issue carry-forward, response
-resolution, and next-cycle preparation).
+resolution, and next-cycle preparation), and adds a reviewer command center and
+project health dashboard that aggregates the review-support data across all
+phases into a command center snapshot, project health metrics, reviewer attention
+items, a project timeline, review readiness checks, reviewer notes, and module
+links into the existing modules.
 
 Civil Engineer AI is a review-support and evidence-organization system. It does
 not send email, approve plans, certify compliance, stamp drawings, or replace a
@@ -105,7 +109,7 @@ database.
 
 ```bash
 curl http://localhost:8000/health
-# {"status":"ok","service":"Civil Engineer AI Backend","phase":"13"}
+# {"status":"ok","service":"Civil Engineer AI Backend","phase":"14"}
 ```
 
 ## API route examples
@@ -297,6 +301,24 @@ curl -X POST http://localhost:8000/api/v1/review-cycles/REVIEW_CYCLE_ID/resoluti
   -H "Content-Type: application/json" \
   -d '{"status":"addressed_for_review","reviewer_name":"Town Engineer"}'
 curl -X POST http://localhost:8000/api/v1/review-cycles/REVIEW_CYCLE_ID/prepare-next-cycle
+
+# Reviewer command center and project health dashboard (Phase 14)
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/command-center/snapshot
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/command-center
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/command-center/health-metrics
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/command-center/attention-items
+curl "http://localhost:8000/api/v1/projects/proj_brookside_meadows/command-center/attention-items?severity=high"
+curl -X PATCH http://localhost:8000/api/v1/command-center/attention-items/ATTENTION_ITEM_ID/status \
+  -H "Content-Type: application/json" \
+  -d '{"status":"reviewer_checked","reviewer_name":"Town Engineer"}'
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/command-center/timeline
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/command-center/readiness-checks
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/command-center/next-steps
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/command-center/module-links
+curl http://localhost:8000/api/v1/projects/proj_brookside_meadows/command-center/health-summary
+curl -X POST http://localhost:8000/api/v1/projects/proj_brookside_meadows/command-center/notes \
+  -H "Content-Type: application/json" \
+  -d '{"note_text":"Coordinate the basin detail.","reviewer_name":"Town Engineer"}'
 ```
 
 The `GET /review-packets/{packet_id}`, `/traceability`, and `/print-view`
@@ -305,10 +327,13 @@ detail, item history, board summary, and ready-for-handoff endpoints do the
 same, as do the response package detail, print view, attachments, and history
 endpoints, the CAD parse summary, layers, text, and CAD file review context
 endpoints, the Phase 12 CAD parse queue, CAD intake dashboard, and unpromoted
-findings endpoints, and the Phase 13 review cycle, review cycle dashboard,
+findings endpoints, the Phase 13 review cycle, review cycle dashboard,
 revision comparison run and changes, response mapping summary, carry-forward
-summary, resolution summary, and next-cycle preparation endpoints. This read side
-effect is intentional so the decision history shows reviewer access.
+summary, resolution summary, and next-cycle preparation endpoints, and the Phase
+14 command center, latest snapshot, health metrics, attention items, timeline,
+readiness checks, reviewer notes, next steps, module links, and health summary
+endpoints (which also generate an initial snapshot once if none exists). This
+read side effect is intentional so the decision history shows reviewer access.
 
 Phase 13 revision comparison compares extracted DXF metadata only (layers,
 references, blocks, and review findings) between two parse rounds. It does not
@@ -316,6 +341,14 @@ verify CAD, validate design, or compare geometry in a way that implies
 engineering validation. Resolution statuses such as addressed_for_review are
 review-support states, not final decisions, and there is no action called
 approve.
+
+The Phase 14 command center aggregates the review-support data across all phases
+into one dashboard and links into the existing modules rather than replacing
+them. It does not approve plans, certify compliance, verify CAD, validate design,
+declare a project safe, or close or resolve issues. Regenerating a snapshot does
+not duplicate attention items and preserves each item's reviewer status by
+source. ready_for_human_review means an area is organized for human review, never
+that it is complete or approved.
 
 DXF is the only supported CAD file type. A reviewer can upload a DXF file through
 the browser at `POST /projects/{project_id}/cad-files/upload`. The upload is
