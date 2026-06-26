@@ -108,6 +108,7 @@ export type ReviewerFinding = {
   recommendedHumanAction: string;
   humanReviewStatus: string;
   relatedDocuments: string[];
+  relatedChecklistItems: string[];
   sourceMode: string;
   findingOrigin: string;
   reviewerNotes: string | null;
@@ -400,6 +401,7 @@ export async function listProjectFindings(
     recommendedHumanAction: f.recommended_human_action as string,
     humanReviewStatus: f.human_review_status as string,
     relatedDocuments: (f.related_documents as string[]) ?? [],
+    relatedChecklistItems: (f.related_checklist_items as string[]) ?? [],
     sourceMode: f.source_mode as string,
     findingOrigin: f.finding_origin as string,
     reviewerNotes: (f.reviewer_notes as string) ?? null,

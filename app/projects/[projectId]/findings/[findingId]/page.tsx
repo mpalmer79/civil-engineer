@@ -90,6 +90,15 @@ export default async function FindingDetailPage({
               Related documents: {finding.relatedDocuments.join(", ")}
             </p>
           ) : null}
+          {finding.relatedChecklistItems.length > 0 ? (
+            <p className="mt-2 text-xs text-slate-500">
+              Related checklist item(s):{" "}
+              {finding.relatedChecklistItems.join(", ")}
+              {finding.findingOrigin === "checklist_review"
+                ? " (created from checklist review)"
+                : ""}
+            </p>
+          ) : null}
         </SectionCard>
 
         <SectionCard

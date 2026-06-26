@@ -10,6 +10,7 @@ from app.api.v1 import (
     cad_intake,
     cad_metadata,
     checklist,
+    checklist_review,
     chunks,
     command_center,
     documents,
@@ -56,3 +57,4 @@ api_router.include_router(review_cycle.router)
 api_router.include_router(command_center.router)
 api_router.include_router(pdf_evidence.router)
 api_router.include_router(evidence_retrieval.router)
+api_router.include_router(checklist_review.router)

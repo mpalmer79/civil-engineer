@@ -1,0 +1,94 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+
+import PageHeader from "@/components/PageHeader";
+import SectionCard from "@/components/SectionCard";
+import { getRulePack } from "@/lib/api";
+
+export const dynamic = "force-dynamic";
+
+export default async function RulePackDetailPage({
+  params,
+}: {
+  params: { rulePackId: string };
+}) {
+  const pack = await getRulePack(params.rulePackId);
+  if (!pack) {
+    notFound();
+  }
+  const items = pack.items ?? [];
+  const categories = Array.from(new Set(items.map((i) => i.category)));
+
+  return (
+    <div>
+      <PageHeader
+        eyebrow="Rule pack"
+        title={pack.name}
+        description={pack.description ?? "Review-support checklist template."}
+      />
+
+      <div className="mx-auto max-w-5xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/rule-packs" className="nav-link">
+            Back to rule packs
+          </Link>
+          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+            {pack.jurisdictionName}
+          </span>
+          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+            {pack.versionLabel}
+          </span>
+          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+            {pack.itemCount} items
+          </span>
+        </div>
+
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          This is a starter review template, not a legal ordinance and not a
+          compliance standard. A reviewer decides applicability and evidence
+          status for each item.
+        </p>
+
+        {categories.map((category) => (
+          <SectionCard key={category} title={category}>
+            <ul className="space-y-3">
+              {items
+                .filter((i) => i.category === category)
+                .map((item) => (
+                  <li
+                    key={item.rulePackItemId}
+                    className="rounded-lg border border-slate-200 p-3 text-sm"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="font-semibold text-slate-800">
+                        {item.itemCode}: {item.requirementText}
+                      </span>
+                      <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+                        risk: {item.riskLevel}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-slate-600">
+                      <span className="font-semibold text-slate-500">
+                        Expected evidence:
+                      </span>{" "}
+                      {item.expectedEvidence}
+                    </p>
+                    {item.applicabilityNote ? (
+                      <p className="mt-1 text-xs text-slate-500">
+                        Applicability: {item.applicabilityNote}
+                      </p>
+                    ) : null}
+                    {item.referenceLabel ? (
+                      <p className="mt-1 text-xs italic text-slate-400">
+                        {item.referenceLabel}
+                      </p>
+                    ) : null}
+                  </li>
+                ))}
+            </ul>
+          </SectionCard>
+        ))}
+      </div>
+    </div>
+  );
+}

@@ -102,6 +102,7 @@ const finding = {
   recommendedHumanAction: "Request the outlet detail",
   humanReviewStatus: "needs_reviewer_confirmation",
   relatedDocuments: [],
+  relatedChecklistItems: [],
   sourceMode: "user_created",
   findingOrigin: "reviewer_created",
   reviewerNotes: null,
