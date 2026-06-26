@@ -215,7 +215,9 @@ def test_upload_document_accepts_allowed_type(client: TestClient) -> None:
     assert doc["file_name"].startswith("doc_")
 
     events = client.get(f"/api/v1/projects/{pid}/audit-events").json()
-    uploaded = [e for e in events if e["event_type"] == "document_uploaded"]
+    # Sprint 6 records a document_stored event when the file is persisted through
+    # the storage provider.
+    uploaded = [e for e in events if e["event_type"] == "document_stored"]
     assert uploaded
     # The audit metadata records the checksum but never raw secrets.
     assert uploaded[-1]["event_metadata"]["checksum_sha256"] == doc[

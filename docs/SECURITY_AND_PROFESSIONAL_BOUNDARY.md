@@ -80,12 +80,37 @@ foundation. See
   engineering authority. Access control governs who can review records, not
   whether a project satisfies engineering requirements.
 
+## Durable file storage (Sprint 6)
+
+Production Foundations Sprint 6 adds a storage provider abstraction for uploaded
+files. See [STORAGE_PROVIDER_ABSTRACTION.md](STORAGE_PROVIDER_ABSTRACTION.md) and
+[API_FILE_STORAGE.md](API_FILE_STORAGE.md).
+
+- Uploaded files are stored through a provider (local for development,
+  S3-compatible object storage for deployment). Object storage credentials are
+  backend-only and are read only when `STORAGE_PROVIDER=s3`. They are never
+  exposed to the frontend or returned in any response.
+- The database stores only safe metadata (provider, generated storage key,
+  checksum, size, availability). API responses never include a raw filesystem
+  path, the storage key, the bucket, or any credential.
+- Storage keys are generated and never derived from the raw original filename,
+  which prevents path traversal. The local provider rejects keys that escape its
+  root.
+- File download and storage status require project read access; upload and PDF
+  indexing require reviewer access; storage health requires an authenticated
+  user. The public Brookside Meadows demo remains readable when configured.
+- Storage audit metadata records provider, size, checksum, content type, and
+  status only. It never includes object storage keys or secrets, signed URLs,
+  raw filesystem paths, full file content, extracted page text, tokens, or
+  passwords.
+
 ## Known limitations
 
 - Local authentication only; no SSO and no hardened production session system
   yet. No enterprise tenant isolation claims.
 - No full applicant portal yet; the applicant role is a limited placeholder.
-- Local file system storage only; no object storage, malware scanning, or
-  backups yet.
+- Durable object storage must be configured in deployment; the default local
+  provider is for development only and is not durable across redeploys without a
+  mounted volume. No malware scanning yet.
 - No database migrations in the prototype; recreate an existing development
   database to pick up the new columns.

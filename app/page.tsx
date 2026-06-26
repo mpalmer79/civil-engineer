@@ -287,6 +287,15 @@ export default async function HomePage() {
             records rather than making engineering decisions.
           </p>
           <p className="mt-3 max-w-3xl text-slate-600">
+            Sprint 6 adds a durable storage foundation. Uploaded project files
+            are managed through a storage provider abstraction, with local
+            storage for development and S3-compatible object storage support for
+            deployment. Storage credentials stay on the backend, file download is
+            access controlled, and PDF indexing reads files through the storage
+            layer. This is a file-persistence foundation; it does not change the
+            review-support boundary.
+          </p>
+          <p className="mt-3 max-w-3xl text-slate-600">
             These are real-world foundation sprints, not a production release.
             Full authentication, OCR, jurisdiction rule packs, and an applicant
             portal are future roadmap items. Real project records, page indexing,

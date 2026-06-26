@@ -61,6 +61,30 @@ class Settings(BaseSettings):
         ".pdf,.dxf,.csv,.xlsx,.docx,.png,.jpg,.jpeg"
     )
 
+    # Production Foundations Sprint 6 durable file storage. STORAGE_PROVIDER
+    # selects the storage backend: "local" stores uploaded files under
+    # LOCAL_STORAGE_DIR for development; "s3" uses S3-compatible object storage
+    # for deployment so uploads survive redeploys. Object storage credentials are
+    # backend-only and are never exposed to the frontend. They are read only when
+    # STORAGE_PROVIDER is "s3". LOCAL_STORAGE_DIR defaults to PROJECT_UPLOAD_DIR so
+    # existing local uploads keep working.
+    STORAGE_PROVIDER: str = "local"
+    LOCAL_STORAGE_DIR: str = "./project_uploads"
+    OBJECT_STORAGE_BUCKET: str = ""
+    OBJECT_STORAGE_ENDPOINT_URL: str = ""
+    OBJECT_STORAGE_REGION: str = "us-east-1"
+    OBJECT_STORAGE_ACCESS_KEY_ID: str = ""
+    OBJECT_STORAGE_SECRET_ACCESS_KEY: str = ""
+    OBJECT_STORAGE_FORCE_PATH_STYLE: bool = True
+    OBJECT_STORAGE_PUBLIC_BASE_URL: str = ""
+    OBJECT_STORAGE_SIGNED_URL_EXPIRE_SECONDS: int = 300
+
+    @property
+    def local_storage_dir(self) -> str:
+        """Return the local storage directory, defaulting to the upload dir."""
+
+        return self.LOCAL_STORAGE_DIR or self.PROJECT_UPLOAD_DIR
+
     @property
     def allowed_project_upload_extensions_set(self) -> set[str]:
         """Return the allowed upload extensions as a normalized lowercase set."""

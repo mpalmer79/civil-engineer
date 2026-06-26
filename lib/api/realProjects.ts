@@ -65,6 +65,10 @@ export type ProjectDocument = {
   textExtractionStatus: string | null;
   textExtractionSummary: string | null;
   extractionWarningCount: number;
+  storageProvider: string | null;
+  fileAvailable: boolean;
+  downloadCount: number;
+  lastDownloadedAt: string | null;
 };
 
 function mapDocument(d: Record<string, unknown>): ProjectDocument {
@@ -93,6 +97,10 @@ function mapDocument(d: Record<string, unknown>): ProjectDocument {
     textExtractionStatus: (d.text_extraction_status as string) ?? null,
     textExtractionSummary: (d.text_extraction_summary as string) ?? null,
     extractionWarningCount: (d.extraction_warning_count as number) ?? 0,
+    storageProvider: (d.storage_provider as string) ?? null,
+    fileAvailable: (d.file_available as boolean) ?? false,
+    downloadCount: (d.download_count as number) ?? 0,
+    lastDownloadedAt: (d.last_downloaded_at as string) ?? null,
   };
 }
 

@@ -19,7 +19,7 @@ server file paths are never written to audit events or user-facing summaries.
 
 from __future__ import annotations
 
-from pathlib import Path
+from io import BytesIO
 
 from pypdf import PdfReader
 from sqlalchemy import select
@@ -39,6 +39,8 @@ from app.services.real_intake_service import (
     ensure_demo_actor,
     record_audit_event,
 )
+from app.services.storage import storage_service
+from app.services.storage.base import StorageError
 
 PDF_EXTRACTION_METHOD = "pypdf_text_layer"
 
@@ -112,18 +114,22 @@ def index_pdf_document(
             "PDF indexing requires a PDF document. This document is not a PDF.",
             status_code=422,
         )
-    if not document.storage_path:
+    if not (document.storage_key or document.storage_path):
         raise PdfIndexingError(
             "PDF indexing requires an uploaded PDF file. Register is not enough; "
             "upload the file first.",
             status_code=422,
         )
-    storage_path = Path(document.storage_path)
-    if not storage_path.is_file():
+    # Load the PDF bytes through the storage provider (local or object storage).
+    # The raw filesystem path and any object storage credentials are never used
+    # in responses or audit metadata.
+    try:
+        pdf_bytes = storage_service.read_document_bytes(document)
+    except StorageError as exc:
         raise PdfIndexingError(
-            "The uploaded file could not be found for indexing.",
+            "The uploaded file could not be found in storage for indexing.",
             status_code=422,
-        )
+        ) from exc
 
     document.processing_status = "indexing_started"
     document.text_extraction_status = "indexing_started"
@@ -138,10 +144,25 @@ def index_pdf_document(
         actor_display_name=actor_name,
         metadata={"document_id": document_id},
     )
+    record_audit_event(
+        db,
+        project_id=project_id,
+        event_type="pdf_indexing_file_loaded_from_storage",
+        related_entity_type="document",
+        related_entity_id=document_id,
+        description="PDF bytes loaded from the storage provider for indexing.",
+        actor_type="system",
+        actor_display_name=actor_name,
+        metadata={
+            "document_id": document_id,
+            "storage_provider": document.storage_provider or "local",
+            "file_size_bytes": len(pdf_bytes),
+        },
+    )
     db.commit()
 
     try:
-        reader = PdfReader(str(storage_path))
+        reader = PdfReader(BytesIO(pdf_bytes))
         total_pages = len(reader.pages)
     except Exception as exc:  # noqa: BLE001 - any pypdf failure is a safe failure
         document.processing_status = "indexing_failed"

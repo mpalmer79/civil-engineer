@@ -142,6 +142,26 @@ class Document(Base):
         Float, nullable=True
     )
 
+    # Production foundation fields (Sprint 6) for durable storage. Nullable with
+    # safe defaults so seeded and Sprint 1 through 5 documents keep working.
+    # storage_path is retained above for backward compatibility; new code uses
+    # storage_key and storage_provider. None of these implies document approval.
+    storage_provider: Mapped[str | None] = mapped_column(String, nullable=True)
+    storage_key: Mapped[str | None] = mapped_column(String, nullable=True)
+    storage_bucket: Mapped[str | None] = mapped_column(String, nullable=True)
+    storage_etag: Mapped[str | None] = mapped_column(String, nullable=True)
+    storage_version_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    file_available: Mapped[bool] = mapped_column(default=False)
+    last_storage_check_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+    download_count: Mapped[int] = mapped_column(Integer, default=0)
+    last_downloaded_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+
     # Production foundation fields (Sprint 2) for PDF page indexing. Nullable
     # with safe defaults so seeded and Sprint 1 documents keep working. These
     # track digital PDF text extraction state only; none implies approval.

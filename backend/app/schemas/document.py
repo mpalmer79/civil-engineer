@@ -45,6 +45,13 @@ class DocumentRead(BaseModel):
     text_extraction_status: str | None = None
     text_extraction_summary: str | None = None
     extraction_warning_count: int = 0
+    # Sprint 6 durable storage metadata. Only safe fields are exposed: the raw
+    # storage_path, storage_key, bucket, and any credentials are never returned.
+    storage_provider: str | None = None
+    file_available: bool = False
+    download_count: int = 0
+    last_downloaded_at: datetime | None = None
+    last_storage_check_at: datetime | None = None
 
 
 class DocumentRegister(BaseModel):
