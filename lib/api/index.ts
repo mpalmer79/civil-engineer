@@ -8,6 +8,8 @@ export {
 } from "./client";
 export * from "./auth";
 export * from "./fileStorage";
+export * from "./responseMatrix";
+export * from "./resubmittals";
 export * from "./project";
 export * from "./documents";
 export * from "./checklist";

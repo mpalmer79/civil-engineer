@@ -27,6 +27,7 @@ from app.api.v1 import (
     plan_sheet_hotspots,
     plan_sheets,
     projects,
+    response_matrix,
     response_packages,
     retrieval,
     review_cycle,
@@ -62,3 +63,4 @@ api_router.include_router(evidence_retrieval.router)
 api_router.include_router(checklist_review.router)
 api_router.include_router(auth.router)
 api_router.include_router(file_storage.router)
+api_router.include_router(response_matrix.router)

@@ -89,6 +89,12 @@ export default async function ProjectDetailPage({
           <Link href={`${base}/checklists`} className="nav-link">
             Project checklists
           </Link>
+          <Link href={`${base}/response-matrix`} className="nav-link">
+            Response matrix
+          </Link>
+          <Link href={`${base}/resubmittals`} className="nav-link">
+            Resubmittal rounds
+          </Link>
           <Link href="/rule-packs" className="nav-link">
             Rule packs
           </Link>
