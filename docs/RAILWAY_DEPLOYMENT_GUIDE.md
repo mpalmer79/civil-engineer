@@ -99,7 +99,9 @@ NEXT_PUBLIC_API_BASE_URL=https://your-backend-service.up.railway.app
 
 Notes:
 
-- `NEXT_PUBLIC_API_BASE_URL` is the public origin of the backend service, with no trailing slash and no `/api` path. The frontend appends API paths itself.
+- `NEXT_PUBLIC_API_BASE_URL` is the backend origin only. It has no trailing slash and no path. Do not include `/api/v1` (or any `/api` path) in it. The frontend appends `/api/v1/...` to the base URL itself, so a base URL that already includes `/api/v1` produces a wrong `/api/v1/api/v1/...` path and the calls fail.
+- Correct: `https://your-backend-service.up.railway.app`
+- Wrong: `https://your-backend-service.up.railway.app/api/v1`
 - This variable is read at build and run time. If the backend URL changes, redeploy the frontend so the new value is built in.
 - Locally the default is `http://localhost:8000`, so the frontend works in development without setting anything.
 
@@ -107,10 +109,19 @@ Notes:
 
 The two services connect through two settings that mirror each other:
 
-- The frontend `NEXT_PUBLIC_API_BASE_URL` points at the backend public URL.
+- The frontend `NEXT_PUBLIC_API_BASE_URL` points at the backend public origin (no `/api/v1`).
 - The backend `FRONTEND_ORIGIN` points at the frontend public URL.
 
-When both are set to the deployed URLs, the frontend can call the backend and the backend allows the browser origin. A visible backend connection banner on the frontend home page reports whether the backend is reachable, so a misconfiguration is easy to spot.
+When both are set to the deployed URLs, the frontend can call the backend and the backend allows the browser origin. A visible backend connection banner on the frontend home page reports whether the backend is reachable and distinguishes a missing URL, an unreachable backend, and a base URL that wrongly includes an API path, so a misconfiguration is easy to spot.
+
+## Verifying the backend is live
+
+After the backend service deploys, confirm it is serving the API by opening these URLs in a browser (replace the host with the deployed backend URL):
+
+- `/health` returns a small JSON payload with `status`, `service`, `version`, and `demo_mode`. This is the healthcheck.
+- `/api/v1/projects/proj_brookside_meadows` returns the seeded Brookside Meadows project, which confirms the API routes and the seeded demo data are live.
+
+A `404` on the backend root `/` is expected and is not a failure. The backend does not define a route at `/`; it serves the API under `/api/v1` and the healthcheck at `/health`. As long as `/health` and the `/api/v1` routes respond, the backend is healthy. Use `/health` (not `/`) as the Railway healthcheck path.
 
 ## Known limitations
 

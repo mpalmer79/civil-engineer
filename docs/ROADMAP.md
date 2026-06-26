@@ -207,8 +207,10 @@ top of the Phase 6 foundation, without parsing real PDF or CAD files.
 
 **Exit criteria:** A reviewer can open a Brookside Meadows sheet, see seeded
 hotspots over a synthetic preview, inspect connected evidence, and record
-review-support actions on plan consistency findings. The preview and hotspots
-are seeded review-support metadata, not parsed PDF, DWG, DXF, or Autodesk data.
+review-support actions on plan consistency findings. The sheet viewer preview and
+hotspots are seeded review-support metadata, separate from the real DXF upload
+and metadata extraction in CAD Intake. The preview is not rendered from PDF and
+does not parse DWG or Autodesk data.
 
 **Delivered in Phase 7:** the `plan_sheet_hotspots` and
 `plan_consistency_review_actions` tables, eight seeded hotspots across six

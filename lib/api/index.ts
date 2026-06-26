@@ -1,4 +1,9 @@
-export { API_BASE_URL, PROJECT_ID } from "./client";
+export {
+  API_BASE_URL,
+  API_BASE_URL_IS_DEFAULT,
+  API_BASE_URL_HAS_API_PATH,
+  PROJECT_ID,
+} from "./client";
 export * from "./project";
 export * from "./documents";
 export * from "./checklist";

@@ -7,12 +7,12 @@ import BackendStatusBanner from "@/components/BackendStatusBanner";
 import { getHotspots, projectMetrics } from "@/lib/api";
 
 const heroCtas = [
+  { href: "/demo", label: "See the Guided Demo" },
   { href: "/project-dashboard", label: "Open Project Dashboard" },
   { href: "/cad-intake", label: "Start CAD Intake" },
   { href: "/review-cycles", label: "View Review Cycles" },
   { href: "/workflow-board", label: "Open Workflow Board" },
   { href: "/response-package", label: "Build Response Package" },
-  { href: "/review-packet", label: "View Review Packet" },
 ];
 
 const metricCards = [
@@ -255,6 +255,13 @@ export default async function HomePage() {
           Each capability is a working module. Open one to explore the Brookside
           Meadows review.
         </p>
+        <p className="mt-2 max-w-3xl text-sm text-slate-500">
+          Real DXF upload and metadata extraction live in CAD Intake. The other
+          CAD-aware pages, including Plan Sheets, CAD Review, and the Sheet
+          Viewer, organize extracted or seeded CAD-aware metadata for
+          review-support workflows. Civil Engineer AI does not parse DWG, verify
+          CAD, validate geometry, certify compliance, or approve plans.
+        </p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {capabilities.map((cap) => (
             <Link
@@ -318,16 +325,23 @@ export default async function HomePage() {
               Where to start
             </h2>
             <p className="mt-3 max-w-3xl text-slate-600">
-              Open the Project Dashboard for the unified command center, or start
-              with CAD Intake to upload and parse a DXF file. From there, work
-              the findings into a review packet, track them on the workflow
-              board, draft a response package, and manage resubmittals across
-              review cycles.
+              New here? Start with the guided demo, which follows one issue from
+              the checklist requirement to the draft response. Or open the
+              Project Dashboard for the unified command center, or start with CAD
+              Intake to upload and parse a DXF file. From there, work the findings
+              into a review packet, track them on the workflow board, draft a
+              response package, and manage resubmittals across review cycles.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
-                href="/project-dashboard"
+                href="/demo"
                 className="rounded-lg bg-water-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-water-700"
+              >
+                See the Guided Demo
+              </Link>
+              <Link
+                href="/project-dashboard"
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               >
                 Open Project Dashboard
               </Link>

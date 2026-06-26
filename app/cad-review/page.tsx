@@ -4,8 +4,8 @@ import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import CadReviewClient from "@/components/CadReviewClient";
 
 const futureStages = [
-  "Plan sheet PDF viewer and sheet hotspot annotations",
-  "DXF metadata extraction or structured plan exports",
+  "Plan sheet PDF rendering for the sheet viewer",
+  "Richer DXF entity extraction and structured plan exports beyond CAD Intake",
   "Autodesk Platform Services viewer exploration",
   "CAD and document cross-reference automation",
 ];
@@ -16,20 +16,28 @@ export default function CadReviewPage() {
       <PageHeader
         eyebrow="CAD-aware review"
         title="CAD-aware metadata and plan consistency review"
-        description="Civil Engineer AI uses seeded CAD-aware metadata, not live CAD parsing. It connects civil feature references to plan sheets and surfaces plan consistency findings that need reviewer confirmation."
+        description="CAD Review organizes seeded and derived CAD-aware review metadata: it connects civil feature references to plan sheets and surfaces plan consistency findings that need reviewer confirmation. Real DXF upload and metadata extraction live in CAD Intake. CAD Review does not parse DWG, verify CAD, validate geometry, certify compliance, or approve plans."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
         <SectionCard title="What CAD-aware review means">
           <p className="text-sm text-slate-600">
-            Civil Engineer AI lays a CAD-aware foundation without processing real CAD
-            files. The civil feature metadata below is seeded, not extracted from
-            DWG or DXF drawings. The plan consistency check compares plan
-            references against the plan sheet index to surface missing targets,
-            conflicting labels, and unclear revisions. Civil Engineer AI does not
-            verify CAD drawings, validate the design, or confirm compliance. It
-            organizes plan sheet evidence and civil feature references for a human
-            reviewer.
+            CAD Review organizes plan sheet evidence and civil feature references
+            for a human reviewer. The civil feature metadata below is seeded or
+            derived review-support metadata. Real DXF files are uploaded and
+            parsed for extracted metadata in{" "}
+            <a
+              href="/cad-intake"
+              className="font-semibold text-water-700 hover:text-water-600"
+            >
+              CAD Intake
+            </a>
+            ; this page focuses on organizing plan sheet and civil feature
+            references rather than parsing drawings. The plan consistency check
+            compares plan references against the plan sheet index to surface
+            missing targets, conflicting labels, and unclear revisions. Civil
+            Engineer AI does not parse DWG, verify CAD drawings, validate the
+            design, or confirm compliance.
           </p>
         </SectionCard>
 

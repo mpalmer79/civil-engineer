@@ -43,7 +43,7 @@ export default async function PlanSheetsPage() {
       <PageHeader
         eyebrow="Plan sheets"
         title="Brookside Meadows plan sheet index"
-        description="Civil Engineer AI organizes plan sheet metadata for review: sheet number, title, discipline, revision, status, and connections to documents, checklist items, and findings. This is plan sheet evidence for a human reviewer, not full CAD parsing or a final design review."
+        description="Civil Engineer AI organizes plan sheet metadata for review: sheet number, title, discipline, revision, status, and connections to documents, checklist items, and findings. This is plan sheet evidence for a human reviewer. Real DXF upload and metadata extraction happen in CAD Intake; this page organizes plan sheet metadata and does not perform final design review."
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
@@ -154,10 +154,11 @@ export default async function PlanSheetsPage() {
 
         <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
           <span className="font-semibold text-slate-800">Scope note:</span>{" "}
-          Civil Engineer AI models plan sheet metadata and CAD-aware feature references. It
-          does not parse DWG or DXF files, verify CAD drawings, or perform final
-          design review. Every plan sheet status keeps the work under human
-          review.
+          The Plan Sheets page organizes seeded plan sheet metadata and CAD-aware
+          feature references. Real DXF upload and metadata extraction happen in
+          CAD Intake; this page does not parse drawings. Civil Engineer AI does
+          not parse DWG, verify CAD drawings, or perform final design review.
+          Every plan sheet status keeps the work under human review.
         </div>
       </div>
     </div>
