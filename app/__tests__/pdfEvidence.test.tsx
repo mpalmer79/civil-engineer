@@ -51,6 +51,10 @@ const userDoc = {
   textExtractionStatus: "text_extracted",
   textExtractionSummary: "2 page(s) indexed: 2 with extractable text.",
   extractionWarningCount: 0,
+  storageProvider: "local",
+  fileAvailable: true,
+  downloadCount: 0,
+  lastDownloadedAt: null,
 };
 
 const csvDoc = {

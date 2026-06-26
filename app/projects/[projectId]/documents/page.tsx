@@ -66,6 +66,8 @@ export default async function ProjectDocumentsPage({
                     <th className="px-3 py-2">Document</th>
                     <th className="px-3 py-2">Type</th>
                     <th className="px-3 py-2">Source</th>
+                    <th className="px-3 py-2">Storage</th>
+                    <th className="px-3 py-2">File</th>
                     <th className="px-3 py-2">Processing</th>
                     <th className="px-3 py-2">Pages</th>
                     <th className="px-3 py-2">Text extraction</th>
@@ -88,6 +90,16 @@ export default async function ProjectDocumentsPage({
                       </td>
                       <td className="px-3 py-2">
                         <SourceBadge sourceMode={d.sourceMode} />
+                      </td>
+                      <td className="px-3 py-2 text-slate-600">
+                        {d.storageProvider ?? "n/a"}
+                      </td>
+                      <td className="px-3 py-2 text-slate-600">
+                        {d.storageProvider
+                          ? d.fileAvailable
+                            ? "file available"
+                            : "file unavailable"
+                          : "n/a"}
                       </td>
                       <td className="px-3 py-2 text-slate-600">
                         {d.processingStatus ?? "n/a"}

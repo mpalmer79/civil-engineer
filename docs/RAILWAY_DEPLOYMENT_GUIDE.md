@@ -125,8 +125,29 @@ When both are set to the deployed URLs, the frontend can call the backend and th
 
 - This is a demo deployment with no authentication and no role-based access. Every visitor sees the same Brookside Meadows demo data.
 - The backend uses SQLite on the service file system. The database is recreated from seed data on each deploy. It is not a managed database and has no migrations.
-- Uploaded DXF files are stored under `CAD_UPLOAD_DIR` on the backend service file system. This is demo-local storage and is not persistent across redeploys. To keep uploads, mount a Railway volume at the upload directory path and point `CAD_UPLOAD_DIR` at it. There is no external object storage.
+- Uploaded DXF files are stored under `CAD_UPLOAD_DIR` on the backend service file system. This is demo-local storage and is not persistent across redeploys. To keep uploads, mount a Railway volume at the upload directory path and point `CAD_UPLOAD_DIR` at it.
 - Live AI calls are disabled by default. The deterministic mock provider is used, so no API key is required.
+
+## Durable file storage (Production Foundations Sprint 6)
+
+Project document uploads are managed through a storage provider abstraction with two options.
+
+### Local storage (default, development only)
+
+With `STORAGE_PROVIDER=local` (the default), uploaded project files are stored under `LOCAL_STORAGE_DIR` (default `./project_uploads`) on the backend service file system. This is simple for development but is not durable across redeploys without a mounted volume. To keep local uploads on Railway, mount a Railway volume and point `LOCAL_STORAGE_DIR` at it. Even so, object storage is recommended for deployment.
+
+### S3-compatible object storage (recommended for deployment)
+
+Set `STORAGE_PROVIDER=s3` and configure an S3-compatible bucket so uploads survive redeploys. Required and optional backend variables:
+
+- `OBJECT_STORAGE_BUCKET` (required): the bucket name.
+- `OBJECT_STORAGE_ACCESS_KEY_ID` and `OBJECT_STORAGE_SECRET_ACCESS_KEY` (required): backend-only credentials.
+- `OBJECT_STORAGE_ENDPOINT_URL` (optional): for non-AWS S3-compatible providers (for example MinIO or other providers); leave empty for AWS S3.
+- `OBJECT_STORAGE_REGION` (default `us-east-1`).
+- `OBJECT_STORAGE_FORCE_PATH_STYLE` (default `true`): path-style addressing for S3-compatible providers.
+- `OBJECT_STORAGE_PUBLIC_BASE_URL` (optional) and `OBJECT_STORAGE_SIGNED_URL_EXPIRE_SECONDS` (default `300`).
+
+Object storage credentials are read only when `STORAGE_PROVIDER=s3`. They are backend service variables only. Never put storage credentials in the frontend or in any `NEXT_PUBLIC_*` variable. The frontend downloads files through the access-controlled backend route and never holds storage credentials.
 
 ## Demo data note
 

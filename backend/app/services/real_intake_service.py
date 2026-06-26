@@ -36,6 +36,8 @@ from app.core.safety import (
 )
 from app.db import models
 from app.services.auth_service import ActorContext, audit_kwargs
+from app.services.storage import storage_service
+from app.services.storage.base import StorageError
 
 # Fixed identity for the Sprint 1 demo reviewer. Real authentication will
 # replace this placeholder; it grants no access and is attribution only.
@@ -486,17 +488,57 @@ def upload_document(
         raise IntakeError(error, status_code=422)
 
     checksum = hashlib.sha256(content_bytes).hexdigest()
-    stored_file_name, storage_path = save_uploaded_project_file(
-        content_bytes=content_bytes,
-        project_id=project_id,
-        original_file_name=safe_name,
-    )
     now = _now()
     document_id = f"doc_user_{_short()}"
+
+    record_audit_event(
+        db,
+        **audit_kwargs(actor),
+        project_id=project_id,
+        event_type="document_upload_started",
+        related_entity_type="document",
+        related_entity_id=document_id,
+        description=f"Reviewer started upload of '{safe_name}'.",
+        actor_type="reviewer",
+        actor_display_name=uploaded_by_name,
+        metadata={"size_bytes": size_bytes},
+    )
+
+    # Store the file through the configured storage provider (local or S3). Only
+    # a safe, generated storage key is recorded; the raw filesystem path and any
+    # object storage credentials are never stored on the document or in audit
+    # metadata.
+    try:
+        stored = storage_service.save_document_file(
+            project_id=project_id,
+            document_id=document_id,
+            original_filename=safe_name,
+            content_bytes=content_bytes,
+            content_type=content_type,
+        )
+    except StorageError as exc:
+        record_audit_event(
+            db,
+            **audit_kwargs(actor),
+            project_id=project_id,
+            event_type="document_storage_failed",
+            related_entity_type="document",
+            related_entity_id=document_id,
+            description="Document storage failed.",
+            actor_type="reviewer",
+            actor_display_name=uploaded_by_name,
+            metadata={"size_bytes": size_bytes, "status": "storage_failed"},
+        )
+        db.commit()
+        raise IntakeError(
+            "The uploaded file could not be stored. A reviewer should retry.",
+            status_code=502,
+        ) from exc
+
     document = models.Document(
         document_id=document_id,
         project_id=project_id,
-        file_name=stored_file_name,
+        file_name=f"doc_{_short()}{Path(safe_name).suffix.lower()}",
         original_file_name=safe_name,
         document_type=(document_type or "other").strip() or "other",
         status="uploaded",
@@ -506,7 +548,13 @@ def upload_document(
         source_mode="user_uploaded",
         upload_status="stored",
         processing_status="parsing_not_available",
-        storage_path=storage_path,
+        storage_provider=stored.provider,
+        storage_key=stored.storage_key,
+        storage_bucket=stored.bucket,
+        storage_etag=stored.etag,
+        storage_version_id=stored.version_id,
+        file_available=True,
+        last_storage_check_at=now,
         content_type=content_type,
         file_size_bytes=size_bytes,
         checksum_sha256=checksum,
@@ -521,21 +569,23 @@ def upload_document(
         db,
         **audit_kwargs(actor),
         project_id=project_id,
-        event_type="document_uploaded",
+        event_type="document_stored",
         related_entity_type="document",
         related_entity_id=document_id,
         description=(
             f"Reviewer uploaded document '{safe_name}' "
-            f"({size_bytes} bytes)."
+            f"({size_bytes} bytes), stored via {stored.provider}."
         ),
         actor_type="reviewer",
         actor_display_name=uploaded_by_name,
         metadata={
             "source_mode": "user_uploaded",
-            "stored_file_name": stored_file_name,
+            "storage_provider": stored.provider,
             "checksum_sha256": checksum,
-            "size_bytes": size_bytes,
+            "file_size_bytes": size_bytes,
+            "content_type": content_type,
             "processing_status": "parsing_not_available",
+            "status": "stored",
         },
     )
     db.commit()

@@ -17,6 +17,7 @@ from app.api.v1 import (
     documents,
     evaluation,
     evidence_retrieval,
+    file_storage,
     findings,
     hotspots,
     human_review,
@@ -60,3 +61,4 @@ api_router.include_router(pdf_evidence.router)
 api_router.include_router(evidence_retrieval.router)
 api_router.include_router(checklist_review.router)
 api_router.include_router(auth.router)
+api_router.include_router(file_storage.router)

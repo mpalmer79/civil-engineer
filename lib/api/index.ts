@@ -7,6 +7,7 @@ export {
   authHeaders,
 } from "./client";
 export * from "./auth";
+export * from "./fileStorage";
 export * from "./project";
 export * from "./documents";
 export * from "./checklist";

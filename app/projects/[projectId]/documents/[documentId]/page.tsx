@@ -5,6 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
 import IndexPdfButton from "@/components/IndexPdfButton";
+import DocumentDownloadButton from "@/components/DocumentDownloadButton";
 import { getProjectDocument } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -26,12 +27,14 @@ export default async function DocumentDetailPage({
   const base = `/projects/${params.projectId}`;
   const hasFile = doc.sourceMode === "user_uploaded" && doc.uploadStatus === "stored";
   const pdf = isPdf(doc.originalFileName ?? doc.fileName, doc.contentType);
-  const canIndex = hasFile && pdf;
+  const canIndex = hasFile && pdf && doc.fileAvailable;
   const disabledReason = !hasFile
     ? "PDF indexing requires an uploaded PDF file. This document has no stored file."
-    : !pdf
-      ? "PDF indexing requires a PDF document. This document is not a PDF."
-      : undefined;
+    : !doc.fileAvailable
+      ? "The file is not available in storage. Re-upload the file before indexing."
+      : !pdf
+        ? "PDF indexing requires a PDF document. This document is not a PDF."
+        : undefined;
 
   const metadata: [string, string | number | null][] = [
     ["Document type", doc.documentType],
@@ -71,6 +74,42 @@ export default async function DocumentDetailPage({
             </Link>
           ) : null}
         </div>
+
+        {hasFile ? (
+          <SectionCard
+            title="Storage"
+            description="Uploaded files are stored through the backend storage provider. The raw storage path and any object storage credentials stay on the backend."
+          >
+            <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+              {(
+                [
+                  ["Storage provider", doc.storageProvider ?? "n/a"],
+                  ["File", doc.fileAvailable ? "file available" : "file unavailable"],
+                  ["Checksum (sha256, short)", doc.checksumSha256 ? `${doc.checksumSha256.slice(0, 12)}...` : "n/a"],
+                  ["File size (bytes)", doc.fileSizeBytes ?? "n/a"],
+                  ["Downloads", doc.downloadCount],
+                  ["Last downloaded", doc.lastDownloadedAt ?? "never"],
+                ] as [string, string | number | null][]
+              ).map(([label, value]) => (
+                <div
+                  key={label}
+                  className="flex justify-between gap-4 border-b border-slate-100 pb-2"
+                >
+                  <dt className="text-sm font-semibold text-slate-500">{label}</dt>
+                  <dd className="text-sm text-slate-800">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <div className="mt-4">
+              <DocumentDownloadButton
+                projectId={params.projectId}
+                documentId={doc.documentId}
+                fileName={doc.originalFileName ?? doc.fileName}
+                available={doc.fileAvailable}
+              />
+            </div>
+          </SectionCard>
+        ) : null}
 
         <SectionCard title="PDF page indexing">
           {doc.textExtractionSummary ? (

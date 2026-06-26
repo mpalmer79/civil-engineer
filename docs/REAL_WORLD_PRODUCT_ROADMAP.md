@@ -128,15 +128,22 @@ findings remain ahead.
 
 ## 6. Current sprint
 
-Production Foundations Sprint 5: Real Authentication, Reviewer Roles, and Project
-Access Control.
+Production Foundations Sprint 6: Durable Object Storage and Deployment-Ready File
+Persistence.
 
-This sprint adds the first real authentication and access-control foundation.
-Real users can sign in, belong to organizations, hold reviewer or admin roles,
-and access only the projects they are permitted to view or act on, with real
-audit attribution. The public Brookside Meadows demo remains available without an
-account. This is a local auth foundation, not enterprise single sign-on, and it
-protects review records rather than making engineering decisions. See
+This sprint replaces local-only uploaded file persistence with a storage provider
+abstraction that supports local development storage and S3-compatible object
+storage for deployment. Storage credentials stay on the backend, file download is
+access controlled, and PDF indexing reads files through the storage layer. It is
+a file-persistence foundation and does not change the review-support boundary.
+See [PRODUCTION_FOUNDATIONS_SPRINT_6.md](PRODUCTION_FOUNDATIONS_SPRINT_6.md),
+[STORAGE_PROVIDER_ABSTRACTION.md](STORAGE_PROVIDER_ABSTRACTION.md), and
+[API_FILE_STORAGE.md](API_FILE_STORAGE.md).
+
+Sprint 5 (complete) added the first real authentication and access-control
+foundation: real users can sign in, belong to organizations, hold reviewer or
+admin roles, and access only the projects they are permitted to view or act on,
+with real audit attribution. See
 [PRODUCTION_FOUNDATIONS_SPRINT_5.md](PRODUCTION_FOUNDATIONS_SPRINT_5.md),
 [AUTHENTICATION_AND_ACCESS_CONTROL.md](AUTHENTICATION_AND_ACCESS_CONTROL.md), and
 [API_AUTH_AND_ACCESS_CONTROL.md](API_AUTH_AND_ACCESS_CONTROL.md).
@@ -169,8 +176,8 @@ findings, basic evidence references, and durable audit events, with Brookside
 Meadows preserved as a seeded demo fixture. See
 [PRODUCTION_FOUNDATIONS_SPRINT_1.md](PRODUCTION_FOUNDATIONS_SPRINT_1.md).
 
-The recommended next sprint is Production Foundations Sprint 6: Durable Object
-Storage and Deployment-Ready File Persistence.
+The recommended next sprint is Production Foundations Sprint 7: Applicant Response
+Matrix and Resubmittal Collaboration Workflow.
 
 ## 7. Out of scope
 

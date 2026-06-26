@@ -254,18 +254,18 @@ def test_index_handles_malformed_pdf(client: TestClient) -> None:
 
 
 def test_index_handles_missing_file_on_disk(client: TestClient) -> None:
-    from pathlib import Path
-
     from app.db import models
     from app.db.database import SessionLocal
+    from app.services.storage.storage_service import get_storage_provider
 
     pid = _create_project(client)
     did = _upload_pdf(client, pid, _make_pdf(["Will be removed"]))
-    # Remove the stored file to simulate missing storage.
+    # Remove the stored object through the storage provider to simulate a file
+    # that is no longer available in storage.
     db = SessionLocal()
     try:
         document = db.get(models.Document, did)
-        Path(document.storage_path).unlink()
+        get_storage_provider().delete_file(document.storage_key)
     finally:
         db.close()
     index = client.post(f"/api/v1/projects/{pid}/documents/{did}/index-pdf")
