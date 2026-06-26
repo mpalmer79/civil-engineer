@@ -10,6 +10,8 @@ export * from "./auth";
 export * from "./fileStorage";
 export * from "./responseMatrix";
 export * from "./resubmittals";
+export * from "./reviewerResponsePackages";
+export * from "./commentLetters";
 export * from "./project";
 export * from "./documents";
 export * from "./checklist";

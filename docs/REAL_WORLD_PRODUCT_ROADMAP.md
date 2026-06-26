@@ -128,17 +128,27 @@ findings remain ahead.
 
 ## 6. Current sprint
 
-Production Foundations Sprint 7: Applicant Response Matrix and Resubmittal
-Collaboration Workflow.
+Production Foundations Sprint 8: Reviewer Response Package Issuance and Comment
+Letter Workflow.
 
-This sprint adds a reviewer-controlled applicant response matrix and a resubmittal
-collaboration workflow. Reviewers can organize findings and checklist review items
-into a response matrix, record applicant responses for reviewer review, register
-resubmittal rounds, link documents to a round, and carry items forward across
-review rounds. An applicant response is recorded for reviewer review, never as
-proof, and carry-forward means continued review, not resolution. It is a
-reviewer-side collaboration-tracking foundation and does not change the
-review-support boundary. See
+This sprint adds the first controlled reviewer output workflow. Reviewers can
+assemble selected findings, checklist items, response matrix items, and citations
+into a controlled response package, generate a deterministic, reviewer-editable
+comment letter draft, preview the package, issue it as a reviewer communication
+record, and preserve a revision history with a durable audit trail. Package
+issuance records a reviewer communication only. It does not approve a project,
+certify compliance, validate design, resolve an issue, or close an issue, and it
+does not change the review-support boundary. See
+[PRODUCTION_FOUNDATIONS_SPRINT_8.md](PRODUCTION_FOUNDATIONS_SPRINT_8.md),
+[RESPONSE_PACKAGE_AND_COMMENT_LETTER_WORKFLOW.md](RESPONSE_PACKAGE_AND_COMMENT_LETTER_WORKFLOW.md),
+[API_RESPONSE_PACKAGES.md](API_RESPONSE_PACKAGES.md), and
+[COMMENT_LETTER_TEMPLATE_BOUNDARY.md](COMMENT_LETTER_TEMPLATE_BOUNDARY.md).
+
+Sprint 7 (complete) added a reviewer-controlled applicant response matrix and a
+resubmittal collaboration workflow: reviewers can organize findings and checklist
+review items into a response matrix, record applicant responses for reviewer
+review, register resubmittal rounds, link documents to a round, and carry items
+forward across review rounds. See
 [PRODUCTION_FOUNDATIONS_SPRINT_7.md](PRODUCTION_FOUNDATIONS_SPRINT_7.md),
 [APPLICANT_RESPONSE_MATRIX.md](APPLICANT_RESPONSE_MATRIX.md),
 [RESUBMITTAL_COLLABORATION_WORKFLOW.md](RESUBMITTAL_COLLABORATION_WORKFLOW.md), and
@@ -188,8 +198,8 @@ findings, basic evidence references, and durable audit events, with Brookside
 Meadows preserved as a seeded demo fixture. See
 [PRODUCTION_FOUNDATIONS_SPRINT_1.md](PRODUCTION_FOUNDATIONS_SPRINT_1.md).
 
-The recommended next sprint is Production Foundations Sprint 8: Reviewer Response
-Package Issuance and Comment Letter Workflow.
+The recommended next sprint is Production Foundations Sprint 9: Reviewer Dashboard,
+Workload Management, and Operational Metrics.
 
 ## 7. Out of scope
 

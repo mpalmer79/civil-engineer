@@ -5,11 +5,13 @@ import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
 import AddToResponseMatrixButton from "@/components/AddToResponseMatrixButton";
+import AddToResponsePackageButton from "@/components/AddToResponsePackageButton";
 import {
   getProjectFinding,
   listFindingCitations,
   listProjectEvidenceCandidates,
   listResponseMatrices,
+  listResponsePackages,
 } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -19,14 +21,16 @@ export default async function FindingDetailPage({
 }: {
   params: { projectId: string; findingId: string };
 }) {
-  const [finding, citations, candidates, matrices] = await Promise.all([
-    getProjectFinding(params.projectId, params.findingId),
-    listFindingCitations(params.projectId, params.findingId),
-    listProjectEvidenceCandidates(params.projectId, {
-      findingId: params.findingId,
-    }),
-    listResponseMatrices(params.projectId),
-  ]);
+  const [finding, citations, candidates, matrices, packages] =
+    await Promise.all([
+      getProjectFinding(params.projectId, params.findingId),
+      listFindingCitations(params.projectId, params.findingId),
+      listProjectEvidenceCandidates(params.projectId, {
+        findingId: params.findingId,
+      }),
+      listResponseMatrices(params.projectId),
+      listResponsePackages(params.projectId),
+    ]);
   if (!finding) {
     notFound();
   }
@@ -207,6 +211,15 @@ export default async function FindingDetailPage({
             sourceType="finding"
             sourceId={finding.findingId}
             matrices={matrices}
+          />
+        ) : null}
+
+        {packages !== null ? (
+          <AddToResponsePackageButton
+            projectId={params.projectId}
+            sourceType="finding"
+            sourceId={finding.findingId}
+            packages={packages}
           />
         ) : null}
       </div>
