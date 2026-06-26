@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import MatrixItemActions from "@/components/MatrixItemActions";
-import { getResponseMatrixItem } from "@/lib/api";
+import AddToResponsePackageButton from "@/components/AddToResponsePackageButton";
+import { getResponseMatrixItem, listResponsePackages } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,10 @@ export default async function ResponseMatrixItemDetailPage({
 }: {
   params: { projectId: string; itemId: string };
 }) {
-  const item = await getResponseMatrixItem(params.projectId, params.itemId);
+  const [item, packages] = await Promise.all([
+    getResponseMatrixItem(params.projectId, params.itemId),
+    listResponsePackages(params.projectId),
+  ]);
   if (!item) {
     notFound();
   }
@@ -113,6 +117,15 @@ export default async function ResponseMatrixItemDetailPage({
         </SectionCard>
 
         <MatrixItemActions projectId={params.projectId} item={item} />
+
+        {packages !== null ? (
+          <AddToResponsePackageButton
+            projectId={params.projectId}
+            sourceType="matrix-item"
+            sourceId={item.responseMatrixItemId}
+            packages={packages}
+          />
+        ) : null}
 
         <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
           This item is review-support only. The recorded applicant response is

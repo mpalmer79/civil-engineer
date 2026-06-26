@@ -1126,3 +1126,63 @@ ALLOWED_MATRIX_LINK_TYPES: set[str] = {
     "supporting_response_evidence",
     "reviewer_reference",
 }
+
+
+# Production Foundations Sprint 8 reviewer response package and comment letter
+# vocabulary. A response package is a reviewer-controlled communication artifact.
+# Issuance records that a reviewer issued a communication; it never approves a
+# project, certifies compliance, validates design, resolves an issue, or closes an
+# issue. A comment letter draft is a deterministic, reviewer-editable template. No
+# value here implies a final engineering decision.
+
+# Response package statuses. issued_by_reviewer records a reviewer communication
+# only; it is not approval, certification, or issue closure.
+ALLOWED_REVIEWER_PACKAGE_STATUSES: set[str] = {
+    "package_draft",
+    "package_in_review",
+    "ready_for_reviewer_handoff",
+    "issued_by_reviewer",
+    "revision_started",
+    "archived_demo",
+}
+
+# Response package types. Each describes the kind of reviewer communication being
+# assembled, not an engineering outcome.
+ALLOWED_REVIEWER_PACKAGE_TYPES: set[str] = {
+    "initial_review_comment_letter",
+    "resubmittal_review_comment_letter",
+    "checklist_review_summary",
+    "response_matrix_summary",
+    "reviewer_handoff_package",
+}
+
+# Source types a package item can be assembled from.
+ALLOWED_REVIEWER_PACKAGE_ITEM_SOURCE_TYPES: set[str] = {
+    "finding",
+    "checklist_item",
+    "response_matrix_item",
+    "citation",
+    "document_reference",
+    "resubmittal_summary",
+    "manual_reviewer_note",
+}
+
+# Package item statuses. All are review-support workflow labels only.
+ALLOWED_REVIEWER_PACKAGE_ITEM_STATUSES: set[str] = {
+    "item_draft",
+    "needs_reviewer_confirmation",
+    "ready_for_reviewer_handoff",
+    "carried_forward_for_review",
+    "reviewer_note_added",
+}
+
+# Comment letter draft statuses. issued_by_reviewer records that a reviewer
+# issued the communication draft; superseded_by_revision preserves prior issued
+# drafts when a revision begins. None implies a final engineering decision.
+ALLOWED_COMMENT_LETTER_DRAFT_STATUSES: set[str] = {
+    "draft_created",
+    "reviewer_editing",
+    "ready_for_reviewer_handoff",
+    "issued_by_reviewer",
+    "superseded_by_revision",
+}

@@ -2573,3 +2573,182 @@ class MatrixItemDocumentLink(Base):
     )
     created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class ReviewerResponsePackage(Base):
+    """A reviewer-controlled response package for a real project (Sprint 8).
+
+    A response package assembles reviewer-selected records (findings, checklist
+    items, response matrix items, citations, document references, resubmittal
+    summaries, and manual reviewer notes) into a controlled communication
+    artifact and a deterministic comment letter draft. Issuance records that a
+    reviewer issued a communication. It never approves a project, certifies
+    compliance, verifies CAD, validates design, declares safety, resolves an
+    issue, or closes an issue. Every status is review-support only.
+    """
+
+    __tablename__ = "reviewer_response_packages"
+
+    response_package_id: Mapped[str] = mapped_column(String, primary_key=True)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    response_matrix_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    resubmittal_round_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    package_title: Mapped[str] = mapped_column(String, nullable=False)
+    package_number: Mapped[int] = mapped_column(Integer, default=1)
+    revision_number: Mapped[int] = mapped_column(Integer, default=0)
+    status: Mapped[str] = mapped_column(String, default="package_draft")
+    package_type: Mapped[str] = mapped_column(
+        String, default="initial_review_comment_letter"
+    )
+    source_mode: Mapped[str] = mapped_column(String, default="user_created")
+    prepared_by_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    prepared_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    issued_by_user_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    issued_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    organization_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    issued_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+    items: Mapped[list["ReviewerResponsePackageItem"]] = relationship(
+        back_populates="package"
+    )
+
+
+class ReviewerResponsePackageItem(Base):
+    """A single reviewer-selected record included in a response package."""
+
+    __tablename__ = "reviewer_response_package_items"
+
+    response_package_item_id: Mapped[str] = mapped_column(
+        String, primary_key=True
+    )
+    response_package_id: Mapped[str] = mapped_column(
+        ForeignKey("reviewer_response_packages.response_package_id"),
+        nullable=False,
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    source_type: Mapped[str] = mapped_column(String, nullable=False)
+    source_finding_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_checklist_item_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    source_matrix_item_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    source_citation_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    source_document_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    item_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    category: Mapped[str | None] = mapped_column(String, nullable=True)
+    reviewer_comment_text: Mapped[str] = mapped_column(Text, default="")
+    applicant_response_summary: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    reviewer_follow_up_text: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    requested_evidence: Mapped[str | None] = mapped_column(Text, nullable=True)
+    citation_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
+    include_in_letter: Mapped[bool] = mapped_column(default=True)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    item_status: Mapped[str] = mapped_column(String, default="item_draft")
+    created_by_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    updated_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+    package: Mapped["ReviewerResponsePackage"] = relationship(
+        back_populates="items"
+    )
+
+
+class CommentLetterDraft(Base):
+    """A deterministic, reviewer-editable comment letter draft for a package.
+
+    The draft is generated from package items using fixed templates only. There
+    are no live AI calls. It carries a fixed review-support boundary statement
+    that is rendered at preview time and is never an editable section. The draft
+    is a reviewer communication artifact, not an approval, certification, or issue
+    closure.
+    """
+
+    __tablename__ = "comment_letter_drafts"
+
+    comment_letter_draft_id: Mapped[str] = mapped_column(
+        String, primary_key=True
+    )
+    response_package_id: Mapped[str] = mapped_column(
+        ForeignKey("reviewer_response_packages.response_package_id"),
+        nullable=False,
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    recipient_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    recipient_organization: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    subject_line: Mapped[str] = mapped_column(String, default="")
+    introduction_text: Mapped[str] = mapped_column(Text, default="")
+    project_summary_text: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    review_scope_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    comment_items_text: Mapped[str] = mapped_column(Text, default="")
+    resubmittal_summary_text: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    closing_text: Mapped[str] = mapped_column(Text, default="")
+    status: Mapped[str] = mapped_column(String, default="draft_created")
+    revision_number: Mapped[int] = mapped_column(Integer, default=0)
+    created_by_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class ReviewerResponsePackageRevision(Base):
+    """A preserved record of a response package revision (Sprint 8).
+
+    Creating a revision never overwrites a prior issued package record. It records
+    the prior status and the revision number so the issued history is preserved.
+    """
+
+    __tablename__ = "reviewer_response_package_revisions"
+
+    response_package_revision_id: Mapped[str] = mapped_column(
+        String, primary_key=True
+    )
+    response_package_id: Mapped[str] = mapped_column(
+        ForeignKey("reviewer_response_packages.response_package_id"),
+        nullable=False,
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    revision_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    revision_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    prior_status: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_by_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)

@@ -128,6 +128,37 @@ matrix and a resubmittal collaboration workflow. See
   never include a raw filesystem path, a storage key, a signed URL, a token, a
   password, or any credential.
 
+## Reviewer response packages and comment letters (Sprint 8)
+
+Production Foundations Sprint 8 adds reviewer response packages and deterministic
+comment letter drafts. See
+[RESPONSE_PACKAGE_AND_COMMENT_LETTER_WORKFLOW.md](RESPONSE_PACKAGE_AND_COMMENT_LETTER_WORKFLOW.md),
+[API_RESPONSE_PACKAGES.md](API_RESPONSE_PACKAGES.md), and
+[COMMENT_LETTER_TEMPLATE_BOUNDARY.md](COMMENT_LETTER_TEMPLATE_BOUNDARY.md).
+
+- A response package is a reviewer communication artifact. Issuing a package
+  records that a reviewer issued a communication. It never approves a project,
+  certifies compliance, validates design, declares safety, resolves an issue, or
+  closes an issue. Issuance never sets an approved, certified, compliant, verified,
+  validated, resolved, or closed status.
+- Comment letter drafts are generated from fixed deterministic templates. There
+  are no live AI calls. A fixed review-support boundary statement is rendered with
+  every draft and preview and is never an editable section.
+- Package and comment letter reads require project read access; all mutations
+  require project reviewer access. A read-only user receives 403 on mutations. The
+  public Brookside Meadows demo remains readable when configured, and the Phase 10
+  demo response package builder is preserved unchanged.
+- Reviewer-entered free-text fields (package title, manual reviewer comment,
+  requested evidence, reviewer note, revision reason, recipient fields, and every
+  editable comment letter section) are checked against the prohibited-language
+  guard. Status values are validated against the Sprint 8 review-support status
+  sets. Source records must belong to the same project as the package.
+- Package and comment letter responses, previews, and audit metadata never include
+  the full comment letter text, full applicant response text, full extracted page
+  text, a raw filesystem path, a storage key, a signed URL, a token, a password, or
+  any credential. A revision preserves prior issued records rather than
+  overwriting them.
+
 ## Known limitations
 
 - Local authentication only; no SSO and no hardened production session system

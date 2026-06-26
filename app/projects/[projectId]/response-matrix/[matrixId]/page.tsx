@@ -4,7 +4,12 @@ import { notFound } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
-import { getResponseMatrix, listResponseMatrixItems } from "@/lib/api";
+import AddMatrixItemsToPackagePanel from "@/components/AddMatrixItemsToPackagePanel";
+import {
+  getResponseMatrix,
+  listResponseMatrixItems,
+  listResponsePackages,
+} from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +22,10 @@ export default async function ResponseMatrixDetailPage({
 }: {
   params: { projectId: string; matrixId: string };
 }) {
-  const [matrix, items] = await Promise.all([
+  const [matrix, items, packages] = await Promise.all([
     getResponseMatrix(params.projectId, params.matrixId),
     listResponseMatrixItems(params.projectId, params.matrixId),
+    listResponsePackages(params.projectId),
   ]);
   if (!matrix) {
     notFound();
@@ -140,6 +146,14 @@ export default async function ResponseMatrixDetailPage({
             </div>
           )}
         </SectionCard>
+
+        {packages !== null && items !== null ? (
+          <AddMatrixItemsToPackagePanel
+            projectId={params.projectId}
+            matrixItemIds={items.map((i) => i.responseMatrixItemId)}
+            packages={packages}
+          />
+        ) : null}
 
         <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
           This matrix is review-support only. Status labels describe reviewer

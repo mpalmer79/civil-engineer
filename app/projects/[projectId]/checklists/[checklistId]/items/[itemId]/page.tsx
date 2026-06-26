@@ -5,7 +5,12 @@ import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import ChecklistItemReviewPanel from "@/components/ChecklistItemReviewPanel";
 import AddToResponseMatrixButton from "@/components/AddToResponseMatrixButton";
-import { listProjectChecklistItems, listResponseMatrices } from "@/lib/api";
+import AddToResponsePackageButton from "@/components/AddToResponsePackageButton";
+import {
+  listProjectChecklistItems,
+  listResponseMatrices,
+  listResponsePackages,
+} from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +19,10 @@ export default async function ChecklistItemDetailPage({
 }: {
   params: { projectId: string; checklistId: string; itemId: string };
 }) {
-  const [items, matrices] = await Promise.all([
+  const [items, matrices, packages] = await Promise.all([
     listProjectChecklistItems(params.projectId, params.checklistId),
     listResponseMatrices(params.projectId),
+    listResponsePackages(params.projectId),
   ]);
   const item = items?.find((i) => i.projectChecklistItemId === params.itemId);
   if (!item) {
@@ -94,6 +100,15 @@ export default async function ChecklistItemDetailPage({
             sourceType="checklist-item"
             sourceId={item.projectChecklistItemId}
             matrices={matrices}
+          />
+        ) : null}
+
+        {packages !== null ? (
+          <AddToResponsePackageButton
+            projectId={params.projectId}
+            sourceType="checklist-item"
+            sourceId={item.projectChecklistItemId}
+            packages={packages}
           />
         ) : null}
       </div>

@@ -30,6 +30,7 @@ from app.api.v1 import (
     response_matrix,
     response_packages,
     retrieval,
+    reviewer_response_packages,
     review_cycle,
     review_packets,
     workflow,
@@ -64,3 +65,4 @@ api_router.include_router(checklist_review.router)
 api_router.include_router(auth.router)
 api_router.include_router(file_storage.router)
 api_router.include_router(response_matrix.router)
+api_router.include_router(reviewer_response_packages.router)

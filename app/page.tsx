@@ -305,6 +305,16 @@ export default async function HomePage() {
             carry-forward means continued review, not resolution.
           </p>
           <p className="mt-3 max-w-3xl text-slate-600">
+            Sprint 8 adds reviewer response package issuance and a comment letter
+            draft workflow. Reviewers can assemble selected findings, checklist
+            items, response matrix items, and citations into a controlled response
+            package, generate a deterministic, reviewer-editable comment letter
+            draft, preview the package, and issue it as a reviewer communication
+            record with a durable audit trail. Package issuance records reviewer
+            communication only. There is no final approval, no issue closure, and
+            no change to the review-support boundary.
+          </p>
+          <p className="mt-3 max-w-3xl text-slate-600">
             These are real-world foundation sprints, not a production release.
             Full authentication, OCR, jurisdiction rule packs, and an applicant
             portal are future roadmap items. Real project records, page indexing,
