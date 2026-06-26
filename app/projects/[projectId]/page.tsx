@@ -77,6 +77,9 @@ export default async function ProjectDetailPage({
           <Link href={`${base}/findings/new`} className="nav-link">
             Create finding
           </Link>
+          <Link href={`${base}/evidence-citations`} className="nav-link">
+            Evidence citations
+          </Link>
           <Link href={`${base}/audit-events`} className="nav-link">
             Audit events
           </Link>

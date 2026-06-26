@@ -5,7 +5,11 @@ import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
 import RiskBadge from "@/components/RiskBadge";
-import { getProjectDetail, listProjectFindings } from "@/lib/api";
+import {
+  getProjectDetail,
+  listProjectEvidenceCitations,
+  listProjectFindings,
+} from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -14,14 +18,17 @@ export default async function ProjectFindingsPage({
 }: {
   params: { projectId: string };
 }) {
-  const [project, findings] = await Promise.all([
+  const [project, findings, citations] = await Promise.all([
     getProjectDetail(params.projectId),
     listProjectFindings(params.projectId),
+    listProjectEvidenceCitations(params.projectId),
   ]);
   if (!project) {
     notFound();
   }
   const base = `/projects/${project.projectId}`;
+  const citationCount = (findingId: string) =>
+    (citations ?? []).filter((c) => c.findingId === findingId).length;
 
   return (
     <div>
@@ -63,9 +70,18 @@ export default async function ProjectFindingsPage({
               <SectionCard key={f.findingId}>
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-base font-semibold text-slate-900">
-                    {f.title}
+                    <Link
+                      href={`${base}/findings/${f.findingId}`}
+                      className="text-water-700 hover:underline"
+                    >
+                      {f.title}
+                    </Link>
                   </h3>
                   <div className="flex items-center gap-2">
+                    <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+                      {citationCount(f.findingId)} citation
+                      {citationCount(f.findingId) === 1 ? "" : "s"}
+                    </span>
                     <RiskBadge
                       level={
                         (["high", "medium", "low"].includes(f.riskLevel)

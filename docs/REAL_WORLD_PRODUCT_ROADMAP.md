@@ -89,14 +89,19 @@ while Brookside Meadows remains a seeded demo fixture.
 
 ### Phase 2: Evidence-Grounded Review
 
-- PDF ingestion
+- PDF ingestion (delivered in Sprint 2: page indexing and text extraction)
+- page-level citations (delivered in Sprint 2: reviewer-selected citations)
 - document chunking from real files
-- page-level citations
 - hybrid retrieval
 - no-citation rejection for AI drafts
 - prompt and model versioning
 - human review queue
 - expanded evaluation cases
+
+Sprint 2 delivered the foundation of Phase 2: uploaded PDFs are indexed into
+page-level review records with extracted text, and reviewers can cite exact
+pages or sections as evidence for findings. Chunking, retrieval, and AI draft
+findings remain ahead.
 
 ### Phase 3: Jurisdiction and Resubmittal Workflow
 
@@ -123,13 +128,18 @@ while Brookside Meadows remains a seeded demo fixture.
 
 ## 6. Current sprint
 
-Production Foundations Sprint 1: Real Project Intake and Persistent Review
-Records.
+Production Foundations Sprint 2: PDF Page Indexing and Evidence Citations.
 
-This sprint delivers the first real-world foundation layer: user-created project
-records, document registration and file upload metadata, reviewer-created
-findings, basic evidence references, and durable audit events, while preserving
-Brookside Meadows as a seeded demo fixture. See
+This sprint adds the first document-understanding layer: uploaded PDFs are
+indexed into page-level review records with extracted text, and reviewers can
+cite exact pages or sections as evidence for findings. See
+[PRODUCTION_FOUNDATIONS_SPRINT_2.md](PRODUCTION_FOUNDATIONS_SPRINT_2.md) and
+[PDF_PAGE_INDEXING_AND_EVIDENCE_CITATIONS.md](PDF_PAGE_INDEXING_AND_EVIDENCE_CITATIONS.md).
+
+Sprint 1 (complete) delivered the real-world foundation layer: user-created
+project records, document registration and file upload, reviewer-created
+findings, basic evidence references, and durable audit events, with Brookside
+Meadows preserved as a seeded demo fixture. See
 [PRODUCTION_FOUNDATIONS_SPRINT_1.md](PRODUCTION_FOUNDATIONS_SPRINT_1.md).
 
 ## 7. Out of scope

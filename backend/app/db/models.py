@@ -129,7 +129,102 @@ class Document(Base):
         Float, nullable=True
     )
 
+    # Production foundation fields (Sprint 2) for PDF page indexing. Nullable
+    # with safe defaults so seeded and Sprint 1 documents keep working. These
+    # track digital PDF text extraction state only; none implies approval.
+    indexed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    text_extraction_status: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    text_extraction_summary: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    extraction_warning_count: Mapped[int] = mapped_column(Integer, default=0)
+
     project: Mapped["Project"] = relationship(back_populates="documents")
+    pages: Mapped[list["DocumentPage"]] = relationship(back_populates="document")
+
+
+class DocumentPage(Base):
+    """A page-level review record produced by indexing an uploaded PDF.
+
+    Production Foundations Sprint 2 indexes uploaded digital PDFs into page
+    records and extracts text where the PDF carries an embedded text layer.
+    Indexing reads a real uploaded file deterministically with pypdf. It does
+    not OCR scanned pages, send content to any AI provider, approve plans,
+    certify compliance, verify CAD, validate design, or make any final
+    engineering decision. A page with no embedded text is recorded as
+    no_extractable_text, not an error and not a conclusion.
+    """
+
+    __tablename__ = "document_pages"
+
+    document_page_id: Mapped[str] = mapped_column(String, primary_key=True)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("documents.document_id"), nullable=False
+    )
+    page_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    page_label: Mapped[str | None] = mapped_column(String, nullable=True)
+    extracted_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    text_extraction_status: Mapped[str] = mapped_column(
+        String, default="not_indexed"
+    )
+    text_extraction_method: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    char_count: Mapped[int] = mapped_column(Integer, default=0)
+    word_count: Mapped[int] = mapped_column(Integer, default=0)
+    extraction_warnings: Mapped[list] = mapped_column(JSON, default=list)
+    indexed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+    document: Mapped["Document"] = relationship(back_populates="pages")
+
+
+class EvidenceCitation(Base):
+    """A reviewer-selected, page-level evidence citation for a finding.
+
+    Sprint 2 lets a human reviewer cite an exact page or section of an indexed
+    document as evidence for a review-support finding. A citation is a
+    reviewer-selected source reference, not proof of correctness. It does not
+    approve, certify, verify, or validate anything, and it never changes a
+    finding to a final outcome. It complements the Sprint 1 FindingSource
+    manual evidence reference with page-level, indexing-aware records.
+    """
+
+    __tablename__ = "evidence_citations"
+
+    evidence_citation_id: Mapped[str] = mapped_column(String, primary_key=True)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    finding_id: Mapped[str] = mapped_column(
+        ForeignKey("findings.finding_id"), nullable=False
+    )
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("documents.document_id"), nullable=False
+    )
+    document_page_id: Mapped[str | None] = mapped_column(
+        ForeignKey("document_pages.document_page_id"), nullable=True
+    )
+    page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    page_label: Mapped[str | None] = mapped_column(String, nullable=True)
+    section_label: Mapped[str | None] = mapped_column(String, nullable=True)
+    quoted_excerpt: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reviewer_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    citation_type: Mapped[str] = mapped_column(String, default="reviewer_selected")
+    citation_status: Mapped[str] = mapped_column(
+        String, default="needs_reviewer_confirmation"
+    )
+    created_by_actor_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_mode: Mapped[str] = mapped_column(String, default="user_created")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
 class ChecklistItem(Base):

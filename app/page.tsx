@@ -254,12 +254,18 @@ export default async function HomePage() {
             create review-support findings, and inspect durable audit events.
           </p>
           <p className="mt-3 max-w-3xl text-slate-600">
-            This is the first real-world foundation sprint, not a production
-            release. Full authentication, PDF parsing, page-level citations,
-            jurisdiction rule packs, and an applicant portal are future roadmap
-            items. Real project records are review-support only and do not
-            approve plans, certify compliance, verify CAD, or make final
-            engineering decisions.
+            Sprint 2 adds PDF page indexing and reviewer-selected evidence
+            citations: uploaded PDFs can be indexed into page-level review
+            records, and reviewers can cite an exact page or section as evidence
+            for a finding. Text extraction covers digital PDFs only. Full OCR and
+            automated AI retrieval remain future roadmap items.
+          </p>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            These are real-world foundation sprints, not a production release.
+            Full authentication, OCR, jurisdiction rule packs, and an applicant
+            portal are future roadmap items. Real project records, page indexing,
+            and citations are review-support only and do not approve plans,
+            certify compliance, verify CAD, or make final engineering decisions.
           </p>
           <div className="mt-4 flex flex-wrap gap-3">
             <Link

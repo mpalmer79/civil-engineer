@@ -60,7 +60,41 @@ export type ProjectDocument = {
   uploadedByName: string | null;
   uploadedAt: string | null;
   registeredAt: string | null;
+  pageCount: number | null;
+  indexedAt: string | null;
+  textExtractionStatus: string | null;
+  textExtractionSummary: string | null;
+  extractionWarningCount: number;
 };
+
+function mapDocument(d: Record<string, unknown>): ProjectDocument {
+  return {
+    documentId: d.document_id as string,
+    projectId: d.project_id as string,
+    fileName: d.file_name as string,
+    originalFileName: (d.original_file_name as string) ?? null,
+    documentType: d.document_type as string,
+    status: d.status as string,
+    purpose: d.purpose as string,
+    expectedKeyInformation: d.expected_key_information as string,
+    sourceMode: d.source_mode as string,
+    uploadStatus: (d.upload_status as string) ?? null,
+    processingStatus: (d.processing_status as string) ?? null,
+    contentType: (d.content_type as string) ?? null,
+    fileSizeBytes: (d.file_size_bytes as number) ?? null,
+    checksumSha256: (d.checksum_sha256 as string) ?? null,
+    revisionLabel: (d.revision_label as string) ?? null,
+    revisionDate: (d.revision_date as string) ?? null,
+    uploadedByName: (d.uploaded_by_name as string) ?? null,
+    uploadedAt: (d.uploaded_at as string) ?? null,
+    registeredAt: (d.registered_at as string) ?? null,
+    pageCount: (d.page_count as number) ?? null,
+    indexedAt: (d.indexed_at as string) ?? null,
+    textExtractionStatus: (d.text_extraction_status as string) ?? null,
+    textExtractionSummary: (d.text_extraction_summary as string) ?? null,
+    extractionWarningCount: (d.extraction_warning_count as number) ?? 0,
+  };
+}
 
 export type ReviewerFinding = {
   findingId: string;
@@ -266,27 +300,16 @@ export async function listProjectDocuments(
     `/api/v1/projects/${projectId}/documents`,
   );
   if (!data) return null;
-  return data.map((d) => ({
-    documentId: d.document_id as string,
-    projectId: d.project_id as string,
-    fileName: d.file_name as string,
-    originalFileName: (d.original_file_name as string) ?? null,
-    documentType: d.document_type as string,
-    status: d.status as string,
-    purpose: d.purpose as string,
-    expectedKeyInformation: d.expected_key_information as string,
-    sourceMode: d.source_mode as string,
-    uploadStatus: (d.upload_status as string) ?? null,
-    processingStatus: (d.processing_status as string) ?? null,
-    contentType: (d.content_type as string) ?? null,
-    fileSizeBytes: (d.file_size_bytes as number) ?? null,
-    checksumSha256: (d.checksum_sha256 as string) ?? null,
-    revisionLabel: (d.revision_label as string) ?? null,
-    revisionDate: (d.revision_date as string) ?? null,
-    uploadedByName: (d.uploaded_by_name as string) ?? null,
-    uploadedAt: (d.uploaded_at as string) ?? null,
-    registeredAt: (d.registered_at as string) ?? null,
-  }));
+  return data.map(mapDocument);
+}
+
+export async function getProjectDocument(
+  projectId: string,
+  documentId: string,
+): Promise<ProjectDocument | null> {
+  const docs = await listProjectDocuments(projectId);
+  if (!docs) return null;
+  return docs.find((d) => d.documentId === documentId) ?? null;
 }
 
 export type RegisterDocumentInput = {
@@ -383,6 +406,15 @@ export async function listProjectFindings(
     createdByName: (f.created_by_name as string) ?? null,
     createdAt: (f.created_at as string) ?? null,
   }));
+}
+
+export async function getProjectFinding(
+  projectId: string,
+  findingId: string,
+): Promise<ReviewerFinding | null> {
+  const findings = await listProjectFindings(projectId);
+  if (!findings) return null;
+  return findings.find((f) => f.findingId === findingId) ?? null;
 }
 
 export type CreateFindingInput = {
