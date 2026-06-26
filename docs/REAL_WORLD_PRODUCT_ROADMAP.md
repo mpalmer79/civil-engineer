@@ -128,10 +128,20 @@ findings remain ahead.
 
 ## 6. Current sprint
 
-Production Foundations Sprint 2: PDF Page Indexing and Evidence Citations.
+Production Foundations Sprint 3: Evidence Retrieval and Reviewer Draft Finding
+Queue.
 
-This sprint adds the first document-understanding layer: uploaded PDFs are
-indexed into page-level review records with extracted text, and reviewers can
+This sprint adds a deterministic, local evidence retrieval layer over the Sprint
+2 indexed PDF page text, plus a reviewer-controlled queue of evidence candidates
+that a human reviewer can promote into draft review-support findings. Retrieval
+is deterministic and local; there are no live AI calls, and search results are
+candidates requiring human confirmation, not conclusions. See
+[PRODUCTION_FOUNDATIONS_SPRINT_3.md](PRODUCTION_FOUNDATIONS_SPRINT_3.md),
+[EVIDENCE_RETRIEVAL_AND_DRAFT_QUEUE.md](EVIDENCE_RETRIEVAL_AND_DRAFT_QUEUE.md),
+and [API_EVIDENCE_RETRIEVAL.md](API_EVIDENCE_RETRIEVAL.md).
+
+Sprint 2 (complete) added the first document-understanding layer: uploaded PDFs
+are indexed into page-level review records with extracted text, and reviewers can
 cite exact pages or sections as evidence for findings. See
 [PRODUCTION_FOUNDATIONS_SPRINT_2.md](PRODUCTION_FOUNDATIONS_SPRINT_2.md) and
 [PDF_PAGE_INDEXING_AND_EVIDENCE_CITATIONS.md](PDF_PAGE_INDEXING_AND_EVIDENCE_CITATIONS.md).
@@ -141,6 +151,9 @@ project records, document registration and file upload, reviewer-created
 findings, basic evidence references, and durable audit events, with Brookside
 Meadows preserved as a seeded demo fixture. See
 [PRODUCTION_FOUNDATIONS_SPRINT_1.md](PRODUCTION_FOUNDATIONS_SPRINT_1.md).
+
+The recommended next sprint is Production Foundations Sprint 4: Checklist-Driven
+Evidence Review and Rule Pack Foundation.
 
 ## 7. Out of scope
 

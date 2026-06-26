@@ -830,3 +830,53 @@ def find_prohibited_language(text: str | None) -> list[str]:
         return []
     normalized = text.strip().lower()
     return [word for word in PROHIBITED_FINAL_DECISION_WORDS if word in normalized]
+
+
+# Production Foundations Sprint 3 evidence retrieval and reviewer draft finding
+# queue vocabulary. Retrieval is deterministic and local over indexed PDF page
+# text. A retrieval result is a candidate for reviewer evaluation, never a
+# conclusion. None of these values implies a final engineering decision,
+# approval, certification, compliance state, or that a design is safe.
+
+# Retrieval query types a reviewer may run against indexed page text. combined
+# allows a keyword query that also carries metadata filters.
+ALLOWED_RETRIEVAL_QUERY_TYPES: set[str] = {
+    "keyword",
+    "phrase",
+    "checklist_item",
+    "finding_context",
+    "document_filter",
+    "combined",
+}
+
+# Evidence candidate statuses. Every value keeps the candidate under reviewer
+# control. promoted_to_draft records that a reviewer promoted the candidate into
+# a draft finding; it is not a final outcome. There is intentionally no
+# approved, verified, passed, failed, resolved, or closed value.
+ALLOWED_CANDIDATE_STATUSES: set[str] = {
+    "retrieval_candidate",
+    "saved_for_review",
+    "needs_reviewer_triage",
+    "reviewer_selected",
+    "promoted_to_draft",
+    "dismissed_by_reviewer",
+}
+
+# How an evidence candidate entered the queue. manual_save records a candidate a
+# reviewer saved directly; the search origins record which retrieval mode
+# surfaced it.
+ALLOWED_CANDIDATE_ORIGINS: set[str] = {
+    "keyword_search",
+    "phrase_search",
+    "checklist_search",
+    "finding_context_search",
+    "manual_save",
+}
+
+# Maximum number of retrieval results returned in a single search. Keeps result
+# lists small and review-friendly and bounds audit metadata counts.
+MAX_RETRIEVAL_RESULTS: int = 50
+
+# Minimum length of a retrieval query string. Shorter queries are rejected as a
+# validation error rather than scanning every page for one or two characters.
+MIN_RETRIEVAL_QUERY_LENGTH: int = 2

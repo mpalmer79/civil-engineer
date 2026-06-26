@@ -15,9 +15,11 @@ Civil Engineer AI is moving from a controlled portfolio demo toward a real-world
 
 Sprint 2 adds PDF page indexing and reviewer-selected evidence citations: uploaded PDFs can be indexed into page-level review records with extracted text, and reviewers can cite an exact page or section as evidence for a finding. Text extraction covers digital PDFs only. OCR and automated AI findings remain future work.
 
-This direction is review-support only. Real project records, page indexing, and citations do not approve plans, certify compliance, verify CAD, validate design, or make final engineering decisions. Full authentication, OCR, live AI retrieval, jurisdiction rule packs, and an applicant portal are future roadmap items.
+Sprint 3 adds local evidence retrieval and a reviewer draft finding queue. Reviewers can search indexed PDF page text deterministically, review citation candidates, save them to a queue, and promote a candidate into a reviewer draft finding with a page-level citation. Retrieval is deterministic and local. No live AI calls are added. Search results are candidates that require human confirmation, not conclusions, and the reviewer remains responsible for every finding.
 
-See the roadmap in [docs/REAL_WORLD_PRODUCT_ROADMAP.md](docs/REAL_WORLD_PRODUCT_ROADMAP.md), Sprint 1 in [docs/PRODUCTION_FOUNDATIONS_SPRINT_1.md](docs/PRODUCTION_FOUNDATIONS_SPRINT_1.md), and Sprint 2 in [docs/PRODUCTION_FOUNDATIONS_SPRINT_2.md](docs/PRODUCTION_FOUNDATIONS_SPRINT_2.md) and [docs/PDF_PAGE_INDEXING_AND_EVIDENCE_CITATIONS.md](docs/PDF_PAGE_INDEXING_AND_EVIDENCE_CITATIONS.md). The Projects pages live under `/projects`.
+This direction is review-support only. Real project records, page indexing, citations, and evidence retrieval do not approve plans, certify compliance, verify CAD, validate design, or make final engineering decisions. Full authentication, OCR, live AI retrieval, jurisdiction rule packs, and an applicant portal are future roadmap items.
+
+See the roadmap in [docs/REAL_WORLD_PRODUCT_ROADMAP.md](docs/REAL_WORLD_PRODUCT_ROADMAP.md), Sprint 1 in [docs/PRODUCTION_FOUNDATIONS_SPRINT_1.md](docs/PRODUCTION_FOUNDATIONS_SPRINT_1.md), Sprint 2 in [docs/PRODUCTION_FOUNDATIONS_SPRINT_2.md](docs/PRODUCTION_FOUNDATIONS_SPRINT_2.md) and [docs/PDF_PAGE_INDEXING_AND_EVIDENCE_CITATIONS.md](docs/PDF_PAGE_INDEXING_AND_EVIDENCE_CITATIONS.md), and Sprint 3 in [docs/PRODUCTION_FOUNDATIONS_SPRINT_3.md](docs/PRODUCTION_FOUNDATIONS_SPRINT_3.md), [docs/EVIDENCE_RETRIEVAL_AND_DRAFT_QUEUE.md](docs/EVIDENCE_RETRIEVAL_AND_DRAFT_QUEUE.md), and [docs/API_EVIDENCE_RETRIEVAL.md](docs/API_EVIDENCE_RETRIEVAL.md). The Projects pages live under `/projects`.
 
 ### Checking the backend
 
