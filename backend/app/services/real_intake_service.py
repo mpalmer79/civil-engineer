@@ -35,6 +35,7 @@ from app.core.safety import (
     reject_prohibited_language,
 )
 from app.db import models
+from app.services.auth_service import ActorContext, audit_kwargs
 
 # Fixed identity for the Sprint 1 demo reviewer. Real authentication will
 # replace this placeholder; it grants no access and is attribution only.
@@ -100,11 +101,17 @@ def record_audit_event(
     actor_display_name: str | None = DEMO_ACTOR_NAME,
     metadata: dict | None = None,
     request_id: str | None = None,
+    user_id: str | None = None,
+    user_email: str | None = None,
+    organization_id: str | None = None,
+    access_level: str | None = None,
 ) -> models.AuditEvent:
     """Create a durable audit event for a real action.
 
-    Never stores secrets, raw IP addresses, or raw user agents. event_metadata
-    holds only non-sensitive structured context.
+    Never stores secrets, tokens, passwords, password hashes, raw IP addresses,
+    or raw user agents. event_metadata holds only non-sensitive structured
+    context. When a signed-in user takes the action (Sprint 5), the user and
+    organization identity is recorded for real attribution.
     """
 
     event = models.AuditEvent(
@@ -120,6 +127,10 @@ def record_audit_event(
         timestamp=_now(),
         event_metadata=metadata or {},
         request_id=request_id,
+        user_id=user_id,
+        user_email=user_email,
+        organization_id=organization_id,
+        access_level=access_level,
     )
     db.add(event)
     return event
@@ -183,6 +194,10 @@ def project_detail_dict(db: Session, project: models.Project) -> dict:
         "submission_reference": project.submission_reference,
         "review_round_current": project.review_round_current or 1,
         "parcel_ids": project.parcel_ids or [],
+        "organization_id": project.organization_id,
+        "created_by_user_id": project.created_by_user_id,
+        "visibility_mode": project.visibility_mode or "controlled",
+        "demo_public": bool(project.demo_public),
         "created_at": project.created_at,
         "updated_at": project.updated_at,
         **counts,
@@ -231,8 +246,18 @@ def create_project(
     submission_reference: str | None = None,
     parcel_ids: list[str] | None = None,
     created_by_name: str = DEMO_ACTOR_NAME,
+    created_by_user_id: str | None = None,
+    created_by_email: str | None = None,
+    organization_id: str | None = None,
+    access_level: str | None = None,
 ) -> dict:
-    """Create a real, user-created project record and a project_created event."""
+    """Create a real, user-created project record and a project_created event.
+
+    When a signed-in user creates the project (Sprint 5), the project records the
+    user and organization, the creating user is granted project_admin access, and
+    the audit event carries the user identity. The project is controlled
+    visibility (not a public demo).
+    """
 
     if not project_name.strip():
         raise IntakeError("project_name is required.", status_code=422)
@@ -275,10 +300,30 @@ def create_project(
         submission_reference=submission_reference,
         review_round_current=1,
         parcel_ids=list(parcel_ids or []),
+        organization_id=organization_id,
+        created_by_user_id=created_by_user_id,
+        visibility_mode="controlled",
+        demo_public=False,
         created_at=now,
         updated_at=now,
     )
     db.add(project)
+    # Grant the creating user project_admin access so they can read and manage
+    # the project they created.
+    if created_by_user_id is not None:
+        db.add(
+            models.ProjectAccess(
+                project_access_id=f"pacc_{_short()}",
+                project_id=project_id,
+                user_id=created_by_user_id,
+                organization_id=organization_id,
+                access_level="project_admin",
+                granted_by_user_id=created_by_user_id,
+                is_active=True,
+                created_at=now,
+                updated_at=now,
+            )
+        )
     record_audit_event(
         db,
         project_id=project_id,
@@ -289,12 +334,17 @@ def create_project(
             f"Reviewer created project record '{project.project_name}'."
         ),
         actor_type="reviewer",
+        actor_id=created_by_user_id or DEMO_ACTOR_ID,
         actor_display_name=created_by_name,
         metadata={
             "source_mode": "user_created",
             "jurisdiction": project.jurisdiction,
             "review_type": project.review_type,
         },
+        user_id=created_by_user_id,
+        user_email=created_by_email,
+        organization_id=organization_id,
+        access_level=access_level,
     )
     db.commit()
     db.refresh(project)
@@ -396,6 +446,7 @@ def upload_document(
     purpose: str | None = None,
     revision_label: str | None = None,
     uploaded_by_name: str = DEMO_ACTOR_NAME,
+    actor: ActorContext | None = None,
 ) -> models.Document:
     """Validate, store, and register a real uploaded document file.
 
@@ -407,6 +458,8 @@ def upload_document(
 
     _require_project(db, project_id)
     ensure_demo_actor(db)
+    if actor is not None:
+        uploaded_by_name = actor.display_name
     reject_prohibited_language(document_type, field="document_type")
 
     size_bytes = len(content_bytes)
@@ -466,6 +519,7 @@ def upload_document(
     db.add(document)
     record_audit_event(
         db,
+        **audit_kwargs(actor),
         project_id=project_id,
         event_type="document_uploaded",
         related_entity_type="document",
@@ -560,11 +614,14 @@ def create_finding(
     reviewer_notes: str | None = None,
     human_review_status: str = "needs_reviewer_confirmation",
     created_by_name: str = DEMO_ACTOR_NAME,
+    actor: ActorContext | None = None,
 ) -> models.Finding:
     """Create a reviewer-owned review-support finding and a finding_created
     event. The finding stays under human review and carries no final decision."""
 
     _require_project(db, project_id)
+    if actor is not None:
+        created_by_name = actor.display_name
     if not (title or "").strip():
         raise IntakeError("title is required.", status_code=422)
     for field, value in (
@@ -619,6 +676,7 @@ def create_finding(
     db.add(finding)
     record_audit_event(
         db,
+        **audit_kwargs(actor),
         project_id=project_id,
         event_type="finding_created",
         related_entity_type="finding",

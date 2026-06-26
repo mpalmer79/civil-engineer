@@ -92,6 +92,9 @@ export default async function ProjectDetailPage({
           <Link href="/rule-packs" className="nav-link">
             Rule packs
           </Link>
+          <Link href={`${base}/access`} className="nav-link">
+            Project access
+          </Link>
           <Link href={`${base}/audit-events`} className="nav-link">
             Audit events
           </Link>

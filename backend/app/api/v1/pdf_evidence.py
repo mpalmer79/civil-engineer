@@ -14,6 +14,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
 from app.schemas.pdf_evidence import (
     DocumentIndexingSummary,
@@ -23,6 +24,10 @@ from app.schemas.pdf_evidence import (
     EvidenceCitationUpdate,
 )
 from app.services import pdf_indexing_service
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_reviewer,
+)
 from app.services.pdf_indexing_service import PdfIndexingError
 
 router = APIRouter(tags=["pdf-evidence"])
@@ -41,11 +46,16 @@ def _handle(exc: Exception) -> HTTPException:
 def index_pdf(
     project_id: str,
     document_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> DocumentIndexingSummary:
+    actor = require_project_reviewer(db, project_id, user)
     try:
         result = pdf_indexing_service.index_pdf_document(
-            db, project_id=project_id, document_id=document_id
+            db,
+            project_id=project_id,
+            document_id=document_id,
+            actor_name=actor.display_name,
         )
     except (PdfIndexingError, ValueError) as exc:
         raise _handle(exc) from exc
@@ -113,8 +123,10 @@ def create_citation(
     project_id: str,
     finding_id: str,
     body: EvidenceCitationCreate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> EvidenceCitationResponse:
+    actor = require_project_reviewer(db, project_id, user)
     try:
         return pdf_indexing_service.create_evidence_citation(
             db,
@@ -128,7 +140,7 @@ def create_citation(
             reviewer_note=body.reviewer_note,
             citation_type=body.citation_type,
             citation_status=body.citation_status,
-            created_by_name=body.created_by_name,
+            created_by_name=actor.display_name,
         )
     except (PdfIndexingError, ValueError) as exc:
         raise _handle(exc) from exc

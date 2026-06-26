@@ -128,17 +128,25 @@ findings remain ahead.
 
 ## 6. Current sprint
 
-Production Foundations Sprint 4: Checklist-Driven Evidence Review and Rule Pack
-Foundation.
+Production Foundations Sprint 5: Real Authentication, Reviewer Roles, and Project
+Access Control.
 
-This sprint adds the first reusable, versioned checklist-review foundation. A
-reviewer can apply a starter stormwater rule pack to a project as a working
-checklist, search indexed evidence against each checklist requirement, track
-reviewer-controlled checklist evidence status, link citations, and create draft
-findings from checklist items. A rule pack is a review-support template, not a
-legal ordinance and not a compliance standard. Checklist status is
-review-support only and requires human confirmation; there are no live AI calls.
-See [PRODUCTION_FOUNDATIONS_SPRINT_4.md](PRODUCTION_FOUNDATIONS_SPRINT_4.md),
+This sprint adds the first real authentication and access-control foundation.
+Real users can sign in, belong to organizations, hold reviewer or admin roles,
+and access only the projects they are permitted to view or act on, with real
+audit attribution. The public Brookside Meadows demo remains available without an
+account. This is a local auth foundation, not enterprise single sign-on, and it
+protects review records rather than making engineering decisions. See
+[PRODUCTION_FOUNDATIONS_SPRINT_5.md](PRODUCTION_FOUNDATIONS_SPRINT_5.md),
+[AUTHENTICATION_AND_ACCESS_CONTROL.md](AUTHENTICATION_AND_ACCESS_CONTROL.md), and
+[API_AUTH_AND_ACCESS_CONTROL.md](API_AUTH_AND_ACCESS_CONTROL.md).
+
+Sprint 4 (complete) added the first reusable, versioned checklist-review
+foundation: a reviewer can apply a starter stormwater rule pack to a project as a
+working checklist, search indexed evidence against each checklist requirement,
+track reviewer-controlled checklist evidence status, link citations, and create
+draft findings from checklist items. See
+[PRODUCTION_FOUNDATIONS_SPRINT_4.md](PRODUCTION_FOUNDATIONS_SPRINT_4.md),
 [CHECKLIST_RULE_PACK_FOUNDATION.md](CHECKLIST_RULE_PACK_FOUNDATION.md), and
 [API_CHECKLIST_REVIEW.md](API_CHECKLIST_REVIEW.md).
 
@@ -161,8 +169,8 @@ findings, basic evidence references, and durable audit events, with Brookside
 Meadows preserved as a seeded demo fixture. See
 [PRODUCTION_FOUNDATIONS_SPRINT_1.md](PRODUCTION_FOUNDATIONS_SPRINT_1.md).
 
-The recommended next sprint is Production Foundations Sprint 5: Real
-Authentication, Reviewer Roles, and Project Access Control.
+The recommended next sprint is Production Foundations Sprint 6: Durable Object
+Storage and Deployment-Ready File Persistence.
 
 ## 7. Out of scope
 

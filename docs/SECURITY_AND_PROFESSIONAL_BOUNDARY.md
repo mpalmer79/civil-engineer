@@ -54,15 +54,37 @@ Enforcement:
   may be recorded, and only when a caller provides them.
 - Audit metadata never stores secrets or API keys.
 
-## Authentication placeholder
+## Authentication and access control (Sprint 5)
 
-This sprint has no real authentication. A clearly labeled demo reviewer identity
-(`actor_demo_reviewer`) provides attribution so real actions have an actor. It
-grants no access and will be replaced when authentication lands (Phase 4).
+Production Foundations Sprint 5 adds a local authentication and access-control
+foundation. See
+[AUTHENTICATION_AND_ACCESS_CONTROL.md](AUTHENTICATION_AND_ACCESS_CONTROL.md) and
+[API_AUTH_AND_ACCESS_CONTROL.md](API_AUTH_AND_ACCESS_CONTROL.md) for details.
+
+- Passwords are hashed with PBKDF2-HMAC-SHA256 and a per-user salt. Plaintext
+  passwords are never stored, never logged, and never placed in audit metadata.
+  Password hashes are never returned by the API.
+- Access tokens are HMAC-SHA256 signed with `AUTH_SECRET_KEY`, short-lived, never
+  logged, never placed in URLs, and never stored in audit metadata.
+- Real-project read routes require read access; reviewer-action routes require
+  reviewer access; access-management routes require project or organization
+  admin. Unauthenticated protected requests return 401; authenticated requests
+  without permission return 403.
+- When a signed-in user takes an action, the audit event records the user id,
+  user email, organization id, and access level for real attribution.
+- The seeded demo organization, demo reviewer, and demo admin are local demo
+  only; their passwords must be changed or disabled before any real use. The
+  public Brookside Meadows demo stays readable without a login when
+  `AUTH_ALLOW_PUBLIC_DEMO` is true.
+- This is a local auth foundation, not enterprise SSO, and it grants no
+  engineering authority. Access control governs who can review records, not
+  whether a project satisfies engineering requirements.
 
 ## Known limitations
 
-- No authentication, roles, or tenant separation yet.
+- Local authentication only; no SSO and no hardened production session system
+  yet. No enterprise tenant isolation claims.
+- No full applicant portal yet; the applicant role is a limited placeholder.
 - Local file system storage only; no object storage, malware scanning, or
   backups yet.
 - No database migrations in the prototype; recreate an existing development

@@ -1,4 +1,4 @@
-import { API_BASE_URL, safeFetch } from "./client";
+import { API_BASE_URL, authHeaders, safeFetch } from "./client";
 import type { EvidenceSearchResponse } from "./evidenceRetrieval";
 
 // Production Foundations Sprint 4: checklist-driven evidence review and rule
@@ -206,7 +206,7 @@ async function postJson<T>(
   try {
     const res = await fetch(`${API_BASE_URL}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body),
       cache: "no-store",
     });
@@ -306,7 +306,7 @@ export async function updateProjectChecklistItem(
       `${API_BASE_URL}/api/v1/projects/${projectId}/checklist-items/${checklistItemId}`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           applicability_status: payload.applicabilityStatus ?? null,
           evidence_status: payload.evidenceStatus ?? null,

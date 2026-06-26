@@ -1,4 +1,4 @@
-import { API_BASE_URL, safeFetch } from "./client";
+import { API_BASE_URL, authHeaders, safeFetch } from "./client";
 
 // Production Foundations Sprint 1: real project intake and persistent review
 // records. This data is backend-canonical. The frontend does not simulate real
@@ -243,7 +243,7 @@ async function postJson<T>(
   try {
     const res = await fetch(`${API_BASE_URL}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body),
       cache: "no-store",
     });
@@ -356,7 +356,7 @@ export async function uploadProjectDocument(
     if (options.revisionLabel) form.append("revision_label", options.revisionLabel);
     const res = await fetch(
       `${API_BASE_URL}/api/v1/projects/${projectId}/documents/upload`,
-      { method: "POST", body: form, cache: "no-store" },
+      { method: "POST", body: form, headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) {
       let detail = `Upload failed (${res.status}).`;

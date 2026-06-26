@@ -18,7 +18,12 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_reviewer,
+)
 from app.schemas.evidence_retrieval import (
     CandidateDismissRequest,
     EvidenceCandidateCreate,
@@ -49,8 +54,10 @@ def _handle(exc: Exception) -> HTTPException:
 def search_evidence(
     project_id: str,
     body: EvidenceSearchRequest,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> EvidenceSearchResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         result = retrieval.search_project_evidence(
             db,
@@ -127,8 +134,10 @@ def list_candidates(
 def save_candidate(
     project_id: str,
     body: EvidenceCandidateCreate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> EvidenceCandidateResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         return retrieval.save_candidate(
             db, project_id, body.model_dump(exclude_none=True)
@@ -197,8 +206,10 @@ def promote_candidate(
     project_id: str,
     candidate_id: str,
     body: PromoteCandidateToDraftFindingRequest,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> PromoteCandidateToDraftFindingResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         result = retrieval.promote_candidate_to_draft_finding(
             db, project_id, candidate_id, body.model_dump(exclude_none=True)

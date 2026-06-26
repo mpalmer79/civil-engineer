@@ -76,6 +76,25 @@ class Settings(BaseSettings):
     # is called. It is on by default for the portfolio demo.
     DEMO_MODE: bool = True
 
+    # Production Foundations Sprint 5 local authentication and access control.
+    # AUTH_SECRET_KEY signs local access tokens. The default is a clearly marked
+    # development-only value; a deployment MUST override it with a strong secret.
+    # AUTH_DEMO_MODE keeps the public Brookside Meadows demo and demo reviewer
+    # fallback working without a login. AUTH_REQUIRE_LOGIN_FOR_REAL_PROJECTS
+    # requires a signed-in user for real (non-demo) project actions when true.
+    # AUTH_ALLOW_PUBLIC_DEMO lets demo_public projects be read without a login.
+    AUTH_SECRET_KEY: str = "dev-only-insecure-change-me"
+    AUTH_TOKEN_EXPIRE_MINUTES: int = 120
+    AUTH_DEMO_MODE: bool = True
+    AUTH_REQUIRE_LOGIN_FOR_REAL_PROJECTS: bool = True
+    AUTH_ALLOW_PUBLIC_DEMO: bool = True
+    AUTH_MIN_PASSWORD_LENGTH: int = 8
+    # Seeded local demo credentials. These are for local development and the
+    # portfolio demo only and must be changed or disabled before any real use.
+    AUTH_SEED_DEMO_USERS: bool = True
+    AUTH_DEMO_REVIEWER_PASSWORD: str = "demo-reviewer-pass"
+    AUTH_DEMO_ADMIN_PASSWORD: str = "demo-admin-pass"
+
     # AI provider configuration. The default is the deterministic mock provider
     # so the project runs and tests pass without any paid API key. Live calls
     # are disabled by default and require both a provider key and an explicit

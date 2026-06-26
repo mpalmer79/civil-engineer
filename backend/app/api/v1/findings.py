@@ -12,10 +12,16 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
 from app.schemas.evidence import EvidenceReferenceCreate, FindingSourceRead
 from app.schemas.finding import FindingCreate, FindingRead
 from app.services import finding_service, project_service, real_intake_service
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_read,
+    require_project_reviewer,
+)
 from app.services.real_intake_service import IntakeError
 
 router = APIRouter(tags=["findings"])
@@ -25,10 +31,13 @@ router = APIRouter(tags=["findings"])
     "/projects/{project_id}/findings", response_model=list[FindingRead]
 )
 def list_findings(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[FindingRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return finding_service.list_findings(db, project_id)
 
 
@@ -40,8 +49,10 @@ def list_findings(
 def create_finding(
     project_id: str,
     body: FindingCreate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> FindingRead:
+    actor = require_project_reviewer(db, project_id, user)
     try:
         return real_intake_service.create_finding(
             db,
@@ -58,6 +69,7 @@ def create_finding(
             reviewer_notes=body.reviewer_notes,
             human_review_status=body.human_review_status,
             created_by_name=body.created_by_name,
+            actor=actor,
         )
     except (IntakeError, ValueError) as exc:
         status_code = getattr(exc, "status_code", 422)

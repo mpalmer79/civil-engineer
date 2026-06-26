@@ -1,9 +1,12 @@
 import Link from "next/link";
 
+import AccountNav from "@/components/AccountNav";
+
 const links = [
   { href: "/", label: "Home" },
   { href: "/projects", label: "Projects" },
   { href: "/rule-packs", label: "Rule Packs" },
+  { href: "/organizations", label: "Organizations" },
   { href: "/guided-demo", label: "Guided Demo" },
   { href: "/project-dashboard", label: "Project Dashboard" },
   { href: "/project", label: "Project" },
@@ -53,11 +56,10 @@ export default function SiteNav() {
               {link.label}
             </Link>
           ))}
+          <AccountNav />
         </div>
         <div className="md:hidden">
-          <span className="badge bg-slate-100 text-slate-600 ring-slate-200">
-            Review Support
-          </span>
+          <AccountNav />
         </div>
       </nav>
     </header>

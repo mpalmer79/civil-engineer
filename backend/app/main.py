@@ -21,6 +21,7 @@ from app.db.seed import PROJECT_ID, seed_database
 from app.db.seed_evidence import seed_evidence
 from app.db.seed_plansheets import seed_plansheets
 from app.services import (
+    access_control_service,
     cad_intake_service,
     checklist_review_service,
     command_center_service,
@@ -71,6 +72,10 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         # template without a manual create call. It is a starter template, not a
         # legal ordinance.
         checklist_review_service.ensure_starter_rule_pack(db)
+        # Seed the Sprint 5 demo organization, demo users, memberships, and demo
+        # project access, and mark Brookside Meadows as a public demo so it stays
+        # readable without a login. Seeded passwords are local demo only.
+        access_control_service.ensure_auth_seed(db)
         db.commit()
     finally:
         db.close()

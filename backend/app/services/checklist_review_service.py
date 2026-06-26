@@ -34,6 +34,7 @@ from app.core.safety import (
 )
 from app.db import models
 from app.services import evidence_retrieval_service
+from app.services.auth_service import ActorContext, audit_kwargs
 from app.services.pdf_indexing_service import create_evidence_citation
 from app.services.real_intake_service import (
     DEMO_ACTOR_ID,
@@ -406,11 +407,14 @@ def create_project_checklist_from_rule_pack(
     *,
     name: str | None = None,
     actor_name: str = DEMO_ACTOR_NAME,
+    actor: "ActorContext | None" = None,
 ) -> dict:
     """Attach a rule pack to a project as a working checklist with items."""
 
     _require_project(db, project_id)
     ensure_demo_actor(db)
+    if actor is not None:
+        actor_name = actor.display_name
     pack = db.get(models.RulePack, rule_pack_id)
     if pack is None:
         raise ChecklistReviewError("Rule pack not found.", status_code=404)
@@ -455,6 +459,7 @@ def create_project_checklist_from_rule_pack(
 
     record_audit_event(
         db,
+        **audit_kwargs(actor),
         project_id=project_id,
         event_type="project_checklist_created",
         related_entity_type="project_checklist",

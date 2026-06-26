@@ -1,4 +1,4 @@
-import { API_BASE_URL, safeFetch } from "./client";
+import { API_BASE_URL, authHeaders, safeFetch } from "./client";
 
 // Production Foundations Sprint 3: deterministic, local evidence retrieval over
 // indexed PDF page text, plus a reviewer-controlled draft finding queue. This
@@ -190,7 +190,7 @@ async function postJson<T>(
   try {
     const res = await fetch(`${API_BASE_URL}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body),
       cache: "no-store",
     });
@@ -357,7 +357,7 @@ export async function updateEvidenceCandidate(
       `${API_BASE_URL}/api/v1/projects/${projectId}/evidence-candidates/${candidateId}`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           candidate_status: input.candidateStatus ?? null,
           reviewer_note: input.reviewerNote ?? null,
