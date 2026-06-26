@@ -469,6 +469,84 @@ class RetrievalQuery(Base):
         DateTime, default=_utcnow
     )
 
+    # Production foundation fields (Sprint 3) for deterministic evidence
+    # retrieval over indexed PDF page text. Nullable with safe defaults so the
+    # seeded Phase 3 retrieval query records keep working without a migration.
+    # query_type records which retrieval mode was run; filters holds the
+    # non-sensitive document/page filter context. event_metadata never stores
+    # full page text, secrets, or raw server file paths.
+    query_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    filters: Mapped[dict] = mapped_column(JSON, default=dict)
+    related_finding_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_actor_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    event_metadata: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
+class EvidenceCandidate(Base):
+    """A reviewer-controlled candidate from deterministic evidence retrieval.
+
+    Production Foundations Sprint 3 lets a reviewer search indexed PDF page text
+    and save useful results into a durable queue. A candidate is a retrieval
+    result for reviewer evaluation, not a conclusion. It does not approve plans,
+    certify compliance, verify CAD, validate design, declare a project safe,
+    resolve or close an issue, or make any final engineering decision. A
+    reviewer must act to promote a candidate into a draft finding; the system
+    never auto-promotes. ranking_score is a transparent local relevance score,
+    never proof of correctness.
+    """
+
+    __tablename__ = "evidence_candidates"
+
+    evidence_candidate_id: Mapped[str] = mapped_column(String, primary_key=True)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    retrieval_query_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("documents.document_id"), nullable=False
+    )
+    document_page_id: Mapped[str | None] = mapped_column(
+        ForeignKey("document_pages.document_page_id"), nullable=True
+    )
+    page_number: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    finding_id: Mapped[str | None] = mapped_column(
+        ForeignKey("findings.finding_id"), nullable=True
+    )
+    checklist_item_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    candidate_title: Mapped[str] = mapped_column(String, nullable=False)
+    candidate_excerpt: Mapped[str | None] = mapped_column(Text, nullable=True)
+    match_terms: Mapped[list] = mapped_column(JSON, default=list)
+    ranking_score: Mapped[float] = mapped_column(Float, default=0.0)
+    ranking_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    candidate_status: Mapped[str] = mapped_column(
+        String, default="saved_for_review"
+    )
+    candidate_origin: Mapped[str] = mapped_column(
+        String, default="keyword_search"
+    )
+    reviewer_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by_actor_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    dismissed_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+    promoted_finding_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+
 
 class AIReviewRun(Base):
     """An execution of the AI Review Assistant over a project's checklist.

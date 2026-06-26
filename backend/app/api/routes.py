@@ -14,6 +14,7 @@ from app.api.v1 import (
     command_center,
     documents,
     evaluation,
+    evidence_retrieval,
     findings,
     hotspots,
     human_review,
@@ -54,3 +55,4 @@ api_router.include_router(cad_intake.router)
 api_router.include_router(review_cycle.router)
 api_router.include_router(command_center.router)
 api_router.include_router(pdf_evidence.router)
+api_router.include_router(evidence_retrieval.router)

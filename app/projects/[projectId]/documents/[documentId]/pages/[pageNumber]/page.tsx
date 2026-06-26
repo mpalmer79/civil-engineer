@@ -39,6 +39,12 @@ export default async function DocumentPageDetail({
           <Link href={`${base}/pages`} className="nav-link">
             Back to pages
           </Link>
+          <Link
+            href={`/projects/${params.projectId}/evidence-search`}
+            className="nav-link"
+          >
+            Search similar evidence
+          </Link>
           <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
             {page.textExtractionStatus}
           </span>

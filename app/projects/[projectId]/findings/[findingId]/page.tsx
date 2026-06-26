@@ -4,7 +4,11 @@ import { notFound } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
-import { getProjectFinding, listFindingCitations } from "@/lib/api";
+import {
+  getProjectFinding,
+  listFindingCitations,
+  listProjectEvidenceCandidates,
+} from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +17,12 @@ export default async function FindingDetailPage({
 }: {
   params: { projectId: string; findingId: string };
 }) {
-  const [finding, citations] = await Promise.all([
+  const [finding, citations, candidates] = await Promise.all([
     getProjectFinding(params.projectId, params.findingId),
     listFindingCitations(params.projectId, params.findingId),
+    listProjectEvidenceCandidates(params.projectId, {
+      findingId: params.findingId,
+    }),
   ]);
   if (!finding) {
     notFound();
@@ -43,6 +50,9 @@ export default async function FindingDetailPage({
         <div className="flex flex-wrap items-center gap-3">
           <Link href={`${base}/findings`} className="nav-link">
             Back to findings
+          </Link>
+          <Link href={`${base}/evidence-search`} className="nav-link">
+            Search evidence for this finding
           </Link>
           <SourceBadge sourceMode={finding.sourceMode} />
         </div>
@@ -128,6 +138,47 @@ export default async function FindingDetailPage({
                   ) : null}
                   {c.reviewerNote ? (
                     <p className="mt-1 text-slate-600">{c.reviewerNote}</p>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
+        </SectionCard>
+
+        <SectionCard
+          title="Retrieval candidates for this finding"
+          description="Evidence candidates saved against this finding from deterministic retrieval. Each requires reviewer confirmation and is not a conclusion."
+        >
+          {candidates === null ? (
+            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
+              Candidates are served by the backend. Start the API to view them.
+            </p>
+          ) : candidates.length === 0 ? (
+            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
+              No retrieval candidates linked to this finding yet.
+            </p>
+          ) : (
+            <ul className="space-y-2">
+              {candidates.map((c) => (
+                <li
+                  key={c.evidenceCandidateId}
+                  className="rounded-lg border border-slate-200 p-3 text-sm"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Link
+                      href={`${base}/evidence-candidates/${c.evidenceCandidateId}`}
+                      className="font-semibold text-water-700 hover:underline"
+                    >
+                      {c.candidateTitle}
+                    </Link>
+                    <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+                      {c.candidateStatus}
+                    </span>
+                  </div>
+                  {c.candidateExcerpt ? (
+                    <p className="mt-1 italic text-slate-600">
+                      &ldquo;{c.candidateExcerpt}&rdquo;
+                    </p>
                   ) : null}
                 </li>
               ))}

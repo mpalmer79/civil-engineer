@@ -261,6 +261,14 @@ export default async function HomePage() {
             automated AI retrieval remain future roadmap items.
           </p>
           <p className="mt-3 max-w-3xl text-slate-600">
+            Sprint 3 adds local evidence retrieval and a reviewer draft finding
+            queue. Reviewers can search indexed PDF page text deterministically,
+            save search results as candidates, and promote a candidate into a
+            reviewer draft finding. No live AI calls are used. Search results are
+            candidates requiring human confirmation, not conclusions, and the
+            reviewer remains responsible for every finding.
+          </p>
+          <p className="mt-3 max-w-3xl text-slate-600">
             These are real-world foundation sprints, not a production release.
             Full authentication, OCR, jurisdiction rule packs, and an applicant
             portal are future roadmap items. Real project records, page indexing,
