@@ -17,34 +17,41 @@ export default function SiteFooter() {
             </p>
           </div>
           <div className="grid grid-cols-2 gap-x-10 gap-y-2 text-sm">
-            <Link href="/project" className="text-slate-600 hover:text-slate-900">
-              Project dashboard
-            </Link>
             <Link
-              href="/checklist"
+              href="/projects"
               className="text-slate-600 hover:text-slate-900"
             >
-              Review checklist
+              Projects
             </Link>
             <Link
-              href="/findings"
+              href="/rule-packs"
               className="text-slate-600 hover:text-slate-900"
             >
-              Findings
+              Rule Packs
             </Link>
             <Link
-              href="/evaluation"
+              href="/organizations"
               className="text-slate-600 hover:text-slate-900"
             >
-              Evaluation
+              Organizations
+            </Link>
+            <Link
+              href="/guided-demo"
+              className="text-slate-600 hover:text-slate-900"
+            >
+              Guided Demo
             </Link>
           </div>
         </div>
         <p className="mt-8 text-xs text-slate-400">
           Brookside Meadows is a fictional project created for a portfolio
           software demonstration. All people, firms, documents, and values are
-          synthetic. Live AI calls, retrieval, and authentication are not part of
-          the current build.
+          synthetic. The build includes real project records, local
+          authentication and access control, durable document storage, PDF page
+          indexing, deterministic evidence retrieval, checklist review, an
+          applicant response matrix, and reviewer response packages. There are no
+          live AI calls, no OCR, no enterprise single sign-on, and no full
+          applicant portal yet.
         </p>
       </div>
     </footer>
