@@ -71,6 +71,19 @@ class Project(Base):
     created_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     updated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
+    # Production foundation fields (Sprint 5) for authentication and access
+    # control. organization_id and created_by_user_id attribute a real project to
+    # an organization and a signed-in user. visibility_mode and demo_public
+    # control read access: demo_public projects (the seeded demo) may be read
+    # without a login when AUTH_ALLOW_PUBLIC_DEMO is true. All are nullable or
+    # defaulted so seeded and Sprint 1 through 4 projects keep working.
+    organization_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_by_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    visibility_mode: Mapped[str] = mapped_column(String, default="controlled")
+    demo_public: Mapped[bool] = mapped_column(default=False)
+
     documents: Mapped[list["Document"]] = relationship(back_populates="project")
     checklist_items: Mapped[list["ChecklistItem"]] = relationship(
         back_populates="project"
@@ -327,6 +340,14 @@ class AuditEvent(Base):
     request_id: Mapped[str | None] = mapped_column(String, nullable=True)
     source_ip_hash: Mapped[str | None] = mapped_column(String, nullable=True)
     user_agent_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Production foundation fields (Sprint 5). When an action is taken by a
+    # signed-in user, the audit event records the user and organization identity
+    # for real attribution. Tokens, passwords, and password hashes are never
+    # stored here. Nullable so seeded and demo-attributed events keep working.
+    user_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    user_email: Mapped[str | None] = mapped_column(String, nullable=True)
+    organization_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    access_level: Mapped[str | None] = mapped_column(String, nullable=True)
 
     project: Mapped["Project"] = relationship(back_populates="audit_events")
 
@@ -348,6 +369,101 @@ class Actor(Base):
     organization_name: Mapped[str | None] = mapped_column(String, nullable=True)
     role_label: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class UserAccount(Base):
+    """A real local user account for authentication (Sprint 5).
+
+    Civil Engineer AI adds a local authentication foundation so real actions can
+    be attributed to a signed-in user instead of a shared demo reviewer. The
+    password is never stored in plaintext; only a PBKDF2 hash is kept and it is
+    never returned by the API. This is a local auth foundation, not enterprise
+    SSO, and it grants no engineering authority.
+    """
+
+    __tablename__ = "user_accounts"
+
+    user_id: Mapped[str] = mapped_column(String, primary_key=True)
+    email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    display_name: Mapped[str] = mapped_column(String, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String, nullable=False)
+    is_active: Mapped[bool] = mapped_column(default=True)
+    is_demo_user: Mapped[bool] = mapped_column(default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    last_login_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+
+
+class Organization(Base):
+    """An organization account that groups users and projects (Sprint 5)."""
+
+    __tablename__ = "organizations"
+
+    organization_id: Mapped[str] = mapped_column(String, primary_key=True)
+    organization_name: Mapped[str] = mapped_column(String, nullable=False)
+    organization_type: Mapped[str] = mapped_column(
+        String, default="municipality"
+    )
+    source_mode: Mapped[str] = mapped_column(String, default="user_created")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+    memberships: Mapped[list["OrganizationMembership"]] = relationship(
+        back_populates="organization"
+    )
+
+
+class OrganizationMembership(Base):
+    """A user's role within an organization (Sprint 5)."""
+
+    __tablename__ = "organization_memberships"
+
+    membership_id: Mapped[str] = mapped_column(String, primary_key=True)
+    organization_id: Mapped[str] = mapped_column(
+        ForeignKey("organizations.organization_id"), nullable=False
+    )
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("user_accounts.user_id"), nullable=False
+    )
+    role: Mapped[str] = mapped_column(String, default="reviewer")
+    is_active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+    organization: Mapped["Organization"] = relationship(
+        back_populates="memberships"
+    )
+
+
+class ProjectAccess(Base):
+    """A user or organization grant of access to a project (Sprint 5).
+
+    Access controls who may view or take reviewer actions on a project's review
+    records. It never controls whether a project satisfies engineering
+    requirements and never implies approval or compliance.
+    """
+
+    __tablename__ = "project_access"
+
+    project_access_id: Mapped[str] = mapped_column(String, primary_key=True)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    organization_id: Mapped[str | None] = mapped_column(
+        ForeignKey("organizations.organization_id"), nullable=True
+    )
+    user_id: Mapped[str | None] = mapped_column(
+        ForeignKey("user_accounts.user_id"), nullable=True
+    )
+    access_level: Mapped[str] = mapped_column(String, default="reviewer")
+    granted_by_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    is_active: Mapped[bool] = mapped_column(default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
 class EvaluationCase(Base):

@@ -18,9 +18,15 @@ from fastapi import (
 )
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
 from app.schemas.document import DocumentRead, DocumentRegister
 from app.services import document_service, project_service, real_intake_service
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_read,
+    require_project_reviewer,
+)
 from app.services.real_intake_service import IntakeError
 
 router = APIRouter(tags=["documents"])
@@ -30,10 +36,13 @@ router = APIRouter(tags=["documents"])
     "/projects/{project_id}/documents", response_model=list[DocumentRead]
 )
 def list_documents(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[DocumentRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return document_service.list_documents(db, project_id)
 
 
@@ -45,8 +54,10 @@ def list_documents(
 def register_document(
     project_id: str,
     body: DocumentRegister,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> DocumentRead:
+    actor = require_project_reviewer(db, project_id, user)
     try:
         return real_intake_service.register_document(
             db,
@@ -59,7 +70,7 @@ def register_document(
             file_size_bytes=body.file_size_bytes,
             revision_label=body.revision_label,
             revision_date=body.revision_date,
-            uploaded_by_name=body.uploaded_by_name,
+            uploaded_by_name=actor.display_name,
         )
     except (IntakeError, ValueError) as exc:
         status_code = getattr(exc, "status_code", 422)
@@ -79,8 +90,10 @@ async def upload_document(
     purpose: str = Form(""),
     revision_label: str = Form(""),
     uploaded_by_name: str = Form("Demo Reviewer"),
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> DocumentRead:
+    actor = require_project_reviewer(db, project_id, user)
     content_bytes = await file.read()
     try:
         return real_intake_service.upload_document(
@@ -93,6 +106,7 @@ async def upload_document(
             purpose=purpose or None,
             revision_label=revision_label or None,
             uploaded_by_name=uploaded_by_name,
+            actor=actor,
         )
     except (IntakeError, ValueError) as exc:
         status_code = getattr(exc, "status_code", 422)

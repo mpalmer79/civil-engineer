@@ -18,7 +18,12 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_reviewer,
+)
 from app.schemas.checklist_review import (
     ChecklistDraftFindingCreate,
     ChecklistDraftFindingResponse,
@@ -94,11 +99,13 @@ def list_project_checklists(
 def create_checklist_from_rule_pack(
     project_id: str,
     body: ProjectChecklistCreateFromRulePack,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> ProjectChecklistResponse:
+    actor = require_project_reviewer(db, project_id, user)
     try:
         return checklist.create_project_checklist_from_rule_pack(
-            db, project_id, body.rule_pack_id, name=body.name
+            db, project_id, body.rule_pack_id, name=body.name, actor=actor
         )
     except (ChecklistReviewError, ValueError) as exc:
         raise _handle(exc) from exc
@@ -158,8 +165,10 @@ def update_checklist_item(
     project_id: str,
     project_checklist_item_id: str,
     body: ProjectChecklistItemUpdate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> ProjectChecklistItemResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         return checklist.update_project_checklist_item(
             db,
@@ -179,8 +188,10 @@ def search_checklist_item_evidence(
     project_id: str,
     project_checklist_item_id: str,
     body: ChecklistEvidenceSearchRequest,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> EvidenceSearchResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         result = checklist.search_evidence_for_checklist_item(
             db,
@@ -202,8 +213,10 @@ def link_checklist_evidence(
     project_id: str,
     project_checklist_item_id: str,
     body: ChecklistEvidenceLinkCreate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> ChecklistEvidenceLinkResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         return checklist.link_citation_to_checklist_item(
             db,
@@ -224,8 +237,10 @@ def create_checklist_draft_finding(
     project_id: str,
     project_checklist_item_id: str,
     body: ChecklistDraftFindingCreate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> ChecklistDraftFindingResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         result = checklist.create_draft_finding_from_checklist_item(
             db,

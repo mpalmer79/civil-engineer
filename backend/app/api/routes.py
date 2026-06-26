@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from app.api.v1 import (
     ai_review,
     audit,
+    auth,
     cad_intake,
     cad_metadata,
     checklist,
@@ -58,3 +59,4 @@ api_router.include_router(command_center.router)
 api_router.include_router(pdf_evidence.router)
 api_router.include_router(evidence_retrieval.router)
 api_router.include_router(checklist_review.router)
+api_router.include_router(auth.router)

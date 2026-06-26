@@ -1,4 +1,4 @@
-import { API_BASE_URL, safeFetch } from "./client";
+import { API_BASE_URL, authHeaders, safeFetch } from "./client";
 
 // Production Foundations Sprint 2: PDF page indexing and reviewer-selected
 // evidence citations. This data is backend-canonical. Read calls return null
@@ -107,7 +107,7 @@ async function postJson<T>(
   try {
     const res = await fetch(`${API_BASE_URL}${path}`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body),
       cache: "no-store",
     });
@@ -248,7 +248,7 @@ export async function updateEvidenceCitation(
       `${API_BASE_URL}/api/v1/projects/${projectId}/findings/${findingId}/citations/${citationId}`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           section_label: input.sectionLabel ?? null,
           quoted_excerpt: input.quotedExcerpt ?? null,

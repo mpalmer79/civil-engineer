@@ -56,6 +56,12 @@ class ProjectRead(BaseModel):
     submission_reference: str | None = None
     review_round_current: int = 1
     parcel_ids: list[str] = Field(default_factory=list)
+    # Production foundation fields (Sprint 5). Optional so seeded and Sprint 1
+    # through 4 projects validate without these set.
+    organization_id: str | None = None
+    created_by_user_id: str | None = None
+    visibility_mode: str = "controlled"
+    demo_public: bool = False
     created_at: datetime | None = None
     updated_at: datetime | None = None
 

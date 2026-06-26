@@ -1,4 +1,12 @@
-export { API_BASE_URL, PROJECT_ID } from "./client";
+export {
+  API_BASE_URL,
+  PROJECT_ID,
+  getAuthToken,
+  setAuthToken,
+  clearAuthToken,
+  authHeaders,
+} from "./client";
+export * from "./auth";
 export * from "./project";
 export * from "./documents";
 export * from "./checklist";

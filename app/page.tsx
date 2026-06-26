@@ -278,6 +278,15 @@ export default async function HomePage() {
             confirmation.
           </p>
           <p className="mt-3 max-w-3xl text-slate-600">
+            Sprint 5 adds a local authentication and access-control foundation.
+            Real users can sign in, belong to organizations, hold reviewer or
+            admin roles, and access only the projects they are permitted to view
+            or act on, with real audit attribution. The public Brookside Meadows
+            demo remains available without an account. This is a local auth
+            foundation, not enterprise single sign-on, and it protects review
+            records rather than making engineering decisions.
+          </p>
+          <p className="mt-3 max-w-3xl text-slate-600">
             These are real-world foundation sprints, not a production release.
             Full authentication, OCR, jurisdiction rule packs, and an applicant
             portal are future roadmap items. Real project records, page indexing,

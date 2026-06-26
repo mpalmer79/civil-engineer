@@ -3,6 +3,7 @@ import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
+import SignInNotice from "@/components/SignInNotice";
 import { listProjects } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ export default async function ProjectsPage() {
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+        <SignInNotice />
         <div className="flex items-center justify-between gap-4">
           <p className="text-sm text-slate-600">
             {projects
