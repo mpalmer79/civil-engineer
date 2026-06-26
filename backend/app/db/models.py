@@ -2386,3 +2386,190 @@ class DashboardReviewerNote(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     source_context: Mapped[str | None] = mapped_column(String, nullable=True)
     requires_human_review: Mapped[bool] = mapped_column(default=True)
+
+
+class ResponseMatrix(Base):
+    """A reviewer-controlled applicant response matrix for a project (Sprint 7).
+
+    A response matrix organizes review-support findings and checklist items into
+    rows that track applicant responses across resubmittal rounds. It helps a
+    reviewer organize the review loop. It never decides whether a response
+    satisfies engineering requirements, never resolves or closes an issue, and
+    never approves, certifies, or validates anything. Every status is
+    review-support only.
+    """
+
+    __tablename__ = "response_matrices"
+
+    response_matrix_id: Mapped[str] = mapped_column(String, primary_key=True)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    current_round_number: Mapped[int] = mapped_column(Integer, default=1)
+    status: Mapped[str] = mapped_column(String, default="matrix_started")
+    source_mode: Mapped[str] = mapped_column(String, default="user_created")
+    organization_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_by_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+    items: Mapped[list["ResponseMatrixItem"]] = relationship(
+        back_populates="matrix"
+    )
+
+
+class ResponseMatrixItem(Base):
+    """A row in an applicant response matrix (Sprint 7).
+
+    Each item carries the reviewer comment draft, the requested evidence, the
+    recorded applicant response text, and reviewer-controlled applicant response,
+    reviewer follow-up, and carry-forward statuses. An applicant response is
+    recorded as submitted content for reviewer review, never as proof and never
+    as a final outcome.
+    """
+
+    __tablename__ = "response_matrix_items"
+
+    response_matrix_item_id: Mapped[str] = mapped_column(
+        String, primary_key=True
+    )
+    response_matrix_id: Mapped[str] = mapped_column(
+        ForeignKey("response_matrices.response_matrix_id"), nullable=False
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    source_finding_id: Mapped[str | None] = mapped_column(
+        ForeignKey("findings.finding_id"), nullable=True
+    )
+    source_checklist_item_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    source_citation_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    item_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    category: Mapped[str] = mapped_column(String, default="general")
+    reviewer_comment_draft: Mapped[str] = mapped_column(Text, default="")
+    requested_evidence: Mapped[str | None] = mapped_column(Text, nullable=True)
+    applicant_response_text: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    applicant_response_status: Mapped[str] = mapped_column(
+        String, default="response_not_requested"
+    )
+    reviewer_follow_up_status: Mapped[str] = mapped_column(
+        String, default="not_reviewed"
+    )
+    carry_forward_status: Mapped[str] = mapped_column(
+        String, default="not_carried_forward"
+    )
+    current_round_number: Mapped[int] = mapped_column(Integer, default=1)
+    carried_from_round_number: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    carried_to_round_number: Mapped[int | None] = mapped_column(
+        Integer, nullable=True
+    )
+    related_document_ids: Mapped[list] = mapped_column(JSON, default=list)
+    related_citation_ids: Mapped[list] = mapped_column(JSON, default=list)
+    reviewer_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    applicant_placeholder_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    updated_by_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    updated_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    sort_order: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+    matrix: Mapped["ResponseMatrix"] = relationship(back_populates="items")
+
+
+class ResubmittalRound(Base):
+    """A registered resubmittal round for a project (Sprint 7).
+
+    A resubmittal round records an applicant submission of revised materials for
+    reviewer review. It tracks round handling only; it never decides whether the
+    resubmittal satisfies engineering requirements and never resolves or closes
+    anything.
+    """
+
+    __tablename__ = "resubmittal_rounds"
+
+    resubmittal_round_id: Mapped[str] = mapped_column(String, primary_key=True)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    response_matrix_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    round_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    round_label: Mapped[str] = mapped_column(String, default="")
+    received_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+    submitted_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    submitted_by_organization: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    status: Mapped[str] = mapped_column(String, default="round_registered")
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    document_ids: Mapped[list] = mapped_column(JSON, default=list)
+    carried_forward_item_ids: Mapped[list] = mapped_column(JSON, default=list)
+    source_mode: Mapped[str] = mapped_column(String, default="user_created")
+    organization_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_by_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class MatrixItemDocumentLink(Base):
+    """A reviewer link between a matrix item and a document (Sprint 7).
+
+    Links an applicant response document, a revised plan or report reference, or
+    supporting evidence to a response matrix item, optionally within a
+    resubmittal round. A link is a reviewer-selected source reference, not proof
+    of correctness, and it never changes an item to a final outcome.
+    """
+
+    __tablename__ = "matrix_item_document_links"
+
+    matrix_item_document_link_id: Mapped[str] = mapped_column(
+        String, primary_key=True
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    response_matrix_item_id: Mapped[str] = mapped_column(
+        ForeignKey("response_matrix_items.response_matrix_item_id"),
+        nullable=False,
+    )
+    document_id: Mapped[str] = mapped_column(
+        ForeignKey("documents.document_id"), nullable=False
+    )
+    resubmittal_round_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    link_type: Mapped[str] = mapped_column(
+        String, default="applicant_response_document"
+    )
+    reviewer_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)

@@ -104,10 +104,36 @@ files. See [STORAGE_PROVIDER_ABSTRACTION.md](STORAGE_PROVIDER_ABSTRACTION.md) an
   raw filesystem paths, full file content, extracted page text, tokens, or
   passwords.
 
+## Applicant response matrix and resubmittals (Sprint 7)
+
+Production Foundations Sprint 7 adds a reviewer-controlled applicant response
+matrix and a resubmittal collaboration workflow. See
+[APPLICANT_RESPONSE_MATRIX.md](APPLICANT_RESPONSE_MATRIX.md),
+[RESUBMITTAL_COLLABORATION_WORKFLOW.md](RESUBMITTAL_COLLABORATION_WORKFLOW.md), and
+[API_RESPONSE_MATRIX_AND_RESUBMITTALS.md](API_RESPONSE_MATRIX_AND_RESUBMITTALS.md).
+
+- An applicant response is recorded for reviewer review, never as proof and never
+  as a final outcome. Carry-forward means continued review, not resolution. The
+  workflow never marks an item approved, certified, compliant, verified,
+  validated, resolved, or closed.
+- Matrix and resubmittal reads require project read access; all mutations require
+  project reviewer access. A read-only user receives 403 on mutations. The public
+  Brookside Meadows demo remains readable when configured.
+- Free-text fields (matrix name, reviewer comment draft, requested evidence,
+  reviewer note, applicant response text, round label, summary) are checked
+  against the prohibited-language guard. Status values are validated against the
+  Sprint 7 review-support status sets.
+- Audit metadata for an applicant response records a response length only, never
+  the full applicant response text. Document-link responses and audit metadata
+  never include a raw filesystem path, a storage key, a signed URL, a token, a
+  password, or any credential.
+
 ## Known limitations
 
 - Local authentication only; no SSO and no hardened production session system
   yet. No enterprise tenant isolation claims.
+- No applicant-facing portal yet; applicant responses are reviewer-entered
+  records kept for reviewer review.
 - No full applicant portal yet; the applicant role is a limited placeholder.
 - Durable object storage must be configured in deployment; the default local
   provider is for development only and is not durable across redeploys without a

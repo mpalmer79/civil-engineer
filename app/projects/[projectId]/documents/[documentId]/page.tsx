@@ -6,7 +6,8 @@ import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
 import IndexPdfButton from "@/components/IndexPdfButton";
 import DocumentDownloadButton from "@/components/DocumentDownloadButton";
-import { getProjectDocument } from "@/lib/api";
+import LinkDocumentToResubmittalRound from "@/components/LinkDocumentToResubmittalRound";
+import { getProjectDocument, listResubmittalRounds } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,10 @@ export default async function DocumentDetailPage({
 }: {
   params: { projectId: string; documentId: string };
 }) {
-  const doc = await getProjectDocument(params.projectId, params.documentId);
+  const [doc, rounds] = await Promise.all([
+    getProjectDocument(params.projectId, params.documentId),
+    listResubmittalRounds(params.projectId),
+  ]);
   if (!doc) {
     notFound();
   }
@@ -138,6 +142,14 @@ export default async function DocumentDetailPage({
             ))}
           </dl>
         </SectionCard>
+
+        {rounds !== null ? (
+          <LinkDocumentToResubmittalRound
+            projectId={params.projectId}
+            documentId={doc.documentId}
+            rounds={rounds}
+          />
+        ) : null}
       </div>
     </div>
   );

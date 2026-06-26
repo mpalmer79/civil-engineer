@@ -296,6 +296,15 @@ export default async function HomePage() {
             review-support boundary.
           </p>
           <p className="mt-3 max-w-3xl text-slate-600">
+            Sprint 7 adds an applicant response matrix and resubmittal
+            collaboration workflow. Reviewers can organize findings and checklist
+            review items into a response matrix, record applicant responses for
+            reviewer review, register resubmittal rounds, link documents to a
+            round, and carry items forward across review rounds. Applicant
+            responses are recorded for reviewer review, never as proof, and
+            carry-forward means continued review, not resolution.
+          </p>
+          <p className="mt-3 max-w-3xl text-slate-600">
             These are real-world foundation sprints, not a production release.
             Full authentication, OCR, jurisdiction rule packs, and an applicant
             portal are future roadmap items. Real project records, page indexing,
