@@ -315,6 +315,17 @@ export default async function HomePage() {
             no change to the review-support boundary.
           </p>
           <p className="mt-3 max-w-3xl text-slate-600">
+            Sprint 9 adds a reviewer dashboard, workload management, and
+            operational review-support metrics. Reviewers and organization
+            admins can see project workload, pending reviewer actions, document
+            indexing status, evidence and checklist review status, applicant
+            response and resubmittal activity, and response package readiness
+            across the projects they can access, with safe aging indicators and a
+            reviewer queue. These are operational indicators only. They do not
+            represent a final review outcome or compliance determination, and
+            they do not change the review-support boundary.
+          </p>
+          <p className="mt-3 max-w-3xl text-slate-600">
             These are real-world foundation sprints, not a production release.
             Full authentication, OCR, jurisdiction rule packs, and an applicant
             portal are future roadmap items. Real project records, page indexing,

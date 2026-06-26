@@ -4,6 +4,8 @@ import AccountNav from "@/components/AccountNav";
 
 const links = [
   { href: "/", label: "Home" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard/queue", label: "Reviewer Queue" },
   { href: "/projects", label: "Projects" },
   { href: "/rule-packs", label: "Rule Packs" },
   { href: "/organizations", label: "Organizations" },

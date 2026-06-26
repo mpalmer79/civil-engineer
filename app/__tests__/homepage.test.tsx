@@ -68,6 +68,10 @@ describe("HomePage illustrations", () => {
     // Sprint 2 PDF page indexing is mentioned without overstating OCR or AI.
     expect(text).toContain("pdf page indexing");
     expect(text).toContain("ocr");
+    // Sprint 9 reviewer dashboard is mentioned as operational indicators only,
+    // without claiming a final review outcome or compliance determination.
+    expect(text).toContain("reviewer dashboard");
+    expect(text).toContain("operational indicators only");
     // No final-decision or production-ready overstatement in the new section.
     for (const word of [
       "approved",

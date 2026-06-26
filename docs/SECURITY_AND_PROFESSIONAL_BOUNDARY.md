@@ -159,6 +159,36 @@ comment letter drafts. See
   any credential. A revision preserves prior issued records rather than
   overwriting them.
 
+## Reviewer dashboard and operational metrics (Sprint 9)
+
+Production Foundations Sprint 9 adds a reviewer dashboard, organization workload
+views, per-project workload summaries, a reviewer queue, and a project assignment
+and review priority foundation. See
+[REVIEWER_DASHBOARD_AND_WORKLOAD.md](REVIEWER_DASHBOARD_AND_WORKLOAD.md),
+[API_OPERATIONAL_METRICS.md](API_OPERATIONAL_METRICS.md), and
+[METRICS_BOUNDARY_AND_LIMITATIONS.md](METRICS_BOUNDARY_AND_LIMITATIONS.md).
+
+- Dashboard metrics are operational review-support indicators only. No count or
+  status represents approval, certification, compliance, verification, or issue
+  resolution. There is intentionally no approved, closed, resolved, passed,
+  failed, compliant, verified, certified, safe, or unsafe value.
+- Every dashboard result is filtered by Sprint 5 access control. The reviewer
+  dashboard requires an authenticated user and includes only projects the user
+  can read. The organization dashboard requires organization membership; the
+  reviewer workload summary requires org_admin or senior_reviewer. Project
+  workload requires project read access.
+- Assignment and priority updates require project admin (or organization admin)
+  access. They write `project_assignment_updated` and `project_priority_updated`
+  audit events. Reviewer-entered reviewer names and notes are checked against the
+  prohibited-language guard, and review priority is validated against the allowed
+  set (low, standard, elevated, time_sensitive). urgent is intentionally absent.
+- Dashboard responses never include full extracted page text, full applicant
+  response text, full comment letter text, a raw filesystem path, a storage key, a
+  storage bucket, a signed URL, a token, a password, a password hash, or any
+  credential. Metrics are aggregate counts and safe aging labels only.
+- Aging buckets and due date indicators are workflow timing helpers. Past due
+  means a reviewer-set due date has passed; it is not an engineering outcome.
+
 ## Known limitations
 
 - Local authentication only; no SSO and no hardened production session system

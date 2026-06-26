@@ -5,6 +5,8 @@ import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import MetricCard from "@/components/MetricCard";
 import SourceBadge from "@/components/SourceBadge";
+import ProjectWorkloadCard from "@/components/ProjectWorkloadCard";
+import { priorityLabel } from "@/lib/dashboardLabels";
 import { getProjectDetail } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +54,12 @@ export default async function ProjectDetailPage({
           <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
             Status: {project.status}
           </span>
+          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+            Review priority: {priorityLabel(project.reviewPriority)}
+          </span>
+          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
+            Assigned reviewer: {project.assignedReviewerName ?? "Not set"}
+          </span>
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -64,7 +72,12 @@ export default async function ProjectDetailPage({
           />
         </div>
 
+        <ProjectWorkloadCard projectId={project.projectId} />
+
         <div className="flex flex-wrap gap-2">
+          <Link href={`${base}/workload`} className="nav-link">
+            Project workload
+          </Link>
           <Link href={`${base}/documents`} className="nav-link">
             Documents
           </Link>

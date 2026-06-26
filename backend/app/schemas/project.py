@@ -62,6 +62,14 @@ class ProjectRead(BaseModel):
     created_by_user_id: str | None = None
     visibility_mode: str = "controlled"
     demo_public: bool = False
+    # Production foundation fields (Sprint 9). Optional so seeded and Sprint 1
+    # through 8 projects validate without these set. review_priority is a
+    # workflow sequencing label, not an engineering judgment.
+    assigned_reviewer_user_id: str | None = None
+    assigned_reviewer_name: str | None = None
+    review_priority: str | None = None
+    review_due_date: datetime | None = None
+    last_reviewer_activity_at: datetime | None = None
     created_at: datetime | None = None
     updated_at: datetime | None = None
 

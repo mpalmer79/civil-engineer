@@ -33,6 +33,11 @@ export type ProjectDetail = {
   submissionReference: string | null;
   reviewRoundCurrent: number;
   parcelIds: string[];
+  assignedReviewerUserId: string | null;
+  assignedReviewerName: string | null;
+  reviewPriority: string | null;
+  reviewDueDate: string | null;
+  lastReviewerActivityAt: string | null;
   createdAt: string | null;
   updatedAt: string | null;
   documentCount: number;
@@ -159,6 +164,11 @@ type ApiProjectDetail = {
   submission_reference: string | null;
   review_round_current: number;
   parcel_ids: string[];
+  assigned_reviewer_user_id: string | null;
+  assigned_reviewer_name: string | null;
+  review_priority: string | null;
+  review_due_date: string | null;
+  last_reviewer_activity_at: string | null;
   created_at: string | null;
   updated_at: string | null;
   document_count: number;
@@ -189,6 +199,11 @@ function mapProject(d: ApiProjectDetail): ProjectDetail {
     submissionReference: d.submission_reference,
     reviewRoundCurrent: d.review_round_current,
     parcelIds: d.parcel_ids ?? [],
+    assignedReviewerUserId: d.assigned_reviewer_user_id ?? null,
+    assignedReviewerName: d.assigned_reviewer_name ?? null,
+    reviewPriority: d.review_priority ?? null,
+    reviewDueDate: d.review_due_date ?? null,
+    lastReviewerActivityAt: d.last_reviewer_activity_at ?? null,
     createdAt: d.created_at,
     updatedAt: d.updated_at,
     documentCount: d.document_count,
