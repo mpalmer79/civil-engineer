@@ -65,6 +65,9 @@ describe("HomePage illustrations", () => {
     const text = (section?.textContent ?? "").toLowerCase();
     // Future roadmap items are framed as future, not delivered.
     expect(text).toContain("future roadmap");
+    // Sprint 2 PDF page indexing is mentioned without overstating OCR or AI.
+    expect(text).toContain("pdf page indexing");
+    expect(text).toContain("ocr");
     // No final-decision or production-ready overstatement in the new section.
     for (const word of [
       "approved",

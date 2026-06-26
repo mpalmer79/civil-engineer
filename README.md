@@ -11,11 +11,13 @@ The demo reviews the Brookside Meadows fixture, a synthetic 47-lot subdivision i
 
 ## Real-world product direction
 
-Civil Engineer AI is beginning to move from a controlled portfolio demo toward a real-world stormwater submission review-support system for small municipal engineering teams. The first real-world foundation is Real Project Intake and Persistent Review Records: reviewers can create real project records, register or upload documents, create reviewer-owned review-support findings, attach basic evidence references, and inspect durable audit events. Brookside Meadows remains the seeded demo fixture.
+Civil Engineer AI is moving from a controlled portfolio demo toward a real-world stormwater submission review-support system for small municipal engineering teams. Sprint 1 added Real Project Intake and Persistent Review Records: reviewers can create real project records, register or upload documents, create reviewer-owned review-support findings, attach basic evidence references, and inspect durable audit events. Brookside Meadows remains the seeded demo fixture.
 
-This direction is review-support only. Real project records do not approve plans, certify compliance, verify CAD, validate design, or make final engineering decisions. Full authentication, PDF parsing, page-level citations, jurisdiction rule packs, and an applicant portal are future roadmap items.
+Sprint 2 adds PDF page indexing and reviewer-selected evidence citations: uploaded PDFs can be indexed into page-level review records with extracted text, and reviewers can cite an exact page or section as evidence for a finding. Text extraction covers digital PDFs only. OCR and automated AI findings remain future work.
 
-See the roadmap in [docs/REAL_WORLD_PRODUCT_ROADMAP.md](docs/REAL_WORLD_PRODUCT_ROADMAP.md) and the current sprint in [docs/PRODUCTION_FOUNDATIONS_SPRINT_1.md](docs/PRODUCTION_FOUNDATIONS_SPRINT_1.md). The new Projects pages live under `/projects`.
+This direction is review-support only. Real project records, page indexing, and citations do not approve plans, certify compliance, verify CAD, validate design, or make final engineering decisions. Full authentication, OCR, live AI retrieval, jurisdiction rule packs, and an applicant portal are future roadmap items.
+
+See the roadmap in [docs/REAL_WORLD_PRODUCT_ROADMAP.md](docs/REAL_WORLD_PRODUCT_ROADMAP.md), Sprint 1 in [docs/PRODUCTION_FOUNDATIONS_SPRINT_1.md](docs/PRODUCTION_FOUNDATIONS_SPRINT_1.md), and Sprint 2 in [docs/PRODUCTION_FOUNDATIONS_SPRINT_2.md](docs/PRODUCTION_FOUNDATIONS_SPRINT_2.md) and [docs/PDF_PAGE_INDEXING_AND_EVIDENCE_CITATIONS.md](docs/PDF_PAGE_INDEXING_AND_EVIDENCE_CITATIONS.md). The Projects pages live under `/projects`.
 
 ### Checking the backend
 

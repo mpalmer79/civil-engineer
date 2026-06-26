@@ -39,6 +39,12 @@ class DocumentRead(BaseModel):
     page_count: int | None = None
     sheet_count: int | None = None
     classification_confidence: float | None = None
+    # Sprint 2 PDF indexing metadata. Optional so seeded and Sprint 1 documents
+    # validate without these set.
+    indexed_at: datetime | None = None
+    text_extraction_status: str | None = None
+    text_extraction_summary: str | None = None
+    extraction_warning_count: int = 0
 
 
 class DocumentRegister(BaseModel):

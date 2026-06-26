@@ -66,16 +66,22 @@ export default async function ProjectDocumentsPage({
                     <th className="px-3 py-2">Document</th>
                     <th className="px-3 py-2">Type</th>
                     <th className="px-3 py-2">Source</th>
-                    <th className="px-3 py-2">Status</th>
                     <th className="px-3 py-2">Processing</th>
-                    <th className="px-3 py-2">Revision</th>
+                    <th className="px-3 py-2">Pages</th>
+                    <th className="px-3 py-2">Text extraction</th>
+                    <th className="px-3 py-2">Indexed</th>
                   </tr>
                 </thead>
                 <tbody>
                   {documents.map((d) => (
                     <tr key={d.documentId} className="border-b border-slate-100">
-                      <td className="px-3 py-2 font-medium text-slate-800">
-                        {d.originalFileName ?? d.fileName}
+                      <td className="px-3 py-2 font-medium">
+                        <Link
+                          href={`${base}/documents/${d.documentId}`}
+                          className="text-water-700 hover:underline"
+                        >
+                          {d.originalFileName ?? d.fileName}
+                        </Link>
                       </td>
                       <td className="px-3 py-2 text-slate-600">
                         {d.documentType}
@@ -83,12 +89,17 @@ export default async function ProjectDocumentsPage({
                       <td className="px-3 py-2">
                         <SourceBadge sourceMode={d.sourceMode} />
                       </td>
-                      <td className="px-3 py-2 text-slate-600">{d.status}</td>
                       <td className="px-3 py-2 text-slate-600">
                         {d.processingStatus ?? "n/a"}
                       </td>
                       <td className="px-3 py-2 text-slate-600">
-                        {d.revisionLabel ?? "n/a"}
+                        {d.pageCount ?? "n/a"}
+                      </td>
+                      <td className="px-3 py-2 text-slate-600">
+                        {d.textExtractionStatus ?? "not indexed"}
+                      </td>
+                      <td className="px-3 py-2 text-slate-600">
+                        {d.indexedAt ? "yes" : "no"}
                       </td>
                     </tr>
                   ))}

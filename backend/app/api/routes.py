@@ -17,6 +17,7 @@ from app.api.v1 import (
     findings,
     hotspots,
     human_review,
+    pdf_evidence,
     plan_consistency,
     plan_references,
     plan_sheet_hotspots,
@@ -52,3 +53,4 @@ api_router.include_router(response_packages.router)
 api_router.include_router(cad_intake.router)
 api_router.include_router(review_cycle.router)
 api_router.include_router(command_center.router)
+api_router.include_router(pdf_evidence.router)
