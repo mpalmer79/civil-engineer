@@ -9,6 +9,14 @@ Civil Engineer AI is a review-support platform for stormwater plan review that h
 
 The demo reviews the Brookside Meadows fixture, a synthetic 47-lot subdivision in the Town of Hartwell with a green-and-gray stormwater treatment train and intentionally planted review issues.
 
+## Real-world product direction
+
+Civil Engineer AI is beginning to move from a controlled portfolio demo toward a real-world stormwater submission review-support system for small municipal engineering teams. The first real-world foundation is Real Project Intake and Persistent Review Records: reviewers can create real project records, register or upload documents, create reviewer-owned review-support findings, attach basic evidence references, and inspect durable audit events. Brookside Meadows remains the seeded demo fixture.
+
+This direction is review-support only. Real project records do not approve plans, certify compliance, verify CAD, validate design, or make final engineering decisions. Full authentication, PDF parsing, page-level citations, jurisdiction rule packs, and an applicant portal are future roadmap items.
+
+See the roadmap in [docs/REAL_WORLD_PRODUCT_ROADMAP.md](docs/REAL_WORLD_PRODUCT_ROADMAP.md) and the current sprint in [docs/PRODUCTION_FOUNDATIONS_SPRINT_1.md](docs/PRODUCTION_FOUNDATIONS_SPRINT_1.md). The new Projects pages live under `/projects`.
+
 ### Checking the backend
 
 The frontend reads the backend origin from `NEXT_PUBLIC_API_BASE_URL`. This must be the backend origin only, with no `/api/v1` path, because the frontend API modules append `/api/v1/...` themselves:

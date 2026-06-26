@@ -154,6 +154,10 @@ __pycache__/
 backend/cad_uploads/
 cad_uploads/
 
+# Production Foundations Sprint 1 real project upload storage (generated at runtime)
+backend/project_uploads/
+project_uploads/
+
 # Python coverage artifacts
 .coverage
 backend/.coverage

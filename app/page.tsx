@@ -240,6 +240,44 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Real-world foundation */}
+      <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
+        <div className="surface-card border-water-200 p-6">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+            Real-world foundation now in progress
+          </h2>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            Civil Engineer AI is beginning the move from a seeded demo toward a
+            system that supports real project records. Brookside Meadows remains
+            the guided demo. Real Project Intake begins persistent review records:
+            reviewers can create project records, register or upload documents,
+            create review-support findings, and inspect durable audit events.
+          </p>
+          <p className="mt-3 max-w-3xl text-slate-600">
+            This is the first real-world foundation sprint, not a production
+            release. Full authentication, PDF parsing, page-level citations,
+            jurisdiction rule packs, and an applicant portal are future roadmap
+            items. Real project records are review-support only and do not
+            approve plans, certify compliance, verify CAD, or make final
+            engineering decisions.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href="/projects"
+              className="rounded-lg bg-water-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-water-700"
+            >
+              Open Projects
+            </Link>
+            <Link
+              href="/projects/new"
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            >
+              Create a project record
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Metrics */}
       <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">

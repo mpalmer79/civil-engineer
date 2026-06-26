@@ -36,3 +36,21 @@ class FindingSourceRead(BaseModel):
     excerpt: str
     evidence_role: str
     confidence: float
+    sheet_number: str | None = None
+    section_label: str | None = None
+    source_mode: str = "demo_fixture"
+
+
+class EvidenceReferenceCreate(BaseModel):
+    """Request body for a basic manual evidence reference on a finding.
+
+    This is a review-support evidence reference placeholder, not a final
+    citation engine. reviewer_note records why the document is relevant.
+    """
+
+    document_id: str
+    reviewer_note: str
+    page_number: int | None = None
+    sheet_number: str | None = None
+    section_label: str | None = None
+    created_by_name: str = "Demo Reviewer"

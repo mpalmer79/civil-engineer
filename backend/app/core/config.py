@@ -49,6 +49,28 @@ class Settings(BaseSettings):
         ),
     )
 
+    # Production Foundations Sprint 1 real project document upload. Uploaded
+    # files are stored under PROJECT_UPLOAD_DIR using a safe generated file name
+    # (never the raw user file name), one subdirectory per project. On Railway
+    # this is demo-local storage and is not persistent across redeploys; point
+    # PROJECT_UPLOAD_DIR at a mounted volume for persistence. The size limit is
+    # enforced during upload validation. Only the listed extensions are accepted.
+    PROJECT_UPLOAD_DIR: str = "./project_uploads"
+    MAX_PROJECT_UPLOAD_BYTES: int = 25_000_000
+    ALLOWED_PROJECT_UPLOAD_EXTENSIONS: str = (
+        ".pdf,.dxf,.csv,.xlsx,.docx,.png,.jpg,.jpeg"
+    )
+
+    @property
+    def allowed_project_upload_extensions_set(self) -> set[str]:
+        """Return the allowed upload extensions as a normalized lowercase set."""
+
+        return {
+            ext.strip().lower()
+            for ext in self.ALLOWED_PROJECT_UPLOAD_EXTENSIONS.split(",")
+            if ext.strip()
+        }
+
     # Demo mode keeps the deployment self-contained: seeded Brookside Meadows
     # demo data is loaded, no authentication is required, and no external service
     # is called. It is on by default for the portfolio demo.

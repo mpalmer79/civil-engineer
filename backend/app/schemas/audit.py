@@ -19,3 +19,8 @@ class AuditEventRead(BaseModel):
     description: str
     timestamp: datetime
     event_metadata: dict = {}
+    # Production foundation actor attribution and request context. Raw IP and
+    # user agent are never stored; only optional hashes may be present.
+    actor_id: str | None = None
+    actor_display_name: str | None = None
+    request_id: str | None = None

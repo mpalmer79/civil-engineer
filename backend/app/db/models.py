@@ -48,6 +48,29 @@ class Project(Base):
     proposed_improvements: Mapped[list] = mapped_column(JSON, default=list)
     known_constraints: Mapped[list] = mapped_column(JSON, default=list)
 
+    # Production foundation fields (Sprint 1). All carry safe defaults or are
+    # nullable so the seeded Brookside Meadows demo fixture and existing rows
+    # keep working without a migration. source_mode distinguishes the seeded
+    # demo fixture from a user-created real project record.
+    source_mode: Mapped[str] = mapped_column(String, default="demo_fixture")
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_by_actor_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    applicant_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    applicant_organization: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    design_engineer_name: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    design_firm: Mapped[str | None] = mapped_column(String, nullable=True)
+    submission_reference: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    review_round_current: Mapped[int] = mapped_column(Integer, default=1)
+    parcel_ids: Mapped[list] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     documents: Mapped[list["Document"]] = relationship(back_populates="project")
     checklist_items: Mapped[list["ChecklistItem"]] = relationship(
         back_populates="project"
@@ -75,6 +98,35 @@ class Document(Base):
     expected_key_information: Mapped[str] = mapped_column(Text, nullable=False)
     intentionally_missing_or_conflicting_information: Mapped[str | None] = (
         mapped_column(Text, nullable=True)
+    )
+
+    # Production foundation fields (Sprint 1). Nullable with safe defaults so the
+    # seeded demo documents keep working. source_mode distinguishes seeded demo
+    # documents from user-registered or user-uploaded documents. processing_status
+    # never implies document approval; it tracks intake handling only.
+    source_mode: Mapped[str] = mapped_column(String, default="demo_fixture")
+    original_file_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    upload_status: Mapped[str | None] = mapped_column(String, nullable=True)
+    processing_status: Mapped[str | None] = mapped_column(String, nullable=True)
+    storage_path: Mapped[str | None] = mapped_column(String, nullable=True)
+    content_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    file_size_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    checksum_sha256: Mapped[str | None] = mapped_column(String, nullable=True)
+    revision_label: Mapped[str | None] = mapped_column(String, nullable=True)
+    revision_date: Mapped[str | None] = mapped_column(String, nullable=True)
+    uploaded_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    uploaded_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    registered_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+    is_superseded: Mapped[bool] = mapped_column(default=False)
+    superseded_by_document_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    page_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    sheet_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    classification_confidence: Mapped[float | None] = mapped_column(
+        Float, nullable=True
     )
 
     project: Mapped["Project"] = relationship(back_populates="documents")
@@ -121,6 +173,24 @@ class Finding(Base):
     related_checklist_items: Mapped[list] = mapped_column(JSON, default=list)
     related_documents: Mapped[list] = mapped_column(JSON, default=list)
 
+    # Production foundation fields (Sprint 1). finding_origin distinguishes a
+    # seeded demo finding from a reviewer-created one. Every reviewer-created
+    # finding stays under human review and never carries final-decision language.
+    source_mode: Mapped[str] = mapped_column(String, default="demo_fixture")
+    finding_origin: Mapped[str] = mapped_column(String, default="seeded_demo")
+    evidence_status: Mapped[str | None] = mapped_column(String, nullable=True)
+    reviewer_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    applicant_response_summary: Mapped[str | None] = mapped_column(
+        Text, nullable=True
+    )
+    carry_forward_status: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_by_actor_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
     project: Mapped["Project"] = relationship(back_populates="findings")
 
 
@@ -140,8 +210,36 @@ class AuditEvent(Base):
     # Non-sensitive structured context (provider, prompt version, chunk ids,
     # validation and safety status). Never stores secrets or API keys.
     event_metadata: Mapped[dict] = mapped_column("event_metadata", JSON, default=dict)
+    # Production foundation fields (Sprint 1). Actor attribution and request
+    # context for real reviewer actions. Raw IP and user agent are never stored;
+    # only optional hashes are kept, and only when a caller chooses to provide
+    # them. These are nullable so seeded and existing audit events keep working.
+    actor_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    actor_display_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    request_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_ip_hash: Mapped[str | None] = mapped_column(String, nullable=True)
+    user_agent_hash: Mapped[str | None] = mapped_column(String, nullable=True)
 
     project: Mapped["Project"] = relationship(back_populates="audit_events")
+
+
+class Actor(Base):
+    """A lightweight reviewer or actor identity for real-action attribution.
+
+    Sprint 1 has no real authentication. This records a demo reviewer identity
+    so real actions (project creation, document registration, reviewer findings)
+    carry attribution that real authentication can replace later. It is not an
+    authentication or authorization record and grants no access.
+    """
+
+    __tablename__ = "actors"
+
+    actor_id: Mapped[str] = mapped_column(String, primary_key=True)
+    display_name: Mapped[str] = mapped_column(String, nullable=False)
+    actor_type: Mapped[str] = mapped_column(String, nullable=False)
+    organization_name: Mapped[str | None] = mapped_column(String, nullable=True)
+    role_label: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
 class EvaluationCase(Base):
@@ -239,6 +337,13 @@ class FindingSource(Base):
     excerpt: Mapped[str] = mapped_column(Text, nullable=False)
     evidence_role: Mapped[str] = mapped_column(String, nullable=False)
     confidence: Mapped[float] = mapped_column(Float, nullable=False)
+    # Sprint 1 manual evidence reference fields. A reviewer may add a basic
+    # review-support reference to a sheet or section on an uploaded document
+    # before real document chunks exist. These are nullable so seeded Phase 3
+    # finding sources keep working. source_mode distinguishes them.
+    sheet_number: Mapped[str | None] = mapped_column(String, nullable=True)
+    section_label: Mapped[str | None] = mapped_column(String, nullable=True)
+    source_mode: Mapped[str] = mapped_column(String, default="demo_fixture")
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=_utcnow
     )

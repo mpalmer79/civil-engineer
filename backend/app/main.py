@@ -23,6 +23,7 @@ from app.db.seed_plansheets import seed_plansheets
 from app.services import (
     cad_intake_service,
     command_center_service,
+    real_intake_service,
     response_package_service,
     review_cycle_service,
     review_packet_service,
@@ -60,6 +61,11 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         # Generate the initial command center snapshot once so the Phase 14
         # dashboard read endpoints and frontend have data without a manual call.
         command_center_service.ensure_command_center(db, PROJECT_ID)
+        # Create the Sprint 1 demo reviewer identity so real intake actions
+        # (project creation, document registration, reviewer findings) carry
+        # attribution. Real authentication will replace this placeholder.
+        real_intake_service.ensure_demo_actor(db)
+        db.commit()
     finally:
         db.close()
     yield

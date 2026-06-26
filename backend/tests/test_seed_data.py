@@ -21,9 +21,19 @@ def test_seed_loads_brookside_meadows(client: TestClient) -> None:
     assert len(project["known_constraints"]) == 5
 
 
-def test_projects_list_contains_only_brookside(client: TestClient) -> None:
-    response = client.get("/api/v1/projects")
+def test_projects_list_contains_brookside_demo_fixture(
+    client: TestClient,
+) -> None:
+    # Brookside Meadows is the single seeded demo fixture. Real, user-created
+    # project records may also exist in the shared test database, so filter to
+    # the demo fixture source mode to assert the seeded baseline is intact.
+    response = client.get("/api/v1/projects", params={"source_mode": "demo_fixture"})
     assert response.status_code == 200
     projects = response.json()
     assert len(projects) == 1
     assert projects[0]["project_id"] == PROJECT_ID
+    assert projects[0]["source_mode"] == "demo_fixture"
+
+    # The unfiltered list always includes the seeded demo fixture.
+    all_projects = client.get("/api/v1/projects").json()
+    assert any(p["project_id"] == PROJECT_ID for p in all_projects)

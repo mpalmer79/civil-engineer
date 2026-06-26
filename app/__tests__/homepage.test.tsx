@@ -54,4 +54,26 @@ describe("HomePage illustrations", () => {
       screen.getByText(/Checking backend connection/i),
     ).toBeInTheDocument();
   });
+
+  it("mentions the real-world foundation without overstating production readiness", async () => {
+    const ui = await HomePage();
+    render(ui);
+    const heading = screen.getByText("Real-world foundation now in progress");
+    // Scope assertions to the new section so the deliberate boundary-disclaimer
+    // wording elsewhere on the page (the SafetyBoundaryBanner) is not matched.
+    const section = heading.closest("section");
+    const text = (section?.textContent ?? "").toLowerCase();
+    // Future roadmap items are framed as future, not delivered.
+    expect(text).toContain("future roadmap");
+    // No final-decision or production-ready overstatement in the new section.
+    for (const word of [
+      "approved",
+      "certified",
+      "fully compliant",
+      "production ready",
+      "enterprise ready",
+    ]) {
+      expect(text).not.toContain(word);
+    }
+  });
 });
