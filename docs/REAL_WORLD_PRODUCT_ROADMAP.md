@@ -128,15 +128,24 @@ findings remain ahead.
 
 ## 6. Current sprint
 
-Production Foundations Sprint 3: Evidence Retrieval and Reviewer Draft Finding
-Queue.
+Production Foundations Sprint 4: Checklist-Driven Evidence Review and Rule Pack
+Foundation.
 
-This sprint adds a deterministic, local evidence retrieval layer over the Sprint
-2 indexed PDF page text, plus a reviewer-controlled queue of evidence candidates
-that a human reviewer can promote into draft review-support findings. Retrieval
-is deterministic and local; there are no live AI calls, and search results are
-candidates requiring human confirmation, not conclusions. See
-[PRODUCTION_FOUNDATIONS_SPRINT_3.md](PRODUCTION_FOUNDATIONS_SPRINT_3.md),
+This sprint adds the first reusable, versioned checklist-review foundation. A
+reviewer can apply a starter stormwater rule pack to a project as a working
+checklist, search indexed evidence against each checklist requirement, track
+reviewer-controlled checklist evidence status, link citations, and create draft
+findings from checklist items. A rule pack is a review-support template, not a
+legal ordinance and not a compliance standard. Checklist status is
+review-support only and requires human confirmation; there are no live AI calls.
+See [PRODUCTION_FOUNDATIONS_SPRINT_4.md](PRODUCTION_FOUNDATIONS_SPRINT_4.md),
+[CHECKLIST_RULE_PACK_FOUNDATION.md](CHECKLIST_RULE_PACK_FOUNDATION.md), and
+[API_CHECKLIST_REVIEW.md](API_CHECKLIST_REVIEW.md).
+
+Sprint 3 (complete) added a deterministic, local evidence retrieval layer over
+the Sprint 2 indexed PDF page text, plus a reviewer-controlled queue of evidence
+candidates that a human reviewer can promote into draft review-support findings.
+See [PRODUCTION_FOUNDATIONS_SPRINT_3.md](PRODUCTION_FOUNDATIONS_SPRINT_3.md),
 [EVIDENCE_RETRIEVAL_AND_DRAFT_QUEUE.md](EVIDENCE_RETRIEVAL_AND_DRAFT_QUEUE.md),
 and [API_EVIDENCE_RETRIEVAL.md](API_EVIDENCE_RETRIEVAL.md).
 
@@ -152,8 +161,8 @@ findings, basic evidence references, and durable audit events, with Brookside
 Meadows preserved as a seeded demo fixture. See
 [PRODUCTION_FOUNDATIONS_SPRINT_1.md](PRODUCTION_FOUNDATIONS_SPRINT_1.md).
 
-The recommended next sprint is Production Foundations Sprint 4: Checklist-Driven
-Evidence Review and Rule Pack Foundation.
+The recommended next sprint is Production Foundations Sprint 5: Real
+Authentication, Reviewer Roles, and Project Access Control.
 
 ## 7. Out of scope
 

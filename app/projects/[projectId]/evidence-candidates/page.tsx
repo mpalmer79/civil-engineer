@@ -97,6 +97,11 @@ export default async function EvidenceCandidateQueuePage({
                     Match terms: {c.matchTerms.join(", ")}
                   </p>
                 ) : null}
+                {c.checklistItemId ? (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Linked checklist item: {c.checklistItemId}
+                  </p>
+                ) : null}
                 {c.reviewerNote ? (
                   <p className="mt-1 text-xs text-slate-500">
                     Reviewer note: {c.reviewerNote}

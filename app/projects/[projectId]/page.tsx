@@ -86,6 +86,12 @@ export default async function ProjectDetailPage({
           <Link href={`${base}/evidence-candidates`} className="nav-link">
             Evidence candidate queue
           </Link>
+          <Link href={`${base}/checklists`} className="nav-link">
+            Project checklists
+          </Link>
+          <Link href="/rule-packs" className="nav-link">
+            Rule packs
+          </Link>
           <Link href={`${base}/audit-events`} className="nav-link">
             Audit events
           </Link>

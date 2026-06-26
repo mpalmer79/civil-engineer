@@ -269,6 +269,15 @@ export default async function HomePage() {
             reviewer remains responsible for every finding.
           </p>
           <p className="mt-3 max-w-3xl text-slate-600">
+            Sprint 4 adds checklist-driven evidence review and a starter
+            rule-pack foundation. Reviewers can apply a reusable stormwater
+            checklist to a project, search evidence for each requirement, track
+            review-support checklist status, and create draft findings from
+            checklist items. Rule packs are review-support templates, not legal
+            determinations, and checklist evidence statuses require reviewer
+            confirmation.
+          </p>
+          <p className="mt-3 max-w-3xl text-slate-600">
             These are real-world foundation sprints, not a production release.
             Full authentication, OCR, jurisdiction rule packs, and an applicant
             portal are future roadmap items. Real project records, page indexing,

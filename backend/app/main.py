@@ -22,6 +22,7 @@ from app.db.seed_evidence import seed_evidence
 from app.db.seed_plansheets import seed_plansheets
 from app.services import (
     cad_intake_service,
+    checklist_review_service,
     command_center_service,
     real_intake_service,
     response_package_service,
@@ -65,6 +66,11 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         # (project creation, document registration, reviewer findings) carry
         # attribution. Real authentication will replace this placeholder.
         real_intake_service.ensure_demo_actor(db)
+        # Seed the Sprint 4 starter stormwater rule pack so the rule pack and
+        # checklist read endpoints and frontend have a reusable review-support
+        # template without a manual create call. It is a starter template, not a
+        # legal ordinance.
+        checklist_review_service.ensure_starter_rule_pack(db)
         db.commit()
     finally:
         db.close()
