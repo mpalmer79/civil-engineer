@@ -10,6 +10,12 @@ It does not approve plans, certify compliance, verify CAD, validate design, decl
 
 The demo reviews the Brookside Meadows fixture, a synthetic 47-lot subdivision in the Town of Hartwell with a green-and-gray stormwater treatment train and intentionally planted review issues.
 
+### Live-site navigation and discoverability
+
+The primary navigation leads with the current product workflow: Home, Projects, Rule Packs, Organizations, Guided Demo, and Account/Login. The older Brookside Meadows demo modules (Project Dashboard, Documents, Checklist, Findings, Plan Sheets, CAD Review, Sheet Viewer, Review Packet, Workflow Board, Response Package, Review Cycles, CAD Intake, AI Review, Human Review, Audit, and Evaluation) remain available, grouped under a Demo modules menu and reachable from the Guided Demo. The homepage adds a Production foundation workflow section, a scannable What is live now summary of delivered Sprint 1 through 8 capabilities, and a Public demo vs real project workflow explanation so a visitor can see that the public demo runs without an account while real project records require sign in and access control. Brookside Meadows remains the public guided demo fixture.
+
+After a frontend redeploy, verify the live site against [docs/LIVE_SITE_VERIFICATION.md](docs/LIVE_SITE_VERIFICATION.md). A Next.js build can appear stale if Railway did not redeploy from the latest `main`; trigger a fresh frontend deploy and re-check.
+
 ## Production foundation progress
 
 - Sprint 1: Real Project Intake and Persistent Review Records
@@ -183,7 +189,7 @@ Upload storage note: uploaded DXF files are stored on the backend service file s
 
 ## Future production work
 
-This is a portfolio demo, not a production system. Production work that is intentionally out of scope here includes authentication and role-based access, a managed database with migrations, persistent object storage for uploads, production security hardening, and real document and plan rendering. CAD scope beyond DXF metadata (DWG, Autodesk, Civil 3D, GIS, OCR, and computer vision) is also future work.
+This is a real-world foundation, not a full production release. The production foundation sprints have already added local authentication and role-based access control (Sprint 5) and durable object storage support (Sprint 6). Work that remains out of scope here includes enterprise single sign-on, a managed database with migrations, production security hardening, a full applicant portal, OCR, live AI calls, and real plan rendering. CAD scope beyond DXF metadata (DWG, Autodesk, Civil 3D, GIS, and computer vision) is also future work.
 
 ## Portfolio note
 
@@ -193,6 +199,7 @@ This project demonstrates a full-stack, domain-grounded application: a typed Fas
 
 - [`docs/PRODUCT_OVERVIEW.md`](docs/PRODUCT_OVERVIEW.md): the product by workflow and capability.
 - [`docs/RAILWAY_DEPLOYMENT_GUIDE.md`](docs/RAILWAY_DEPLOYMENT_GUIDE.md): the Railway two-service deployment guide.
+- [`docs/LIVE_SITE_VERIFICATION.md`](docs/LIVE_SITE_VERIFICATION.md): the post-deploy live-site verification checklist.
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md): system architecture.
 - [`docs/CAD_INTEGRATION_ROADMAP.md`](docs/CAD_INTEGRATION_ROADMAP.md): the staged CAD integration path.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md): the product roadmap and detailed build history.

@@ -112,6 +112,16 @@ Notes:
 - This variable is read at build and run time. If the backend URL changes, redeploy the frontend so the new value is built in.
 - Locally the default is `http://localhost:8000`, so the frontend works in development without setting anything.
 
+### Frontend redeploy and stale builds
+
+The frontend is a Next.js build. The page content and navigation a visitor sees come from whatever commit Railway last built, not automatically from the latest `main`. Keep these points in mind:
+
+- The live frontend must be redeployed after `NEXT_PUBLIC_API_BASE_URL` changes. The value is compiled into the build, so a changed backend URL only takes effect after a new frontend deploy.
+- The frontend build can appear stale if Railway does not redeploy from the latest `main`. If the live homepage or navigation does not match the current `main` branch, trigger a fresh deploy of the frontend service from the latest commit.
+- `NEXT_PUBLIC_API_BASE_URL` must be the backend origin only. Do not include `/api/v1` in `NEXT_PUBLIC_API_BASE_URL`; the frontend API modules append `/api/v1/...` paths themselves.
+
+After redeploying, confirm the live site against the checklist in [LIVE_SITE_VERIFICATION.md](LIVE_SITE_VERIFICATION.md).
+
 ## API base URL and CORS together
 
 The two services connect through two settings that mirror each other:
