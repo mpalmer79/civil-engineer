@@ -5,6 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import MetricCard from "@/components/MetricCard";
 import SourceBadge from "@/components/SourceBadge";
+import StatusChip, { humanizeStatus } from "@/components/StatusChip";
 import ProjectWorkloadCard from "@/components/ProjectWorkloadCard";
 import { priorityLabel } from "@/lib/dashboardLabels";
 import { getProjectDetail } from "@/lib/api";
@@ -49,17 +50,17 @@ export default async function ProjectDetailPage({
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <SourceBadge sourceMode={project.sourceMode} />
-          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-            Status: {project.status}
-          </span>
-          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-            Review priority: {priorityLabel(project.reviewPriority)}
-          </span>
-          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-            Assigned reviewer: {project.assignedReviewerName ?? "Not set"}
-          </span>
+          <StatusChip prefix="Status:" label={humanizeStatus(project.status)} />
+          <StatusChip
+            prefix="Review priority:"
+            label={priorityLabel(project.reviewPriority)}
+          />
+          <StatusChip
+            prefix="Assigned reviewer:"
+            label={project.assignedReviewerName ?? "Not set"}
+          />
         </div>
 
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -74,53 +75,58 @@ export default async function ProjectDetailPage({
 
         <ProjectWorkloadCard projectId={project.projectId} />
 
-        <div className="flex flex-wrap gap-2">
-          <Link href={`${base}/workload`} className="nav-link">
-            Project workload
-          </Link>
-          <Link href={`${base}/documents`} className="nav-link">
-            Documents
-          </Link>
-          <Link href={`${base}/documents/register`} className="nav-link">
-            Register document
-          </Link>
-          <Link href={`${base}/findings`} className="nav-link">
-            Reviewer findings
-          </Link>
-          <Link href={`${base}/findings/new`} className="nav-link">
-            Create finding
-          </Link>
-          <Link href={`${base}/evidence-citations`} className="nav-link">
-            Evidence citations
-          </Link>
-          <Link href={`${base}/evidence-search`} className="nav-link">
-            Evidence search
-          </Link>
-          <Link href={`${base}/evidence-candidates`} className="nav-link">
-            Evidence candidate queue
-          </Link>
-          <Link href={`${base}/checklists`} className="nav-link">
-            Project checklists
-          </Link>
-          <Link href={`${base}/response-matrix`} className="nav-link">
-            Response matrix
-          </Link>
-          <Link href={`${base}/resubmittals`} className="nav-link">
-            Resubmittal rounds
-          </Link>
-          <Link href={`${base}/response-packages`} className="nav-link">
-            Response packages
-          </Link>
-          <Link href="/rule-packs" className="nav-link">
-            Rule packs
-          </Link>
-          <Link href={`${base}/access`} className="nav-link">
-            Project access
-          </Link>
-          <Link href={`${base}/audit-events`} className="nav-link">
-            Audit events
-          </Link>
-        </div>
+        <SectionCard
+          title="Project workflow"
+          description="Reviewer-controlled workflow areas for this project record. Each opens a review-support screen where human review continues."
+        >
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <Link href={`${base}/workload`} className="menu-item">
+              Project workload
+            </Link>
+            <Link href={`${base}/documents`} className="menu-item">
+              Documents
+            </Link>
+            <Link href={`${base}/documents/register`} className="menu-item">
+              Register document
+            </Link>
+            <Link href={`${base}/findings`} className="menu-item">
+              Reviewer findings
+            </Link>
+            <Link href={`${base}/findings/new`} className="menu-item">
+              Create finding
+            </Link>
+            <Link href={`${base}/evidence-citations`} className="menu-item">
+              Evidence citations
+            </Link>
+            <Link href={`${base}/evidence-search`} className="menu-item">
+              Evidence search
+            </Link>
+            <Link href={`${base}/evidence-candidates`} className="menu-item">
+              Evidence candidate queue
+            </Link>
+            <Link href={`${base}/checklists`} className="menu-item">
+              Project checklists
+            </Link>
+            <Link href={`${base}/response-matrix`} className="menu-item">
+              Response matrix
+            </Link>
+            <Link href={`${base}/resubmittals`} className="menu-item">
+              Resubmittal rounds
+            </Link>
+            <Link href={`${base}/response-packages`} className="menu-item">
+              Response packages
+            </Link>
+            <Link href="/rule-packs" className="menu-item">
+              Rule packs
+            </Link>
+            <Link href={`${base}/access`} className="menu-item">
+              Project access
+            </Link>
+            <Link href={`${base}/audit-events`} className="menu-item">
+              Audit events
+            </Link>
+          </div>
+        </SectionCard>
 
         <SectionCard title="Project metadata">
           <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">

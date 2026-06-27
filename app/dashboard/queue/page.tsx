@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
+import EmptyState from "@/components/EmptyState";
 import ReviewerQueueList from "@/components/ReviewerQueueList";
 import BackendStatusBanner from "@/components/BackendStatusBanner";
 import { QUEUE_ITEM_TYPE_LABELS } from "@/lib/dashboardLabels";
@@ -63,14 +64,20 @@ export default function ReviewerQueuePage() {
         </div>
 
         {loaded && !signedIn ? (
-          <SectionCard title="Sign in to view your reviewer queue">
-            <p className="text-sm text-slate-600">
-              <Link href="/login" className="text-water-700 hover:underline">
-                Sign in
-              </Link>{" "}
-              to view pending reviewer actions across your accessible projects.
-            </p>
-          </SectionCard>
+          <EmptyState
+            title="Sign in to view your reviewer queue"
+            description="The reviewer queue lists pending reviewer actions across the projects you can access. The public Brookside Meadows demo remains available without an account."
+            action={
+              <>
+                <Link href="/login" className="btn btn-primary btn-sm">
+                  Sign in
+                </Link>
+                <Link href="/register" className="btn btn-secondary btn-sm">
+                  Create an account
+                </Link>
+              </>
+            }
+          />
         ) : null}
 
         {signedIn ? (
@@ -104,10 +111,10 @@ export default function ReviewerQueuePage() {
             {data ? (
               <ReviewerQueueList items={data.items} />
             ) : (
-              <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
+              <div className="alert alert-warning" role="alert">
                 The reviewer queue is served by the backend. Start the API to
-                view it.
-              </p>
+                view it. No data is hidden when the backend is unavailable.
+              </div>
             )}
           </SectionCard>
         ) : null}

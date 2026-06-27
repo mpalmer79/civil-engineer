@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
+import StatusChip, { humanizeStatus } from "@/components/StatusChip";
 import WorkloadMetricCards from "@/components/WorkloadMetricCards";
 import ReviewerQueueList from "@/components/ReviewerQueueList";
 import ProjectWorkloadControls from "@/components/ProjectWorkloadControls";
@@ -82,25 +83,29 @@ export default function ProjectWorkloadPage({
         {data ? (
           <>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                Status: {data.status}
-              </span>
-              <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                Review priority: {priorityLabel(data.reviewPriority)}
-              </span>
-              <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                Assigned reviewer: {data.assignedReviewerName ?? "Not set"}
-              </span>
-              <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                {ageBucketLabel(data.ageBucket)}
-              </span>
+              <StatusChip prefix="Status:" label={humanizeStatus(data.status)} />
+              <StatusChip
+                prefix="Review priority:"
+                label={priorityLabel(data.reviewPriority)}
+              />
+              <StatusChip
+                prefix="Assigned reviewer:"
+                label={data.assignedReviewerName ?? "Not set"}
+              />
+              <StatusChip
+                tone={
+                  data.ageBucket === "waiting_more_than_7_days"
+                    ? "warning"
+                    : "neutral"
+                }
+                label={ageBucketLabel(data.ageBucket)}
+              />
               {data.dueDateIndicators.map((indicator) => (
-                <span
+                <StatusChip
                   key={indicator}
-                  className="badge bg-amber-50 text-amber-700 ring-1 ring-amber-200"
-                >
-                  {dueDateIndicatorLabel(indicator)}
-                </span>
+                  tone="warning"
+                  label={dueDateIndicatorLabel(indicator)}
+                />
               ))}
             </div>
 

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
-import SectionCard from "@/components/SectionCard";
+import EmptyState from "@/components/EmptyState";
+import StatusChip from "@/components/StatusChip";
 import {
   listMyOrganizations,
   isSignedIn,
@@ -38,43 +39,48 @@ export default function OrganizationsPage() {
       />
       <div className="mx-auto max-w-4xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
         {loaded && !signedIn ? (
-          <SectionCard title="Sign in required">
-            <p className="text-sm text-slate-600">
-              <Link href="/login" className="text-water-700 hover:underline">
+          <EmptyState
+            title="Sign in required"
+            description="Organizations control who can review records and manage project access. Sign in to view the organizations you belong to."
+            action={
+              <Link href="/login" className="btn btn-primary btn-sm">
                 Sign in
-              </Link>{" "}
-              to view your organizations.
-            </p>
-          </SectionCard>
+              </Link>
+            }
+          />
         ) : null}
 
         {signedIn ? (
-          <SectionCard>
-            {orgs && orgs.length > 0 ? (
-              <ul className="space-y-2">
-                {orgs.map((o) => (
-                  <li
-                    key={o.organizationId}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3 text-sm"
+          orgs && orgs.length > 0 ? (
+            <div className="list-container">
+              {orgs.map((o) => (
+                <div
+                  key={o.organizationId}
+                  className="flex flex-col gap-2 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <Link
+                    href={`/organizations/${o.organizationId}`}
+                    className="font-semibold text-water-700 hover:underline"
                   >
-                    <Link
-                      href={`/organizations/${o.organizationId}`}
-                      className="font-semibold text-water-700 hover:underline"
-                    >
-                      {o.organizationName}
-                    </Link>
-                    <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                      {o.organizationType} · {o.role ?? "member"}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-slate-600">
-                You are not a member of any organization yet.
-              </p>
-            )}
-          </SectionCard>
+                    {o.organizationName}
+                  </Link>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StatusChip label={o.organizationType} />
+                    <StatusChip
+                      tone="brand"
+                      prefix="Role:"
+                      label={o.role ?? "member"}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : loaded ? (
+            <EmptyState
+              title="No organizations yet"
+              description="You are not a member of any organization yet. An organization admin can add you, or you can create one when registering an account."
+            />
+          ) : null
         ) : null}
       </div>
     </div>

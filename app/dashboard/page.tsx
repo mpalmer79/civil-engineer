@@ -6,9 +6,12 @@ import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import MetricCard from "@/components/MetricCard";
+import EmptyState from "@/components/EmptyState";
+import StatusChip, { humanizeStatus } from "@/components/StatusChip";
 import ReviewerQueueList from "@/components/ReviewerQueueList";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import BackendStatusBanner from "@/components/BackendStatusBanner";
+import { ageBucketLabel } from "@/lib/dashboardLabels";
 import {
   getReviewerDashboard,
   isSignedIn,
@@ -167,54 +170,64 @@ export default function ReviewerDashboardPage() {
               description="Projects you can access, ordered by pending reviewer action."
             >
               {data.projects.length === 0 ? (
-                <p className="text-sm text-slate-600">
-                  No accessible real projects yet.
-                </p>
+                <EmptyState
+                  title="No accessible real projects yet"
+                  description="Create a real project record or open the public Brookside Meadows demo to explore the review-support workflow."
+                  action={
+                    <Link href="/projects/new" className="btn btn-primary btn-sm">
+                      Create project record
+                    </Link>
+                  }
+                />
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                        <th className="px-3 py-2">Project</th>
-                        <th className="px-3 py-2">Status</th>
-                        <th className="px-3 py-2">Pending actions</th>
-                        <th className="px-3 py-2">Waiting</th>
-                        <th className="px-3 py-2">Workload</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.projects.map((p) => (
-                        <tr
-                          key={p.projectId}
-                          className="border-b border-slate-100 hover:bg-slate-50"
+                <div className="list-container">
+                  {data.projects.map((p) => (
+                    <div
+                      key={p.projectId}
+                      className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                    >
+                      <div className="min-w-0">
+                        <Link
+                          href={`/projects/${p.projectId}`}
+                          className="break-words text-sm font-semibold text-water-700 hover:underline"
                         >
-                          <td className="px-3 py-2">
-                            <Link
-                              href={`/projects/${p.projectId}`}
-                              className="font-semibold text-water-700 hover:underline"
-                            >
-                              {p.projectName}
-                            </Link>
-                          </td>
-                          <td className="px-3 py-2 text-slate-600">{p.status}</td>
-                          <td className="px-3 py-2 text-slate-600">
-                            {p.pendingReviewerActionCount}
-                          </td>
-                          <td className="px-3 py-2 text-slate-600">
-                            {p.ageBucket.replaceAll("_", " ")}
-                          </td>
-                          <td className="px-3 py-2">
-                            <Link
-                              href={`/projects/${p.projectId}/workload`}
-                              className="text-water-700 hover:underline"
-                            >
-                              Workload
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                          {p.projectName}
+                        </Link>
+                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                          <StatusChip
+                            prefix="Status:"
+                            label={humanizeStatus(p.status)}
+                          />
+                          <StatusChip
+                            tone={
+                              p.ageBucket === "waiting_more_than_7_days"
+                                ? "warning"
+                                : "neutral"
+                            }
+                            label={ageBucketLabel(p.ageBucket)}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <StatusChip
+                          tone={
+                            p.pendingReviewerActionCount > 0
+                              ? "warning"
+                              : "neutral"
+                          }
+                          label={`${p.pendingReviewerActionCount} pending reviewer action${
+                            p.pendingReviewerActionCount === 1 ? "" : "s"
+                          }`}
+                        />
+                        <Link
+                          href={`/projects/${p.projectId}/workload`}
+                          className="btn btn-secondary btn-sm"
+                        >
+                          Workload
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </SectionCard>
