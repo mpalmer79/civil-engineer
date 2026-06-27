@@ -7,7 +7,9 @@ import MetricCard from "@/components/MetricCard";
 import SourceBadge from "@/components/SourceBadge";
 import StatusChip, { humanizeStatus } from "@/components/StatusChip";
 import ProjectWorkloadCard from "@/components/ProjectWorkloadCard";
+import DemoNoteCard from "@/components/DemoNoteCard";
 import { priorityLabel } from "@/lib/dashboardLabels";
+import { BROOKSIDE_PROJECT_ID } from "@/lib/demoJourney";
 import { getProjectDetail } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -50,6 +52,14 @@ export default async function ProjectDetailPage({
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+        {project.projectId === BROOKSIDE_PROJECT_ID ? (
+          <DemoNoteCard
+            message="You are viewing the Brookside Meadows sample project, a synthetic public demo record. This page shows how reviewers track evidence and workflow state."
+            actionHref="/guided-demo"
+            actionLabel="Open the guided demo"
+          />
+        ) : null}
+
         <div className="flex flex-wrap items-center gap-2">
           <SourceBadge sourceMode={project.sourceMode} />
           <StatusChip prefix="Status:" label={humanizeStatus(project.status)} />

@@ -39,6 +39,27 @@ the frontend appends `/api/v1/...` paths itself.
 10. `/guided-demo` still loads.
 11. The Brookside Meadows public demo still works.
 
+### Demo experience and discovery checks
+
+D1. `/start-here` loads and shows the "Start the Brookside Meadows demo" hero,
+    the recommended demo path step cards, the technical foundation section, and
+    the review-support boundary.
+D2. The Start Here primary call to action links to `/guided-demo`, and an Open
+    Brookside Meadows call to action links to `/projects/proj_brookside_meadows`.
+D3. `/guided-demo` shows the recommended demo path step cards and the one
+    concern end to end deep dive.
+D4. The recommended demo path links open the Brookside Meadows documents,
+    evidence search, checklists, findings, response matrix, resubmittals, and
+    response packages routes, and the reviewer dashboard.
+D5. The footer links to Start Here, Guided Demo, Brookside Meadows, and
+    Deployment Status. Guided Demo remains in the primary navigation and the
+    Demo modules menu remains available.
+D6. On a common mobile width the demo step cards stack, chips wrap, and there is
+    no horizontal scrolling. The mobile navigation still auto-collapses after
+    selecting a primary link and after selecting a demo-module link.
+D7. The Brookside Meadows project page shows a demo note that names it the
+    sample project. No final-decision wording appears in the demo pages.
+
 ### Sprint 10 deployment diagnostics checks
 
 12. `/deployment-status` loads and shows backend, readiness, and storage

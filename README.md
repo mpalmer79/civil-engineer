@@ -8,11 +8,30 @@ It does not approve plans, certify compliance, verify CAD, validate design, decl
 
 - https://civil-engineer.up.railway.app/
 
-The demo reviews the Brookside Meadows fixture, a synthetic 47-lot subdivision in the Town of Hartwell with a green-and-gray stormwater treatment train and intentionally planted review issues.
+The demo reviews the Brookside Meadows fixture, a synthetic 47-lot subdivision in the Town of Hartwell with a green-and-gray stormwater treatment train and intentionally planted review issues. Brookside Meadows is a synthetic public demo fixture; it does not represent a real submission, permitting decision, approval, or compliance determination.
+
+### Recommended demo path
+
+New visitors should open **Start Here** (`/start-here`) for the fastest overview and a guided path, then **Guided Demo** (`/guided-demo`) to walk the reviewer journey. The recommended order through the Brookside Meadows sample project:
+
+1. Review the sample project (`/projects/proj_brookside_meadows`)
+2. Inspect uploaded documents
+3. Open indexed PDF pages
+4. View page-level evidence (evidence search)
+5. Triage evidence candidates
+6. Apply checklist review
+7. Review findings
+8. Record applicant responses (response matrix)
+9. Track resubmittals
+10. Build a reviewer response package
+11. Preview a comment letter draft
+12. View the reviewer dashboard and workload indicators
+
+Search results and findings are candidates that require reviewer confirmation. Reviewer response packages are communication records, not approvals or issue closures.
 
 ### Live-site navigation and discoverability
 
-The primary navigation leads with the current product workflow: Home, Projects, Rule Packs, Organizations, Guided Demo, and Account/Login. The older Brookside Meadows demo modules (Project Dashboard, Documents, Checklist, Findings, Plan Sheets, CAD Review, Sheet Viewer, Review Packet, Workflow Board, Response Package, Review Cycles, CAD Intake, AI Review, Human Review, Audit, and Evaluation) remain available, grouped under a Demo modules menu and reachable from the Guided Demo. The homepage adds a Production foundation workflow section, a scannable What is live now summary of delivered Sprint 1 through 8 capabilities, and a Public demo vs real project workflow explanation so a visitor can see that the public demo runs without an account while real project records require sign in and access control. Brookside Meadows remains the public guided demo fixture.
+The primary navigation leads with the current product workflow: Home, Projects, Rule Packs, Organizations, Guided Demo, and Account/Login. The older Brookside Meadows demo modules (Project Dashboard, Documents, Checklist, Findings, Plan Sheets, CAD Review, Sheet Viewer, Review Packet, Workflow Board, Response Package, Review Cycles, CAD Intake, AI Review, Human Review, Audit, and Evaluation) remain available, grouped under a Demo modules menu and reachable from the Guided Demo. The homepage adds a Production foundation workflow section, a scannable What is live now summary of delivered Sprint 1 through 8 capabilities, and a Public demo vs real project workflow explanation so a visitor can see that the public demo runs without an account while real project records require sign in and access control. A Start Here page and the Guided Demo are surfaced from the homepage hero and the footer so a first-time visitor or evaluator has an obvious entry point. Brookside Meadows remains the public guided demo fixture.
 
 After a frontend redeploy, verify the live site against [docs/LIVE_SITE_VERIFICATION.md](docs/LIVE_SITE_VERIFICATION.md). A Next.js build can appear stale if Railway did not redeploy from the latest `main`; trigger a fresh frontend deploy and re-check.
 

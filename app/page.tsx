@@ -18,6 +18,7 @@ import { getHotspots, projectMetrics } from "@/lib/api";
 // guided demo. CAD intake is a demo-specific action and is reached from the
 // Brookside Meadows demo workflow lower on the page, not from the hero.
 const heroCtas = [
+  { href: "/start-here", label: "Start the demo" },
   { href: "/projects", label: "Open Projects" },
   { href: "/dashboard", label: "View Reviewer Dashboard" },
   { href: "/guided-demo", label: "See the Guided Demo" },
@@ -443,12 +444,14 @@ export default async function HomePage() {
               outcome.
             </p>
           </div>
-          <Link
-            href="/guided-demo"
-            className="btn btn-secondary btn-sm shrink-0"
-          >
-            Open the guided demo
-          </Link>
+          <div className="flex flex-wrap gap-2 sm:shrink-0">
+            <Link href="/start-here" className="btn btn-primary btn-sm">
+              Start here
+            </Link>
+            <Link href="/guided-demo" className="btn btn-secondary btn-sm">
+              Open the guided demo
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -672,18 +675,24 @@ export default async function HomePage() {
               Where to start
             </h2>
             <p className="mt-3 max-w-3xl text-slate-600">
-              For the real workflow, open Projects to create a project record,
-              upload documents, and work through indexing, citations, checklist
-              review, response matrices, and reviewer response packages. New
-              here? The Guided Demo follows one concern end to end on Brookside
-              Meadows, from checklist requirement to draft response, so you can
-              see a complete review-support workflow without learning every
-              module first.
+              New here? Start Here gives the fastest overview and a recommended
+              demo path through the Brookside Meadows sample project. The Guided
+              Demo then follows one concern end to end, from checklist
+              requirement to draft response. For the real workflow, open Projects
+              to create a project record and work through indexing, citations,
+              checklist review, response matrices, and reviewer response
+              packages.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
-                href="/projects"
+                href="/start-here"
                 className="btn btn-primary"
+              >
+                Start here
+              </Link>
+              <Link
+                href="/projects"
+                className="btn btn-secondary"
               >
                 Open Projects
               </Link>
