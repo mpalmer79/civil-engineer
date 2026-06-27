@@ -291,17 +291,17 @@ export default async function HomePage() {
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
             <div>
-              <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
-                Stormwater Review Assistant
+              <span className="chip chip-brand">
+                Municipal stormwater review support
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
                 Civil Engineer AI
               </h1>
-              <p className="mt-2 text-xl font-semibold text-water-700">
+              <p className="mt-3 text-xl font-semibold text-water-700">
                 A document-first, evidence-first, reviewer-controlled stormwater
                 review-support platform
               </p>
-              <p className="mt-5 text-lg text-slate-600">
+              <p className="mt-5 text-lg leading-relaxed text-slate-600">
                 Civil Engineer AI is a review-support platform for municipal and
                 civil engineering plan review. Reviewers create project records,
                 upload and store documents, index PDF pages, cite evidence, apply
@@ -323,11 +323,7 @@ export default async function HomePage() {
                   <Link
                     key={cta.href + cta.label}
                     href={cta.href}
-                    className={
-                      idx === 0
-                        ? "rounded-lg bg-water-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-water-700"
-                        : "rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-                    }
+                    className={`btn ${idx === 0 ? "btn-primary" : "btn-secondary"}`}
                   >
                     {cta.label}
                   </Link>
@@ -343,7 +339,7 @@ export default async function HomePage() {
       {/* What is this */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         <div className="surface-card p-6">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h2 className="section-title">
             What this is
           </h2>
           <p className="mt-3 max-w-3xl text-slate-600">
@@ -367,7 +363,7 @@ export default async function HomePage() {
       {/* Production foundation workflow */}
       <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
         <div className="surface-card border-water-200 p-6">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h2 className="section-title">
             Production foundation workflow
           </h2>
           <p className="mt-2 max-w-3xl text-slate-600">
@@ -382,7 +378,7 @@ export default async function HomePage() {
               <li key={step.title}>
                 <Link
                   href={step.href}
-                  className="surface-card flex h-full flex-col p-5 transition-colors hover:border-water-400"
+                  className="interactive-card flex h-full flex-col p-5"
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-water-50 text-sm font-bold text-water-700">
@@ -393,7 +389,7 @@ export default async function HomePage() {
                     </span>
                   </div>
                   <p className="mt-2 text-xs text-slate-600">{step.detail}</p>
-                  <span className="badge mt-3 w-fit bg-slate-100 text-slate-600 ring-slate-300">
+                  <span className="chip chip-neutral mt-3 w-fit">
                     {step.note}
                   </span>
                 </Link>
@@ -405,7 +401,7 @@ export default async function HomePage() {
 
       {/* What is live now */}
       <section className="mx-auto max-w-7xl px-4 pb-12 sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h2 className="section-title">
           What is live now
         </h2>
         <p className="mt-2 max-w-3xl text-slate-600">
@@ -449,7 +445,7 @@ export default async function HomePage() {
           </div>
           <Link
             href="/guided-demo"
-            className="shrink-0 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+            className="btn btn-secondary btn-sm shrink-0"
           >
             Open the guided demo
           </Link>
@@ -459,7 +455,7 @@ export default async function HomePage() {
       {/* Public demo vs real project workflow */}
       <section className="bg-white">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h2 className="section-title">
             Public demo vs real project workflow
           </h2>
           <p className="mt-2 max-w-3xl text-slate-600">
@@ -468,7 +464,7 @@ export default async function HomePage() {
           </p>
           <div className="mt-6 grid gap-4 lg:grid-cols-2">
             <div className="surface-card p-6">
-              <span className="badge bg-slate-100 text-slate-600 ring-slate-300">
+              <span className="chip chip-neutral">
                 Public demo
               </span>
               <h3 className="mt-3 text-lg font-semibold text-slate-900">
@@ -482,13 +478,13 @@ export default async function HomePage() {
               </ul>
               <Link
                 href="/guided-demo"
-                className="mt-4 inline-block rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                className="btn btn-secondary btn-sm mt-4"
               >
                 See the Guided Demo
               </Link>
             </div>
             <div className="surface-card p-6">
-              <span className="badge bg-water-50 text-water-700 ring-water-200">
+              <span className="chip chip-brand">
                 Real project workflow
               </span>
               <h3 className="mt-3 text-lg font-semibold text-slate-900">
@@ -510,13 +506,13 @@ export default async function HomePage() {
               <div className="mt-4 flex flex-wrap gap-3">
                 <Link
                   href="/projects"
-                  className="rounded-lg bg-water-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-water-700"
+                  className="btn btn-primary btn-sm"
                 >
                   Open Projects
                 </Link>
                 <Link
                   href="/login"
-                  className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                  className="btn btn-secondary btn-sm"
                 >
                   Sign in
                 </Link>
@@ -552,7 +548,7 @@ export default async function HomePage() {
       {/* Brookside Meadows demo workflow */}
       <section className="bg-white">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+          <h2 className="section-title">
             Brookside Meadows demo workflow
           </h2>
           <p className="mt-2 max-w-2xl text-slate-600">
@@ -582,7 +578,7 @@ export default async function HomePage() {
 
       {/* Key capabilities */}
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+        <h2 className="section-title">
           Guided demo modules
         </h2>
         <p className="mt-2 max-w-2xl text-slate-600">
@@ -594,7 +590,7 @@ export default async function HomePage() {
             <Link
               key={cap.title}
               href={cap.href}
-              className="surface-card p-5 transition-colors hover:border-water-400"
+              className="interactive-card p-5"
             >
               <h3 className="text-base font-semibold text-slate-900">
                 {cap.title}
@@ -610,7 +606,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr] lg:items-center">
             <div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+              <h2 className="section-title">
                 What makes it technically credible
               </h2>
               <p className="mt-3 text-slate-600">
@@ -672,7 +668,7 @@ export default async function HomePage() {
       <section className="bg-white">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="surface-card p-6">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+            <h2 className="section-title">
               Where to start
             </h2>
             <p className="mt-3 max-w-3xl text-slate-600">
@@ -687,25 +683,25 @@ export default async function HomePage() {
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
                 href="/projects"
-                className="rounded-lg bg-water-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-water-700"
+                className="btn btn-primary"
               >
                 Open Projects
               </Link>
               <Link
                 href="/guided-demo"
-                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                className="btn btn-secondary"
               >
                 See the Guided Demo
               </Link>
               <Link
                 href="/rule-packs"
-                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                className="btn btn-secondary"
               >
                 View Rule Packs
               </Link>
               <Link
                 href="/cad-intake"
-                className="rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                className="btn btn-secondary"
               >
                 Start CAD Intake (demo)
               </Link>
