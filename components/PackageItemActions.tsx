@@ -56,14 +56,18 @@ export default function PackageItemActions({
         type="button"
         onClick={() => run("include", { includeInLetter: !item.includeInLetter })}
         disabled={busy !== null}
-        className="rounded-md border border-slate-300 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+        className="btn btn-secondary btn-sm"
       >
         {item.includeInLetter ? "Exclude from letter" : "Include in letter"}
       </button>
+      <label className="sr-only" htmlFor={`item-status-${item.responsePackageItemId}`}>
+        Item status
+      </label>
       <select
+        id={`item-status-${item.responsePackageItemId}`}
         value={status}
         onChange={(e) => setStatus(e.target.value)}
-        className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+        className="form-input w-auto py-2 text-sm"
       >
         {ITEM_STATUS_OPTIONS.map((o) => (
           <option key={o.value} value={o.value}>
@@ -75,13 +79,11 @@ export default function PackageItemActions({
         type="button"
         onClick={() => run("status", { itemStatus: status })}
         disabled={busy !== null}
-        className="rounded-md border border-water-600 px-3 py-1 text-xs font-semibold text-water-700 hover:bg-water-50 disabled:opacity-60"
+        className="btn btn-secondary btn-sm"
       >
         {busy === "status" ? "Saving..." : "Update status"}
       </button>
-      {error ? (
-        <span className="text-xs text-red-700">{error}</span>
-      ) : null}
+      {error ? <span className="text-xs text-red-700">{error}</span> : null}
     </div>
   );
 }

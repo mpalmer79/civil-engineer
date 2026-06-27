@@ -5,6 +5,8 @@ import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
+import StatusChip from "@/components/StatusChip";
+import EmptyState from "@/components/EmptyState";
 import PermissionDeniedCard from "@/components/PermissionDeniedCard";
 import {
   getOrganization,
@@ -90,23 +92,21 @@ export default function OrganizationDetailPage({
         {org ? (
           <SectionCard title="Members">
             {members && members.length > 0 ? (
-              <ul className="space-y-2">
+              <ul className="list-container">
                 {members.map((m) => (
                   <li
                     key={m.membershipId}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3 text-sm"
+                    className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"
                   >
                     <span className="text-slate-800">
                       {m.displayName ?? m.userEmail ?? m.userId}
                     </span>
-                    <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                      {m.role}
-                    </span>
+                    <StatusChip label={m.role} prefix="role" />
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-slate-600">No members listed.</p>
+              <EmptyState title="No members listed" />
             )}
             <p className="mt-3 text-xs text-slate-500">
               Access control is a local foundation. Enterprise SSO and tenant

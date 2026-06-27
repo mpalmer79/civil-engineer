@@ -5,6 +5,8 @@ import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
+import StatusChip from "@/components/StatusChip";
+import EmptyState from "@/components/EmptyState";
 import PermissionDeniedCard from "@/components/PermissionDeniedCard";
 import {
   grantProjectAccess,
@@ -89,25 +91,24 @@ export default function ProjectAccessPage({
         {entries !== null ? (
           <SectionCard title="Current access">
             {entries.length === 0 ? (
-              <p className="text-sm text-slate-600">
-                No access entries yet, or you do not have access to view them.
-              </p>
+              <EmptyState title="No access entries yet, or you do not have access to view them" />
             ) : (
-              <ul className="space-y-2">
+              <ul className="list-container">
                 {entries.map((e) => (
                   <li
                     key={e.projectAccessId}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3 text-sm"
+                    className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"
                   >
                     <span className="text-slate-800">
                       {e.userId
                         ? `User ${e.userId}`
                         : `Organization ${e.organizationId}`}
                     </span>
-                    <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                      {e.accessLevel}
-                      {e.isActive ? "" : " (inactive)"}
-                    </span>
+                    <StatusChip
+                      label={`${e.accessLevel}${e.isActive ? "" : " (inactive)"}`}
+                      prefix="access"
+                      tone={e.isActive ? "neutral" : "warning"}
+                    />
                   </li>
                 ))}
               </ul>
@@ -120,27 +121,29 @@ export default function ProjectAccessPage({
             title="Grant access"
             description="Project admins can grant access to a user. If you are not a project admin, the grant will be declined."
           >
-            <div className="grid gap-3 sm:grid-cols-2">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="form-field">
+                <label htmlFor="access-user-id" className="form-label">
                   User id
                 </label>
                 <input
+                  id="access-user-id"
                   type="text"
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
                   placeholder="user_..."
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="form-input"
                 />
               </div>
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <div className="form-field">
+                <label htmlFor="access-level" className="form-label">
                   Access level
                 </label>
                 <select
+                  id="access-level"
                   value={accessLevel}
                   onChange={(e) => setAccessLevel(e.target.value)}
-                  className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+                  className="form-input"
                 >
                   {ACCESS_LEVELS.map((l) => (
                     <option key={l} value={l}>
@@ -150,21 +153,15 @@ export default function ProjectAccessPage({
                 </select>
               </div>
             </div>
-            {error ? (
-              <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-                {error}
-              </p>
-            ) : null}
+            {error ? <p className="alert alert-danger mt-3">{error}</p> : null}
             {message ? (
-              <p className="mt-3 rounded-md bg-land-50 px-3 py-2 text-sm text-land-700">
-                {message}
-              </p>
+              <p className="alert alert-success mt-3">{message}</p>
             ) : null}
             <button
               type="button"
               onClick={handleGrant}
               disabled={busy}
-              className="mt-4 rounded-lg bg-water-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-water-700 disabled:opacity-60"
+              className="btn btn-primary mt-4"
             >
               {busy ? "Granting..." : "Grant access"}
             </button>

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
+import StatusChip from "@/components/StatusChip";
+import EmptyState from "@/components/EmptyState";
 import PackageItemActions from "@/components/PackageItemActions";
 import AddSourcesToPackagePanel from "@/components/AddSourcesToPackagePanel";
 import ResponsePackageWorkflow from "@/components/ResponsePackageWorkflow";
@@ -58,9 +60,7 @@ export default async function ResponsePackageDetailPage({
           >
             Preview package
           </Link>
-          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-            Status: {pkg.status}
-          </span>
+          <StatusChip label={pkg.status} prefix="status" />
         </div>
 
         <SectionCard title="Package metadata">
@@ -82,25 +82,23 @@ export default async function ResponsePackageDetailPage({
           description="Reviewer-selected records included in this package. Toggle whether each item is included in the comment letter and update its review-support status."
         >
           {items.length === 0 ? (
-            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
-              No items yet. Add reviewer-selected records before previewing the
-              package.
-            </p>
+            <EmptyState
+              title="No items yet"
+              description="Add reviewer-selected records before previewing the package."
+            />
           ) : (
             <ul className="space-y-3">
               {items.map((item) => (
                 <li
                   key={item.responsePackageItemId}
-                  className="rounded-lg border border-slate-200 p-3 text-sm"
+                  className="subtle-card p-4 text-sm"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <span className="font-semibold text-slate-800">
                       {item.itemNumber ? `Item ${item.itemNumber}` : "Item"}
                       {item.category ? ` - ${item.category}` : ""}
                     </span>
-                    <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                      {item.itemStatus}
-                    </span>
+                    <StatusChip label={item.itemStatus} prefix="status" />
                   </div>
                   <p className="mt-1 text-slate-700">{item.reviewerCommentText}</p>
                   <p className="mt-1 text-xs text-slate-500">
@@ -127,7 +125,7 @@ export default async function ResponsePackageDetailPage({
           packageId={pkg.responsePackageId}
         />
 
-        <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+        <p className="alert alert-info">
           This package is review-support communication only. Issuance records a
           reviewer communication and does not approve, certify, validate, resolve,
           or close anything.

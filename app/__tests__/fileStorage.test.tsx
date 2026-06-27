@@ -90,7 +90,8 @@ const projectId = "proj_user_1";
 describe("Documents list page", () => {
   it("shows storage provider and file availability", async () => {
     render(await ProjectDocumentsPage({ params: { projectId } }));
-    expect(screen.getByText("Storage")).toBeInTheDocument();
+    // Each document renders as a responsive card with labeled status chips.
+    expect(screen.getAllByText("Storage").length).toBeGreaterThan(0);
     expect(screen.getAllByText("local").length).toBeGreaterThan(0);
     expect(screen.getByText("file available")).toBeInTheDocument();
     expect(screen.getByText("file unavailable")).toBeInTheDocument();

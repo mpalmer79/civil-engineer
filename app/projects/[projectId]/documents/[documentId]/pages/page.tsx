@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
+import StatusChip from "@/components/StatusChip";
+import EmptyState from "@/components/EmptyState";
 import { listDocumentPages } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -35,57 +37,42 @@ export default async function DocumentPagesPage({
             </p>
           </SectionCard>
         ) : pages.length === 0 ? (
-          <SectionCard title="No pages indexed yet">
-            <p className="text-sm text-slate-600">
-              This document has not been indexed yet. Index the PDF from the
-              document detail page to create page records.
-            </p>
-          </SectionCard>
+          <EmptyState
+            title="No pages indexed yet"
+            description="This document has not been indexed yet. Index the PDF from the document detail page to create page records."
+          />
         ) : (
-          <SectionCard>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                    <th className="px-3 py-2">Page</th>
-                    <th className="px-3 py-2">Text extraction</th>
-                    <th className="px-3 py-2">Chars</th>
-                    <th className="px-3 py-2">Words</th>
-                    <th className="px-3 py-2">Warnings</th>
-                    <th className="px-3 py-2"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pages.map((p) => (
-                    <tr
-                      key={p.documentPageId}
-                      className="border-b border-slate-100"
-                    >
-                      <td className="px-3 py-2 font-medium text-slate-800">
-                        {p.pageNumber}
-                      </td>
-                      <td className="px-3 py-2 text-slate-600">
-                        {p.textExtractionStatus}
-                      </td>
-                      <td className="px-3 py-2 text-slate-600">{p.charCount}</td>
-                      <td className="px-3 py-2 text-slate-600">{p.wordCount}</td>
-                      <td className="px-3 py-2 text-slate-600">
-                        {p.extractionWarnings.length}
-                      </td>
-                      <td className="px-3 py-2">
-                        <Link
-                          href={`${base}/pages/${p.pageNumber}`}
-                          className="text-water-700 hover:underline"
-                        >
-                          View page
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </SectionCard>
+          <ul className="list-container">
+            {pages.map((p) => (
+              <li
+                key={p.documentPageId}
+                className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-sm font-semibold text-slate-800">
+                    Page {p.pageNumber}
+                  </span>
+                  <StatusChip label={p.textExtractionStatus} prefix="text" />
+                  <StatusChip label={`${p.charCount} chars`} />
+                  <StatusChip label={`${p.wordCount} words`} />
+                  {p.extractionWarnings.length > 0 ? (
+                    <StatusChip
+                      label={`${p.extractionWarnings.length} warning${
+                        p.extractionWarnings.length === 1 ? "" : "s"
+                      }`}
+                      tone="warning"
+                    />
+                  ) : null}
+                </div>
+                <Link
+                  href={`${base}/pages/${p.pageNumber}`}
+                  className="btn btn-secondary btn-sm shrink-0"
+                >
+                  View page
+                </Link>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>

@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
+import StatusChip from "@/components/StatusChip";
+import EmptyState from "@/components/EmptyState";
 import CreateResponsePackageButton from "@/components/CreateResponsePackageButton";
 import { getProjectDetail, listResponsePackages } from "@/lib/api";
 
@@ -51,33 +53,27 @@ export default async function ResponsePackagesLandingPage({
           description="Each package collects reviewer-selected records and tracks status from draft through reviewer handoff and issuance."
         >
           {packages === null ? (
-            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
+            <p className="alert alert-warning">
               Response packages are served by the backend. Start the API to view
               them.
             </p>
           ) : packages.length === 0 ? (
-            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
-              No response package yet. Create reviewer findings, checklist review
-              items, or response matrix items first, then create a package to
-              assemble a reviewer communication.
-            </p>
+            <EmptyState
+              title="No response package yet"
+              description="Create reviewer findings, checklist review items, or response matrix items first, then create a package to assemble a reviewer communication."
+            />
           ) : (
-            <ul className="space-y-3">
+            <ul className="grid gap-4 sm:grid-cols-2">
               {packages.map((p) => (
-                <li
-                  key={p.responsePackageId}
-                  className="rounded-lg border border-slate-200 p-4"
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2">
+                <li key={p.responsePackageId} className="surface-card p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
                     <Link
                       href={`${base}/response-packages/${p.responsePackageId}`}
                       className="text-base font-semibold text-water-700 hover:underline"
                     >
                       {p.packageTitle}
                     </Link>
-                    <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                      {p.status}
-                    </span>
+                    <StatusChip label={p.status} prefix="status" />
                   </div>
                   <p className="mt-2 text-sm text-slate-600">
                     {p.packageType.replace(/_/g, " ")}. Package {p.packageNumber},
@@ -92,7 +88,7 @@ export default async function ResponsePackagesLandingPage({
 
         <CreateResponsePackageButton projectId={params.projectId} />
 
-        <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+        <p className="alert alert-info">
           Response packages are review-support communication only. Issuing a
           package records that a reviewer issued a communication. It does not
           approve plans, certify compliance, validate design, resolve issues, or

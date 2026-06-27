@@ -5,6 +5,8 @@ import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
+import StatusChip from "@/components/StatusChip";
+import EmptyState from "@/components/EmptyState";
 import {
   getCurrentUser,
   listMyOrganizations,
@@ -76,11 +78,11 @@ export default function AccountPage() {
         {user ? (
           <SectionCard title="Organizations">
             {orgs && orgs.length > 0 ? (
-              <ul className="space-y-2">
+              <ul className="list-container">
                 {orgs.map((o) => (
                   <li
                     key={o.organizationId}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3 text-sm"
+                    className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"
                   >
                     <Link
                       href={`/organizations/${o.organizationId}`}
@@ -88,16 +90,18 @@ export default function AccountPage() {
                     >
                       {o.organizationName}
                     </Link>
-                    <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                      {o.role ?? o.organizationType}
-                    </span>
+                    <StatusChip
+                      label={o.role ?? o.organizationType}
+                      prefix="role"
+                    />
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-slate-600">
-                You are not a member of any organization yet.
-              </p>
+              <EmptyState
+                title="No organizations yet"
+                description="You are not a member of any organization yet."
+              />
             )}
           </SectionCard>
         ) : null}
@@ -105,11 +109,11 @@ export default function AccountPage() {
         {user ? (
           <SectionCard title="Accessible projects">
             {projects && projects.length > 0 ? (
-              <ul className="space-y-2">
+              <ul className="list-container">
                 {projects.map((p) => (
                   <li
                     key={p.projectId}
-                    className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3 text-sm"
+                    className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"
                   >
                     <Link
                       href={`/projects/${p.projectId}`}
@@ -117,20 +121,25 @@ export default function AccountPage() {
                     >
                       {p.projectName}
                     </Link>
-                    <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                      {p.accessLevel ?? (p.demoPublic ? "public demo" : "member")}
-                    </span>
+                    <StatusChip
+                      label={
+                        p.accessLevel ?? (p.demoPublic ? "public demo" : "member")
+                      }
+                      prefix="access"
+                    />
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="text-sm text-slate-600">
-                No accessible projects yet. Create one from{" "}
-                <Link href="/projects/new" className="text-water-700 hover:underline">
-                  New project
-                </Link>
-                .
-              </p>
+              <EmptyState
+                title="No accessible projects yet"
+                description="Create your first real project review record to get started."
+                action={
+                  <Link href="/projects/new" className="btn btn-primary btn-sm">
+                    New project
+                  </Link>
+                }
+              />
             )}
           </SectionCard>
         ) : null}

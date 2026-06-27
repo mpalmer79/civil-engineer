@@ -62,6 +62,22 @@ the frontend appends `/api/v1/...` paths itself.
 19. The footer and page source do not include generated-by attribution or
     session links.
 
+### Professional design and mobile checks
+
+20. First-impression and workflow pages share a consistent page header,
+    surface cards, status chips, and empty states. Pages covered include
+    `/me`, `/deployment-status`, `/rule-packs/<id>`, `/organizations/<id>`,
+    `/organizations/<id>/dashboard`, the project documents, response matrix,
+    resubmittal round, response package, access, and audit-events pages.
+21. On a common mobile width the documents list, organization reviewer
+    workload, response matrix items, audit events, and access list render as
+    stacked responsive cards or lists, not wide tables, and there is no
+    horizontal scrolling.
+22. Status, role, source, access level, and diagnostic labels render as status
+    chips that wrap cleanly. Status is never conveyed by color alone.
+23. The mobile navigation still auto-collapses after selecting a primary or
+    demo-module link.
+
 ## Notes
 
 - The primary navigation leads with the current product workflow (Projects,
