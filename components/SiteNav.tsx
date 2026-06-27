@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import AccountNav from "@/components/AccountNav";
+import MobileNav from "@/components/MobileNav";
 
 // Primary product navigation, ordered so the current review-support workflows
 // are visible first. The Sprint 9 reviewer dashboard and reviewer queue lead the
@@ -100,41 +101,14 @@ export default function SiteNav() {
           <AccountNav />
         </div>
 
-        {/* Mobile navigation. A native details disclosure exposes the full
-            navigation on small screens instead of hiding it behind the account
-            control only. */}
+        {/* Mobile navigation. The disclosure lives in a small client component
+            so it can collapse immediately after a client-side navigation while
+            still exposing the full navigation on small screens. */}
         <div className="flex items-center gap-2 md:hidden">
-          <details className="relative">
-            <summary className="flex cursor-pointer list-none items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700">
-              Menu
-              <span aria-hidden="true" className="text-[10px] text-slate-400">
-                ▾
-              </span>
-            </summary>
-            <div className="absolute right-0 z-50 mt-2 max-h-[70vh] w-64 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
-              {primaryLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block rounded-md px-2 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <p className="mt-2 px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                Demo modules
-              </p>
-              {demoModuleLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="block rounded-md px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </details>
+          <MobileNav
+            primaryLinks={primaryLinks}
+            demoModuleLinks={demoModuleLinks}
+          />
           <AccountNav />
         </div>
       </nav>
