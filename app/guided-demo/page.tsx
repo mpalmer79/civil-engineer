@@ -26,7 +26,7 @@ export default function GuidedDemoPage() {
         }
       />
 
-      <div className="mx-auto max-w-5xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl space-y-8 px-4 py-6 sm:space-y-10 sm:px-6 sm:py-10 lg:px-8">
         <SafetyBoundaryBanner variant="compact" />
 
         <DemoNoteCard
@@ -38,7 +38,7 @@ export default function GuidedDemoPage() {
         {/* Recommended demo path: the reviewer journey, step by step. */}
         <section>
           <h2 className="section-title">Recommended demo path</h2>
-          <p className="mt-2 max-w-3xl text-slate-600">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             The reviewer journey in the order a reviewer works, from the sample
             project through documents, evidence, checklist review, findings,
             applicant responses, resubmittals, the response package, and the
@@ -48,10 +48,11 @@ export default function GuidedDemoPage() {
             src={marketingMedia.guidedDemoJourney.src}
             alt={marketingMedia.guidedDemoJourney.alt}
             variant="wide"
-            className="mt-6"
+            className="mt-5 sm:mt-6"
+            imageClassName="object-contain p-2 sm:p-3 lg:object-cover lg:p-0"
             label="Guided demo placeholder"
           />
-          <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ol className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {demoJourneySteps.map((step) => (
               <li key={step.step}>
                 <GuidedDemoCard step={step} />
@@ -63,14 +64,14 @@ export default function GuidedDemoPage() {
         {/* One concern, end to end: the narrative deep dive. */}
         <section>
           <h2 className="section-title">One concern, end to end</h2>
-          <p className="mt-2 max-w-3xl text-slate-600">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             For a deeper look, follow a single review-support concern, missing
             infiltration testing and an unaddressed groundwater separation
             discussion, from checklist requirement through finding, evidence,
             review packet, workflow board, and draft response, ending at the
             human-review boundary.
           </p>
-          <div className="mt-6">
+          <div className="mt-5 sm:mt-6">
             <GuidedDemoThread />
           </div>
         </section>
@@ -80,6 +81,7 @@ export default function GuidedDemoPage() {
           alt={marketingMedia.humanReviewBoundary.alt}
           variant="panel"
           className="mx-auto max-w-2xl"
+          imageClassName="object-contain p-2 sm:p-3"
           label="Human review placeholder"
         />
 
