@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -12,11 +13,34 @@ import ReviewerQueueList from "@/components/ReviewerQueueList";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import BackendStatusBanner from "@/components/BackendStatusBanner";
 import { ageBucketLabel } from "@/lib/dashboardLabels";
+import { dashboardMedia } from "@/lib/dashboardMedia";
 import {
   getReviewerDashboard,
   isSignedIn,
   type ReviewerDashboard,
 } from "@/lib/api";
+
+function DashboardMedia({
+  src,
+  alt,
+  className = "",
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+}) {
+  return (
+    <div className={`relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card ${className}`}>
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes="(min-width: 1024px) 50vw, 100vw"
+        className="object-cover"
+      />
+    </div>
+  );
+}
 
 export default function ReviewerDashboardPage() {
   const [data, setData] = useState<ReviewerDashboard | null>(null);
@@ -48,49 +72,116 @@ export default function ReviewerDashboardPage() {
       <PageHeader
         eyebrow="Reviewer dashboard"
         title="Reviewer workload dashboard"
-        description="A cross-project view of pending reviewer actions and operational review-support metrics across the projects you can access. Counts are operational indicators only. They do not approve plans, certify compliance, resolve issues, or make final engineering decisions."
+        description="A visual command center for pending reviewer actions, project workload, queue triage, and operational review-support indicators across the projects you can access."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Link href="/dashboard/queue" className="btn btn-primary">
+              Open reviewer queue
+            </Link>
+            <Link href="/projects" className="btn btn-secondary">
+              View projects
+            </Link>
+          </div>
+        }
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+        <section className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+          <div>
+            <span className="chip chip-brand">Reviewer command center</span>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
+              Workload, queue, and handoff visibility
+            </h2>
+            <p className="mt-3 max-w-xl text-slate-600">
+              Use the dashboard to scan active workload, queue items, evidence
+              review needs, applicant responses, and packages ready for reviewer
+              handoff. Indicators support review, but do not make engineering
+              decisions.
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link href="/dashboard/queue" className="btn btn-primary">
+                Open reviewer queue
+              </Link>
+              <Link href="/projects" className="btn btn-secondary">
+                Browse projects
+              </Link>
+              <Link href="/start-here" className="btn btn-secondary">
+                Start Here
+              </Link>
+            </div>
+          </div>
+          <DashboardMedia
+            src={dashboardMedia.hero.src}
+            alt={dashboardMedia.hero.alt}
+            className="h-72 lg:h-80"
+          />
+        </section>
+
         <BackendStatusBanner />
 
         {loaded && !signedIn ? (
-          <SectionCard title="Sign in to view your reviewer dashboard">
-            <p className="text-sm text-slate-600">
-              The reviewer dashboard shows workload across the projects you can
-              access.{" "}
-              <Link href="/login" className="text-water-700 hover:underline">
-                Sign in
-              </Link>{" "}
-              or{" "}
-              <Link href="/register" className="text-water-700 hover:underline">
-                create an account
-              </Link>{" "}
-              to continue. The public{" "}
-              <Link
-                href="/projects/proj_brookside_meadows"
-                className="text-water-700 hover:underline"
-              >
-                Brookside Meadows demo
-              </Link>{" "}
-              remains available without an account.
-            </p>
-          </SectionCard>
+          <section className="surface-card overflow-hidden p-0">
+            <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+              <DashboardMedia
+                src={dashboardMedia.emptyState.src}
+                alt={dashboardMedia.emptyState.alt}
+                className="h-64 rounded-none border-0 shadow-none lg:h-full"
+              />
+              <div className="p-6 lg:p-8">
+                <EmptyState
+                  title="Sign in to view your reviewer dashboard"
+                  description="The reviewer dashboard shows workload across the projects you can access. The public Brookside Meadows demo remains available without an account."
+                  action={
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <Link href="/login" className="btn btn-primary">
+                        Sign in
+                      </Link>
+                      <Link href="/register" className="btn btn-secondary">
+                        Create account
+                      </Link>
+                      <Link
+                        href="/projects/proj_brookside_meadows"
+                        className="btn btn-ghost"
+                      >
+                        Open Brookside Meadows
+                      </Link>
+                    </div>
+                  }
+                />
+              </div>
+            </div>
+          </section>
         ) : null}
 
         {loaded && signedIn && !data && backendReachable ? (
-          <SectionCard title="No accessible real projects yet">
-            <p className="text-sm text-slate-600">
-              No accessible real projects yet. Create a project or open the{" "}
-              <Link
-                href="/projects/proj_brookside_meadows"
-                className="text-water-700 hover:underline"
-              >
-                Brookside Meadows demo
-              </Link>
-              .
-            </p>
-          </SectionCard>
+          <section className="surface-card overflow-hidden p-0">
+            <div className="grid gap-0 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+              <DashboardMedia
+                src={dashboardMedia.emptyState.src}
+                alt={dashboardMedia.emptyState.alt}
+                className="h-64 rounded-none border-0 shadow-none lg:h-full"
+              />
+              <div className="p-6 lg:p-8">
+                <EmptyState
+                  title="No accessible real projects yet"
+                  description="Create a project record or open the Brookside Meadows demo to explore the review-support workflow."
+                  action={
+                    <div className="flex flex-wrap justify-center gap-2">
+                      <Link href="/projects/new" className="btn btn-primary">
+                        Create project record
+                      </Link>
+                      <Link
+                        href="/projects/proj_brookside_meadows"
+                        className="btn btn-secondary"
+                      >
+                        Open Brookside Meadows
+                      </Link>
+                    </div>
+                  }
+                />
+              </div>
+            </div>
+          </section>
         ) : null}
 
         {loaded && signedIn && !backendReachable ? (
@@ -104,137 +195,163 @@ export default function ReviewerDashboardPage() {
 
         {data ? (
           <>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <MetricCard
-                value={data.accessibleProjectCount}
-                label="Accessible projects"
-                accent="water"
-              />
-              <MetricCard
-                value={data.projectsWithPendingActionCount}
-                label="Projects needing reviewer attention"
-                accent="amber"
-              />
-              <MetricCard
-                value={data.totals.pendingReviewerActionCount}
-                label="Pending reviewer actions"
-                accent="amber"
-              />
-              <MetricCard
-                value={data.totals.responsePackagesReadyForHandoff}
-                label="Packages ready for reviewer handoff"
-                accent="land"
-              />
-            </div>
+            <section className="grid gap-6 lg:grid-cols-[1fr_0.95fr] lg:items-center">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <MetricCard
+                    value={data.accessibleProjectCount}
+                    label="Accessible projects"
+                    accent="water"
+                  />
+                  <MetricCard
+                    value={data.projectsWithPendingActionCount}
+                    label="Projects needing reviewer attention"
+                    accent="amber"
+                  />
+                  <MetricCard
+                    value={data.totals.pendingReviewerActionCount}
+                    label="Pending reviewer actions"
+                    accent="amber"
+                  />
+                  <MetricCard
+                    value={data.totals.responsePackagesReadyForHandoff}
+                    label="Packages ready for reviewer handoff"
+                    accent="land"
+                  />
+                </div>
 
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <MetricCard
-                value={data.totals.documentsNeedingIndexing}
-                label="Documents needing indexing"
-                accent="water"
-              />
-              <MetricCard
-                value={data.totals.evidenceCandidatesNeedingTriage}
-                label="Evidence candidates needing triage"
-                accent="water"
-              />
-              <MetricCard
-                value={
-                  data.totals.checklistItemsMissingEvidence +
-                  data.totals.checklistItemsUnclearEvidence
-                }
-                label="Checklist items needing evidence review"
-                accent="amber"
-              />
-              <MetricCard
-                value={data.totals.applicantResponsesNeedingReview}
-                label="Applicant responses needing reviewer review"
-                accent="water"
-              />
-            </div>
-
-            <SectionCard
-              title="Reviewer queue"
-              description="Pending reviewer actions across your accessible projects. Each links to the project workflow page where human review continues."
-            >
-              <ReviewerQueueList items={data.queue.slice(0, 12)} />
-              <div className="mt-4">
-                <Link href="/dashboard/queue" className="nav-link">
-                  Open full reviewer queue
-                </Link>
+                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  <MetricCard
+                    value={data.totals.documentsNeedingIndexing}
+                    label="Documents needing indexing"
+                    accent="water"
+                  />
+                  <MetricCard
+                    value={data.totals.evidenceCandidatesNeedingTriage}
+                    label="Evidence candidates needing triage"
+                    accent="water"
+                  />
+                  <MetricCard
+                    value={
+                      data.totals.checklistItemsMissingEvidence +
+                      data.totals.checklistItemsUnclearEvidence
+                    }
+                    label="Checklist items needing evidence review"
+                    accent="amber"
+                  />
+                  <MetricCard
+                    value={data.totals.applicantResponsesNeedingReview}
+                    label="Applicant responses needing reviewer review"
+                    accent="water"
+                  />
+                </div>
               </div>
-            </SectionCard>
 
-            <SectionCard
-              title="Accessible projects"
-              description="Projects you can access, ordered by pending reviewer action."
-            >
-              {data.projects.length === 0 ? (
-                <EmptyState
-                  title="No accessible real projects yet"
-                  description="Create a real project record or open the public Brookside Meadows demo to explore the review-support workflow."
-                  action={
-                    <Link href="/projects/new" className="btn btn-primary btn-sm">
-                      Create project record
-                    </Link>
-                  }
-                />
-              ) : (
-                <div className="list-container">
-                  {data.projects.map((p) => (
-                    <div
-                      key={p.projectId}
-                      className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-                    >
-                      <div className="min-w-0">
-                        <Link
-                          href={`/projects/${p.projectId}`}
-                          className="break-words text-sm font-semibold text-water-700 hover:underline"
-                        >
-                          {p.projectName}
-                        </Link>
-                        <div className="mt-1 flex flex-wrap items-center gap-2">
-                          <StatusChip
-                            prefix="Status:"
-                            label={humanizeStatus(p.status)}
-                          />
+              <DashboardMedia
+                src={dashboardMedia.workloadMetrics.src}
+                alt={dashboardMedia.workloadMetrics.alt}
+                className="h-72"
+              />
+            </section>
+
+            <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+              <DashboardMedia
+                src={dashboardMedia.queue.src}
+                alt={dashboardMedia.queue.alt}
+                className="h-80"
+              />
+              <SectionCard
+                title="Reviewer queue"
+                description="Pending reviewer actions across your accessible projects. Each links to the project workflow page where human review continues."
+              >
+                <ReviewerQueueList items={data.queue.slice(0, 12)} />
+                <div className="mt-4">
+                  <Link href="/dashboard/queue" className="btn btn-primary btn-sm">
+                    Open full reviewer queue
+                  </Link>
+                </div>
+              </SectionCard>
+            </section>
+
+            <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+              <SectionCard
+                title="Accessible projects"
+                description="Projects you can access, ordered by pending reviewer action."
+              >
+                {data.projects.length === 0 ? (
+                  <EmptyState
+                    title="No accessible real projects yet"
+                    description="Create a real project record or open the public Brookside Meadows demo to explore the review-support workflow."
+                    action={
+                      <Link href="/projects/new" className="btn btn-primary btn-sm">
+                        Create project record
+                      </Link>
+                    }
+                  />
+                ) : (
+                  <div className="list-container">
+                    {data.projects.map((p) => (
+                      <div
+                        key={p.projectId}
+                        className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="min-w-0">
+                          <Link
+                            href={`/projects/${p.projectId}`}
+                            className="break-words text-sm font-semibold text-water-700 hover:underline"
+                          >
+                            {p.projectName}
+                          </Link>
+                          <div className="mt-1 flex flex-wrap items-center gap-2">
+                            <StatusChip
+                              prefix="Status:"
+                              label={humanizeStatus(p.status)}
+                            />
+                            <StatusChip
+                              tone={
+                                p.ageBucket === "waiting_more_than_7_days"
+                                  ? "warning"
+                                  : "neutral"
+                              }
+                              label={ageBucketLabel(p.ageBucket)}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2">
                           <StatusChip
                             tone={
-                              p.ageBucket === "waiting_more_than_7_days"
+                              p.pendingReviewerActionCount > 0
                                 ? "warning"
                                 : "neutral"
                             }
-                            label={ageBucketLabel(p.ageBucket)}
+                            label={`${p.pendingReviewerActionCount} pending reviewer action${
+                              p.pendingReviewerActionCount === 1 ? "" : "s"
+                            }`}
                           />
+                          <Link
+                            href={`/projects/${p.projectId}/workload`}
+                            className="btn btn-secondary btn-sm"
+                          >
+                            Workload
+                          </Link>
                         </div>
                       </div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <StatusChip
-                          tone={
-                            p.pendingReviewerActionCount > 0
-                              ? "warning"
-                              : "neutral"
-                          }
-                          label={`${p.pendingReviewerActionCount} pending reviewer action${
-                            p.pendingReviewerActionCount === 1 ? "" : "s"
-                          }`}
-                        />
-                        <Link
-                          href={`/projects/${p.projectId}/workload`}
-                          className="btn btn-secondary btn-sm"
-                        >
-                          Workload
-                        </Link>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </SectionCard>
+                    ))}
+                  </div>
+                )}
+              </SectionCard>
 
-            <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-              {data.accessNote}
-            </p>
+              <div className="space-y-4">
+                <DashboardMedia
+                  src={dashboardMedia.mobilePreview.src}
+                  alt={dashboardMedia.mobilePreview.alt}
+                  className="h-80"
+                />
+                <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+                  {data.accessNote}
+                </p>
+              </div>
+            </section>
           </>
         ) : null}
 
