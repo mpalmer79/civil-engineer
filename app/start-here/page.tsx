@@ -47,12 +47,12 @@ export default function StartHerePage() {
         }
       />
 
-      <div className="mx-auto max-w-6xl space-y-12 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl space-y-8 px-4 py-6 sm:space-y-10 sm:px-6 sm:py-10 lg:space-y-12 lg:px-8">
         <SafetyBoundaryBanner variant="compact" />
 
         {/* What / who / why */}
-        <section className="grid gap-4 sm:grid-cols-3">
-          <div className="surface-card p-5">
+        <section className="grid gap-3 md:grid-cols-3 md:gap-4">
+          <div className="surface-card p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-water-700">
               What it is
             </h2>
@@ -63,7 +63,7 @@ export default function StartHerePage() {
               reviewer response packages.
             </p>
           </div>
-          <div className="surface-card p-5">
+          <div className="surface-card p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-water-700">
               Who it is for
             </h2>
@@ -73,7 +73,7 @@ export default function StartHerePage() {
               review rounds.
             </p>
           </div>
-          <div className="surface-card p-5">
+          <div className="surface-card p-4 sm:p-5">
             <h2 className="text-sm font-semibold uppercase tracking-wide text-water-700">
               What it solves
             </h2>
@@ -86,9 +86,9 @@ export default function StartHerePage() {
         </section>
 
         {/* What is Brookside Meadows */}
-        <section className="surface-card border-amber-200 bg-amber-50/40 p-6">
+        <section className="surface-card border-amber-200 bg-amber-50/40 p-4 sm:p-6">
           <h2 className="section-title">What is Brookside Meadows?</h2>
-          <p className="mt-2 max-w-3xl text-slate-600">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             Brookside Meadows is a synthetic public demo fixture: a fictional
             residential development used to show the review-support workflow with
             seeded demo records. It is not a real submission and does not
@@ -105,15 +105,15 @@ export default function StartHerePage() {
         </section>
 
         {/* Recruiter and technical evaluator review path */}
-        <section className="surface-card p-6">
+        <section className="surface-card p-4 sm:p-6">
           <span className="page-eyebrow">For recruiters and technical evaluators</span>
           <h2 className="section-title mt-2">Review this project in 5 minutes</h2>
-          <p className="mt-2 max-w-3xl text-slate-600">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             A fast path to understand the product, and a deeper path to assess
             the engineering foundation.
           </p>
 
-          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+          <div className="mt-5 grid gap-5 lg:mt-6 lg:grid-cols-2 lg:gap-6">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-water-700">
                 5-minute path
@@ -162,7 +162,7 @@ export default function StartHerePage() {
             </div>
           </div>
 
-          <div className="mt-6 grid gap-6 sm:grid-cols-2">
+          <div className="mt-6 grid gap-5 md:grid-cols-2 md:gap-6">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
                 What to notice
@@ -199,7 +199,7 @@ export default function StartHerePage() {
         {/* Recommended demo path */}
         <section>
           <h2 className="section-title">Recommended demo path</h2>
-          <p className="mt-2 max-w-3xl text-slate-600">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             Follow these steps in order through the Brookside Meadows sample
             project. Each step links to a real workflow route and notes what to
             look for. Some deeper records may prompt sign in.
@@ -208,10 +208,11 @@ export default function StartHerePage() {
             src={marketingMedia.guidedDemoJourney.src}
             alt={marketingMedia.guidedDemoJourney.alt}
             variant="wide"
-            className="mt-6"
+            className="mt-5 sm:mt-6"
+            imageClassName="object-contain p-2 sm:p-3 lg:object-cover lg:p-0"
             label="Guided demo placeholder"
           />
-          <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <ol className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {demoJourneySteps.map((step) => (
               <li key={step.step}>
                 <GuidedDemoCard step={step} />
@@ -221,13 +222,13 @@ export default function StartHerePage() {
         </section>
 
         {/* Reviewer walkthrough checklist */}
-        <section className="surface-card p-6">
+        <section className="surface-card p-4 sm:p-6">
           <h2 className="section-title">Reviewer walkthrough checklist</h2>
-          <p className="mt-2 max-w-3xl text-slate-600">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             A quick checklist to tick through the Brookside Meadows workflow in
             order.
           </p>
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          <ul className="mt-4 grid gap-2 md:grid-cols-2">
             {reviewerChecklist.map((item) => (
               <li
                 key={item}
@@ -248,7 +249,7 @@ export default function StartHerePage() {
         {/* Technical foundation */}
         <section>
           <h2 className="section-title">Technical foundation</h2>
-          <p className="mt-2 max-w-3xl text-slate-600">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
             Built as a full-stack review-support system. These are delivered
             capabilities, described without exaggeration.
           </p>
@@ -256,10 +257,11 @@ export default function StartHerePage() {
             src={marketingMedia.technicalFoundation.src}
             alt={marketingMedia.technicalFoundation.alt}
             variant="wide"
-            className="mt-6"
+            className="mt-5 sm:mt-6"
+            imageClassName="object-contain p-2 sm:p-3 lg:object-cover lg:p-0"
             label="Technical foundation placeholder"
           />
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
             {technicalFoundation.map((item) => (
               <div key={item.title} className="subtle-card p-4">
                 <h3 className="text-sm font-semibold text-slate-900">
@@ -272,7 +274,7 @@ export default function StartHerePage() {
         </section>
 
         {/* Secondary CTAs */}
-        <section className="surface-card p-6">
+        <section className="surface-card p-4 sm:p-6">
           <h2 className="section-title">Jump to a part of the workflow</h2>
           <div className="mt-4 flex flex-wrap gap-3">
             {secondaryCtas.map((cta) => (
