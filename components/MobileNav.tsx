@@ -38,28 +38,33 @@ export default function MobileNav({
   };
 
   return (
-    <details className="relative" open={menuOpen}>
+    <details className="group relative" open={menuOpen}>
       <summary
         onClick={toggleMenu}
-        className="flex cursor-pointer list-none items-center gap-1 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700"
+        className="btn btn-secondary btn-sm cursor-pointer list-none"
       >
+        <span className="sr-only">Toggle navigation menu</span>
         Menu
-        <span aria-hidden="true" className="text-[10px] text-slate-400">
+        <span
+          aria-hidden="true"
+          className="text-[10px] text-slate-400 transition-transform group-open:rotate-180"
+        >
           ▾
         </span>
       </summary>
-      <div className="absolute right-0 z-50 mt-2 max-h-[70vh] w-64 overflow-y-auto rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
+      <div className="menu-panel max-h-[70vh] overflow-y-auto">
+        <p className="menu-label">Navigate</p>
         {primaryLinks.map((link) => (
           <Link
             key={link.href}
             href={link.href}
             onClick={closeMenu}
-            className="block rounded-md px-2 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            className="menu-item font-medium text-slate-700"
           >
             {link.label}
           </Link>
         ))}
-        <p className="mt-2 px-2 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+        <p className="menu-label mt-2 border-t border-slate-100 pt-3">
           Demo modules
         </p>
         {demoModuleLinks.map((link) => (
@@ -67,7 +72,7 @@ export default function MobileNav({
             key={link.href}
             href={link.href}
             onClick={closeMenu}
-            className="block rounded-md px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+            className="menu-item"
           >
             {link.label}
           </Link>

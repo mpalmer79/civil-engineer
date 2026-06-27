@@ -1,7 +1,8 @@
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
-import SectionCard from "@/components/SectionCard";
+import EmptyState from "@/components/EmptyState";
+import StatusChip from "@/components/StatusChip";
 import { listRulePacks } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -19,21 +20,24 @@ export default async function RulePacksPage() {
 
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
         {rulePacks === null ? (
-          <SectionCard title="Backend required">
-            <p className="text-sm text-slate-600">
+          <div className="alert alert-warning" role="alert">
+            <p className="font-semibold">Backend required</p>
+            <p className="mt-1">
               Rule packs are served by the backend. Start the API to view them.
             </p>
-          </SectionCard>
+          </div>
         ) : rulePacks.length === 0 ? (
-          <SectionCard title="No rule packs yet">
-            <p className="text-sm text-slate-600">
-              No rule packs are available yet.
-            </p>
-          </SectionCard>
+          <EmptyState
+            title="No rule packs yet"
+            description="Review-support checklist templates appear here once the backend provides them. A rule pack is a review template, not jurisdiction-adopted ordinance language."
+          />
         ) : (
           <ul className="space-y-3">
             {rulePacks.map((pack) => (
-              <li key={pack.rulePackId} className="surface-card p-5 text-sm">
+              <li
+                key={pack.rulePackId}
+                className="interactive-card p-5 text-sm"
+              >
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <Link
                     href={`/rule-packs/${pack.rulePackId}`}
@@ -41,9 +45,13 @@ export default async function RulePacksPage() {
                   >
                     {pack.name}
                   </Link>
-                  <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                    {pack.isActive ? "Active" : "Inactive"}
-                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <StatusChip label="Review-support template" tone="brand" />
+                    <StatusChip
+                      tone={pack.isActive ? "success" : "neutral"}
+                      label={pack.isActive ? "Active" : "Inactive"}
+                    />
+                  </div>
                 </div>
                 <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 sm:grid-cols-4">
                   <div>

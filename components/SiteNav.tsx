@@ -99,43 +99,15 @@ export default function SiteNav() {
           <AccountNav />
         </div>
 
-        {/* Mobile navigation. A native details disclosure exposes the full
-            navigation on small screens instead of hiding it behind the account
-            control only. */}
+        {/* Mobile navigation. The disclosure lives in a small client component
+            so it collapses immediately after a client-side navigation while
+            still exposing the full navigation on small screens. */}
         <div className="flex items-center gap-2 lg:hidden">
           <AccountNav />
-          <details className="group relative">
-            <summary className="btn btn-secondary btn-sm cursor-pointer list-none">
-              <span className="sr-only">Toggle navigation menu</span>
-              Menu
-              <span
-                aria-hidden="true"
-                className="text-[10px] text-slate-400 transition-transform group-open:rotate-180"
-              >
-                ▾
-              </span>
-            </summary>
-            <div className="menu-panel max-h-[70vh] overflow-y-auto">
-              <p className="menu-label">Navigate</p>
-              {primaryLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="menu-item font-medium text-slate-700"
-                >
-                  {link.label}
-                </Link>
-              ))}
-              <p className="menu-label mt-2 border-t border-slate-100 pt-3">
-                Demo modules
-              </p>
-              {demoModuleLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="menu-item">
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </details>
+          <MobileNav
+            primaryLinks={primaryLinks}
+            demoModuleLinks={demoModuleLinks}
+          />
         </div>
       </nav>
     </header>
