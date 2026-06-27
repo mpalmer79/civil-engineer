@@ -17,19 +17,23 @@ function ProjectMedia({
   src,
   alt,
   className = "",
+  imageClassName = "object-contain p-2 sm:p-0 lg:object-cover",
 }: {
   src: string;
   alt: string;
   className?: string;
+  imageClassName?: string;
 }) {
   return (
-    <div className={`relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card ${className}`}>
+    <div
+      className={`relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-card ${className}`}
+    >
       <Image
         src={src}
         alt={alt}
         fill
-        sizes="(min-width: 1024px) 50vw, 100vw"
-        className="object-cover"
+        sizes="(min-width: 1024px) 50vw, (min-width: 640px) 90vw, 100vw"
+        className={imageClassName}
       />
     </div>
   );
@@ -70,8 +74,11 @@ function ProjectRow({ project }: { project: ProjectDetail }) {
 
 function ProjectVisualCard({ project }: { project: ProjectDetail }) {
   return (
-    <Link href={`/projects/${project.projectId}`} className="interactive-card block overflow-hidden">
-      <div className="relative h-52 w-full">
+    <Link
+      href={`/projects/${project.projectId}`}
+      className="interactive-card block overflow-hidden"
+    >
+      <div className="relative h-40 w-full sm:h-52">
         <Image
           src={projectMedia.brooksideThumbnail.src}
           alt={projectMedia.brooksideThumbnail.alt}
@@ -80,7 +87,7 @@ function ProjectVisualCard({ project }: { project: ProjectDetail }) {
           className="object-cover"
         />
       </div>
-      <div className="p-5">
+      <div className="p-4 sm:p-5">
         <div className="flex flex-wrap items-center gap-2">
           <SourceBadge sourceMode={project.sourceMode} />
           <StatusChip prefix="Status:" label={humanizeStatus(project.status)} />
@@ -122,14 +129,14 @@ export default async function ProjectsPage() {
         }
       />
 
-      <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-        <section className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-10 lg:px-8">
+        <section className="grid gap-5 md:gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
           <div>
             <span className="chip chip-brand">Projects workspace</span>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               Review records with visual context
             </h2>
-            <p className="mt-3 max-w-xl text-slate-600">
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
               Start with the Brookside Meadows sample project or create a real
               project record for document intake, page-level evidence, findings,
               applicant responses, and reviewer packages.
@@ -149,7 +156,7 @@ export default async function ProjectsPage() {
           <ProjectMedia
             src={projectMedia.hero.src}
             alt={projectMedia.hero.alt}
-            className="h-72 lg:h-80"
+            className="h-44 sm:h-60 md:h-72 lg:h-80"
           />
         </section>
 
@@ -168,10 +175,10 @@ export default async function ProjectsPage() {
         ) : (
           <>
             {demoProjects.length > 0 ? (
-              <section className="grid gap-6 lg:grid-cols-[1fr_0.9fr] lg:items-stretch">
+              <section className="grid gap-5 md:gap-6 lg:grid-cols-[1fr_0.9fr] lg:items-stretch">
                 <ProjectVisualCard project={brooksideProject} />
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-                  <div className="surface-card p-5">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
+                  <div className="surface-card p-4 sm:p-5">
                     <span className="chip chip-neutral">Public guided demo</span>
                     <h2 className="mt-3 text-lg font-semibold text-slate-900">
                       Brookside Meadows
@@ -194,7 +201,8 @@ export default async function ProjectsPage() {
                   <ProjectMedia
                     src={projectMedia.documentsPreview.src}
                     alt={projectMedia.documentsPreview.alt}
-                    className="min-h-56"
+                    className="hidden h-52 md:block lg:h-full lg:min-h-56"
+                    imageClassName="object-contain p-3"
                   />
                 </div>
               </section>
@@ -219,9 +227,10 @@ export default async function ProjectsPage() {
                     <ProjectMedia
                       src={projectMedia.emptyProjects.src}
                       alt={projectMedia.emptyProjects.alt}
-                      className="h-64 rounded-none border-0 shadow-none lg:h-full"
+                      className="h-44 rounded-none border-0 shadow-none sm:h-64 lg:h-full"
+                      imageClassName="object-contain p-2 sm:p-0"
                     />
-                    <div className="p-6 lg:p-8">
+                    <div className="p-4 sm:p-6 lg:p-8">
                       <EmptyState
                         title="No real project records yet"
                         description="Create the first real project record to begin document-first, evidence-first stormwater review. The public Brookside Meadows demo stays available above."
@@ -245,11 +254,12 @@ export default async function ProjectsPage() {
           </>
         )}
 
-        <section className="grid gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+        <section className="grid gap-5 md:gap-6 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
           <ProjectMedia
             src={projectMedia.reviewSnapshot.src}
             alt={projectMedia.reviewSnapshot.alt}
-            className="h-72"
+            className="h-48 sm:h-64 lg:h-72"
+            imageClassName="object-contain p-2 sm:p-3"
           />
           <SectionCard className="bg-slate-50">
             <span className="chip chip-brand">Review snapshot</span>
