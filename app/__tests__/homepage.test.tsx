@@ -49,6 +49,16 @@ describe("HomePage positioning and discoverability", () => {
     expect(screen.getAllByText("View Rule Packs").length).toBeGreaterThan(0);
   });
 
+  it("applies the shared design-system button classes to hero CTAs", async () => {
+    const ui = await HomePage();
+    const { container } = render(ui);
+    // The primary CTA leads with the design-system primary button; secondary
+    // CTAs use the secondary button. This guards against ad-hoc button styling
+    // regressions on the highest-visibility surface.
+    expect(container.querySelector("a.btn.btn-primary")).not.toBeNull();
+    expect(container.querySelector("a.btn.btn-secondary")).not.toBeNull();
+  });
+
   it("renders the Production foundation workflow section", async () => {
     const ui = await HomePage();
     render(ui);

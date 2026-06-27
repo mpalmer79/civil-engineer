@@ -46,29 +46,29 @@ export default function RegisterForm() {
     <div className="surface-card p-6">
       <div className="space-y-3">
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <label className="form-label">
             Display name
           </label>
           <input
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="form-input w-full"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <label className="form-label">
             Email
           </label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="form-input w-full"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <label className="form-label">
             Password
           </label>
           <input
@@ -76,11 +76,11 @@ export default function RegisterForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="At least 8 characters"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="form-input w-full"
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <label className="form-label">
             Organization name (optional)
           </label>
           <input
@@ -88,13 +88,13 @@ export default function RegisterForm() {
             value={organizationName}
             onChange={(e) => setOrganizationName(e.target.value)}
             placeholder="Town of Riverton"
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="form-input w-full"
           />
         </div>
       </div>
 
       {error ? (
-        <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p className="alert alert-danger mt-3">
           {error}
         </p>
       ) : null}
@@ -103,7 +103,7 @@ export default function RegisterForm() {
         type="button"
         onClick={handleSubmit}
         disabled={busy}
-        className="mt-4 w-full rounded-lg bg-water-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-water-700 disabled:opacity-60"
+        className="btn btn-primary w-full mt-4"
       >
         {busy ? "Creating account..." : "Create account"}
       </button>

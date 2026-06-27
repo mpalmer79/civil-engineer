@@ -31,7 +31,7 @@ export default async function ProjectsPage() {
           </p>
           <Link
             href="/projects/new"
-            className="rounded-lg bg-water-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-water-700"
+            className="btn btn-primary"
           >
             New project
           </Link>

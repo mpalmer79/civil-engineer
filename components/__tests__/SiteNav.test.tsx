@@ -62,4 +62,17 @@ describe("SiteNav primary navigation", () => {
     expect(screen.getAllByText("Dashboard").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Reviewer Queue").length).toBeGreaterThan(0);
   });
+
+  it("keeps Deployment Status discoverable in the demo modules menu", () => {
+    render(<SiteNav />);
+    expect(screen.getAllByText("Deployment Status").length).toBeGreaterThan(0);
+  });
+
+  it("exposes disclosure controls that are keyboard focusable", () => {
+    const { container } = render(<SiteNav />);
+    // Native summary elements are keyboard focusable disclosure controls and
+    // carry the design-system focus ring from globals.css.
+    const summaries = container.querySelectorAll("summary");
+    expect(summaries.length).toBeGreaterThan(0);
+  });
 });

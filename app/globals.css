@@ -10,17 +10,159 @@ body {
   @apply bg-slate-50 text-slate-800 antialiased;
 }
 
-/* Reusable surface + badge primitives kept small for Phase 1. */
+/* Visible, consistent focus state for keyboard users across links, buttons, and
+   menu controls. Applied in the base layer so every interactive element inherits
+   it without per-component classes. */
+@layer base {
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible {
+    @apply outline-none ring-2 ring-water-500 ring-offset-2 ring-offset-white;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+/* Civil Engineer AI design system. A small, reusable set of professional
+   component classes (page shell, headers, cards, chips, buttons, menus, forms,
+   alerts, empty states). Kept intentionally compact: no component library, no
+   animation library, restrained elevation, and a calm civic-technology palette. */
 @layer components {
+  /* Page shell and headers ------------------------------------------------ */
+  .page-shell {
+    @apply mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:px-8;
+  }
+  .page-eyebrow {
+    @apply text-xs font-semibold uppercase tracking-wide text-water-700;
+  }
+  .page-title {
+    @apply mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl;
+  }
+  .page-description {
+    @apply mt-3 max-w-2xl text-base leading-relaxed text-slate-600;
+  }
+  .section-title {
+    @apply text-2xl font-bold tracking-tight text-slate-900;
+  }
+  .section-description {
+    @apply mt-2 max-w-3xl text-slate-600;
+  }
+  .section-eyebrow {
+    @apply text-xs font-semibold uppercase tracking-wide text-slate-500;
+  }
+
+  /* Cards ----------------------------------------------------------------- */
   .surface-card {
     @apply rounded-xl border border-slate-200 bg-white shadow-card;
   }
-
-  .badge {
-    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset;
+  .elevated-card {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-card-lg;
+  }
+  .subtle-card {
+    @apply rounded-xl border border-slate-200 bg-slate-50;
+  }
+  .interactive-card {
+    @apply rounded-xl border border-slate-200 bg-white shadow-card transition-all hover:-translate-y-0.5 hover:border-water-300 hover:shadow-card-md;
+  }
+  .metric-card {
+    @apply rounded-xl border border-slate-200 bg-white p-4 shadow-card;
   }
 
+  /* Chips and badges ------------------------------------------------------ */
+  .badge,
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset;
+  }
+  .chip-neutral {
+    @apply bg-slate-100 text-slate-600 ring-slate-300;
+  }
+  .chip-brand {
+    @apply bg-water-50 text-water-700 ring-water-200;
+  }
+  .chip-success {
+    @apply bg-land-50 text-land-700 ring-land-200;
+  }
+  .chip-warning {
+    @apply bg-amber-50 text-amber-800 ring-amber-200;
+  }
+  .chip-danger {
+    @apply bg-red-50 text-red-700 ring-red-200;
+  }
+
+  /* Buttons --------------------------------------------------------------- */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-sm {
+    @apply px-3 py-2 text-sm;
+  }
+  .btn-primary {
+    @apply bg-water-600 text-white shadow-card hover:bg-water-700;
+  }
+  .btn-secondary {
+    @apply border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+  }
+  .btn-ghost {
+    @apply text-slate-600 hover:bg-slate-100 hover:text-slate-900;
+  }
+
+  /* Navigation ------------------------------------------------------------ */
   .nav-link {
     @apply rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900;
+  }
+  .menu-panel {
+    @apply absolute right-0 z-50 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-card-lg;
+  }
+  .menu-label {
+    @apply px-2 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400;
+  }
+  .menu-item {
+    @apply block rounded-md px-2 py-1.5 text-sm text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900;
+  }
+
+  /* Lists and tables ------------------------------------------------------ */
+  .list-container {
+    @apply divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white;
+  }
+  .list-row {
+    @apply flex items-start justify-between gap-3 px-4 py-3;
+  }
+
+  /* Empty states ---------------------------------------------------------- */
+  .empty-state {
+    @apply rounded-xl border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-600;
+  }
+
+  /* Forms ----------------------------------------------------------------- */
+  .form-field {
+    @apply flex flex-col gap-1.5;
+  }
+  .form-label {
+    @apply text-sm font-medium text-slate-700;
+  }
+  .form-input {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-water-500 focus:outline-none focus:ring-2 focus:ring-water-200;
+  }
+
+  /* Alerts ---------------------------------------------------------------- */
+  .alert {
+    @apply rounded-lg border px-4 py-3 text-sm;
+  }
+  .alert-info {
+    @apply border-water-200 bg-water-50 text-water-800;
+  }
+  .alert-success {
+    @apply border-land-200 bg-land-50 text-land-800;
+  }
+  .alert-warning {
+    @apply border-amber-200 bg-amber-50 text-amber-800;
+  }
+  .alert-danger {
+    @apply border-red-200 bg-red-50 text-red-700;
   }
 }

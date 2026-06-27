@@ -66,7 +66,7 @@ export default function SiteNav() {
         </Link>
 
         {/* Desktop navigation */}
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-0.5 lg:flex">
           {primaryLinks.map((link) => (
             <Link key={link.href} href={link.href} className="nav-link">
               {link.label}
@@ -78,38 +78,64 @@ export default function SiteNav() {
           <details className="group relative">
             <summary className="nav-link flex cursor-pointer list-none items-center gap-1">
               Demo modules
-              <span aria-hidden="true" className="text-[10px] text-slate-400">
+              <span
+                aria-hidden="true"
+                className="text-[10px] text-slate-400 transition-transform group-open:rotate-180"
+              >
                 ▾
               </span>
             </summary>
-            <div className="absolute right-0 z-50 mt-2 grid w-64 grid-cols-1 gap-0.5 rounded-lg border border-slate-200 bg-white p-2 shadow-lg">
-              <p className="px-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
-                Brookside Meadows demo
-              </p>
+            <div className="menu-panel">
+              <p className="menu-label">Brookside Meadows demo</p>
               {demoModuleLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className="rounded-md px-2 py-1.5 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                >
+                <Link key={link.href} href={link.href} className="menu-item">
                   {link.label}
                 </Link>
               ))}
             </div>
           </details>
 
+          <span aria-hidden="true" className="mx-1 h-5 w-px bg-slate-200" />
           <AccountNav />
         </div>
 
-        {/* Mobile navigation. The disclosure lives in a small client component
-            so it can collapse immediately after a client-side navigation while
-            still exposing the full navigation on small screens. */}
-        <div className="flex items-center gap-2 md:hidden">
-          <MobileNav
-            primaryLinks={primaryLinks}
-            demoModuleLinks={demoModuleLinks}
-          />
+        {/* Mobile navigation. A native details disclosure exposes the full
+            navigation on small screens instead of hiding it behind the account
+            control only. */}
+        <div className="flex items-center gap-2 lg:hidden">
           <AccountNav />
+          <details className="group relative">
+            <summary className="btn btn-secondary btn-sm cursor-pointer list-none">
+              <span className="sr-only">Toggle navigation menu</span>
+              Menu
+              <span
+                aria-hidden="true"
+                className="text-[10px] text-slate-400 transition-transform group-open:rotate-180"
+              >
+                ▾
+              </span>
+            </summary>
+            <div className="menu-panel max-h-[70vh] overflow-y-auto">
+              <p className="menu-label">Navigate</p>
+              {primaryLinks.map((link) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="menu-item font-medium text-slate-700"
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <p className="menu-label mt-2 border-t border-slate-100 pt-3">
+                Demo modules
+              </p>
+              {demoModuleLinks.map((link) => (
+                <Link key={link.href} href={link.href} className="menu-item">
+                  {link.label}
+                </Link>
+              ))}
+            </div>
+          </details>
         </div>
       </nav>
     </header>
