@@ -117,12 +117,35 @@ describe("HomePage positioning and discoverability", () => {
     expect(text).not.toContain("retrieval is not part");
   });
 
-  it("does not include Sprint 9 dashboard language because those routes do not exist yet", async () => {
+  it("includes Sprint 9 reviewer dashboard and workload language now that those routes exist", async () => {
     const ui = await HomePage();
     const { container } = render(ui);
     const text = (container.textContent ?? "").toLowerCase();
-    expect(text).not.toContain("reviewer dashboard");
-    expect(text).not.toContain("reviewer queue");
+    // Sprint 9 dashboard and queue routes are part of this build, so the
+    // homepage surfaces them as operational review-support indicators.
+    expect(text).toContain("reviewer dashboard");
+    expect(text).toContain("reviewer queue");
+    expect(text).toContain("workload metrics");
+    // The homepage must not claim the dashboard routes are absent.
+    expect(text).not.toContain("dashboard routes do not exist");
+    expect(text).not.toContain("dashboard is not part");
+  });
+
+  it("presents Sprint 9 dashboard data as operational indicators, not a final outcome", async () => {
+    const ui = await HomePage();
+    const { container } = render(ui);
+    const text = (container.textContent ?? "").toLowerCase();
+    // Allowed Sprint 9 wording appears; final-decision outcome wording does not.
+    expect(text).toContain("operational metrics");
+    expect(text).toContain("access-controlled dashboard data");
+    for (const phrase of [
+      "compliance determination",
+      "final review outcome",
+      "issues resolved",
+      "issues closed",
+    ]) {
+      expect(text).not.toContain(phrase);
+    }
   });
 
   it("does not use prohibited final-decision wording as a claim in the homepage source", () => {

@@ -14,6 +14,7 @@ from app.api.v1 import (
     checklist_review,
     chunks,
     command_center,
+    dashboard,
     documents,
     evaluation,
     evidence_retrieval,
@@ -66,3 +67,4 @@ api_router.include_router(auth.router)
 api_router.include_router(file_storage.router)
 api_router.include_router(response_matrix.router)
 api_router.include_router(reviewer_response_packages.router)
+api_router.include_router(dashboard.router)

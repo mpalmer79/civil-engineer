@@ -1186,3 +1186,61 @@ ALLOWED_COMMENT_LETTER_DRAFT_STATUSES: set[str] = {
     "issued_by_reviewer",
     "superseded_by_revision",
 }
+
+
+# Production Foundations Sprint 9 reviewer dashboard, workload management, and
+# operational metrics vocabulary. The dashboard aggregates existing
+# review-support data into cross-project operational indicators. Counts describe
+# pending reviewer work, not engineering outcomes. None of these values implies a
+# final engineering decision, approval, certification, compliance state, or that
+# any issue is resolved or closed. There is intentionally no approved, closed,
+# resolved, passed, failed, compliant, verified, certified, safe, or unsafe value
+# anywhere in this vocabulary.
+
+# Review priority a reviewer or admin may set on a project to help sequence
+# workload. These are workflow sequencing labels, not engineering judgments.
+# urgent is intentionally absent; time_sensitive is the strongest label.
+ALLOWED_REVIEW_PRIORITIES: set[str] = {
+    "low",
+    "standard",
+    "elevated",
+    "time_sensitive",
+}
+
+# Aging buckets for pending reviewer actions. These describe how long an item has
+# been waiting for reviewer attention, computed from record timestamps. They are
+# workflow timing helpers, never an overdue or compliance determination.
+ALLOWED_AGING_BUCKETS: set[str] = {
+    "updated_today",
+    "waiting_1_to_3_days",
+    "waiting_4_to_7_days",
+    "waiting_more_than_7_days",
+}
+
+# Due date indicators, used only when a project has an explicit review_due_date.
+# past_due_for_reviewer_attention is a workflow timing indicator that the due
+# date has passed, never an engineering outcome.
+ALLOWED_DUE_DATE_INDICATORS: set[str] = {
+    "due_date_set",
+    "due_soon",
+    "past_due_for_reviewer_attention",
+}
+
+# Reviewer workload snapshot scopes, if a snapshot is computed or stored.
+ALLOWED_WORKLOAD_SNAPSHOT_SCOPES: set[str] = {
+    "reviewer",
+    "organization",
+    "project",
+}
+
+# Reviewer queue item types. Each names an operational reviewer action surfaced
+# on the dashboard queue. None implies a final decision; each points a reviewer
+# to a project workflow page where human review continues.
+ALLOWED_QUEUE_ITEM_TYPES: set[str] = {
+    "document_indexing",
+    "evidence_candidate_triage",
+    "checklist_evidence_review",
+    "applicant_response_review",
+    "carried_forward_matrix_item",
+    "response_package_handoff",
+}

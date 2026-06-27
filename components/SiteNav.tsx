@@ -3,11 +3,14 @@ import Link from "next/link";
 import AccountNav from "@/components/AccountNav";
 
 // Primary product navigation, ordered so the current review-support workflows
-// are visible first. Sprint 9 reviewer dashboard and queue routes are not part
-// of this build yet, so they are intentionally absent from the primary nav.
+// are visible first. The Sprint 9 reviewer dashboard and reviewer queue lead the
+// operational workflow alongside Projects. The Account/Login control renders
+// separately through AccountNav.
 const primaryLinks = [
   { href: "/", label: "Home" },
   { href: "/projects", label: "Projects" },
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/dashboard/queue", label: "Reviewer Queue" },
   { href: "/rule-packs", label: "Rule Packs" },
   { href: "/organizations", label: "Organizations" },
   { href: "/guided-demo", label: "Guided Demo" },

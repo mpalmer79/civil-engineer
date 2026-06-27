@@ -128,17 +128,31 @@ findings remain ahead.
 
 ## 6. Current sprint
 
-Production Foundations Sprint 8: Reviewer Response Package Issuance and Comment
-Letter Workflow.
+Production Foundations Sprint 9: Reviewer Dashboard, Workload Management, and
+Operational Metrics.
 
-This sprint adds the first controlled reviewer output workflow. Reviewers can
-assemble selected findings, checklist items, response matrix items, and citations
-into a controlled response package, generate a deterministic, reviewer-editable
-comment letter draft, preview the package, issue it as a reviewer communication
-record, and preserve a revision history with a durable audit trail. Package
-issuance records a reviewer communication only. It does not approve a project,
-certify compliance, validate design, resolve an issue, or close an issue, and it
-does not change the review-support boundary. See
+This sprint adds the first cross-project operational view. Reviewers and
+organization admins can see project workload, pending reviewer actions, document
+indexing status, evidence and checklist review status, applicant response and
+resubmittal activity, and response package readiness across the projects they can
+access, with safe aging indicators, a reviewer queue, and a project assignment and
+priority foundation. Every dashboard result is filtered by Sprint 5 access
+control. Dashboard counts are operational review-support indicators only. They do
+not approve plans, certify compliance, validate design, resolve an issue, or close
+an issue, and they do not change the review-support boundary. See
+[PRODUCTION_FOUNDATIONS_SPRINT_9.md](PRODUCTION_FOUNDATIONS_SPRINT_9.md),
+[REVIEWER_DASHBOARD_AND_WORKLOAD.md](REVIEWER_DASHBOARD_AND_WORKLOAD.md),
+[API_OPERATIONAL_METRICS.md](API_OPERATIONAL_METRICS.md), and
+[METRICS_BOUNDARY_AND_LIMITATIONS.md](METRICS_BOUNDARY_AND_LIMITATIONS.md).
+
+Sprint 8 (complete) added the first controlled reviewer output workflow.
+Reviewers can assemble selected findings, checklist items, response matrix items,
+and citations into a controlled response package, generate a deterministic,
+reviewer-editable comment letter draft, preview the package, issue it as a
+reviewer communication record, and preserve a revision history with a durable
+audit trail. Package issuance records a reviewer communication only. It does not
+approve a project, certify compliance, validate design, resolve an issue, or close
+an issue, and it does not change the review-support boundary. See
 [PRODUCTION_FOUNDATIONS_SPRINT_8.md](PRODUCTION_FOUNDATIONS_SPRINT_8.md),
 [RESPONSE_PACKAGE_AND_COMMENT_LETTER_WORKFLOW.md](RESPONSE_PACKAGE_AND_COMMENT_LETTER_WORKFLOW.md),
 [API_RESPONSE_PACKAGES.md](API_RESPONSE_PACKAGES.md), and
@@ -198,8 +212,8 @@ findings, basic evidence references, and durable audit events, with Brookside
 Meadows preserved as a seeded demo fixture. See
 [PRODUCTION_FOUNDATIONS_SPRINT_1.md](PRODUCTION_FOUNDATIONS_SPRINT_1.md).
 
-The recommended next sprint is Production Foundations Sprint 9: Reviewer Dashboard,
-Workload Management, and Operational Metrics.
+The recommended next sprint is Production Foundations Sprint 10: Production
+Deployment Hardening, Environment Validation, and Observability.
 
 ## 7. Out of scope
 

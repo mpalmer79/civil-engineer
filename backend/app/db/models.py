@@ -84,6 +84,27 @@ class Project(Base):
     visibility_mode: Mapped[str] = mapped_column(String, default="controlled")
     demo_public: Mapped[bool] = mapped_column(default=False)
 
+    # Production foundation fields (Sprint 9) for reviewer dashboard workload
+    # management. These attribute a project to an assigned reviewer and record a
+    # workflow sequencing priority and optional review due date. All are nullable
+    # so the seeded demo fixture and Sprint 1 through 8 projects keep working
+    # without a migration. review_priority is a sequencing label, not an
+    # engineering judgment. last_reviewer_activity_at supports safe aging
+    # indicators. None of these implies a final engineering decision.
+    assigned_reviewer_user_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    assigned_reviewer_name: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    review_priority: Mapped[str | None] = mapped_column(String, nullable=True)
+    review_due_date: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+    last_reviewer_activity_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+
     documents: Mapped[list["Document"]] = relationship(back_populates="project")
     checklist_items: Mapped[list["ChecklistItem"]] = relationship(
         back_populates="project"

@@ -57,9 +57,9 @@ describe("SiteNav primary navigation", () => {
     expect(screen.getAllByText("Menu").length).toBeGreaterThan(0);
   });
 
-  it("does not surface Sprint 9 dashboard routes that do not exist yet", () => {
+  it("surfaces the Sprint 9 reviewer dashboard and queue in the primary nav", () => {
     render(<SiteNav />);
-    expect(screen.queryByText("Dashboard")).toBeNull();
-    expect(screen.queryByText("Reviewer Queue")).toBeNull();
+    expect(screen.getAllByText("Dashboard").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Reviewer Queue").length).toBeGreaterThan(0);
   });
 });

@@ -32,6 +32,33 @@ export * from "./realProjects";
 export * from "./pdfEvidence";
 export * from "./evidenceRetrieval";
 export * from "./checklistReview";
+export {
+  getReviewerDashboard,
+  getReviewerQueue,
+  getReviewerDashboardProjects,
+  getOrganizationDashboard,
+  getOrganizationWorkload,
+  getOrganizationReviewerWorkload,
+  updateProjectAssignment,
+  updateProjectPriority,
+  type DashboardMetrics,
+  type DashboardAggregate,
+  type DashboardProjectSummary,
+  type ReviewerQueueItem,
+  type ReviewerDashboard,
+  type ReviewerQueue,
+  type OrganizationDashboard,
+  type OrganizationWorkload,
+  type OrganizationReviewerWorkload,
+  type OrganizationReviewerWorkloadResult,
+  type ReadResult,
+} from "./dashboard";
+export {
+  getProjectWorkloadSummary,
+  getProjectPendingActions,
+  type ProjectWorkloadSummary,
+  type ProjectPendingActions,
+} from "./operationalMetrics";
 // aiReview and cad export a few internal mappers and snake_case Api types for
 // cross-module use (humanReview and planSheets import them). Re-export only
 // their public names here so the mapping-layer internals stay out of the

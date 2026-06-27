@@ -19,13 +19,14 @@ import { getHotspots, projectMetrics } from "@/lib/api";
 // Brookside Meadows demo workflow lower on the page, not from the hero.
 const heroCtas = [
   { href: "/projects", label: "Open Projects" },
+  { href: "/dashboard", label: "View Reviewer Dashboard" },
   { href: "/guided-demo", label: "See the Guided Demo" },
   { href: "/projects/new", label: "Create a project record" },
   { href: "/rule-packs", label: "View Rule Packs" },
 ];
 
 // Production foundation workflow: the real-world review-support workflow built
-// across Sprints 1 through 8. Project-scoped steps link to /projects because the
+// across Sprints 1 through 9. Project-scoped steps link to /projects because the
 // workflow starts from an individual project record. Every step is
 // review-support only and keeps a human reviewer responsible.
 const productionWorkflow: {
@@ -89,10 +90,17 @@ const productionWorkflow: {
     href: "/projects",
     note: "Package issued by reviewer",
   },
+  {
+    title: "Monitor reviewer dashboard",
+    detail:
+      "See project workload, pending reviewer actions, and a reviewer queue.",
+    href: "/dashboard",
+    note: "Operational metrics only",
+  },
 ];
 
 // What is live now: scannable capability groups in place of a paragraph wall.
-// Each group summarizes delivered Sprint 1 through 8 capabilities. Brookside
+// Each group summarizes delivered Sprint 1 through 9 capabilities. Brookside
 // Meadows is labeled separately as the public guided demo fixture.
 const liveNowGroups: { title: string; items: string[] }[] = [
   {
@@ -130,6 +138,16 @@ const liveNowGroups: { title: string; items: string[] }[] = [
       "Deterministic comment letter drafts",
       "Revision history",
       "Ready for reviewer handoff",
+    ],
+  },
+  {
+    title: "Operations",
+    items: [
+      "Reviewer dashboard",
+      "Reviewer queue",
+      "Workload metrics",
+      "Pending reviewer action counts",
+      "Access-controlled dashboard data",
     ],
   },
 ];
@@ -354,9 +372,10 @@ export default async function HomePage() {
           </h2>
           <p className="mt-2 max-w-3xl text-slate-600">
             The real-world review-support workflow, built across Sprints 1
-            through 8. Project-scoped steps start from an individual project
-            record, so they open from Projects. Every step is review-support only
-            and keeps a human reviewer responsible.
+            through 9. Project-scoped steps start from an individual project
+            record, so they open from Projects. The reviewer dashboard gives an
+            operational view across the projects you can access. Every step is
+            review-support only and keeps a human reviewer responsible.
           </p>
           <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {productionWorkflow.map((step, i) => (
@@ -481,6 +500,10 @@ export default async function HomePage() {
                 <li>
                   Upload documents, index PDFs, create citations, findings,
                   checklists, response matrices, and packages
+                </li>
+                <li>
+                  Reviewer dashboard and queue with access-controlled workload
+                  metrics
                 </li>
                 <li>Actions audit attributed to user identity</li>
               </ul>
