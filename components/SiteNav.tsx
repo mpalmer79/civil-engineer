@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import AccountNav from "@/components/AccountNav";
+import MobileNav from "@/components/MobileNav";
 
 // Primary product navigation, ordered so the current review-support workflows
 // are visible first. The Sprint 9 reviewer dashboard and reviewer queue lead the
