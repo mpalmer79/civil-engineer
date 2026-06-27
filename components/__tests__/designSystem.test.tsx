@@ -73,6 +73,14 @@ describe("SiteFooter", () => {
       screen.getByRole("link", { name: "Deployment Status" }),
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Live demo" })).toBeInTheDocument();
+    // Start Here and the Brookside Meadows sample project are discoverable from
+    // the footer for demo navigation.
+    expect(
+      screen.getByRole("link", { name: "Start Here" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Brookside Meadows" }),
+    ).toBeInTheDocument();
   });
 
   it("does not contain attribution or prohibited final-decision wording", () => {

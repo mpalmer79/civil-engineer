@@ -8,7 +8,9 @@ const productLinks = [
 ];
 
 const exploreLinks = [
+  { href: "/start-here", label: "Start Here" },
   { href: "/guided-demo", label: "Guided Demo" },
+  { href: "/projects/proj_brookside_meadows", label: "Brookside Meadows" },
   { href: "/deployment-status", label: "Deployment Status" },
   {
     href: "https://civil-engineer.up.railway.app/",
