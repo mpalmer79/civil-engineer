@@ -33,7 +33,7 @@ export default function ProjectsDashboardCards() {
 
   return (
     <section className="space-y-3">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
           Your reviewer workload
         </h2>
@@ -41,7 +41,7 @@ export default function ProjectsDashboardCards() {
           Open reviewer dashboard
         </Link>
       </div>
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <MetricCard
           value={data.accessibleProjectCount}
           label="My accessible projects"
