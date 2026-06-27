@@ -310,10 +310,7 @@ export default function HomePage() {
                 follows one concern end to end.
               </p>
               <div className="mt-5 flex flex-wrap gap-3">
-                <Link href="/start-here" className="btn btn-primary">
-                  Start the demo
-                </Link>
-                <Link href="/guided-demo" className="btn btn-secondary">
+                <Link href="/guided-demo" className="btn btn-primary">
                   See the Guided Demo
                 </Link>
               </div>
