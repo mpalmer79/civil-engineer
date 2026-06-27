@@ -41,6 +41,12 @@ export default function SiteFooter() {
             >
               Guided Demo
             </Link>
+            <Link
+              href="/deployment-status"
+              className="text-slate-600 hover:text-slate-900"
+            >
+              Deployment Status
+            </Link>
           </div>
         </div>
         <p className="mt-8 text-xs text-slate-400">

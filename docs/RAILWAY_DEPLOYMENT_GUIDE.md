@@ -47,9 +47,12 @@ The backend exposes a `/health` endpoint that returns a status, the service name
 Open these URLs against the deployed backend origin to confirm it is serving the review-support API:
 
 - `https://your-backend-service.up.railway.app/health` returns the health JSON (status, service name, version, demo mode).
+- `https://your-backend-service.up.railway.app/api/v1/readiness` returns a safe readiness summary (database connectivity, required configuration, and storage provider readiness). It uses operational status labels only and never returns secrets.
 - `https://your-backend-service.up.railway.app/api/v1/projects/proj_brookside_meadows` returns the seeded Brookside Meadows project payload.
 
 A `404` on the backend root `/` is not necessarily a failure. The backend does not serve a page at `/`. If `/health` and the `/api/v1` routes respond, the backend is working as expected. Check `/health` and an `/api/v1` route before concluding the backend is down.
+
+Detailed environment diagnostics are available at `/api/v1/diagnostics/environment` for an organization admin, and storage diagnostics at `/api/v1/diagnostics/storage` for an authenticated user. These report only whether each setting is configured. They never return a secret value, the database URL, object storage credentials, a token, a signed URL, or a raw file system path. The frontend Deployment Status page at `/deployment-status` surfaces the same safe operational status.
 
 ### Backend environment variables
 
@@ -130,6 +133,19 @@ The two services connect through two settings that mirror each other:
 - The backend `FRONTEND_ORIGIN` points at the frontend public URL.
 
 When both are set to the deployed URLs, the frontend can call the backend and the backend allows the browser origin. A visible backend connection banner on the frontend home page reports whether the backend is reachable, so a misconfiguration is easy to spot.
+
+## Common deployment problems
+
+These are the misconfigurations seen most often, with how to recognize and fix each. The backend connection banner and the Deployment Status page at `/deployment-status` surface most of them.
+
+- The frontend points at the frontend URL instead of the backend URL. Set `NEXT_PUBLIC_API_BASE_URL` to the backend public origin, not the frontend origin.
+- `NEXT_PUBLIC_API_BASE_URL` includes an `/api/v1` path. It must be the backend origin only. The frontend appends `/api/v1` itself, so an included path double prefixes and breaks every call. The connection banner detects this and reports it directly.
+- The backend service was built from the wrong root directory. The backend root directory must be `backend`, where `requirements.txt` and `railway.json` live.
+- Local storage is used in a deployment without a mounted volume or object storage. Uploaded files and the SQLite database are recreated on each redeploy. Set `STORAGE_PROVIDER=s3` with object storage settings, or mount a persistent volume.
+- The frontend was deployed before the backend environment was fixed. A Next.js build compiles `NEXT_PUBLIC_API_BASE_URL` in. Redeploy the frontend after changing it.
+- A stale mobile browser cache shows an older build. Hard refresh or clear the site data after a redeploy.
+- The public demo works but real project routes need login. This is expected: the public Brookside Meadows demo is readable without an account, while real project workflows require sign-in and access control.
+- Object storage credentials were placed in the frontend by mistake. Object storage credentials are backend-only. Never put them in the frontend or in any `NEXT_PUBLIC_` variable. The frontend downloads files through the access-controlled backend route and never holds storage credentials.
 
 ## Known limitations
 

@@ -41,6 +41,17 @@ describe("Railway deployment guide", () => {
       expect(line).not.toContain("/api/v1");
     }
   });
+
+  it("warns not to put object storage credentials in the frontend", () => {
+    const lower = guide.toLowerCase();
+    expect(lower).toContain("object storage credentials");
+    expect(lower).toContain("never put them in the frontend");
+  });
+
+  it("documents the Sprint 10 health and readiness routes", () => {
+    expect(guide).toContain("/health");
+    expect(guide).toContain("/api/v1/readiness");
+  });
 });
 
 describe("Live site verification doc", () => {
@@ -65,5 +76,17 @@ describe("Live site verification doc", () => {
     for (const line of assignments) {
       expect(line).not.toContain("/api/v1");
     }
+  });
+
+  it("includes Sprint 9 dashboard and reviewer queue checks", () => {
+    expect(doc).toContain("/dashboard");
+    expect(doc).toContain("/dashboard/queue");
+  });
+
+  it("includes Sprint 10 deployment diagnostics checks", () => {
+    expect(doc).toContain("/deployment-status");
+    expect(doc).toContain("/health");
+    expect(doc).toContain("/api/v1/readiness");
+    expect(doc.toLowerCase()).toContain("storage health");
   });
 });

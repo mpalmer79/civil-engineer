@@ -59,6 +59,26 @@ describe("BackendStatusBanner", () => {
     );
   });
 
+  it("warns when the backend URL wrongly includes an /api/v1 path", async () => {
+    vi.stubEnv(
+      "NEXT_PUBLIC_API_BASE_URL",
+      "https://backend.example.com/api/v1",
+    );
+    vi.resetModules();
+    const { default: Banner } = await import("@/components/BackendStatusBanner");
+    // No network call should be needed; the misconfiguration is detectable from
+    // the value. fetch is stubbed to fail to prove the detection is synchronous.
+    const fetchMock = vi.fn().mockRejectedValue(new Error("should not run"));
+    globalThis.fetch = fetchMock;
+    render(<Banner />);
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Backend URL includes an \/api\/v1 path/i),
+      ).toBeInTheDocument(),
+    );
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("shows a connected message when the backend health check succeeds", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,

@@ -8,10 +8,17 @@ import { API_BASE_URL, PROJECT_ID } from "@/lib/api";
 // unset variable in a deployment looks like a localhost URL here.
 const ENV_VAR_SET = Boolean(process.env.NEXT_PUBLIC_API_BASE_URL);
 
+// True when the configured base URL already includes an /api or /api/v1 path.
+// NEXT_PUBLIC_API_BASE_URL must be the backend origin only; the API modules
+// append /api/v1 themselves, so a base URL that includes it double-prefixes and
+// breaks every call. This is detectable from the value without a network call.
+const URL_INCLUDES_PREFIX = /\/api(\/v1)?\/?$/.test(API_BASE_URL.trim());
+
 type Status =
   | "checking"
   | "connected"
   | "url-missing"
+  | "url-has-prefix"
   | "unreachable"
   | "health-404"
   | "prefix-wrong";
@@ -27,6 +34,12 @@ export default function BackendStatusBanner() {
 
   useEffect(() => {
     let active = true;
+    // Detect the common misconfiguration before any network call: the base URL
+    // must be the backend origin only, with no /api or /api/v1 path.
+    if (URL_INCLUDES_PREFIX) {
+      setStatus("url-has-prefix");
+      return;
+    }
     (async () => {
       try {
         const res = await fetch(`${API_BASE_URL}/health`, { cache: "no-store" });
@@ -88,6 +101,11 @@ export default function BackendStatusBanner() {
       `Backend URL is not set. NEXT_PUBLIC_API_BASE_URL is missing, so the ` +
       `frontend is trying the local default ${API_BASE_URL}. Set it to the ` +
       `deployed backend origin (no /api/v1 path).`,
+    "url-has-prefix":
+      `Backend URL includes an /api/v1 path. NEXT_PUBLIC_API_BASE_URL must be ` +
+      `the backend origin only; the frontend appends /api/v1 itself, so the ` +
+      `current value would double the prefix. Remove the /api or /api/v1 path ` +
+      `and redeploy the frontend.`,
     unreachable:
       `Backend is not reachable at ${API_BASE_URL}. The backend may not be ` +
       `deployed or running. Confirm the backend service is up and that ` +
