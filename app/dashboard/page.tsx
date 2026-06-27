@@ -24,19 +24,23 @@ function DashboardMedia({
   src,
   alt,
   className = "",
+  imageClassName = "object-contain p-2 sm:p-0 lg:object-cover",
 }: {
   src: string;
   alt: string;
   className?: string;
+  imageClassName?: string;
 }) {
   return (
-    <div className={`relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card ${className}`}>
+    <div
+      className={`relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-card ${className}`}
+    >
       <Image
         src={src}
         alt={alt}
         fill
-        sizes="(min-width: 1024px) 50vw, 100vw"
-        className="object-cover"
+        sizes="(min-width: 1024px) 50vw, (min-width: 640px) 90vw, 100vw"
+        className={imageClassName}
       />
     </div>
   );
@@ -85,14 +89,14 @@ export default function ReviewerDashboardPage() {
         }
       />
 
-      <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
-        <section className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+      <div className="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:space-y-8 sm:px-6 sm:py-10 lg:px-8">
+        <section className="grid gap-5 md:gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
           <div>
             <span className="chip chip-brand">Reviewer command center</span>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
+            <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               Workload, queue, and handoff visibility
             </h2>
-            <p className="mt-3 max-w-xl text-slate-600">
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
               Use the dashboard to scan active workload, queue items, evidence
               review needs, applicant responses, and packages ready for reviewer
               handoff. Indicators support review, but do not make engineering
@@ -113,7 +117,7 @@ export default function ReviewerDashboardPage() {
           <DashboardMedia
             src={dashboardMedia.hero.src}
             alt={dashboardMedia.hero.alt}
-            className="h-72 lg:h-80"
+            className="h-44 sm:h-60 md:h-72 lg:h-80"
           />
         </section>
 
@@ -125,9 +129,10 @@ export default function ReviewerDashboardPage() {
               <DashboardMedia
                 src={dashboardMedia.emptyState.src}
                 alt={dashboardMedia.emptyState.alt}
-                className="h-64 rounded-none border-0 shadow-none lg:h-full"
+                className="h-44 rounded-none border-0 shadow-none sm:h-64 lg:h-full"
+                imageClassName="object-contain p-2 sm:p-0"
               />
-              <div className="p-6 lg:p-8">
+              <div className="p-4 sm:p-6 lg:p-8">
                 <EmptyState
                   title="Sign in to view your reviewer dashboard"
                   description="The reviewer dashboard shows workload across the projects you can access. The public Brookside Meadows demo remains available without an account."
@@ -159,9 +164,10 @@ export default function ReviewerDashboardPage() {
               <DashboardMedia
                 src={dashboardMedia.emptyState.src}
                 alt={dashboardMedia.emptyState.alt}
-                className="h-64 rounded-none border-0 shadow-none lg:h-full"
+                className="h-44 rounded-none border-0 shadow-none sm:h-64 lg:h-full"
+                imageClassName="object-contain p-2 sm:p-0"
               />
-              <div className="p-6 lg:p-8">
+              <div className="p-4 sm:p-6 lg:p-8">
                 <EmptyState
                   title="No accessible real projects yet"
                   description="Create a project record or open the Brookside Meadows demo to explore the review-support workflow."
@@ -195,9 +201,9 @@ export default function ReviewerDashboardPage() {
 
         {data ? (
           <>
-            <section className="grid gap-6 lg:grid-cols-[1fr_0.95fr] lg:items-center">
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <section className="grid gap-5 md:gap-6 lg:grid-cols-[1fr_0.95fr] lg:items-center">
+              <div className="space-y-3 sm:space-y-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <MetricCard
                     value={data.accessibleProjectCount}
                     label="Accessible projects"
@@ -220,7 +226,7 @@ export default function ReviewerDashboardPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                   <MetricCard
                     value={data.totals.documentsNeedingIndexing}
                     label="Documents needing indexing"
@@ -250,15 +256,17 @@ export default function ReviewerDashboardPage() {
               <DashboardMedia
                 src={dashboardMedia.workloadMetrics.src}
                 alt={dashboardMedia.workloadMetrics.alt}
-                className="h-72"
+                className="hidden h-56 md:block lg:h-72"
+                imageClassName="object-contain p-3"
               />
             </section>
 
-            <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <section className="grid gap-5 md:gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
               <DashboardMedia
                 src={dashboardMedia.queue.src}
                 alt={dashboardMedia.queue.alt}
-                className="h-80"
+                className="h-48 sm:h-64 lg:h-80"
+                imageClassName="object-contain p-2 sm:p-3"
               />
               <SectionCard
                 title="Reviewer queue"
@@ -273,7 +281,7 @@ export default function ReviewerDashboardPage() {
               </SectionCard>
             </section>
 
-            <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
+            <section className="grid gap-5 md:gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-start">
               <SectionCard
                 title="Accessible projects"
                 description="Projects you can access, ordered by pending reviewer action."
@@ -345,7 +353,8 @@ export default function ReviewerDashboardPage() {
                 <DashboardMedia
                   src={dashboardMedia.mobilePreview.src}
                   alt={dashboardMedia.mobilePreview.alt}
-                  className="h-80"
+                  className="hidden h-72 sm:block lg:h-80"
+                  imageClassName="object-contain p-3"
                 />
                 <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
                   {data.accessNote}
