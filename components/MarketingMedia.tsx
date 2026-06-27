@@ -16,11 +16,12 @@ import SitePlanIllustration from "@/components/illustrations/SitePlanIllustratio
 
 type MarketingMediaVariant = "hero" | "wide" | "panel";
 
-// Aspect ratios per variant. Hero is a touch taller for the landing panel,
-// wide is a standard 16:9 section image, panel is 4:3 for the boundary slot.
+// Mobile uses a taller ratio so artwork is readable instead of being cropped
+// into a thin banner. Tablet and desktop move back toward the intended wide
+// compositions.
 const variantAspect: Record<MarketingMediaVariant, string> = {
-  hero: "aspect-[16/10]",
-  wide: "aspect-[16/9]",
+  hero: "aspect-[4/3] sm:aspect-[16/10]",
+  wide: "aspect-[4/3] sm:aspect-[16/9]",
   panel: "aspect-[4/3]",
 };
 
@@ -28,6 +29,7 @@ export default function MarketingMedia({
   src,
   alt,
   className = "",
+  imageClassName = "object-contain p-2 sm:p-0 lg:object-cover",
   priority = false,
   variant = "wide",
   label = "Media placeholder",
@@ -35,6 +37,7 @@ export default function MarketingMedia({
   src: string;
   alt: string;
   className?: string;
+  imageClassName?: string;
   priority?: boolean;
   variant?: MarketingMediaVariant;
   label?: string;
@@ -43,7 +46,7 @@ export default function MarketingMedia({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card ${variantAspect[variant]} ${className}`}
+      className={`relative w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 shadow-card ${variantAspect[variant]} ${className}`}
     >
       {failed ? (
         <MarketingMediaFallback alt={alt} label={label} />
@@ -58,7 +61,7 @@ export default function MarketingMedia({
           loading={priority ? "eager" : "lazy"}
           decoding="async"
           onError={() => setFailed(true)}
-          className="h-full w-full object-cover"
+          className={`h-full w-full ${imageClassName}`}
           data-testid="marketing-media-image"
         />
       )}
