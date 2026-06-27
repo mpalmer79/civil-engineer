@@ -3,6 +3,8 @@ import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import GuidedDemoCard from "@/components/GuidedDemoCard";
+import MarketingMedia from "@/components/MarketingMedia";
+import { marketingMedia } from "@/lib/marketingMedia";
 import {
   BROOKSIDE_PROJECT_ID,
   demoJourneySteps,
@@ -202,6 +204,13 @@ export default function StartHerePage() {
             project. Each step links to a real workflow route and notes what to
             look for. Some deeper records may prompt sign in.
           </p>
+          <MarketingMedia
+            src={marketingMedia.guidedDemoJourney.src}
+            alt={marketingMedia.guidedDemoJourney.alt}
+            variant="wide"
+            className="mt-6"
+            label="Guided demo placeholder"
+          />
           <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {demoJourneySteps.map((step) => (
               <li key={step.step}>
@@ -243,6 +252,13 @@ export default function StartHerePage() {
             Built as a full-stack review-support system. These are delivered
             capabilities, described without exaggeration.
           </p>
+          <MarketingMedia
+            src={marketingMedia.technicalFoundation.src}
+            alt={marketingMedia.technicalFoundation.alt}
+            variant="wide"
+            className="mt-6"
+            label="Technical foundation placeholder"
+          />
           <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {technicalFoundation.map((item) => (
               <div key={item.title} className="subtle-card p-4">

@@ -5,7 +5,9 @@ import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import GuidedDemoThread from "@/components/GuidedDemoThread";
 import GuidedDemoCard from "@/components/GuidedDemoCard";
 import DemoNoteCard from "@/components/DemoNoteCard";
+import MarketingMedia from "@/components/MarketingMedia";
 import { BROOKSIDE_PROJECT_ID, demoJourneySteps } from "@/lib/demoJourney";
+import { marketingMedia } from "@/lib/marketingMedia";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +44,13 @@ export default function GuidedDemoPage() {
             applicant responses, resubmittals, the response package, and the
             dashboard.
           </p>
+          <MarketingMedia
+            src={marketingMedia.guidedDemoJourney.src}
+            alt={marketingMedia.guidedDemoJourney.alt}
+            variant="wide"
+            className="mt-6"
+            label="Guided demo placeholder"
+          />
           <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {demoJourneySteps.map((step) => (
               <li key={step.step}>
@@ -65,6 +74,14 @@ export default function GuidedDemoPage() {
             <GuidedDemoThread />
           </div>
         </section>
+
+        <MarketingMedia
+          src={marketingMedia.humanReviewBoundary.src}
+          alt={marketingMedia.humanReviewBoundary.alt}
+          variant="panel"
+          className="mx-auto max-w-2xl"
+          label="Human review placeholder"
+        />
 
         <SafetyBoundaryBanner />
       </div>
