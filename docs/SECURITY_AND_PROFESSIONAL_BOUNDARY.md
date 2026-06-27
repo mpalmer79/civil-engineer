@@ -189,6 +189,41 @@ and review priority foundation. See
 - Aging buckets and due date indicators are workflow timing helpers. Past due
   means a reviewer-set due date has passed; it is not an engineering outcome.
 
+## Deployment hardening and observability (Sprint 10)
+
+Production Foundations Sprint 10 adds a deployment readiness and observability
+layer: an environment validation service, public health and readiness checks,
+admin-gated environment and storage diagnostics, public frontend-connection and
+security-boundary diagnostics, and a safe structured logger with a redaction
+helper. See
+[DEPLOYMENT_HARDENING_AND_OBSERVABILITY.md](DEPLOYMENT_HARDENING_AND_OBSERVABILITY.md),
+[API_HEALTH_READINESS_AND_DIAGNOSTICS.md](API_HEALTH_READINESS_AND_DIAGNOSTICS.md),
+and [ENVIRONMENT_VALIDATION.md](ENVIRONMENT_VALIDATION.md).
+
+- Deployment diagnostics expose only safe operational status. They report whether
+  a value is present and whether it looks ready, never a secret value, a
+  credential, a path, a storage key, a signed URL, or any private project data.
+  Secret-like keys are masked to `[redacted]` and path-like keys to `[set]` in the
+  safe logger, and the startup configuration log event records provider names and
+  flags with no secrets.
+- Detailed diagnostics are admin-gated. The environment diagnostic requires an
+  organization admin; the storage diagnostic requires an authenticated user.
+  Readiness is public but sanitized to operational status only, and the
+  frontend-config and security-boundary routes are public guidance only.
+- The readiness check confirms database connectivity with a `SELECT 1`, required
+  configuration presence, and storage provider readiness, reporting operational
+  status only. The auth secret is reported as `needs_operator_review` when it
+  equals the development default, and its value is never returned.
+- Diagnostics never log or return tokens, passwords, password hashes, raw uploaded
+  content, full extracted page text, full applicant response text, full comment
+  letter text, raw storage paths, storage keys, signed URLs, or object storage
+  credentials.
+- Diagnostics are operational indicators only. A readiness, environment, or
+  storage status reports whether a service is available and whether configuration
+  is present. It is not an engineering or compliance determination and does not
+  approve plans, certify compliance, validate design, declare a project safe, or
+  resolve an issue.
+
 ## Known limitations
 
 - Local authentication only; no SSO and no hardened production session system

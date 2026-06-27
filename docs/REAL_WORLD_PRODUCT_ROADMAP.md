@@ -128,10 +128,27 @@ findings remain ahead.
 
 ## 6. Current sprint
 
-Production Foundations Sprint 9: Reviewer Dashboard, Workload Management, and
-Operational Metrics.
+Production Foundations Sprint 10: Production Deployment Hardening, Environment
+Validation, and Observability.
 
-This sprint adds the first cross-project operational view. Reviewers and
+This sprint adds the first deployment readiness and observability layer. It adds
+an environment validation service, public health and readiness checks, admin-gated
+environment and storage diagnostics, public frontend-connection and
+security-boundary diagnostics, a safe structured logger with a redaction helper, a
+frontend Deployment Status page, an updated backend status banner that detects a
+wrongly configured base URL, and a `verify:live` script that checks a running
+deployment from the outside. Diagnostics report whether each value is present and
+whether it looks ready, never a secret value, a credential, a path, or a storage
+key. Detailed environment and storage diagnostics are access controlled; readiness
+and guidance routes are public but sanitized. Diagnostics are operational
+indicators only. They do not approve plans, certify compliance, validate design,
+resolve an issue, or change the review-support boundary. See
+[PRODUCTION_FOUNDATIONS_SPRINT_10.md](PRODUCTION_FOUNDATIONS_SPRINT_10.md),
+[DEPLOYMENT_HARDENING_AND_OBSERVABILITY.md](DEPLOYMENT_HARDENING_AND_OBSERVABILITY.md),
+[API_HEALTH_READINESS_AND_DIAGNOSTICS.md](API_HEALTH_READINESS_AND_DIAGNOSTICS.md),
+and [ENVIRONMENT_VALIDATION.md](ENVIRONMENT_VALIDATION.md).
+
+Sprint 9 (complete) added the first cross-project operational view. Reviewers and
 organization admins can see project workload, pending reviewer actions, document
 indexing status, evidence and checklist review status, applicant response and
 resubmittal activity, and response package readiness across the projects they can
@@ -211,9 +228,6 @@ project records, document registration and file upload, reviewer-created
 findings, basic evidence references, and durable audit events, with Brookside
 Meadows preserved as a seeded demo fixture. See
 [PRODUCTION_FOUNDATIONS_SPRINT_1.md](PRODUCTION_FOUNDATIONS_SPRINT_1.md).
-
-The recommended next sprint is Production Foundations Sprint 10: Production
-Deployment Hardening, Environment Validation, and Observability.
 
 ## 7. Out of scope
 

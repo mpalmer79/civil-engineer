@@ -16,6 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import api_router
 from app.core.config import get_settings
+from app.core.logging import log_event
 from app.db.database import SessionLocal, init_db
 from app.db.seed import PROJECT_ID, seed_database
 from app.db.seed_evidence import seed_evidence
@@ -79,7 +80,42 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         db.commit()
     finally:
         db.close()
+    # Log a safe startup configuration summary. The log helper redacts secrets,
+    # paths, and the database URL, so this only records operational status:
+    # selected storage provider, auth/demo flags, and database kind. No secret
+    # value, URL, credential, or raw path is ever logged.
+    _log_startup_configuration()
     yield
+
+
+def _log_startup_configuration() -> None:
+    """Log selected operational configuration without any secrets."""
+
+    database_kind = (
+        "sqlite"
+        if settings.DATABASE_URL.strip().lower().startswith("sqlite")
+        else "external"
+    )
+    object_storage_configured = (
+        bool(settings.OBJECT_STORAGE_BUCKET)
+        if (settings.STORAGE_PROVIDER or "local").lower() == "s3"
+        else False
+    )
+    log_event(
+        "startup_configuration",
+        service=settings.PROJECT_NAME,
+        version=settings.APP_VERSION,
+        api_prefix=settings.API_V1_PREFIX,
+        database_kind=database_kind,
+        storage_provider=(settings.STORAGE_PROVIDER or "local").lower(),
+        object_storage_configured=object_storage_configured,
+        auth_demo_mode=settings.AUTH_DEMO_MODE,
+        auth_require_login_for_real_projects=(
+            settings.AUTH_REQUIRE_LOGIN_FOR_REAL_PROJECTS
+        ),
+        allow_public_demo=settings.AUTH_ALLOW_PUBLIC_DEMO,
+        demo_mode=settings.DEMO_MODE,
+    )
 
 
 app = FastAPI(

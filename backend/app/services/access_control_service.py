@@ -576,6 +576,49 @@ def require_project_admin(
     )
 
 
+def is_admin_user(db: Session, user: models.UserAccount) -> bool:
+    """Return True if the user is an org_admin in at least one organization.
+
+    Used to gate detailed deployment diagnostics (Sprint 10) to admin-level
+    operators. It never grants engineering authority; it only controls who may
+    read operational configuration status.
+    """
+
+    return bool(org_admin_org_ids(db, user.user_id))
+
+
+def require_admin_user(
+    db: Session, user: models.UserAccount | None
+) -> ActorContext:
+    """Require a signed-in organization admin. Returns the actor context.
+
+    Raises 401 when no user is signed in and 403 when the user is not an
+    org_admin in any organization. Detailed diagnostics never expose secrets, so
+    this protects only the configuration-status surface.
+    """
+
+    if user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="Sign in as an organization admin to view diagnostics.",
+        )
+    if not is_admin_user(db, user):
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Organization admin access is required to view deployment "
+                "diagnostics."
+            ),
+        )
+    org_ids = sorted(org_admin_org_ids(db, user.user_id))
+    return _user_context(
+        user,
+        access_level="org_admin",
+        organization_id=org_ids[0] if org_ids else None,
+        actor_type="org_admin",
+    )
+
+
 def context_for_create(user: models.UserAccount | None) -> ActorContext:
     """Resolve the actor context for creating a new project (not yet scoped).
 
@@ -648,5 +691,7 @@ __all__ = [
     "require_project_read",
     "require_project_reviewer",
     "require_project_admin",
+    "require_admin_user",
+    "is_admin_user",
     "context_for_create",
 ]

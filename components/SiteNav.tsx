@@ -37,6 +37,7 @@ const demoModuleLinks = [
   { href: "/human-review", label: "Human Review" },
   { href: "/audit", label: "Audit" },
   { href: "/evaluation", label: "Evaluation" },
+  { href: "/deployment-status", label: "Deployment Status" },
 ];
 
 export default function SiteNav() {

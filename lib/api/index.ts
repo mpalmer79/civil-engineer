@@ -7,6 +7,7 @@ export {
   authHeaders,
 } from "./client";
 export * from "./auth";
+export * from "./diagnostics";
 export * from "./fileStorage";
 export * from "./responseMatrix";
 export * from "./resubmittals";
