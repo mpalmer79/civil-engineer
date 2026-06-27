@@ -212,6 +212,83 @@ export const technicalFoundation: { title: string; detail: string }[] = [
   },
 ];
 
+// A focused five-minute path for a recruiter or hiring manager who wants the
+// fastest credible tour. Each entry links to an existing public route.
+export const fiveMinutePath: { label: string; href: string; note: string }[] = [
+  {
+    label: "Start Here",
+    href: "/start-here",
+    note: "This page: what it is, who it is for, and the demo path.",
+  },
+  {
+    label: "Guided Demo",
+    href: "/guided-demo",
+    note: "The reviewer journey, plus one concern traced end to end.",
+  },
+  {
+    label: "Brookside Meadows sample project",
+    href: base,
+    note: "The seeded public demo project and its workflow entry points.",
+  },
+  {
+    label: "Evidence and checklist workflow",
+    href: `${base}/evidence-search`,
+    note: "Page-level evidence search and checklist evidence status.",
+  },
+  {
+    label: "Response package preview",
+    href: `${base}/response-packages`,
+    note: "How reviewer communication records are assembled.",
+  },
+  {
+    label: "Deployment status",
+    href: "/deployment-status",
+    note: "Operational readiness, storage, and backend health.",
+  },
+];
+
+// A deeper path for a technical evaluator who wants to assess the engineering
+// foundation. These are topics to look at, not all distinct routes.
+export const technicalPath: string[] = [
+  "Architecture and data model: Next.js frontend, FastAPI backend, SQLAlchemy models.",
+  "PDF page indexing: digital PDFs indexed into per-page records with extracted text.",
+  "Evidence citation flow: findings cite an exact page or section as a source reference.",
+  "Deterministic candidate retrieval: ranked page-text search with no live AI calls.",
+  "Auth and access control: local accounts, organizations, roles, and per-project access.",
+  "Object storage abstraction: pluggable durable storage with credentials kept server-side.",
+  "Audit trail: reviewer actions and accesses recorded as audit events.",
+  "Deployment diagnostics: readiness, storage, and environment checks without exposing secrets.",
+];
+
+// Intentionally out of scope. Stating these plainly keeps the product honest and
+// avoids any impression of an approval or certification engine.
+export const outOfScope: string[] = [
+  "No live AI calls",
+  "No OCR",
+  "No DWG parsing or CAD geometry validation",
+  "No GIS integration",
+  "No enterprise single sign-on",
+  "No full applicant portal",
+  "No final approval, certification, or compliance determination",
+];
+
+// A concise, visitor-facing reviewer walkthrough checklist. It mirrors the demo
+// journey so an evaluator can tick through the workflow in order.
+export const reviewerChecklist: string[] = [
+  "Open Brookside Meadows",
+  "Review documents",
+  "Inspect indexed pages",
+  "View evidence citations",
+  "Search evidence candidates",
+  "Review checklist items",
+  "Open findings",
+  "Review applicant response matrix",
+  "Open response package",
+  "Preview comment letter",
+  "Check dashboard",
+  "Check deployment status",
+];
+
 // Notes aimed at a recruiter or technical evaluator skimming the demo.
 export const evaluatorNotes: string[] = [
   "The workflow is document-first and evidence-first: findings trace back to a specific page.",

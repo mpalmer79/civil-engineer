@@ -72,6 +72,15 @@ D7. The Brookside Meadows project page shows a demo note that names it the
     bucket names, storage keys, signed URLs, or paths.
 16. The optional verification script runs:
     `npm run verify:live -- --frontend <frontend-url> --backend <backend-origin>`.
+    Against the live deployment, run it as:
+    `npm run verify:live -- --frontend https://civil-engineer.up.railway.app --backend <backend-origin>`,
+    or set `LIVE_FRONTEND_URL` and `BACKEND_URL` and run `npm run verify:live`.
+    The script checks the homepage, `/start-here`, `/guided-demo`, the Brookside
+    Meadows sample project, and `/deployment-status`, plus backend `/health` and
+    `/api/v1/readiness`. It requires no secrets and prints none. Run it from a
+    network that can reach the public deployment; a restricted CI or sandbox
+    egress may block outbound requests and report routes as unavailable even
+    when the live site is healthy.
 
 ### Security and language checks
 

@@ -368,11 +368,11 @@ export default async function HomePage() {
             Production foundation workflow
           </h2>
           <p className="mt-2 max-w-3xl text-slate-600">
-            The real-world review-support workflow, built across Sprints 1
-            through 9. Project-scoped steps start from an individual project
-            record, so they open from Projects. The reviewer dashboard gives an
-            operational view across the projects you can access. Every step is
-            review-support only and keeps a human reviewer responsible.
+            The real-world review-support workflow, built across the production
+            foundation sprints. Project-scoped steps start from an individual
+            project record, so they open from Projects. The reviewer dashboard
+            gives an operational view across the projects you can access. Every
+            step is review-support only and keeps a human reviewer responsible.
           </p>
           <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {productionWorkflow.map((step, i) => (

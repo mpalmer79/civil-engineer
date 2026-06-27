@@ -93,16 +93,31 @@ async function main() {
     }
   }
 
-  // Frontend homepage should load.
+  // Frontend homepage and key public demo routes should load. These are the
+  // recruiter/evaluator entry points: Start Here, the Guided Demo, the Brookside
+  // Meadows sample project, and the deployment status page.
   if (FRONTEND_URL) {
-    const home = await fetchSafe(stripTrailingSlash(FRONTEND_URL) + "/");
-    record(
-      "frontend homepage",
-      home.ok ? "ok" : "unavailable",
-      home.ok
-        ? "Frontend homepage responded."
-        : `Frontend homepage did not respond (status ${home.status}).`,
-    );
+    const frontBase = stripTrailingSlash(FRONTEND_URL);
+    const routes = [
+      { path: "/", label: "frontend homepage" },
+      { path: "/start-here", label: "frontend /start-here" },
+      { path: "/guided-demo", label: "frontend /guided-demo" },
+      {
+        path: "/projects/proj_brookside_meadows",
+        label: "frontend Brookside Meadows",
+      },
+      { path: "/deployment-status", label: "frontend /deployment-status" },
+    ];
+    for (const route of routes) {
+      const res = await fetchSafe(frontBase + route.path);
+      record(
+        route.label,
+        res.ok ? "ok" : "unavailable",
+        res.ok
+          ? `Route ${route.path} responded.`
+          : `Route ${route.path} did not respond (status ${res.status}).`,
+      );
+    }
   }
 
   // Print a safe summary. No secrets, tokens, or credentials are ever printed.

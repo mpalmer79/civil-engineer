@@ -8,6 +8,10 @@ import {
   demoJourneySteps,
   technicalFoundation,
   evaluatorNotes,
+  fiveMinutePath,
+  technicalPath,
+  outOfScope,
+  reviewerChecklist,
 } from "@/lib/demoJourney";
 
 export const dynamic = "force-dynamic";
@@ -98,6 +102,98 @@ export default function StartHerePage() {
           </div>
         </section>
 
+        {/* Recruiter and technical evaluator review path */}
+        <section className="surface-card p-6">
+          <span className="page-eyebrow">For recruiters and technical evaluators</span>
+          <h2 className="section-title mt-2">Review this project in 5 minutes</h2>
+          <p className="mt-2 max-w-3xl text-slate-600">
+            A fast path to understand the product, and a deeper path to assess
+            the engineering foundation.
+          </p>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-water-700">
+                5-minute path
+              </h3>
+              <ol className="mt-3 space-y-2">
+                {fiveMinutePath.map((item, i) => (
+                  <li key={item.href + item.label} className="subtle-card p-3">
+                    <Link
+                      href={item.href}
+                      className="flex items-start gap-3 text-sm"
+                    >
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-water-50 text-xs font-bold text-water-700">
+                        {i + 1}
+                      </span>
+                      <span>
+                        <span className="font-semibold text-water-700">
+                          {item.label}
+                        </span>
+                        <span className="mt-0.5 block text-xs text-slate-600">
+                          {item.note}
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-water-700">
+                Deeper technical path
+              </h3>
+              <ol className="mt-3 space-y-2">
+                {technicalPath.map((item, i) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-3 text-sm text-slate-700"
+                  >
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-600">
+                      {i + 1}
+                    </span>
+                    {item}
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                What to notice
+              </h3>
+              <ul className="mt-3 space-y-1.5">
+                {evaluatorNotes.map((note) => (
+                  <li
+                    key={note}
+                    className="flex items-start gap-2 text-sm text-slate-700"
+                  >
+                    <span aria-hidden="true" className="mt-0.5 text-water-600">
+                      +
+                    </span>
+                    {note}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Intentionally out of scope
+              </h3>
+              <ul className="mt-3 flex flex-wrap gap-2">
+                {outOfScope.map((item) => (
+                  <li key={item}>
+                    <span className="chip chip-neutral">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
         {/* Recommended demo path */}
         <section>
           <h2 className="section-title">Recommended demo path</h2>
@@ -115,19 +211,26 @@ export default function StartHerePage() {
           </ol>
         </section>
 
-        {/* Recruiter / evaluator notes */}
+        {/* Reviewer walkthrough checklist */}
         <section className="surface-card p-6">
-          <h2 className="section-title">What a reviewer or evaluator notices</h2>
+          <h2 className="section-title">Reviewer walkthrough checklist</h2>
+          <p className="mt-2 max-w-3xl text-slate-600">
+            A quick checklist to tick through the Brookside Meadows workflow in
+            order.
+          </p>
           <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-            {evaluatorNotes.map((note) => (
+            {reviewerChecklist.map((item) => (
               <li
-                key={note}
+                key={item}
                 className="flex items-start gap-2 text-sm text-slate-700"
               >
-                <span aria-hidden="true" className="mt-0.5 text-water-600">
-                  +
+                <span
+                  aria-hidden="true"
+                  className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded border border-slate-300 text-[10px] text-slate-400"
+                >
+                  ✓
                 </span>
-                {note}
+                {item}
               </li>
             ))}
           </ul>

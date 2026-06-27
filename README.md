@@ -29,9 +29,27 @@ New visitors should open **Start Here** (`/start-here`) for the fastest overview
 
 Search results and findings are candidates that require reviewer confirmation. Reviewer response packages are communication records, not approvals or issue closures.
 
+For a recruiter or technical evaluator, the Start Here page also includes a five-minute review path, a deeper technical path, and a reviewer walkthrough checklist.
+
+### Technical foundation
+
+- Next.js frontend with a typed API client and a shared visual system
+- FastAPI backend with a versioned review-support API
+- SQLAlchemy data model for projects, documents, and review records
+- PDF page indexing with per-page text extraction
+- Page-level evidence citations and deterministic candidate retrieval (no live AI calls)
+- Local authentication, organizations, roles, and per-project access control
+- Object storage abstraction with credentials kept server-side
+- Audit trail for reviewer actions and accesses
+- Reviewer dashboard, workload metrics, and deployment diagnostics
+
+### Intentionally out of scope
+
+No live AI calls, no OCR, no DWG parsing or CAD geometry validation, no GIS integration, no enterprise single sign-on, no full applicant portal, and no final approval, certification, or compliance determination.
+
 ### Live-site navigation and discoverability
 
-The primary navigation leads with the current product workflow: Home, Projects, Rule Packs, Organizations, Guided Demo, and Account/Login. The older Brookside Meadows demo modules (Project Dashboard, Documents, Checklist, Findings, Plan Sheets, CAD Review, Sheet Viewer, Review Packet, Workflow Board, Response Package, Review Cycles, CAD Intake, AI Review, Human Review, Audit, and Evaluation) remain available, grouped under a Demo modules menu and reachable from the Guided Demo. The homepage adds a Production foundation workflow section, a scannable What is live now summary of delivered Sprint 1 through 8 capabilities, and a Public demo vs real project workflow explanation so a visitor can see that the public demo runs without an account while real project records require sign in and access control. A Start Here page and the Guided Demo are surfaced from the homepage hero and the footer so a first-time visitor or evaluator has an obvious entry point. Brookside Meadows remains the public guided demo fixture.
+The primary navigation leads with the current product workflow: Home, Projects, Rule Packs, Organizations, Guided Demo, and Account/Login. The older Brookside Meadows demo modules (Project Dashboard, Documents, Checklist, Findings, Plan Sheets, CAD Review, Sheet Viewer, Review Packet, Workflow Board, Response Package, Review Cycles, CAD Intake, AI Review, Human Review, Audit, and Evaluation) remain available, grouped under a Demo modules menu and reachable from the Guided Demo. The homepage adds a Production foundation workflow section, a scannable What is live now summary of the delivered review-support capabilities, and a Public demo vs real project workflow explanation so a visitor can see that the public demo runs without an account while real project records require sign in and access control. A Start Here page and the Guided Demo are surfaced from the homepage hero and the footer so a first-time visitor or evaluator has an obvious entry point. Brookside Meadows remains the public guided demo fixture.
 
 After a frontend redeploy, verify the live site against [docs/LIVE_SITE_VERIFICATION.md](docs/LIVE_SITE_VERIFICATION.md). A Next.js build can appear stale if Railway did not redeploy from the latest `main`; trigger a fresh frontend deploy and re-check.
 
