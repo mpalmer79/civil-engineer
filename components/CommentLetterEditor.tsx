@@ -83,52 +83,46 @@ export default function CommentLetterEditor({
       <h3 className="text-lg font-semibold text-slate-900">
         Edit comment letter draft
       </h3>
-      <p className="mt-1 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">
+      <p className="alert alert-info mt-2">
         This is a reviewer-editable draft generated from deterministic templates.
         It does not finalize a review outcome.
       </p>
       <div className="mt-4 space-y-4">
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <div className="form-field">
+          <label htmlFor="cl-title" className="form-label">
             Title
           </label>
           <input
+            id="cl-title"
             type="text"
             value={values.title}
             onChange={(e) => setField("title", e.target.value)}
-            className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+            className="form-input"
           />
         </div>
         {FIELDS.map((f) => (
-          <div key={f.key}>
-            <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <div key={f.key} className="form-field">
+            <label htmlFor={`cl-${String(f.key)}`} className="form-label">
               {f.label}
             </label>
             <textarea
+              id={`cl-${String(f.key)}`}
               value={values[f.key]}
               onChange={(e) => setField(f.key, e.target.value)}
               rows={f.rows}
-              className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              className="form-input"
             />
           </div>
         ))}
       </div>
-      {error ? (
-        <p className="mt-3 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-          {error}
-        </p>
-      ) : null}
-      {message ? (
-        <p className="mt-3 rounded-md bg-land-50 px-3 py-2 text-sm text-land-700">
-          {message}
-        </p>
-      ) : null}
+      {error ? <p className="alert alert-danger mt-3">{error}</p> : null}
+      {message ? <p className="alert alert-success mt-3">{message}</p> : null}
       <div className="mt-4 flex flex-wrap gap-3">
         <button
           type="button"
           onClick={() => save()}
           disabled={busy !== null}
-          className="rounded-lg bg-water-600 px-4 py-2 text-sm font-semibold text-white hover:bg-water-700 disabled:opacity-60"
+          className="btn btn-primary btn-sm"
         >
           {busy === "save" ? "Saving..." : "Save edits"}
         </button>
@@ -136,7 +130,7 @@ export default function CommentLetterEditor({
           type="button"
           onClick={() => save("ready_for_reviewer_handoff")}
           disabled={busy !== null}
-          className="rounded-lg border border-water-600 px-4 py-2 text-sm font-semibold text-water-700 hover:bg-water-50 disabled:opacity-60"
+          className="btn btn-secondary btn-sm"
         >
           {busy === "ready_for_reviewer_handoff"
             ? "Updating..."

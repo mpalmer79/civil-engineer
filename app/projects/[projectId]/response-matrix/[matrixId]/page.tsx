@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
+import StatusChip from "@/components/StatusChip";
+import EmptyState from "@/components/EmptyState";
 import AddMatrixItemsToPackagePanel from "@/components/AddMatrixItemsToPackagePanel";
 import {
   getResponseMatrix,
@@ -44,12 +46,7 @@ export default async function ResponseMatrixDetailPage({
         ) : (
           <div className="flex flex-wrap gap-2">
             {entries.map(([status, count]) => (
-              <span
-                key={status}
-                className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200"
-              >
-                {status}: {count}
-              </span>
+              <StatusChip key={status} label={String(count)} prefix={status} />
             ))}
           </div>
         )}
@@ -73,12 +70,11 @@ export default async function ResponseMatrixDetailPage({
           <Link href={`${base}/resubmittals`} className="nav-link">
             Resubmittal rounds
           </Link>
-          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-            Status: {matrix.status}
-          </span>
-          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-            Round: {matrix.currentRoundNumber}
-          </span>
+          <StatusChip label={matrix.status} prefix="status" />
+          <StatusChip
+            label={String(matrix.currentRoundNumber)}
+            prefix="round"
+          />
           <SourceBadge sourceMode={matrix.sourceMode} />
         </div>
 
@@ -93,57 +89,47 @@ export default async function ResponseMatrixDetailPage({
           description="Each item links back to a reviewer finding or checklist review item. Open an item to record an applicant response or carry it forward."
         >
           {items === null ? (
-            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
+            <p className="alert alert-warning">
               Matrix items are served by the backend. Start the API to view them.
             </p>
           ) : items.length === 0 ? (
-            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
-              No items in this matrix yet. Add reviewer findings or checklist
-              review items from their detail pages.
-            </p>
+            <EmptyState
+              title="No items in this matrix yet"
+              description="Add reviewer findings or checklist review items from their detail pages."
+            />
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[40rem] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                    <th className="py-2 pr-4">Item</th>
-                    <th className="py-2 pr-4">Category</th>
-                    <th className="py-2 pr-4">Applicant response</th>
-                    <th className="py-2 pr-4">Reviewer follow-up</th>
-                    <th className="py-2 pr-4">Carry-forward</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item) => (
-                    <tr
-                      key={item.responseMatrixItemId}
-                      className="border-b border-slate-100"
+            <ul className="list-container">
+              {items.map((item) => (
+                <li
+                  key={item.responseMatrixItemId}
+                  className="flex flex-col gap-3 px-4 py-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Link
+                      href={`${base}/response-matrix/items/${item.responseMatrixItemId}`}
+                      className="font-semibold text-water-700 hover:underline"
                     >
-                      <td className="py-2 pr-4">
-                        <Link
-                          href={`${base}/response-matrix/items/${item.responseMatrixItemId}`}
-                          className="font-semibold text-water-700 hover:underline"
-                        >
-                          {item.itemNumber ?? "Item"}
-                        </Link>
-                      </td>
-                      <td className="py-2 pr-4 text-slate-700">
-                        {item.category}
-                      </td>
-                      <td className="py-2 pr-4 text-slate-600">
-                        {item.applicantResponseStatus}
-                      </td>
-                      <td className="py-2 pr-4 text-slate-600">
-                        {item.reviewerFollowUpStatus}
-                      </td>
-                      <td className="py-2 pr-4 text-slate-600">
-                        {item.carryForwardStatus}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      {item.itemNumber ?? "Item"}
+                    </Link>
+                    <span className="text-xs text-slate-500">{item.category}</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <StatusChip
+                      label={item.applicantResponseStatus}
+                      prefix="applicant"
+                    />
+                    <StatusChip
+                      label={item.reviewerFollowUpStatus}
+                      prefix="follow-up"
+                    />
+                    <StatusChip
+                      label={item.carryForwardStatus}
+                      prefix="carry-forward"
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </SectionCard>
 
@@ -155,7 +141,7 @@ export default async function ResponseMatrixDetailPage({
           />
         ) : null}
 
-        <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+        <p className="alert alert-info">
           This matrix is review-support only. Status labels describe reviewer
           workflow state, not a final engineering decision. Every item needs
           human review.

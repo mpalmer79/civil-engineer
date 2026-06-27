@@ -6,6 +6,7 @@ import Link from "next/link";
 import BackendStatusBanner from "@/components/BackendStatusBanner";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import SectionCard from "@/components/SectionCard";
+import PageHeader from "@/components/PageHeader";
 import {
   API_BASE_URL,
   getReadiness,
@@ -76,24 +77,16 @@ export default function DeploymentStatusPage() {
   }, []);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-      <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-        Operational diagnostics
-      </p>
-      <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-        Deployment status
-      </h1>
-      <p className="mt-3 max-w-2xl text-slate-600">
-        Safe operational status for the live deployment. These are configuration
-        and connectivity indicators only. They do not approve plans, certify
-        compliance, validate design, or make any engineering decision.
-      </p>
-
-      <div className="mt-6">
+    <div>
+      <PageHeader
+        eyebrow="Operational diagnostics"
+        title="Deployment status"
+        description="Safe operational status for the live deployment. These are configuration and connectivity indicators only. They do not approve plans, certify compliance, validate design, or make any engineering decision."
+      />
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
         <BackendStatusBanner />
-      </div>
 
-      <div className="mt-6 space-y-6">
+        <div className="mt-6 space-y-6">
         {/* Frontend configuration */}
         <SectionCard title="Frontend configuration">
           <dl className="grid gap-3 sm:grid-cols-2">
@@ -211,9 +204,9 @@ export default function DeploymentStatusPage() {
             {troubleshooting.map((tip) => (
               <li
                 key={tip}
-                className="flex items-start gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm text-slate-700"
+                className="subtle-card flex items-start gap-2 px-3 py-2 text-sm text-slate-700"
               >
-                <span aria-hidden="true" className="text-water-600">
+                <span aria-hidden="true" className="font-semibold text-water-600">
                   +
                 </span>
                 {tip}
@@ -227,6 +220,7 @@ export default function DeploymentStatusPage() {
         </SectionCard>
 
         <SafetyBoundaryBanner />
+      </div>
       </div>
     </div>
   );

@@ -217,7 +217,8 @@ describe("Project documents list", () => {
   it("shows processing status and page count", async () => {
     render(await ProjectDocumentsPage({ params: { projectId } }));
     expect(screen.getByText("indexed_with_text")).toBeInTheDocument();
-    expect(screen.getByText("Text extraction")).toBeInTheDocument();
+    // Each document card carries a labeled "Text extraction" status chip.
+    expect(screen.getAllByText("Text extraction").length).toBeGreaterThan(0);
     expect(screen.getByText("text_extracted")).toBeInTheDocument();
   });
 });

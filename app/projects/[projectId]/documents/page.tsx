@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
+import StatusChip from "@/components/StatusChip";
+import EmptyState from "@/components/EmptyState";
 import { getProjectDetail, listProjectDocuments } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -37,7 +39,7 @@ export default async function ProjectDocumentsPage({
           </Link>
           <Link
             href={`${base}/documents/register`}
-            className="rounded-lg bg-water-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-water-700"
+            className="btn btn-primary btn-sm"
           >
             Register document
           </Link>
@@ -51,74 +53,65 @@ export default async function ProjectDocumentsPage({
             </p>
           </SectionCard>
         ) : documents.length === 0 ? (
-          <SectionCard title="No documents yet">
-            <p className="text-sm text-slate-600">
-              No documents have been registered or uploaded for this project
-              record yet.
-            </p>
-          </SectionCard>
+          <EmptyState
+            title="No documents yet"
+            description="No documents have been registered or uploaded for this project record yet."
+            action={
+              <Link
+                href={`${base}/documents/register`}
+                className="btn btn-primary btn-sm"
+              >
+                Register document
+              </Link>
+            }
+          />
         ) : (
-          <SectionCard>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                    <th className="px-3 py-2">Document</th>
-                    <th className="px-3 py-2">Type</th>
-                    <th className="px-3 py-2">Source</th>
-                    <th className="px-3 py-2">Storage</th>
-                    <th className="px-3 py-2">File</th>
-                    <th className="px-3 py-2">Processing</th>
-                    <th className="px-3 py-2">Pages</th>
-                    <th className="px-3 py-2">Text extraction</th>
-                    <th className="px-3 py-2">Indexed</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {documents.map((d) => (
-                    <tr key={d.documentId} className="border-b border-slate-100">
-                      <td className="px-3 py-2 font-medium">
-                        <Link
-                          href={`${base}/documents/${d.documentId}`}
-                          className="text-water-700 hover:underline"
-                        >
-                          {d.originalFileName ?? d.fileName}
-                        </Link>
-                      </td>
-                      <td className="px-3 py-2 text-slate-600">
-                        {d.documentType}
-                      </td>
-                      <td className="px-3 py-2">
-                        <SourceBadge sourceMode={d.sourceMode} />
-                      </td>
-                      <td className="px-3 py-2 text-slate-600">
-                        {d.storageProvider ?? "n/a"}
-                      </td>
-                      <td className="px-3 py-2 text-slate-600">
-                        {d.storageProvider
-                          ? d.fileAvailable
-                            ? "file available"
-                            : "file unavailable"
-                          : "n/a"}
-                      </td>
-                      <td className="px-3 py-2 text-slate-600">
-                        {d.processingStatus ?? "n/a"}
-                      </td>
-                      <td className="px-3 py-2 text-slate-600">
-                        {d.pageCount ?? "n/a"}
-                      </td>
-                      <td className="px-3 py-2 text-slate-600">
-                        {d.textExtractionStatus ?? "not indexed"}
-                      </td>
-                      <td className="px-3 py-2 text-slate-600">
-                        {d.indexedAt ? "yes" : "no"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </SectionCard>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {documents.map((d) => (
+              <li key={d.documentId} className="surface-card p-4">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <Link
+                    href={`${base}/documents/${d.documentId}`}
+                    className="break-words text-sm font-semibold text-water-700 hover:underline"
+                  >
+                    {d.originalFileName ?? d.fileName}
+                  </Link>
+                  <SourceBadge sourceMode={d.sourceMode} />
+                </div>
+                <p className="mt-1 text-xs text-slate-500">{d.documentType}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <StatusChip
+                    label={d.processingStatus ?? "n/a"}
+                    prefix="Processing"
+                  />
+                  <StatusChip
+                    label={d.storageProvider ?? "n/a"}
+                    prefix="Storage"
+                  />
+                  {d.storageProvider ? (
+                    <StatusChip
+                      label={d.fileAvailable ? "file available" : "file unavailable"}
+                      tone={d.fileAvailable ? "success" : "warning"}
+                    />
+                  ) : (
+                    <StatusChip label="n/a" prefix="File" />
+                  )}
+                  <StatusChip
+                    label={d.pageCount != null ? String(d.pageCount) : "n/a"}
+                    prefix="Pages"
+                  />
+                  <StatusChip
+                    label={d.textExtractionStatus ?? "not indexed"}
+                    prefix="Text extraction"
+                  />
+                  <StatusChip
+                    label={d.indexedAt ? "indexed" : "not indexed"}
+                    tone={d.indexedAt ? "brand" : "neutral"}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
     </div>

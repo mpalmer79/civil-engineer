@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
+import StatusChip from "@/components/StatusChip";
 import { getRulePack } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -32,18 +33,12 @@ export default async function RulePackDetailPage({
           <Link href="/rule-packs" className="nav-link">
             Back to rule packs
           </Link>
-          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-            {pack.jurisdictionName}
-          </span>
-          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-            {pack.versionLabel}
-          </span>
-          <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-            {pack.itemCount} items
-          </span>
+          <StatusChip label={pack.jurisdictionName} />
+          <StatusChip label={pack.versionLabel} prefix="version" tone="brand" />
+          <StatusChip label={`${pack.itemCount} items`} />
         </div>
 
-        <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <p className="alert alert-warning">
           This is a starter review template, not a legal ordinance and not a
           compliance standard. A reviewer decides applicability and evidence
           status for each item.
@@ -57,15 +52,13 @@ export default async function RulePackDetailPage({
                 .map((item) => (
                   <li
                     key={item.rulePackItemId}
-                    className="rounded-lg border border-slate-200 p-3 text-sm"
+                    className="subtle-card p-4 text-sm"
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
                       <span className="font-semibold text-slate-800">
                         {item.itemCode}: {item.requirementText}
                       </span>
-                      <span className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200">
-                        risk: {item.riskLevel}
-                      </span>
+                      <StatusChip label={item.riskLevel} prefix="risk" />
                     </div>
                     <p className="mt-1 text-slate-600">
                       <span className="font-semibold text-slate-500">

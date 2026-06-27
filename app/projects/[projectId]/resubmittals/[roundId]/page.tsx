@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
+import StatusChip from "@/components/StatusChip";
+import EmptyState from "@/components/EmptyState";
 import {
   getResubmittalRound,
   getResubmittalRoundSummary,
@@ -50,12 +52,7 @@ export default async function ResubmittalRoundDetailPage({
         ) : (
           <div className="flex flex-wrap gap-2">
             {entries.map(([status, count]) => (
-              <span
-                key={status}
-                className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200"
-              >
-                {status}: {count}
-              </span>
+              <StatusChip key={status} label={String(count)} prefix={status} />
             ))}
           </div>
         )}
@@ -106,16 +103,11 @@ export default async function ResubmittalRoundDetailPage({
           description="Documents received with this resubmittal round, organized for reviewer review."
         >
           {round.documentIds.length === 0 ? (
-            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
-              No documents linked to this round yet.
-            </p>
+            <EmptyState title="No documents linked to this round yet" />
           ) : (
-            <ul className="space-y-2">
+            <ul className="list-container">
               {round.documentIds.map((docId) => (
-                <li
-                  key={docId}
-                  className="rounded-lg border border-slate-200 p-3 text-sm"
-                >
+                <li key={docId} className="px-4 py-3 text-sm">
                   <Link
                     href={`${base}/documents/${docId}`}
                     className="font-semibold text-water-700 hover:underline"
@@ -133,16 +125,11 @@ export default async function ResubmittalRoundDetailPage({
           description="Response matrix items carried into this round for continued reviewer review."
         >
           {round.carriedForwardItemIds.length === 0 ? (
-            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-500">
-              No items carried forward into this round yet.
-            </p>
+            <EmptyState title="No items carried forward into this round yet" />
           ) : (
-            <ul className="space-y-2">
+            <ul className="list-container">
               {round.carriedForwardItemIds.map((itemId) => (
-                <li
-                  key={itemId}
-                  className="rounded-lg border border-slate-200 p-3 text-sm"
-                >
+                <li key={itemId} className="px-4 py-3 text-sm">
                   <Link
                     href={`${base}/response-matrix/items/${itemId}`}
                     className="font-semibold text-water-700 hover:underline"
@@ -168,7 +155,7 @@ export default async function ResubmittalRoundDetailPage({
           </SectionCard>
         ) : null}
 
-        <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
+        <p className="alert alert-info">
           This resubmittal round is review-support only. Status labels describe
           reviewer workflow state, not a final engineering decision. Every round
           needs human review.

@@ -6,6 +6,8 @@ import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import MetricCard from "@/components/MetricCard";
+import StatusChip from "@/components/StatusChip";
+import EmptyState from "@/components/EmptyState";
 import PermissionDeniedCard from "@/components/PermissionDeniedCard";
 import BackendStatusBanner from "@/components/BackendStatusBanner";
 import {
@@ -117,17 +119,12 @@ export default function OrganizationDashboardPage({
 
             <SectionCard title="Projects by review-support status">
               {Object.keys(data.statusCounts).length === 0 ? (
-                <p className="text-sm text-slate-600">
-                  No accessible projects in this organization yet.
-                </p>
+                <EmptyState title="No accessible projects in this organization yet" />
               ) : (
                 <ul className="flex flex-wrap gap-2">
                   {Object.entries(data.statusCounts).map(([status, count]) => (
-                    <li
-                      key={status}
-                      className="badge bg-slate-100 text-slate-600 ring-1 ring-slate-200"
-                    >
-                      {status}: {count}
+                    <li key={status}>
+                      <StatusChip label={String(count)} prefix={status} />
                     </li>
                   ))}
                 </ul>
@@ -140,58 +137,52 @@ export default function OrganizationDashboardPage({
                 description="Workload grouped by assigned reviewer. Visible to organization admins and senior reviewers."
               >
                 {workload.reviewers.length === 0 ? (
-                  <p className="text-sm text-slate-600">
-                    No reviewer workload to summarize yet.
-                  </p>
+                  <EmptyState title="No reviewer workload to summarize yet" />
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                      <thead>
-                        <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                          <th className="px-3 py-2">Assigned reviewer</th>
-                          <th className="px-3 py-2">Projects</th>
-                          <th className="px-3 py-2">Pending actions</th>
-                          <th className="px-3 py-2">Projects with pending</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {workload.reviewers.map((r) => (
-                          <tr
-                            key={r.assignedReviewerUserId ?? "unassigned"}
-                            className="border-b border-slate-100"
-                          >
-                            <td className="px-3 py-2 text-slate-800">
-                              {r.assignedReviewerName}
-                            </td>
-                            <td className="px-3 py-2 text-slate-600">
-                              {r.projectCount}
-                            </td>
-                            <td className="px-3 py-2 text-slate-600">
-                              {r.pendingReviewerActionCount}
-                            </td>
-                            <td className="px-3 py-2 text-slate-600">
-                              {r.projectsWithPendingActionCount}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <ul className="list-container">
+                    {workload.reviewers.map((r) => (
+                      <li
+                        key={r.assignedReviewerUserId ?? "unassigned"}
+                        className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <p className="text-sm font-semibold text-slate-800">
+                          {r.assignedReviewerName}
+                        </p>
+                        <div className="flex flex-wrap gap-2">
+                          <StatusChip
+                            label={String(r.projectCount)}
+                            prefix="projects"
+                          />
+                          <StatusChip
+                            label={String(r.pendingReviewerActionCount)}
+                            prefix="pending actions"
+                            tone={
+                              r.pendingReviewerActionCount > 0
+                                ? "warning"
+                                : "neutral"
+                            }
+                          />
+                          <StatusChip
+                            label={String(r.projectsWithPendingActionCount)}
+                            prefix="projects with pending"
+                          />
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
                 )}
               </SectionCard>
             ) : null}
 
             <SectionCard title="Accessible projects">
               {data.projects.length === 0 ? (
-                <p className="text-sm text-slate-600">
-                  No accessible projects in this organization yet.
-                </p>
+                <EmptyState title="No accessible projects in this organization yet" />
               ) : (
-                <ul className="space-y-2">
+                <ul className="list-container">
                   {data.projects.map((p) => (
                     <li
                       key={p.projectId}
-                      className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3 text-sm"
+                      className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"
                     >
                       <Link
                         href={`/projects/${p.projectId}/workload`}
@@ -199,19 +190,21 @@ export default function OrganizationDashboardPage({
                       >
                         {p.projectName}
                       </Link>
-                      <span className="badge bg-amber-50 text-amber-700 ring-1 ring-amber-200">
-                        {p.pendingReviewerActionCount} pending reviewer action
-                        {p.pendingReviewerActionCount === 1 ? "" : "s"}
-                      </span>
+                      <StatusChip
+                        label={`${p.pendingReviewerActionCount} pending reviewer action${
+                          p.pendingReviewerActionCount === 1 ? "" : "s"
+                        }`}
+                        tone={
+                          p.pendingReviewerActionCount > 0 ? "warning" : "neutral"
+                        }
+                      />
                     </li>
                   ))}
                 </ul>
               )}
             </SectionCard>
 
-            <p className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600">
-              {data.accessNote}
-            </p>
+            <p className="alert alert-info">{data.accessNote}</p>
           </>
         ) : null}
       </div>
