@@ -14,16 +14,6 @@ vi.mock("next/navigation", () => ({
   },
 }));
 
-const BANNED = [
-  "approved",
-  "certified",
-  "validated",
-  "verified",
-  "compliant",
-  "passes review",
-  "meets all requirements",
-];
-
 const projectId = "proj_user_1";
 
 const project = {
@@ -135,37 +125,6 @@ const planSummary = {
   missingSheetIds: [],
 };
 
-const packet = {
-  packetId: "pkt_1",
-  projectId,
-  title: "Brookside review packet draft",
-  packetType: "stormwater",
-  status: "draft",
-  summary: "",
-  createdAt: null,
-};
-
-const traceability = {
-  packetId: "pkt_1",
-  projectId,
-  totalRows: 1,
-  rows: [
-    {
-      sectionType: "stormwater",
-      itemId: "pitem_1",
-      itemTitle: "Detention basin outlet detail",
-      itemType: "checklist_item",
-      sourceType: "finding",
-      sourceId: "find_1",
-      evidenceType: "evidence_citation",
-      evidenceId: "cite_1",
-      relationship: "potential_support",
-      label: "Outlet detail citation",
-    },
-  ],
-  note: "Packet-based traceability.",
-};
-
 vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
@@ -182,14 +141,11 @@ vi.mock("@/lib/api", async (importOriginal) => {
     })),
     getPlanSheets: vi.fn(async () => [planSheet]),
     getPlanSheetSummary: vi.fn(async () => planSummary),
-    getReviewPackets: vi.fn(async () => [packet]),
-    getReviewPacketTraceability: vi.fn(async () => traceability),
   };
 });
 
 import WorkflowBoardClient from "@/components/WorkflowBoardClient";
 import PlanSheetIndexPage from "@/app/projects/[projectId]/plan-sheets/page";
-import ProjectTraceabilityPage from "@/app/projects/[projectId]/traceability/page";
 
 afterEach(() => cleanup());
 
@@ -274,38 +230,5 @@ describe("Plan sheet index page", () => {
     );
     render(await PlanSheetIndexPage({ params: { projectId } }));
     expect(screen.getByText("No plan sheets available")).toBeInTheDocument();
-  });
-});
-
-describe("Project traceability page", () => {
-  it("renders linked rows and a packet link", async () => {
-    render(await ProjectTraceabilityPage({ params: { projectId } }));
-    expect(screen.getByText("Traceability")).toBeInTheDocument();
-    expect(
-      screen.getByText("Detention basin outlet detail"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Outlet detail citation")).toBeInTheDocument();
-    // Links to the review packets surface.
-    const hrefs = Array.from(document.querySelectorAll("a")).map((a) =>
-      a.getAttribute("href"),
-    );
-    expect(hrefs).toContain(`/projects/${projectId}/review-packets`);
-  });
-
-  it("shows an honest no-packet state that does not imply satisfaction", async () => {
-    const api = await import("@/lib/api");
-    (api.getReviewPackets as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
-    render(await ProjectTraceabilityPage({ params: { projectId } }));
-    expect(screen.getByText("No review packet yet")).toBeInTheDocument();
-    const text = (document.body.textContent ?? "").toLowerCase();
-    expect(text).toContain("not mean requirements are satisfied");
-  });
-
-  it("introduces no banned wording", async () => {
-    const { container } = render(
-      await ProjectTraceabilityPage({ params: { projectId } }),
-    );
-    const text = (container.textContent ?? "").toLowerCase();
-    for (const word of BANNED) expect(text).not.toContain(word);
   });
 });

@@ -51,6 +51,9 @@ export default async function EvidenceSearchPage({
           <Link href={`${base}/checklists`} className="nav-link">
             Project checklists
           </Link>
+          <Link href={`${base}/traceability`} className="nav-link">
+            Traceability
+          </Link>
           <Link href={`${base}/documents`} className="nav-link">
             Documents
           </Link>
