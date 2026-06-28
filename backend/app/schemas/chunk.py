@@ -20,6 +20,7 @@ class ChunkRead(BaseModel):
     keywords: list[str]
     related_checklist_items: list[str]
     related_findings: list[str]
+    chunk_origin: str | None = None
 
 
 class DocumentChunkingSummary(BaseModel):

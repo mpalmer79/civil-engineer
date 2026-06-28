@@ -850,6 +850,10 @@ ALLOWED_RETRIEVAL_QUERY_TYPES: set[str] = {
     # Keyword search over real-derived DocumentChunk rows (chunks built from
     # indexed PDF page text). Distinct from the page-text "keyword" search.
     "chunk_keyword",
+    # Semantic search over real-derived chunk embeddings.
+    "chunk_semantic",
+    # Hybrid keyword plus semantic search over real-derived chunks.
+    "chunk_hybrid",
 }
 
 # Evidence candidate statuses. Every value keeps the candidate under reviewer

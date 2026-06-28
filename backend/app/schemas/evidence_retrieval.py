@@ -62,15 +62,17 @@ class EvidenceSearchResult(BaseModel):
 
 
 class ChunkEvidenceSearchRequest(BaseModel):
-    """Request body for keyword search over real-derived document chunks.
+    """Request body for retrieval over real-derived document chunks.
 
-    query_text is required (at least two characters). filters are optional and
-    metadata-only. limit is bounded to a safe maximum by the service. The search
-    only covers real-derived chunks (those built from indexed PDF page text);
-    seeded demo chunks are never included.
+    query_text is required (at least two characters). mode selects keyword,
+    semantic, or hybrid retrieval. filters are optional and metadata-only. limit
+    is bounded to a safe maximum by the service. The search only covers
+    real-derived chunks (those built from indexed PDF page text); seeded demo
+    chunks are never included.
     """
 
     query_text: str = Field(..., min_length=1)
+    mode: str = "keyword"
     filters: EvidenceSearchFilters = Field(default_factory=EvidenceSearchFilters)
     limit: int = 10
 
@@ -190,6 +192,48 @@ class PromoteCandidateToDraftFindingResponse(BaseModel):
     finding: FindingSummary
     citation: CitationSummary
     candidate: EvidenceCandidateResponse
+
+
+class ChunkEmbeddingBackfillResponse(BaseModel):
+    """Summary of a chunk embedding backfill. Counts and model identity only."""
+
+    model_config = ConfigDict(protected_namespaces=())
+
+    project_id: str
+    provider: str
+    model_name: str
+    model_version: str
+    dimension: int
+    chunk_count: int
+    embedded: int
+    refreshed: int
+    skipped_current: int
+    skipped_empty: int
+    failed: int
+
+
+class ChunkLinkSuggestion(BaseModel):
+    """A reviewer-support suggestion of checklist/finding links for one chunk.
+
+    Scores are relevance hints for the reviewer, not assertions that the evidence
+    satisfies a checklist item or finding.
+    """
+
+    chunk_id: str
+    page_number: int | None = None
+    checklist_item_ids: list[str] = []
+    finding_ids: list[str] = []
+    checklist_scores: dict[str, float] = {}
+    finding_scores: dict[str, float] = {}
+
+
+class ChunkLinkSuggestionResponse(BaseModel):
+    project_id: str
+    chunks_scanned: int
+    chunks_with_suggestions: int
+    checklist_links_added: int
+    finding_links_added: int
+    suggestions: list[ChunkLinkSuggestion] = []
 
 
 class RetrievalQueryResponse(BaseModel):

@@ -50,6 +50,7 @@ def _chunk(
         "keywords": keywords,
         "related_checklist_items": checklist,
         "related_findings": findings,
+        "chunk_origin": "seeded_demo",
     }
 
 

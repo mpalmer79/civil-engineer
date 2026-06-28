@@ -223,6 +223,7 @@ async function postJson<T>(
 export type EvidenceSearchInput = {
   queryText: string;
   queryType?: string;
+  mode?: string;
   filters?: {
     documentId?: string;
     documentType?: string;
@@ -272,6 +273,7 @@ export async function searchProjectChunkEvidence(
     `/api/v1/projects/${projectId}/evidence-retrieval/chunk-search`,
     {
       query_text: input.queryText,
+      mode: input.mode || "keyword",
       filters: {
         document_id: filters.documentId || null,
         document_type: filters.documentType || null,
@@ -345,6 +347,7 @@ export type SaveCandidateInput = {
   rankingScore?: number;
   rankingReason?: string | null;
   candidateOrigin?: string;
+  candidateStatus?: string;
   reviewerNote?: string | null;
 };
 
@@ -367,6 +370,7 @@ export async function saveEvidenceCandidate(
       ranking_score: input.rankingScore ?? 0,
       ranking_reason: input.rankingReason ?? null,
       candidate_origin: input.candidateOrigin || "manual_save",
+      candidate_status: input.candidateStatus ?? null,
       reviewer_note: input.reviewerNote ?? null,
     },
     mapCandidate,

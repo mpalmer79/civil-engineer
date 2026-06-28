@@ -551,12 +551,18 @@ class DocumentChunk(Base):
     chunk carries enough metadata (page, section, keywords, related checklist
     items and findings) to support keyword and metadata based retrieval.
 
-    Real-derived chunks built from indexed PDF page text are distinguished only
-    by a chunk_id prefix (see page_chunking_service.REAL_DERIVED_CHUNK_PREFIX),
-    because this table has no provenance column yet.
-    TODO(provenance): add a source_mode/provenance column (for example
-    seeded vs real_derived) so origin does not rely on the chunk_id prefix.
-    See docs/PHASE_1_REAL_PDF_INDEXING_AUDIT.md, PR 2.
+    Provenance: chunk_origin records whether a chunk is seeded demo data
+    (seeded_demo) or built from indexed PDF page text (real_derived). Older rows
+    created before this column existed may have a null chunk_origin; for those,
+    real-derived status falls back to the chunk_id prefix
+    (page_chunking_service.REAL_DERIVED_CHUNK_PREFIX). New code should write and
+    prefer chunk_origin.
+
+    Migration note: this repo initializes schema with Base.metadata.create_all
+    and has no migration tooling, so adding this column applies automatically to
+    fresh databases only. An existing production database needs a one-time
+    ALTER TABLE (or a backfill) to add and populate chunk_origin. See
+    docs/PHASE_1_REAL_PDF_INDEXING_AUDIT.md.
     """
 
     __tablename__ = "document_chunks"
@@ -578,9 +584,44 @@ class DocumentChunk(Base):
     keywords: Mapped[list] = mapped_column(JSON, default=list)
     related_checklist_items: Mapped[list] = mapped_column(JSON, default=list)
     related_findings: Mapped[list] = mapped_column(JSON, default=list)
+    # Durable provenance. Nullable so older rows (created before this column)
+    # keep working; those fall back to the chunk_id prefix for real-derived
+    # detection. New rows are written with an explicit value.
+    chunk_origin: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=_utcnow
     )
+
+
+class ChunkEmbedding(Base):
+    """A deterministic, locally computed embedding vector for a document chunk.
+
+    Embeddings power semantic and hybrid retrieval over real-derived chunks. The
+    vector is stored as JSON (a portable, dependency-free fallback). For larger
+    datasets a pgvector column should replace this JSON storage; see
+    docs/PHASE_2_RETRIEVAL_BRAIN.md. The provider, model name, and model version
+    are recorded so a stored vector can be detected as stale and re-embedded when
+    the embedding model changes. content_hash detects chunk content changes.
+    No provider secrets are ever stored here.
+    """
+
+    __tablename__ = "chunk_embeddings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    chunk_id: Mapped[str] = mapped_column(
+        ForeignKey("document_chunks.chunk_id"), unique=True, nullable=False
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    provider: Mapped[str] = mapped_column(String, nullable=False)
+    model_name: Mapped[str] = mapped_column(String, nullable=False)
+    model_version: Mapped[str] = mapped_column(String, nullable=False)
+    dimension: Mapped[int] = mapped_column(Integer, nullable=False)
+    vector: Mapped[list] = mapped_column(JSON, default=list)
+    content_hash: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
 
 
 class FindingSource(Base):

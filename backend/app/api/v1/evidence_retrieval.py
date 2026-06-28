@@ -26,7 +26,9 @@ from app.services.access_control_service import (
 )
 from app.schemas.evidence_retrieval import (
     CandidateDismissRequest,
+    ChunkEmbeddingBackfillResponse,
     ChunkEvidenceSearchRequest,
+    ChunkLinkSuggestionResponse,
     EvidenceCandidateCreate,
     EvidenceCandidateResponse,
     EvidenceCandidateUpdate,
@@ -36,6 +38,8 @@ from app.schemas.evidence_retrieval import (
     PromoteCandidateToDraftFindingResponse,
     RetrievalQueryResponse,
 )
+from app.services import chunk_autolink_service
+from app.services import chunk_embedding_service
 from app.services import evidence_retrieval_service as retrieval
 from app.services.evidence_retrieval_service import RetrievalError
 
@@ -99,6 +103,7 @@ def search_chunk_evidence(
             project_id,
             {
                 "query_text": body.query_text,
+                "mode": body.mode,
                 "filters": body.filters.model_dump(exclude_none=True),
                 "limit": body.limit,
             },
@@ -106,6 +111,51 @@ def search_chunk_evidence(
     except (RetrievalError, ValueError) as exc:
         raise _handle(exc) from exc
     return EvidenceSearchResponse.model_validate(result)
+
+
+@router.post(
+    "/projects/{project_id}/evidence-retrieval/embed-chunks",
+    response_model=ChunkEmbeddingBackfillResponse,
+)
+def embed_chunks(
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
+) -> ChunkEmbeddingBackfillResponse:
+    """Backfill embeddings for the project's real-derived chunks.
+
+    Deterministic and local. Skips chunks already embedded with the current
+    model and unchanged content, refreshes stale-model vectors, and never embeds
+    empty content. Returns counts only.
+    """
+
+    actor = require_project_reviewer(db, project_id, user)
+    result = chunk_embedding_service.backfill_project_chunk_embeddings(
+        db, project_id, actor_name=actor.display_name
+    )
+    return ChunkEmbeddingBackfillResponse.model_validate(result)
+
+
+@router.post(
+    "/projects/{project_id}/evidence-retrieval/suggest-links",
+    response_model=ChunkLinkSuggestionResponse,
+)
+def suggest_chunk_links(
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
+) -> ChunkLinkSuggestionResponse:
+    """Suggest checklist and finding links for real-derived chunks.
+
+    Suggestions are reviewer-support only. They do not assert that evidence
+    satisfies a checklist item and never change a finding or its review status.
+    """
+
+    actor = require_project_reviewer(db, project_id, user)
+    result = chunk_autolink_service.suggest_links_for_project(
+        db, project_id, actor_name=actor.display_name
+    )
+    return ChunkLinkSuggestionResponse.model_validate(result)
 
 
 @router.post(

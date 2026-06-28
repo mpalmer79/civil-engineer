@@ -39,6 +39,7 @@ export default function EvidenceSearchClient({
   documentTypes: string[];
 }) {
   const [searchSource, setSearchSource] = useState<SearchSource>("chunk");
+  const [chunkMode, setChunkMode] = useState("hybrid");
   const [queryText, setQueryText] = useState("");
   const [queryType, setQueryType] = useState("keyword");
   const [documentId, setDocumentId] = useState("");
@@ -72,6 +73,7 @@ export default function EvidenceSearchClient({
     const input = {
       queryText: queryText.trim(),
       queryType,
+      mode: chunkMode,
       filters: {
         documentId: documentId || undefined,
         documentType: documentType || undefined,
@@ -116,20 +118,20 @@ export default function EvidenceSearchClient({
       rankingScore: result.rankingScore,
       rankingReason: result.rankingReason,
       candidateOrigin: result.candidateOrigin ?? "manual_save",
+      candidateStatus: status,
     });
     if (!response.ok || !response.data) {
       setError(response.error ?? "Could not save the candidate.");
       return;
     }
-    // Honor the requested triage status when it differs from the saved default.
+    // The backend response is the source of truth for the saved status. The
+    // requested status is sent to the backend; the displayed status reflects
+    // only what the backend actually persisted.
     const candidate = response.data;
     setSaved((prev) => ({
       ...prev,
       [resultKey(result)]: {
-        status:
-          status === "needs_reviewer_triage"
-            ? "needs_reviewer_triage"
-            : candidate.candidateStatus,
+        status: candidate.candidateStatus,
         candidateId: candidate.evidenceCandidateId,
       },
     }));
@@ -172,6 +174,22 @@ export default function EvidenceSearchClient({
               className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
             />
           </div>
+          {isChunk ? (
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Retrieval mode
+              </label>
+              <select
+                value={chunkMode}
+                onChange={(e) => setChunkMode(e.target.value)}
+                className="mt-1 w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
+              >
+                <option value="hybrid">Hybrid (keyword + semantic)</option>
+                <option value="keyword">Keyword</option>
+                <option value="semantic">Semantic</option>
+              </select>
+            </div>
+          ) : null}
           {!isChunk ? (
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -320,7 +338,11 @@ export default function EvidenceSearchClient({
                   <p className="mt-1 text-xs text-slate-500">
                     Match terms: {r.matchTerms.join(", ")}
                   </p>
-                ) : null}
+                ) : (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Semantic relevance (no exact keyword terms).
+                  </p>
+                )}
                 {r.rankingReason ? (
                   <p className="mt-1 text-xs text-slate-500">
                     {r.rankingReason}

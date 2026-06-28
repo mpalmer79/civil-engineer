@@ -345,6 +345,74 @@ describe("Evidence search client", () => {
     expect(screen.getByText(/chunk id: rdc_/)).toBeInTheDocument();
   });
 
+  it("defaults the chunk retrieval mode to hybrid and can switch modes", async () => {
+    render(
+      <EvidenceSearchClient
+        projectId={projectId}
+        documents={[]}
+        documentTypes={[]}
+      />,
+    );
+    fireEvent.change(screen.getByPlaceholderText("detention basin outlet"), {
+      target: { value: "detention basin" },
+    });
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
+    await waitFor(() => expect(searchChunkEvidenceMock).toHaveBeenCalled());
+    let call = searchChunkEvidenceMock.mock.calls[0] as unknown as [
+      string,
+      { mode: string },
+    ];
+    expect(call[1].mode).toBe("hybrid");
+
+    // Switch the retrieval mode to semantic and search again.
+    fireEvent.change(screen.getByDisplayValue("Hybrid (keyword + semantic)"), {
+      target: { value: "semantic" },
+    });
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
+    await waitFor(() =>
+      expect(searchChunkEvidenceMock).toHaveBeenCalledTimes(2),
+    );
+    call = searchChunkEvidenceMock.mock.calls[1] as unknown as [
+      string,
+      { mode: string },
+    ];
+    expect(call[1].mode).toBe("semantic");
+  });
+
+  it("renders a semantic note for results without match terms", async () => {
+    searchChunkEvidenceMock.mockResolvedValueOnce({
+      ok: true,
+      backendReachable: true,
+      data: {
+        ...chunkSearchResponse.data,
+        results: [
+          {
+            ...chunkSearchResponse.data.results[0],
+            matchTerms: [],
+            rankingReason:
+              "Ranked by semantic similarity using chunk embedding.",
+          },
+        ],
+      },
+    });
+    render(
+      <EvidenceSearchClient
+        projectId={projectId}
+        documents={[]}
+        documentTypes={[]}
+      />,
+    );
+    fireEvent.change(screen.getByPlaceholderText("detention basin outlet"), {
+      target: { value: "retention pond" },
+    });
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Semantic relevance \(no exact keyword terms\)/),
+      ).toBeInTheDocument(),
+    );
+  });
+
   it("can switch to indexed page text search", async () => {
     render(
       <EvidenceSearchClient
@@ -391,6 +459,7 @@ describe("Evidence search client", () => {
         documentPageId: string | null;
         pageNumber: number | null;
         candidateOrigin: string;
+        candidateStatus: string;
         candidateTitle: string;
         rankingScore: number;
       },
@@ -399,11 +468,77 @@ describe("Evidence search client", () => {
     expect(call[1].documentPageId).toBe("docpage_1");
     expect(call[1].pageNumber).toBe(2);
     expect(call[1].candidateOrigin).toBe("chunk_search");
+    // The default "Save candidate" action persists the saved-for-review status.
+    expect(call[1].candidateStatus).toBe("saved_for_review");
     expect(call[1].candidateTitle).toContain("Plan Set.pdf page 2");
     // After saving, a reviewer-controlled link to promote the candidate appears.
     await waitFor(() =>
       expect(screen.getByText("Review / promote candidate")).toBeInTheDocument(),
     );
+    // The displayed status comes from the backend response, not the request.
+    expect(screen.getByText(/Saved \(saved_for_review\)/)).toBeInTheDocument();
+  });
+
+  it("persists the triage status for the draft-queue action", async () => {
+    saveCandidateMock.mockResolvedValueOnce({
+      ok: true,
+      backendReachable: true,
+      data: { ...candidate, candidateStatus: "needs_reviewer_triage" },
+    });
+    render(
+      <EvidenceSearchClient
+        projectId={projectId}
+        documents={[]}
+        documentTypes={[]}
+      />,
+    );
+    fireEvent.change(screen.getByPlaceholderText("detention basin outlet"), {
+      target: { value: "detention basin" },
+    });
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
+    await waitFor(() => screen.getByText("Add to draft queue"));
+    fireEvent.click(screen.getByText("Add to draft queue"));
+    await waitFor(() => expect(saveCandidateMock).toHaveBeenCalled());
+    const call = saveCandidateMock.mock.calls[0] as unknown as [
+      string,
+      { candidateStatus: string },
+    ];
+    expect(call[1].candidateStatus).toBe("needs_reviewer_triage");
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Saved \(needs_reviewer_triage\)/),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  it("displays only the status returned by the backend", async () => {
+    // The reviewer clicks the triage action, but the backend returns a
+    // saved_for_review status. The UI must show the backend value, not the
+    // requested one (no optimistic status that was never persisted).
+    saveCandidateMock.mockResolvedValueOnce({
+      ok: true,
+      backendReachable: true,
+      data: { ...candidate, candidateStatus: "saved_for_review" },
+    });
+    render(
+      <EvidenceSearchClient
+        projectId={projectId}
+        documents={[]}
+        documentTypes={[]}
+      />,
+    );
+    fireEvent.change(screen.getByPlaceholderText("detention basin outlet"), {
+      target: { value: "detention basin" },
+    });
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
+    await waitFor(() => screen.getByText("Add to draft queue"));
+    fireEvent.click(screen.getByText("Add to draft queue"));
+    await waitFor(() =>
+      expect(screen.getByText(/Saved \(saved_for_review\)/)).toBeInTheDocument(),
+    );
+    expect(
+      screen.queryByText(/Saved \(needs_reviewer_triage\)/),
+    ).not.toBeInTheDocument();
   });
 
   it("shows an honest empty-state message that does not imply absence", async () => {
