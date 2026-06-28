@@ -26,6 +26,7 @@ from app.services.access_control_service import (
 )
 from app.schemas.evidence_retrieval import (
     CandidateDismissRequest,
+    ChunkEvidenceSearchRequest,
     EvidenceCandidateCreate,
     EvidenceCandidateResponse,
     EvidenceCandidateUpdate,
@@ -65,6 +66,39 @@ def search_evidence(
             {
                 "query_text": body.query_text,
                 "query_type": body.query_type,
+                "filters": body.filters.model_dump(exclude_none=True),
+                "limit": body.limit,
+            },
+        )
+    except (RetrievalError, ValueError) as exc:
+        raise _handle(exc) from exc
+    return EvidenceSearchResponse.model_validate(result)
+
+
+@router.post(
+    "/projects/{project_id}/evidence-retrieval/chunk-search",
+    response_model=EvidenceSearchResponse,
+)
+def search_chunk_evidence(
+    project_id: str,
+    body: ChunkEvidenceSearchRequest,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
+) -> EvidenceSearchResponse:
+    """Keyword search over real-derived document chunks.
+
+    Searches only chunks built from indexed PDF page text. It does not replace
+    the page-text search and never returns seeded demo chunks. Results carry
+    page-level citation context for the candidate and citation flow.
+    """
+
+    require_project_reviewer(db, project_id, user)
+    try:
+        result = retrieval.search_project_chunk_evidence(
+            db,
+            project_id,
+            {
+                "query_text": body.query_text,
                 "filters": body.filters.model_dump(exclude_none=True),
                 "limit": body.limit,
             },
