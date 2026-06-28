@@ -2906,3 +2906,100 @@ class PilotRequest(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=_utcnow, onupdate=_utcnow
     )
+
+
+# ---------------------------------------------------------------------------
+# Production Phase 4B/4C: auth lifecycle, team invitations, billing and usage
+# ---------------------------------------------------------------------------
+#
+# These tables support the production SaaS account lifecycle. They carry no file
+# content, no document text, and no secret value. Reset and invitation tokens are
+# stored only as a one-way hash, never in plaintext. Subscription and usage rows
+# are billing-posture and metering state; none implies a review outcome,
+# approval, certification, or compliance.
+
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    # token_hash is a one-way hash of the reset token. The plaintext token is
+    # returned to the requester (or surfaced to a dev mailer) and never stored.
+    reset_token_id: Mapped[str] = mapped_column(String, primary_key=True)
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("user_accounts.user_id"), nullable=False
+    )
+    token_hash: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    used_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class OrganizationInvitation(Base):
+    __tablename__ = "organization_invitations"
+
+    # token_hash is a one-way hash of the invitation token. The plaintext token is
+    # delivered through the mailer (or returned in non-production) and never
+    # stored. status is one of ALLOWED_INVITATION_STATUSES; expiry is enforced at
+    # read time against expires_at.
+    invitation_id: Mapped[str] = mapped_column(String, primary_key=True)
+    organization_id: Mapped[str] = mapped_column(
+        ForeignKey("organizations.organization_id"), nullable=False
+    )
+    email: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    role: Mapped[str] = mapped_column(String, nullable=False, default="reviewer")
+    token_hash: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    status: Mapped[str] = mapped_column(String, nullable=False, default="pending")
+    invited_by_user_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    accepted_by_user_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    accepted_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=_utcnow, onupdate=_utcnow
+    )
+
+
+class OrganizationSubscription(Base):
+    __tablename__ = "organization_subscriptions"
+
+    # One subscription posture per organization. plan_code is one of
+    # ALLOWED_PLAN_CODES; status is one of ALLOWED_SUBSCRIPTION_STATUSES. The
+    # stripe_* columns are nullable mapping fields reserved for a future Stripe
+    # integration; they are unused while billing is deferred and never hold a
+    # secret key.
+    subscription_id: Mapped[str] = mapped_column(String, primary_key=True)
+    organization_id: Mapped[str] = mapped_column(
+        ForeignKey("organizations.organization_id"), nullable=False, unique=True
+    )
+    plan_code: Mapped[str] = mapped_column(String, nullable=False, default="demo")
+    status: Mapped[str] = mapped_column(
+        String, nullable=False, default="inactive"
+    )
+    stripe_customer_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    stripe_subscription_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    current_period_end: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=_utcnow, onupdate=_utcnow
+    )
+
+
+class UsageEvent(Base):
+    __tablename__ = "usage_events"
+
+    # Append-only internal usage ledger. category is one of
+    # ALLOWED_USAGE_CATEGORIES; quantity is a positive count. organization_id is
+    # nullable so global events (for example a public pilot request) can be
+    # recorded without a tenant. No file content, document text, or secret is
+    # ever stored here.
+    usage_event_id: Mapped[str] = mapped_column(String, primary_key=True)
+    organization_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    project_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    category: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)

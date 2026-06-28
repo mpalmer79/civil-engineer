@@ -353,6 +353,16 @@ def create_project(
         organization_id=organization_id,
         access_level=access_level,
     )
+    # Record advisory usage for the created project (best-effort, skips the demo
+    # organization, never blocks creation).
+    from app.services import usage_service
+
+    usage_service.record_usage_safe(
+        db,
+        category="project_created",
+        organization_id=organization_id,
+        project_id=project_id,
+    )
     db.commit()
     db.refresh(project)
     return project_detail_dict(db, project)
@@ -387,7 +397,7 @@ def register_document(
     """Register document metadata for a project and emit a document_registered
     event. Registration records intake metadata; it never implies approval."""
 
-    _require_project(db, project_id)
+    project = _require_project(db, project_id)
     if not (original_file_name or "").strip():
         raise IntakeError("original_file_name is required.", status_code=422)
     reject_prohibited_language(document_type, field="document_type")
@@ -436,6 +446,16 @@ def register_document(
             "processing_status": "metadata_recorded",
             "revision_label": revision_label,
         },
+    )
+    # Record advisory usage for the registered document (best-effort, skips the
+    # demo organization, never blocks registration).
+    from app.services import usage_service
+
+    usage_service.record_usage_safe(
+        db,
+        category="document_uploaded",
+        organization_id=project.organization_id,
+        project_id=project_id,
     )
     db.commit()
     db.refresh(document)

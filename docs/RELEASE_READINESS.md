@@ -119,16 +119,31 @@ mode, the database provider class, and the migration control state without
 exposing any secret. See `docs/PRODUCTION_DATABASE.md` for the full migration
 path, commands, and Railway/Postgres setup.
 
+## Account lifecycle, team, and billing foundation
+
+The production SaaS account foundation now exists. Password reset (hashed,
+expiring, use-once tokens) and organization team invitations (invite by email
+with a role, list, revoke, accept) are implemented, with org_admin gating for
+team management. A billing-readiness foundation is in place: code-defined plans
+(`demo`, `design_partner`, `professional`, `team`), per-organization
+subscriptions, advisory usage metering, and workspace billing/usage/team pages.
+Stripe is deferred and billing is honestly inactive: no payment is collected and
+no subscription is charged. No real email is sent; a no-op mailer abstraction
+stands in until a provider is wired. See `docs/AUTH_LIFECYCLE.md` and
+`docs/BILLING_AND_USAGE.md`.
+
 ## Current limitations
 
 - Database: SQLite for local development and tests; Postgres required for
   production SaaS. Alembic migrations are in place. Postgres handling is verified
   at the URL/configuration level in the suite; manual Postgres verification is
   documented in `docs/PRODUCTION_DATABASE.md`.
-- Auth: local accounts and bearer tokens only. No password reset, no team
-  invitations, no SSO. The prototype default still allows an anonymous
-  demo-reviewer fallback for real projects; production must turn that off.
-- Billing: not active. No Stripe, no payment, no plans.
+- Auth: local accounts and bearer tokens. Password reset and team invitations
+  are implemented; email confirmation and SSO are not. No real email is sent yet.
+  The prototype default still allows an anonymous demo-reviewer fallback for real
+  projects; production must turn that off.
+- Billing: not active. The plan and usage foundation exists, but Stripe checkout
+  and webhooks are deferred and no payment is collected.
 - Live AI: disabled by default. The default provider is a deterministic mock;
   live calls require an explicit provider, an enable flag, and a key.
 - Capability scope: real DXF parsing (ezdxf) and PDF text-layer indexing (pypdf)
@@ -146,9 +161,11 @@ path, commands, and Railway/Postgres setup.
 
 ## What is not ready for production customers
 
-- The production database foundation is in place (Postgres support and Alembic
-  migrations), but auth lifecycle and billing are not.
-- No team invitations or self-serve onboarding.
+- The production database foundation (Postgres support and Alembic migrations)
+  and the account-lifecycle foundation (password reset, team invitations) are in
+  place, but billing is not active and no email provider is wired.
+- Self-serve paid onboarding is not active: Stripe checkout and webhooks are
+  deferred, and email confirmation and SSO are not implemented.
 - Live AI is intentionally off by default.
 - The anonymous demo-reviewer fallback must be disabled before real tenant data
   is hosted.

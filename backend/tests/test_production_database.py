@@ -168,7 +168,7 @@ def test_pilot_request_operator_fields_present_in_metadata():
     assert {"status", "internal_notes", "last_contacted_at"} <= columns
 
 
-def test_initial_migration_is_the_head_revision():
+def test_initial_migration_is_the_base_revision():
     from alembic.config import Config
     from alembic.script import ScriptDirectory
 
@@ -177,10 +177,14 @@ def test_initial_migration_is_the_head_revision():
         "script_location", str(_BACKEND_DIR / "app" / "migrations")
     )
     script = ScriptDirectory.from_config(config)
+    # The initial migration is the base of the chain.
+    base = script.get_revision("0001_initial_schema")
+    assert base.down_revision is None
+    # The head has advanced past the initial migration and chains back to it.
     head = script.get_current_head()
-    assert head == "0001_initial_schema"
-    revision = script.get_revision(head)
-    assert revision.down_revision is None
+    assert head == "0002_auth_billing_usage"
+    head_revision = script.get_revision(head)
+    assert head_revision.down_revision == "0001_initial_schema"
 
 
 def test_create_all_from_metadata_builds_pilot_table():

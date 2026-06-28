@@ -8,6 +8,7 @@ from app.api.v1 import (
     ai_review,
     audit,
     auth,
+    billing,
     cad_intake,
     cad_metadata,
     checklist,
@@ -23,6 +24,7 @@ from app.api.v1 import (
     findings,
     hotspots,
     human_review,
+    invitations,
     pdf_evidence,
     pilot,
     plan_consistency,
@@ -74,3 +76,5 @@ api_router.include_router(reviewer_response_packages.router)
 api_router.include_router(dashboard.router)
 api_router.include_router(diagnostics.router)
 api_router.include_router(pilot.router)
+api_router.include_router(invitations.router)
+api_router.include_router(billing.router)

@@ -122,15 +122,21 @@ describe("Workspace home", () => {
   });
 });
 
-describe("Workspace settings placeholder", () => {
-  it("renders future sections as coming later, none active", () => {
+describe("Workspace settings hub", () => {
+  it("links to the active team, billing, and usage pages", () => {
+    render(WorkspaceSettingsPage());
+    expect(document.querySelector('a[href="/workspace/team"]')).not.toBeNull();
+    expect(document.querySelector('a[href="/workspace/billing"]')).not.toBeNull();
+    expect(document.querySelector('a[href="/workspace/usage"]')).not.toBeNull();
+  });
+
+  it("keeps remaining capabilities marked coming later", () => {
     render(WorkspaceSettingsPage());
     const text = (document.body.textContent ?? "").toLowerCase();
-    expect(text).toContain("billing");
     expect(text).toContain("coming later");
-    // No claim that billing or team management is active.
+    // Billing is referenced but never claimed active.
+    expect(text).toContain("billing");
     expect(text).not.toContain("billing is active");
     expect(text).not.toContain("subscription active");
-    expect(screen.getAllByText(/coming later/i).length).toBeGreaterThanOrEqual(3);
   });
 });
