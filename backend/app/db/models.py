@@ -593,6 +593,37 @@ class DocumentChunk(Base):
     )
 
 
+class ChunkEmbedding(Base):
+    """A deterministic, locally computed embedding vector for a document chunk.
+
+    Embeddings power semantic and hybrid retrieval over real-derived chunks. The
+    vector is stored as JSON (a portable, dependency-free fallback). For larger
+    datasets a pgvector column should replace this JSON storage; see
+    docs/PHASE_2_RETRIEVAL_BRAIN.md. The provider, model name, and model version
+    are recorded so a stored vector can be detected as stale and re-embedded when
+    the embedding model changes. content_hash detects chunk content changes.
+    No provider secrets are ever stored here.
+    """
+
+    __tablename__ = "chunk_embeddings"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    chunk_id: Mapped[str] = mapped_column(
+        ForeignKey("document_chunks.chunk_id"), unique=True, nullable=False
+    )
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    provider: Mapped[str] = mapped_column(String, nullable=False)
+    model_name: Mapped[str] = mapped_column(String, nullable=False)
+    model_version: Mapped[str] = mapped_column(String, nullable=False)
+    dimension: Mapped[int] = mapped_column(Integer, nullable=False)
+    vector: Mapped[list] = mapped_column(JSON, default=list)
+    content_hash: Mapped[str] = mapped_column(String, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
 class FindingSource(Base):
     """Source evidence linking a review-support finding to a document chunk.
 

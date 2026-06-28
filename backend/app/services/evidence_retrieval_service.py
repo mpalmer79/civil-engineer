@@ -40,11 +40,21 @@ from app.core.safety import (
 )
 from app.db import models
 from app.services.pdf_indexing_service import create_evidence_citation
+from app.services.embedding_service import (
+    EmbeddingError,
+    cosine_similarity,
+    embed_text,
+)
 from app.services.page_chunking_service import (
     CHUNK_ORIGIN_REAL_DERIVED,
     INDEXED_TEXT_STATUS,
     REAL_DERIVED_CHUNK_PREFIX,
 )
+
+# Minimum cosine similarity for a semantic match to be surfaced, and the
+# Reciprocal Rank Fusion constant used to combine keyword and semantic rankings.
+_SEMANTIC_MIN_SIMILARITY = 0.1
+_RRF_K = 60
 from app.services.real_intake_service import (
     DEMO_ACTOR_ID,
     DEMO_ACTOR_NAME,
@@ -747,64 +757,50 @@ def _chunk_result_message(
     )
 
 
-def search_project_chunk_evidence(
+_CHUNK_MODE_QUERY_TYPE = {
+    "keyword": "chunk_keyword",
+    "semantic": "chunk_semantic",
+    "hybrid": "chunk_hybrid",
+}
+
+
+def _collect_searchable_chunks(
     db: Session,
     project_id: str,
-    payload: dict,
-    *,
-    actor_name: str = DEMO_ACTOR_NAME,
-) -> dict:
-    """Search a project's real-derived chunks and return ranked candidates.
+    filters: dict,
+) -> tuple[
+    list[tuple[models.DocumentChunk, models.DocumentPage, models.Document | None]],
+    int,
+]:
+    """Return (chunk, page, document) triples that pass the not-indexed guardrail
+    and the metadata filters, plus the count of searchable chunks before filters.
 
-    payload accepts query_text, filters (document_id, document_type, page_min,
-    page_max), and limit. Only real-derived chunks whose source page is indexed
-    with extractable text are searched, so a non-indexed or no-text page is never
-    treated as evidence absent. Results carry page-level citation context. A
-    RetrievalQuery record and an audit event are written.
+    Only chunks whose source page is indexed with extractable text are
+    searchable, so a non-indexed or no-text page is never treated as evidence
+    absent. searchable_count reflects how much indexed chunk evidence exists at
+    all, independent of the query or the document filters.
     """
-
-    _require_project(db, project_id)
-    ensure_demo_actor(db)
-
-    query_text = (payload.get("query_text") or "").strip()
-    filters = dict(payload.get("filters") or {})
-    limit = payload.get("limit") or 10
-
-    if len(query_text) < MIN_RETRIEVAL_QUERY_LENGTH:
-        raise RetrievalError(
-            "query_text is required and must be at least "
-            f"{MIN_RETRIEVAL_QUERY_LENGTH} characters.",
-            status_code=422,
-        )
-    reject_prohibited_language(query_text, field="query_text")
-    try:
-        limit = int(limit)
-    except (TypeError, ValueError):
-        limit = 10
-    limit = max(1, min(limit, MAX_RETRIEVAL_RESULTS))
 
     chunks = _real_derived_chunks(db, project_id)
     documents = _document_map(db, project_id)
     pages = _page_lookup(db, project_id)
-    query_tokens = _tokens(query_text)
 
     document_id = filters.get("document_id")
     document_type = filters.get("document_type")
+    extraction_status = filters.get("text_extraction_status")
     page_min = filters.get("page_min")
     page_max = filters.get("page_max")
 
     searchable_count = 0
-    results: list[dict] = []
+    collected: list[
+        tuple[models.DocumentChunk, models.DocumentPage, models.Document | None]
+    ] = []
     for chunk in chunks:
         page = (
             pages.get((chunk.document_id, chunk.page_number))
             if chunk.page_number is not None
             else None
         )
-        # Not-indexed guardrail: only chunks whose source page is indexed with
-        # extractable text are searchable evidence. A chunk whose page is not
-        # indexed or carries no extractable text is skipped, never reported as
-        # evidence absent.
         if page is None or page.text_extraction_status != INDEXED_TEXT_STATUS:
             continue
         searchable_count += 1
@@ -816,11 +812,26 @@ def search_project_chunk_evidence(
             document is None or document.document_type != document_type
         ):
             continue
+        if (
+            extraction_status
+            and page.text_extraction_status != extraction_status
+        ):
+            continue
         if page_min is not None and (chunk.page_number or 0) < int(page_min):
             continue
         if page_max is not None and (chunk.page_number or 0) > int(page_max):
             continue
+        collected.append((chunk, page, document))
+    return collected, searchable_count
 
+
+def _keyword_chunk_results(
+    candidates: list[tuple],
+    query_text: str,
+) -> list[dict]:
+    query_tokens = _tokens(query_text)
+    results: list[dict] = []
+    for chunk, page, document in candidates:
         scored = _score_chunk_evidence(
             query=query_text,
             query_tokens=query_tokens,
@@ -841,6 +852,165 @@ def search_project_chunk_evidence(
                 excerpt=excerpt,
             )
         )
+    return results
+
+
+def _semantic_chunk_results(
+    db: Session,
+    project_id: str,
+    candidates: list[tuple],
+    query_text: str,
+) -> list[dict]:
+    # Local import avoids a circular import (chunk_embedding_service imports this
+    # module for _real_derived_chunks).
+    from app.services import chunk_embedding_service
+
+    try:
+        query_vector = embed_text(query_text)
+    except EmbeddingError:
+        return []
+    embeddings = chunk_embedding_service.current_embeddings_by_chunk(
+        db, project_id
+    )
+
+    results: list[dict] = []
+    for chunk, page, document in candidates:
+        embedding = embeddings.get(chunk.chunk_id)
+        if embedding is None:
+            continue
+        similarity = cosine_similarity(query_vector, embedding.vector)
+        if similarity < _SEMANTIC_MIN_SIMILARITY:
+            continue
+        score = round(min(similarity, 0.95), 2)
+        excerpt = _excerpt_around(chunk.content or "", 0)
+        results.append(
+            _chunk_result_dict(
+                chunk=chunk,
+                document=document,
+                page=page,
+                score=score,
+                ranking_reason=(
+                    "Ranked by semantic similarity using chunk embedding."
+                ),
+                # A semantic-only match has no exact keyword overlap; do not
+                # fabricate match terms.
+                match_terms=[],
+                excerpt=excerpt,
+            )
+        )
+    return results
+
+
+def _hybrid_chunk_results(
+    db: Session,
+    project_id: str,
+    candidates: list[tuple],
+    query_text: str,
+) -> list[dict]:
+    """Combine keyword and semantic rankings with Reciprocal Rank Fusion.
+
+    Each chunk's fused score is the sum of 1/(k + rank) across the keyword and
+    semantic rank lists it appears in. Results are then deduplicated to one entry
+    per page, keeping the strongest chunk for that page. ranking_score is the
+    fused score normalized to the top result so it reads as relevance.
+    """
+
+    keyword = _keyword_chunk_results(candidates, query_text)
+    semantic = _semantic_chunk_results(db, project_id, candidates, query_text)
+
+    by_chunk: dict[str, dict] = {}
+    rrf: dict[str, float] = {}
+    for rank, result in enumerate(keyword):
+        cid = result["chunk_id"]
+        by_chunk.setdefault(cid, result)
+        rrf[cid] = rrf.get(cid, 0.0) + 1.0 / (_RRF_K + rank)
+    for rank, result in enumerate(semantic):
+        cid = result["chunk_id"]
+        # Prefer the keyword result for display (it carries match terms and a
+        # match-centered excerpt); otherwise use the semantic result.
+        by_chunk.setdefault(cid, result)
+        rrf[cid] = rrf.get(cid, 0.0) + 1.0 / (_RRF_K + rank)
+
+    if not rrf:
+        return []
+
+    # Deduplicate to one result per page, keeping the highest fused score.
+    best_per_page: dict[tuple[str, int | None], str] = {}
+    for cid, result in by_chunk.items():
+        key = (result["document_id"], result["page_number"])
+        current = best_per_page.get(key)
+        if current is None or rrf[cid] > rrf[current]:
+            best_per_page[key] = cid
+
+    max_rrf = max(rrf[cid] for cid in best_per_page.values())
+    fused: list[dict] = []
+    for cid in best_per_page.values():
+        result = dict(by_chunk[cid])
+        relevance = rrf[cid] / max_rrf if max_rrf > 0 else 0.0
+        result["ranking_score"] = round(min(relevance * 0.95, 0.95), 2)
+        result["ranking_reason"] = (
+            "Ranked by keyword and semantic signals from real-derived page "
+            "chunks."
+        )
+        fused.append(result)
+    return fused
+
+
+def search_project_chunk_evidence(
+    db: Session,
+    project_id: str,
+    payload: dict,
+    *,
+    actor_name: str = DEMO_ACTOR_NAME,
+) -> dict:
+    """Search a project's real-derived chunks and return ranked candidates.
+
+    payload accepts query_text, mode ("keyword", "semantic", or "hybrid"),
+    filters (document_id, document_type, text_extraction_status, page_min,
+    page_max), and limit. Only real-derived chunks whose source page is indexed
+    with extractable text are searched, so a non-indexed or no-text page is never
+    treated as evidence absent. Results carry page-level citation context. A
+    RetrievalQuery record and an audit event are written.
+    """
+
+    _require_project(db, project_id)
+    ensure_demo_actor(db)
+
+    query_text = (payload.get("query_text") or "").strip()
+    filters = dict(payload.get("filters") or {})
+    limit = payload.get("limit") or 10
+    mode = (payload.get("mode") or "keyword").strip()
+    if mode not in _CHUNK_MODE_QUERY_TYPE:
+        raise RetrievalError(
+            f"Unsupported chunk search mode '{mode}'. Allowed: "
+            f"{', '.join(sorted(_CHUNK_MODE_QUERY_TYPE))}.",
+            status_code=422,
+        )
+    query_type = _CHUNK_MODE_QUERY_TYPE[mode]
+
+    if len(query_text) < MIN_RETRIEVAL_QUERY_LENGTH:
+        raise RetrievalError(
+            "query_text is required and must be at least "
+            f"{MIN_RETRIEVAL_QUERY_LENGTH} characters.",
+            status_code=422,
+        )
+    reject_prohibited_language(query_text, field="query_text")
+    try:
+        limit = int(limit)
+    except (TypeError, ValueError):
+        limit = 10
+    limit = max(1, min(limit, MAX_RETRIEVAL_RESULTS))
+
+    candidates, searchable_count = _collect_searchable_chunks(
+        db, project_id, filters
+    )
+
+    if mode == "semantic":
+        results = _semantic_chunk_results(db, project_id, candidates, query_text)
+    elif mode == "hybrid":
+        results = _hybrid_chunk_results(db, project_id, candidates, query_text)
+    else:
+        results = _keyword_chunk_results(candidates, query_text)
 
     results.sort(
         key=lambda r: (
@@ -856,7 +1026,7 @@ def search_project_chunk_evidence(
         db,
         project_id=project_id,
         query_text=query_text,
-        query_type="chunk_keyword",
+        query_type=query_type,
         filters=filters,
         result_count=len(results),
         related_checklist_item_id=filters.get("checklist_item_id"),
@@ -874,13 +1044,14 @@ def search_project_chunk_evidence(
         related_entity_type="retrieval_query",
         related_entity_id=retrieval_query.retrieval_query_id,
         description=(
-            "Reviewer searched real-derived chunk evidence; "
-            f"{len(results)} candidate(s)."
+            "Reviewer searched real-derived chunk evidence "
+            f"({mode}); {len(results)} candidate(s)."
         ),
         actor_type="reviewer",
         actor_display_name=actor_name,
         metadata={
-            "query_type": "chunk_keyword",
+            "query_type": query_type,
+            "mode": mode,
             "result_count": len(results),
             "searchable_chunk_count": searchable_count,
             "filters": _safe_filter_metadata(filters),
@@ -891,7 +1062,7 @@ def search_project_chunk_evidence(
     return {
         "project_id": project_id,
         "query_text": query_text,
-        "query_type": "chunk_keyword",
+        "query_type": query_type,
         "retrieval_query_id": retrieval_query.retrieval_query_id,
         "result_count": len(results),
         "results": results,
