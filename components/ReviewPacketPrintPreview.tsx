@@ -1,10 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   getReviewPacketPrintView,
   type ReviewPacketPrintView,
 } from "@/lib/api";
+
+// Friendly labels for traceability reviewer review action types shown on the
+// handoff view. They stay review-support only and never imply approval.
+const TRACE_ACTION_LABELS: Record<string, string> = {
+  reviewer_confirmed_link: "Confirmed link for review",
+  needs_more_information: "Needs more information",
+  not_applicable: "Not applicable",
+  link_rejected: "Link rejected",
+  follow_up_needed: "Follow-up needed",
+  needs_review: "Needs review",
+};
 
 // Loads the printable review-support view and renders it with a print button.
 export default function ReviewPacketPrintPreview({
@@ -86,6 +98,53 @@ export default function ReviewPacketPrintPreview({
           </section>
         ))}
       </div>
+
+      {(data.traceabilityReviewRows ?? []).length > 0 ? (
+        <section className="mt-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h5 className="text-sm font-semibold text-slate-900">
+              Traceability review state
+            </h5>
+            <Link
+              href={`/projects/${data.projectId}/traceability`}
+              className="text-xs font-semibold text-water-700 hover:underline"
+            >
+              Open project traceability
+            </Link>
+          </div>
+          {data.traceabilityNote ? (
+            <p className="mt-1 text-xs text-slate-500">{data.traceabilityNote}</p>
+          ) : null}
+          <ul className="mt-2 space-y-1 text-sm text-slate-700">
+            {(data.traceabilityReviewRows ?? []).map((r) => (
+              <li key={r.traceabilityRowKey}>
+                <span className="font-medium">
+                  {r.checklistTitle ?? "Requirement"}
+                </span>
+                {": "}
+                {r.requiresReviewerConfirmation ? (
+                  <span className="text-amber-700">
+                    requires reviewer confirmation
+                  </span>
+                ) : (
+                  <span className="text-slate-600">
+                    {TRACE_ACTION_LABELS[r.reviewActionType ?? ""] ??
+                      r.reviewActionType}
+                    {r.createdBy ? (
+                      <span className="text-slate-500"> by {r.createdBy}</span>
+                    ) : null}
+                  </span>
+                )}
+                {r.reviewerNote ? (
+                  <span className="block text-xs italic text-slate-500">
+                    &ldquo;{r.reviewerNote}&rdquo;
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       <div className="mt-6 rounded-md bg-slate-50 px-3 py-2 text-xs text-slate-600">
         {data.professionalLimitations}

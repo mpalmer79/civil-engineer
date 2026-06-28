@@ -70,6 +70,13 @@ DRAFT_NOTICE = (
     "Professional Engineer."
 )
 
+TRACEABILITY_REVIEW_NOTE = (
+    "Traceability review state for rows included in this packet. A reviewer "
+    "review action records that the reviewer reviewed the link for review only. "
+    "Rows without an action require reviewer confirmation. None of this means a "
+    "requirement is satisfied or a plan is approved."
+)
+
 
 class ReviewPacketError(Exception):
     """Raised when a review packet operation is not allowed."""
@@ -793,6 +800,10 @@ def get_review_packet_print_view(db: Session, packet_id: str) -> dict | None:
         for s in detail["sections"]
     ]
 
+    traceability_review_rows = _packet_traceability_review_rows(
+        db, packet.project_id, packet_id
+    )
+
     _audit(
         db,
         project_id=packet.project_id,
@@ -819,7 +830,46 @@ def get_review_packet_print_view(db: Session, packet_id: str) -> dict | None:
         "professional_limitations": PROFESSIONAL_LIMITATIONS,
         "draft_notice": DRAFT_NOTICE,
         "sections": print_sections,
+        "traceability_review_rows": traceability_review_rows,
+        "traceability_note": TRACEABILITY_REVIEW_NOTE,
     }
+
+
+def _packet_traceability_review_rows(
+    db: Session, project_id: str, packet_id: str
+) -> list[dict]:
+    """Return project traceability rows included in this packet, with review state.
+
+    Read-only. Each row carries its latest reviewer review action, or
+    requires_reviewer_confirmation when no action has been recorded. This shows the
+    reviewer's traceability review state on the handoff view; it does not approve
+    or certify anything.
+    """
+
+    from app.services import traceability_service
+
+    result = traceability_service.build_project_traceability(db, project_id)
+    if result is None:
+        return []
+    rows: list[dict] = []
+    for r in result["rows"]:
+        contexts = r.get("packet_contexts", [])
+        if not any(c["review_packet_id"] == packet_id for c in contexts):
+            continue
+        action = r.get("latest_review_action")
+        rows.append(
+            {
+                "traceability_row_key": r["traceability_row_key"],
+                "checklist_title": r.get("checklist_title"),
+                "checklist_requirement": r.get("checklist_requirement"),
+                "relationship_type": r["relationship_type"],
+                "review_action_type": action["action_type"] if action else None,
+                "reviewer_note": action.get("reviewer_note") if action else None,
+                "created_by": action.get("created_by") if action else None,
+                "requires_reviewer_confirmation": action is None,
+            }
+        )
+    return rows
 
 
 def summarize_review_packet(db: Session, packet_id: str) -> dict | None:

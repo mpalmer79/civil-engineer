@@ -97,6 +97,78 @@ export default async function ProjectTraceabilityPage({
               />
             </div>
 
+            <SectionCard
+              title="Handoff readiness signals"
+              description={traceability.handoffReadiness.note}
+            >
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                <MetricCard
+                  value={traceability.handoffReadiness.rowsWithLinkedEvidence}
+                  label="Rows with linked evidence"
+                />
+                <MetricCard
+                  value={
+                    traceability.handoffReadiness.rowsWithReviewerAction
+                  }
+                  label="Links reviewed by reviewer"
+                />
+                <MetricCard
+                  value={
+                    traceability.handoffReadiness.readyForReviewerHandoffCount
+                  }
+                  label="Ready for reviewer handoff"
+                />
+                <MetricCard
+                  value={traceability.handoffReadiness.rowsNeedingMoreInformation}
+                  label="Needs more information"
+                  accent={
+                    traceability.handoffReadiness.rowsNeedingMoreInformation > 0
+                      ? "amber"
+                      : "slate"
+                  }
+                />
+                <MetricCard
+                  value={traceability.handoffReadiness.rowsFollowUpNeeded}
+                  label="Follow-up needed"
+                  accent={
+                    traceability.handoffReadiness.rowsFollowUpNeeded > 0
+                      ? "amber"
+                      : "slate"
+                  }
+                />
+                <MetricCard
+                  value={traceability.handoffReadiness.rowsNotInPacket}
+                  label="Not included in packet yet"
+                />
+                <MetricCard
+                  value={
+                    traceability.handoffReadiness.rowsWithoutLinkedEvidence
+                  }
+                  label="No linked evidence yet"
+                  accent={
+                    traceability.handoffReadiness.rowsWithoutLinkedEvidence > 0
+                      ? "amber"
+                      : "slate"
+                  }
+                />
+                <MetricCard
+                  value={traceability.handoffReadiness.packetContextCount}
+                  label="Packet context links"
+                />
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Link href={`${base}/review-packets`} className="nav-link">
+                  Review packets
+                </Link>
+                <Link href={`${base}/workflow-board`} className="nav-link">
+                  Workflow board for follow-up items
+                </Link>
+                <Link href={`${base}/evidence-search`} className="nav-link">
+                  Evidence search for rows without linked evidence
+                </Link>
+              </div>
+            </SectionCard>
+
             {!traceability.hasIndexedInformation ? (
               <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
                 This project has no indexed, searchable document pages yet, so

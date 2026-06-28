@@ -146,6 +146,24 @@ class ReviewPacketPrintSection(BaseModel):
     items: list[ReviewPacketItemRead]
 
 
+class ReviewPacketTraceabilityReviewRow(BaseModel):
+    """A traceability row included in this packet, with reviewer review state.
+
+    requires_reviewer_confirmation is true when no reviewer review action has been
+    recorded for the row. A recorded action confirms the link is useful for review
+    only; it does not approve or certify anything.
+    """
+
+    traceability_row_key: str
+    checklist_title: str | None = None
+    checklist_requirement: str | None = None
+    relationship_type: str
+    review_action_type: str | None = None
+    reviewer_note: str | None = None
+    created_by: str | None = None
+    requires_reviewer_confirmation: bool
+
+
 class ReviewPacketPrintView(BaseModel):
     packet_id: str
     project_id: str
@@ -160,6 +178,10 @@ class ReviewPacketPrintView(BaseModel):
     professional_limitations: str
     draft_notice: str
     sections: list[ReviewPacketPrintSection]
+    traceability_review_rows: list[ReviewPacketTraceabilityReviewRow] = Field(
+        default_factory=list
+    )
+    traceability_note: str | None = None
 
 
 class ReviewPacketSummary(BaseModel):
