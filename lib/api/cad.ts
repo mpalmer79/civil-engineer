@@ -239,26 +239,30 @@ export async function getPlanInconsistencies(): Promise<PlanReference[]> {
   return data ? data.map(mapPlanReference) : [];
 }
 
-export async function getPlanConsistencyFindings(): Promise<
-  PlanConsistencyFinding[]
-> {
+export async function getPlanConsistencyFindings(
+  projectId: string = PROJECT_ID,
+): Promise<PlanConsistencyFinding[]> {
   const data = await safeFetch<ApiPlanConsistencyFinding[]>(
-    `/api/v1/projects/${PROJECT_ID}/plan-consistency-findings`,
+    `/api/v1/projects/${projectId}/plan-consistency-findings`,
   );
   return data ? data.map(mapPlanConsistencyFinding) : [];
 }
 
-export async function getPlanConsistencySummary(): Promise<PlanConsistencySummary | null> {
+export async function getPlanConsistencySummary(
+  projectId: string = PROJECT_ID,
+): Promise<PlanConsistencySummary | null> {
   const data = await safeFetch<ApiPlanConsistencySummary>(
-    `/api/v1/projects/${PROJECT_ID}/plan-consistency-summary`,
+    `/api/v1/projects/${projectId}/plan-consistency-summary`,
   );
   return data ? mapPlanConsistencySummary(data) : null;
 }
 
-export async function runPlanConsistencyCheck(): Promise<PlanConsistencyCheckResult> {
+export async function runPlanConsistencyCheck(
+  projectId: string = PROJECT_ID,
+): Promise<PlanConsistencyCheckResult> {
   try {
     const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${PROJECT_ID}/plan-consistency-check`,
+      `${API_BASE_URL}/api/v1/projects/${projectId}/plan-consistency-check`,
       { method: "POST", cache: "no-store" },
     );
     if (!res.ok) {

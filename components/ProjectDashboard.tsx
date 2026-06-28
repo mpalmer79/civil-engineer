@@ -23,9 +23,15 @@ import ProjectModuleLinksPanel from "@/components/ProjectModuleLinksPanel";
 import DashboardReviewerNotesPanel from "@/components/DashboardReviewerNotesPanel";
 import ProjectHealthSummaryPanel from "@/components/ProjectHealthSummaryPanel";
 
-// Orchestrates the Phase 14 reviewer command center for Brookside Meadows. All
-// data is backend-canonical; the browser does not simulate command center data.
-export default function ProjectDashboard() {
+// Orchestrates the Phase 14 reviewer command center. All data is
+// backend-canonical; the browser does not simulate command center data. The
+// projectId prop scopes the command center to a project; it defaults to the
+// seeded demo project so the existing demo dashboard keeps working.
+export default function ProjectDashboard({
+  projectId,
+}: {
+  projectId?: string;
+}) {
   const [loaded, setLoaded] = useState(false);
   const [payload, setPayload] = useState<ProjectCommandCenterPayload | null>(
     null,
@@ -39,12 +45,12 @@ export default function ProjectDashboard() {
 
   const load = useCallback(async () => {
     const [data, summary] = await Promise.all([
-      getProjectCommandCenter(),
-      getProjectHealthSummary(),
+      getProjectCommandCenter(projectId),
+      getProjectHealthSummary(projectId),
     ]);
     setPayload(data);
     setHealthSummary(summary);
-  }, []);
+  }, [projectId]);
 
   useEffect(() => {
     (async () => {
@@ -56,7 +62,7 @@ export default function ProjectDashboard() {
   const handleRefresh = useCallback(async () => {
     setBusy(true);
     setMessage(null);
-    const result = await generateCommandCenterSnapshot();
+    const result = await generateCommandCenterSnapshot(projectId);
     if (!result.ok) {
       setMessage(result.error ?? "Could not refresh the snapshot.");
     } else {
@@ -65,7 +71,7 @@ export default function ProjectDashboard() {
       await load();
     }
     setBusy(false);
-  }, [load]);
+  }, [load, projectId]);
 
   const handleStatusChange = useCallback(
     async (attentionItemId: string, status: string) => {
@@ -92,6 +98,7 @@ export default function ProjectDashboard() {
         noteText,
         "Town Engineer",
         "dashboard",
+        projectId,
       );
       if (!result.ok) {
         setMessage(result.error ?? "Could not add the note.");
@@ -100,7 +107,7 @@ export default function ProjectDashboard() {
       }
       setBusy(false);
     },
-    [load],
+    [load, projectId],
   );
 
   if (!loaded) {

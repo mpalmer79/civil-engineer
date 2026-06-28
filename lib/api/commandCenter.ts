@@ -221,22 +221,26 @@ async function postJson<T>(
   }
 }
 
-export async function generateCommandCenterSnapshot(): Promise<{
+export async function generateCommandCenterSnapshot(
+  projectId: string = PROJECT_ID,
+): Promise<{
   ok: boolean;
   backendReachable: boolean;
   data?: ProjectCommandCenterSnapshot;
   error?: string;
 }> {
   const result = await postJson<Json>(
-    `/api/v1/projects/${PROJECT_ID}/command-center/snapshot`,
+    `/api/v1/projects/${projectId}/command-center/snapshot`,
     undefined,
   );
   return { ...result, data: result.data ? mapSnapshot(result.data) : undefined };
 }
 
-export async function getProjectCommandCenter(): Promise<ProjectCommandCenterPayload | null> {
+export async function getProjectCommandCenter(
+  projectId: string = PROJECT_ID,
+): Promise<ProjectCommandCenterPayload | null> {
   const data = await safeFetch<Json>(
-    `/api/v1/projects/${PROJECT_ID}/command-center`,
+    `/api/v1/projects/${projectId}/command-center`,
   );
   if (!data) return null;
   return {
@@ -359,6 +363,7 @@ export async function addDashboardReviewerNote(
   noteText: string,
   reviewerName = "reviewer",
   sourceContext?: string,
+  projectId: string = PROJECT_ID,
 ): Promise<{
   ok: boolean;
   backendReachable: boolean;
@@ -366,7 +371,7 @@ export async function addDashboardReviewerNote(
   error?: string;
 }> {
   const result = await postJson<Json>(
-    `/api/v1/projects/${PROJECT_ID}/command-center/notes`,
+    `/api/v1/projects/${projectId}/command-center/notes`,
     {
       note_text: noteText,
       reviewer_name: reviewerName,
@@ -400,9 +405,11 @@ export async function getProjectModuleLinks(): Promise<ProjectModuleLinks | null
   return data ? mapModuleLinks(data) : null;
 }
 
-export async function getProjectHealthSummary(): Promise<ProjectHealthSummary | null> {
+export async function getProjectHealthSummary(
+  projectId: string = PROJECT_ID,
+): Promise<ProjectHealthSummary | null> {
   const data = await safeFetch<Json>(
-    `/api/v1/projects/${PROJECT_ID}/command-center/health-summary`,
+    `/api/v1/projects/${projectId}/command-center/health-summary`,
   );
   return data ? camel<ProjectHealthSummary>(data) : null;
 }
