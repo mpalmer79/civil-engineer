@@ -45,8 +45,13 @@ from app.services.real_intake_service import (
 )
 
 # A chunk_id prefix that marks a chunk as derived from real indexed page text.
-# This is the provenance marker used in place of a database column for this pass.
+# Retained for backward compatibility: older rows predate the chunk_origin
+# provenance column and are detected by this prefix.
 REAL_DERIVED_CHUNK_PREFIX = "rdc_"
+
+# Durable provenance values for DocumentChunk.chunk_origin.
+CHUNK_ORIGIN_REAL_DERIVED = "real_derived"
+CHUNK_ORIGIN_SEEDED_DEMO = "seeded_demo"
 
 # Only pages with this extraction status and non-empty text are chunked.
 INDEXED_TEXT_STATUS = "text_extracted"
@@ -386,6 +391,7 @@ def rebuild_document_chunks(
                     keywords=_extract_keywords(content),
                     related_checklist_items=[],
                     related_findings=[],
+                    chunk_origin=CHUNK_ORIGIN_REAL_DERIVED,
                 )
             )
             chunk_index += 1

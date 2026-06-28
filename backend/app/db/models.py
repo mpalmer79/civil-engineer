@@ -551,12 +551,18 @@ class DocumentChunk(Base):
     chunk carries enough metadata (page, section, keywords, related checklist
     items and findings) to support keyword and metadata based retrieval.
 
-    Real-derived chunks built from indexed PDF page text are distinguished only
-    by a chunk_id prefix (see page_chunking_service.REAL_DERIVED_CHUNK_PREFIX),
-    because this table has no provenance column yet.
-    TODO(provenance): add a source_mode/provenance column (for example
-    seeded vs real_derived) so origin does not rely on the chunk_id prefix.
-    See docs/PHASE_1_REAL_PDF_INDEXING_AUDIT.md, PR 2.
+    Provenance: chunk_origin records whether a chunk is seeded demo data
+    (seeded_demo) or built from indexed PDF page text (real_derived). Older rows
+    created before this column existed may have a null chunk_origin; for those,
+    real-derived status falls back to the chunk_id prefix
+    (page_chunking_service.REAL_DERIVED_CHUNK_PREFIX). New code should write and
+    prefer chunk_origin.
+
+    Migration note: this repo initializes schema with Base.metadata.create_all
+    and has no migration tooling, so adding this column applies automatically to
+    fresh databases only. An existing production database needs a one-time
+    ALTER TABLE (or a backfill) to add and populate chunk_origin. See
+    docs/PHASE_1_REAL_PDF_INDEXING_AUDIT.md.
     """
 
     __tablename__ = "document_chunks"
@@ -578,6 +584,10 @@ class DocumentChunk(Base):
     keywords: Mapped[list] = mapped_column(JSON, default=list)
     related_checklist_items: Mapped[list] = mapped_column(JSON, default=list)
     related_findings: Mapped[list] = mapped_column(JSON, default=list)
+    # Durable provenance. Nullable so older rows (created before this column)
+    # keep working; those fall back to the chunk_id prefix for real-derived
+    # detection. New rows are written with an explicit value.
+    chunk_origin: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=_utcnow
     )

@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import re
 
-from sqlalchemy import select
+from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.safety import (
@@ -41,6 +41,7 @@ from app.core.safety import (
 from app.db import models
 from app.services.pdf_indexing_service import create_evidence_citation
 from app.services.page_chunking_service import (
+    CHUNK_ORIGIN_REAL_DERIVED,
     INDEXED_TEXT_STATUS,
     REAL_DERIVED_CHUNK_PREFIX,
 )
@@ -562,14 +563,25 @@ def search_by_finding_context(
 def _real_derived_chunks(
     db: Session, project_id: str
 ) -> list[models.DocumentChunk]:
-    """Return a project's real-derived chunks in stable order."""
+    """Return a project's real-derived chunks in stable order.
+
+    Prefers the durable chunk_origin provenance field. Older rows created before
+    that column have a null chunk_origin and are matched by the legacy
+    real-derived chunk_id prefix, so a transition database keeps working.
+    """
 
     stmt = (
         select(models.DocumentChunk)
         .where(
             models.DocumentChunk.project_id == project_id,
-            models.DocumentChunk.chunk_id.like(
-                f"{REAL_DERIVED_CHUNK_PREFIX}%"
+            or_(
+                models.DocumentChunk.chunk_origin == CHUNK_ORIGIN_REAL_DERIVED,
+                and_(
+                    models.DocumentChunk.chunk_origin.is_(None),
+                    models.DocumentChunk.chunk_id.like(
+                        f"{REAL_DERIVED_CHUNK_PREFIX}%"
+                    ),
+                ),
             ),
         )
         .order_by(
