@@ -550,6 +550,13 @@ class DocumentChunk(Base):
     Phase 3 seeds synthetic chunks rather than parsing real documents. Each
     chunk carries enough metadata (page, section, keywords, related checklist
     items and findings) to support keyword and metadata based retrieval.
+
+    Real-derived chunks built from indexed PDF page text are distinguished only
+    by a chunk_id prefix (see page_chunking_service.REAL_DERIVED_CHUNK_PREFIX),
+    because this table has no provenance column yet.
+    TODO(provenance): add a source_mode/provenance column (for example
+    seeded vs real_derived) so origin does not rely on the chunk_id prefix.
+    See docs/PHASE_1_REAL_PDF_INDEXING_AUDIT.md, PR 2.
     """
 
     __tablename__ = "document_chunks"

@@ -847,6 +847,9 @@ ALLOWED_RETRIEVAL_QUERY_TYPES: set[str] = {
     "finding_context",
     "document_filter",
     "combined",
+    # Keyword search over real-derived DocumentChunk rows (chunks built from
+    # indexed PDF page text). Distinct from the page-text "keyword" search.
+    "chunk_keyword",
 }
 
 # Evidence candidate statuses. Every value keeps the candidate under reviewer
@@ -871,6 +874,8 @@ ALLOWED_CANDIDATE_ORIGINS: set[str] = {
     "checklist_search",
     "finding_context_search",
     "manual_save",
+    # A candidate surfaced by searching real-derived DocumentChunk rows.
+    "chunk_search",
 }
 
 # Maximum number of retrieval results returned in a single search. Keeps result

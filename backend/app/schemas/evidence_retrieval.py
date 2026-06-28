@@ -39,11 +39,16 @@ class EvidenceSearchRequest(BaseModel):
 
 
 class EvidenceSearchResult(BaseModel):
-    """A single ranked retrieval candidate. excerpt is short, never full text."""
+    """A single ranked retrieval candidate. excerpt is short, never full text.
+
+    chunk_id is populated only for results that come from the real-derived
+    DocumentChunk search path. Page-text search results leave it unset.
+    """
 
     document_id: str
     document_name: str
     document_type: str | None = None
+    chunk_id: str | None = None
     document_page_id: str | None = None
     page_number: int | None = None
     page_label: str | None = None
@@ -54,6 +59,20 @@ class EvidenceSearchResult(BaseModel):
     ranking_reason: str | None = None
     candidate_origin: str | None = None
     retrieval_query_id: str | None = None
+
+
+class ChunkEvidenceSearchRequest(BaseModel):
+    """Request body for keyword search over real-derived document chunks.
+
+    query_text is required (at least two characters). filters are optional and
+    metadata-only. limit is bounded to a safe maximum by the service. The search
+    only covers real-derived chunks (those built from indexed PDF page text);
+    seeded demo chunks are never included.
+    """
+
+    query_text: str = Field(..., min_length=1)
+    filters: EvidenceSearchFilters = Field(default_factory=EvidenceSearchFilters)
+    limit: int = 10
 
 
 class EvidenceSearchResponse(BaseModel):
