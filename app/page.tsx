@@ -17,11 +17,11 @@ import { hotspots } from "@/data/hotspots";
 
 const base = `/projects/${BROOKSIDE_PROJECT_ID}`;
 
-// Hero calls to action. The primary CTA opens the Brookside Meadows command
-// center, the most complete single demo surface. Secondary CTAs reach the
-// traceability and draft handoff surfaces directly.
+// Hero calls to action. The primary CTA opens the guided demo, a self-running
+// pre-submittal QA tour over the Brookside Meadows sample project. Secondary CTAs
+// reach the traceability and draft handoff surfaces directly.
 const heroCtas = [
-  { href: `${base}/command-center`, label: "Try the Brookside Meadows demo", primary: true },
+  { href: "/guided-demo", label: "Run the sample review", primary: true },
   { href: `${base}/traceability`, label: "Explore traceability", primary: false },
   { href: `${base}/review-packets`, label: "View sample handoff", primary: false },
 ];
@@ -175,7 +175,7 @@ export default function HomePage() {
                 sample data, not a real submission or an engineering outcome.
               </p>
             </div>
-            <Link href={`${base}/command-center`} className="btn btn-primary shrink-0">
+            <Link href="/guided-demo" className="btn btn-primary shrink-0">
               Run the sample review
             </Link>
           </div>

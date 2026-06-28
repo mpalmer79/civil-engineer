@@ -162,6 +162,112 @@ export const demoJourneySteps: DemoJourneyStep[] = [
   },
 ];
 
+// The focused AEC pre-submittal QA demo. This is the buyer-facing product tour
+// used by the guided demo: a civil/AEC team runs the Brookside Meadows sample
+// package through review-support QA before it goes to a municipal reviewer. Each
+// step links to the real Brookside Meadows surface it describes. Nothing here
+// approves, certifies, verifies, or validates anything; every step stays
+// review-support only and a human reviewer remains responsible.
+export type AecDemoStep = {
+  id: string;
+  step: number;
+  eyebrow: string;
+  title: string;
+  narrative: string;
+  highlights: string[];
+  href: string;
+  ctaLabel: string;
+  whatToNotice: string;
+};
+
+export const aecDemoSteps: AecDemoStep[] = [
+  {
+    id: "cad-intake",
+    step: 1,
+    eyebrow: "CAD / DXF intake",
+    title: "Surface review-support findings from the plan set",
+    narrative:
+      "The Brookside Meadows team starts with the CAD plan set. Civil Engineer AI organizes DXF metadata and surfaces review-support findings tied back to source context, so likely review issues show up before submittal.",
+    highlights: [
+      "Organized DXF metadata from the plan set",
+      "Review-support findings, each a potential issue for human review",
+      "Promoted and unpromoted findings stay under reviewer control",
+    ],
+    href: `${base}/cad`,
+    ctaLabel: "Open CAD intake",
+    whatToNotice:
+      "Findings are potential issues for a human reviewer, not engineering conclusions.",
+  },
+  {
+    id: "plan-consistency",
+    step: 2,
+    eyebrow: "Plan and report consistency",
+    title: "Catch conflicts between the plan set and the report",
+    narrative:
+      "Next, the team checks the plan set against the stormwater report. Consistency checks flag conflicting references and gaps so they are caught in pre-submittal QA instead of in a municipal review comment.",
+    highlights: [
+      "Plan and report conflicts flagged for review",
+      "Inconsistent or missing references surfaced",
+      "Findings that require reviewer confirmation",
+    ],
+    href: `${base}/plan-consistency`,
+    ctaLabel: "Open consistency checks",
+    whatToNotice:
+      "A flagged conflict is a prompt to review, not a statement of final correctness.",
+  },
+  {
+    id: "traceability",
+    step: 3,
+    eyebrow: "Evidence traceability",
+    title: "Trace every requirement back to source evidence",
+    narrative:
+      "The team follows source-backed traceability: a requirement-to-evidence matrix that links each checklist requirement to the evidence behind it, and is honest where no evidence is linked yet.",
+    highlights: [
+      "Requirement-to-evidence matrix with source-backed links",
+      "Linked evidence and potential support, never marked satisfied",
+      "A clear no-linked-evidence-yet distinction",
+    ],
+    href: `${base}/traceability`,
+    ctaLabel: "Open traceability",
+    whatToNotice:
+      "Linked evidence is potential support for review; it does not mean a requirement is satisfied.",
+  },
+  {
+    id: "workflow-board",
+    step: 4,
+    eyebrow: "Workflow board",
+    title: "Track the items that need reviewer attention",
+    narrative:
+      "Findings become workflow items the team can work. The board tracks items needing reviewer attention, follow-up work, and which items are signalled ready for handoff.",
+    highlights: [
+      "Items needing reviewer attention in one place",
+      "Follow-up workflow across the review",
+      "Ready-for-handoff signals, not completion claims",
+    ],
+    href: `${base}/workflow-board`,
+    ctaLabel: "Open workflow board",
+    whatToNotice:
+      "Ready-for-handoff is an organizational signal, not a statement that review is complete.",
+  },
+  {
+    id: "draft-handoff",
+    step: 5,
+    eyebrow: "Draft reviewer handoff",
+    title: "Assemble a draft reviewer handoff package",
+    narrative:
+      "Finally, the team assembles a draft reviewer handoff package: the findings, evidence links, and traceability references organized for the next reviewer, with the professional boundary kept visible.",
+    highlights: [
+      "Draft handoff package with evidence links",
+      "Traceability references carried into the handoff",
+      "Professional limitations stay visible on the draft",
+    ],
+    href: `${base}/review-packets`,
+    ctaLabel: "View draft handoff",
+    whatToNotice:
+      "This is a draft reviewer handoff package, not a final or certified report.",
+  },
+];
+
 // Technical foundation summary for evaluators. Each item is a delivered part of
 // the full-stack review-support build. These describe capabilities only and make
 // no claim beyond what the system actually does.

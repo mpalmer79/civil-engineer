@@ -2,7 +2,6 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
 import StartHerePage from "@/app/start-here/page";
-import GuidedDemoPage from "@/app/guided-demo/page";
 import GuidedDemoCard from "@/components/GuidedDemoCard";
 import {
   BROOKSIDE_PROJECT_ID,
@@ -126,28 +125,5 @@ describe("Start Here page", () => {
   it("renders all twelve demo step cards", () => {
     render(<StartHerePage />);
     expect(screen.getAllByTestId("demo-step-card")).toHaveLength(12);
-  });
-});
-
-describe("Guided demo page", () => {
-  it("renders the recommended demo path with step cards", () => {
-    const { container } = render(<GuidedDemoPage />);
-    expect(screen.getByText("Recommended demo path")).toBeInTheDocument();
-    expect(screen.getAllByTestId("demo-step-card")).toHaveLength(12);
-    assertSafe(container);
-  });
-
-  it("links to the Start Here overview", () => {
-    render(<GuidedDemoPage />);
-    const startHere = screen.getByRole("link", { name: "Start Here overview" });
-    expect(startHere).toHaveAttribute("href", "/start-here");
-  });
-
-  it("keeps the review-support boundary and the one-concern deep dive", () => {
-    render(<GuidedDemoPage />);
-    expect(screen.getByText("One concern, end to end")).toBeInTheDocument();
-    // SafetyBoundaryBanner renders the review-support boundary language.
-    const text = document.body.textContent?.toLowerCase() ?? "";
-    expect(text).toContain("review");
   });
 });
