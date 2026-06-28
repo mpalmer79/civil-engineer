@@ -359,6 +359,7 @@ export async function searchChecklistItemEvidence(
         documentId: r.document_id as string,
         documentName: r.document_name as string,
         documentType: (r.document_type as string) ?? null,
+        chunkId: (r.chunk_id as string) ?? null,
         documentPageId: (r.document_page_id as string) ?? null,
         pageNumber: (r.page_number as number) ?? null,
         pageLabel: (r.page_label as string) ?? null,

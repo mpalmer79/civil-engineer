@@ -112,13 +112,19 @@ const candidate = {
   promotedFindingId: null,
 };
 
-const { searchEvidenceMock, saveCandidateMock, promoteMock } = vi.hoisted(
-  () => ({
-    searchEvidenceMock: vi.fn(),
-    saveCandidateMock: vi.fn(),
-    promoteMock: vi.fn(),
-  }),
-);
+const {
+  searchEvidenceMock,
+  searchChunkEvidenceMock,
+  saveCandidateMock,
+  promoteMock,
+  buildChunksMock,
+} = vi.hoisted(() => ({
+  searchEvidenceMock: vi.fn(),
+  searchChunkEvidenceMock: vi.fn(),
+  saveCandidateMock: vi.fn(),
+  promoteMock: vi.fn(),
+  buildChunksMock: vi.fn(),
+}));
 
 const searchResponse = {
   ok: true,
@@ -147,6 +153,54 @@ const searchResponse = {
       },
     ],
     message: "1 retrieval candidate(s) for reviewer review.",
+  },
+};
+
+const chunkSearchResponse = {
+  ok: true,
+  backendReachable: true,
+  data: {
+    projectId: "proj_user_1",
+    queryText: "detention basin",
+    queryType: "chunk_keyword",
+    retrievalQueryId: "rq_user_2",
+    resultCount: 1,
+    results: [
+      {
+        documentId: "doc_user_1",
+        documentName: "Plan Set.pdf",
+        documentType: "stormwater_report",
+        chunkId: "rdc_doc_user_1_p2_0",
+        documentPageId: "docpage_1",
+        pageNumber: 2,
+        pageLabel: "Page 2",
+        textExtractionStatus: "text_extracted",
+        excerpt: "...detention basin outlet...",
+        matchTerms: ["detention", "basin"],
+        rankingScore: 0.78,
+        rankingReason:
+          "Ranked by keyword match: detention, basin in real-derived page chunk.",
+        candidateOrigin: "chunk_search",
+        retrievalQueryId: "rq_user_2",
+      },
+    ],
+    message: "1 real-derived chunk candidate(s) for reviewer review.",
+  },
+};
+
+const chunkEmptyResponse = {
+  ok: true,
+  backendReachable: true,
+  data: {
+    projectId: "proj_user_1",
+    queryText: "nomatch",
+    queryType: "chunk_keyword",
+    retrievalQueryId: "rq_user_3",
+    resultCount: 0,
+    results: [],
+    message:
+      "No real-derived chunk text matched these terms. Try different terms or " +
+      "filters. This is not a finding about the document content.",
   },
 };
 
@@ -182,15 +236,31 @@ const promoteResponse = {
 
 beforeEach(() => {
   searchEvidenceMock.mockReset();
+  searchChunkEvidenceMock.mockReset();
   saveCandidateMock.mockReset();
   promoteMock.mockReset();
+  buildChunksMock.mockReset();
   searchEvidenceMock.mockResolvedValue(searchResponse);
+  searchChunkEvidenceMock.mockResolvedValue(chunkSearchResponse);
   saveCandidateMock.mockResolvedValue({
     ok: true,
     backendReachable: true,
     data: candidate,
   });
   promoteMock.mockResolvedValue(promoteResponse);
+  buildChunksMock.mockResolvedValue({
+    ok: true,
+    backendReachable: true,
+    data: {
+      documentId: "doc_user_1",
+      projectId: "proj_user_1",
+      documentType: "stormwater_report",
+      fileName: "Plan Set.pdf",
+      pagesChunked: 2,
+      chunkCount: 3,
+      removedPriorChunkCount: 0,
+    },
+  });
 });
 
 vi.mock("@/lib/api", async (importOriginal) => {
@@ -202,14 +272,19 @@ vi.mock("@/lib/api", async (importOriginal) => {
     listProjectEvidenceCandidates: vi.fn(async () => [candidate]),
     getEvidenceCandidate: vi.fn(async () => candidate),
     searchProjectEvidence: searchEvidenceMock,
+    searchProjectChunkEvidence: searchChunkEvidenceMock,
     saveEvidenceCandidate: saveCandidateMock,
     promoteCandidateToDraftFinding: promoteMock,
+    buildDocumentChunks: buildChunksMock,
+    getProjectDocument: vi.fn(async () => document),
+    listResubmittalRounds: vi.fn(async () => []),
     getProjectFinding: vi.fn(async () => null),
     listFindingCitations: vi.fn(async () => []),
   };
 });
 
 import EvidenceSearchClient from "@/components/EvidenceSearchClient";
+import BuildChunksButton from "@/components/BuildChunksButton";
 import PromoteCandidateForm from "@/components/PromoteCandidateForm";
 import EvidenceSearchPage from "@/app/projects/[projectId]/evidence-search/page";
 import EvidenceCandidateQueuePage from "@/app/projects/[projectId]/evidence-candidates/page";
@@ -232,7 +307,7 @@ describe("Evidence search page", () => {
 });
 
 describe("Evidence search client", () => {
-  it("submits the expected payload and renders results", async () => {
+  it("defaults to real-derived chunk search and renders citation context", async () => {
     render(
       <EvidenceSearchClient
         projectId={projectId}
@@ -249,11 +324,12 @@ describe("Evidence search client", () => {
     fireEvent.change(screen.getByPlaceholderText("detention basin outlet"), {
       target: { value: "detention basin" },
     });
-    fireEvent.click(screen.getByText("Search indexed evidence"));
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
     await waitFor(() => {
-      expect(searchEvidenceMock).toHaveBeenCalled();
+      expect(searchChunkEvidenceMock).toHaveBeenCalled();
     });
-    const call = searchEvidenceMock.mock.calls[0] as unknown as [
+    expect(searchEvidenceMock).not.toHaveBeenCalled();
+    const call = searchChunkEvidenceMock.mock.calls[0] as unknown as [
       string,
       { queryText: string },
     ];
@@ -262,10 +338,36 @@ describe("Evidence search client", () => {
     await waitFor(() => {
       expect(screen.getByText(/Plan Set.pdf, page 2/)).toBeInTheDocument();
     });
-    expect(screen.getByText(/relevance 0.82/)).toBeInTheDocument();
+    // Page-level citation context is shown to support citation integrity.
+    expect(screen.getByText(/relevance 0.78/)).toBeInTheDocument();
+    expect(screen.getByText(/Text status: text_extracted/)).toBeInTheDocument();
+    expect(screen.getByText(/Origin: chunk_search/)).toBeInTheDocument();
+    expect(screen.getByText(/chunk id: rdc_/)).toBeInTheDocument();
   });
 
-  it("saves a candidate from a result", async () => {
+  it("can switch to indexed page text search", async () => {
+    render(
+      <EvidenceSearchClient
+        projectId={projectId}
+        documents={[]}
+        documentTypes={[]}
+      />,
+    );
+    fireEvent.change(
+      screen.getByDisplayValue("Real-derived chunk evidence"),
+      { target: { value: "page_text" } },
+    );
+    fireEvent.change(screen.getByPlaceholderText("detention basin outlet"), {
+      target: { value: "detention basin" },
+    });
+    fireEvent.click(screen.getByText("Search indexed page text"));
+    await waitFor(() => {
+      expect(searchEvidenceMock).toHaveBeenCalled();
+    });
+    expect(searchChunkEvidenceMock).not.toHaveBeenCalled();
+  });
+
+  it("saves a candidate with citation fields and candidate origin", async () => {
     render(
       <EvidenceSearchClient
         projectId={projectId}
@@ -276,12 +378,85 @@ describe("Evidence search client", () => {
     fireEvent.change(screen.getByPlaceholderText("detention basin outlet"), {
       target: { value: "detention basin" },
     });
-    fireEvent.click(screen.getByText("Search indexed evidence"));
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
     await waitFor(() => screen.getByText("Save candidate"));
     fireEvent.click(screen.getByText("Save candidate"));
     await waitFor(() => {
       expect(saveCandidateMock).toHaveBeenCalled();
     });
+    const call = saveCandidateMock.mock.calls[0] as unknown as [
+      string,
+      {
+        documentId: string;
+        documentPageId: string | null;
+        pageNumber: number | null;
+        candidateOrigin: string;
+        candidateTitle: string;
+        rankingScore: number;
+      },
+    ];
+    expect(call[1].documentId).toBe("doc_user_1");
+    expect(call[1].documentPageId).toBe("docpage_1");
+    expect(call[1].pageNumber).toBe(2);
+    expect(call[1].candidateOrigin).toBe("chunk_search");
+    expect(call[1].candidateTitle).toContain("Plan Set.pdf page 2");
+    // After saving, a reviewer-controlled link to promote the candidate appears.
+    await waitFor(() =>
+      expect(screen.getByText("Review / promote candidate")).toBeInTheDocument(),
+    );
+  });
+
+  it("shows an honest empty-state message that does not imply absence", async () => {
+    searchChunkEvidenceMock.mockResolvedValueOnce(chunkEmptyResponse);
+    render(
+      <EvidenceSearchClient
+        projectId={projectId}
+        documents={[]}
+        documentTypes={[]}
+      />,
+    );
+    fireEvent.change(screen.getByPlaceholderText("detention basin outlet"), {
+      target: { value: "nomatch" },
+    });
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
+    await waitFor(() => {
+      expect(
+        screen.getByText(/not a finding about the document content/i),
+      ).toBeInTheDocument();
+    });
+    expect(screen.queryByText("Save candidate")).not.toBeInTheDocument();
+  });
+});
+
+describe("Build page chunks button", () => {
+  it("calls the chunk-pages endpoint and reports the result", async () => {
+    render(
+      <BuildChunksButton projectId={projectId} documentId="doc_user_1" />,
+    );
+    fireEvent.click(screen.getByText("Build page chunks"));
+    await waitFor(() => {
+      expect(buildChunksMock).toHaveBeenCalledWith(projectId, "doc_user_1");
+    });
+    await waitFor(() =>
+      expect(
+        screen.getByText(/3 real-derived chunk\(s\) built/),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  it("is disabled with a reason when the document is not indexable", () => {
+    render(
+      <BuildChunksButton
+        projectId={projectId}
+        documentId="doc_user_1"
+        disabled
+        disabledReason="Building page chunks requires an indexed PDF document."
+      />,
+    );
+    expect(
+      screen.getByText(/requires an indexed PDF document/),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Build page chunks")).not.toBeInTheDocument();
   });
 });
 
@@ -366,6 +541,43 @@ describe("Professional boundary in new Sprint 3 UI", () => {
       (c1.textContent ?? "") + (c2.textContent ?? "")
     ).toLowerCase();
     for (const word of PROHIBITED_WORDS) {
+      expect(text).not.toContain(word);
+    }
+  });
+});
+
+describe("Professional boundary in chunk evidence UI", () => {
+  // The critical language boundary for the chunk evidence workflow.
+  const BANNED = [
+    "approve",
+    "approved",
+    "certify",
+    "certified",
+    "validate",
+    "validated",
+    "verify",
+    "verified",
+    "compliant",
+    "compliance",
+    "safe",
+    "safety",
+  ];
+
+  it("introduces no banned vocabulary in the search UI", async () => {
+    const { container } = render(
+      <EvidenceSearchClient
+        projectId={projectId}
+        documents={[]}
+        documentTypes={[]}
+      />,
+    );
+    fireEvent.change(screen.getByPlaceholderText("detention basin outlet"), {
+      target: { value: "detention basin" },
+    });
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
+    await waitFor(() => screen.getByText("Save candidate"));
+    const text = (container.textContent ?? "").toLowerCase();
+    for (const word of BANNED) {
       expect(text).not.toContain(word);
     }
   });
