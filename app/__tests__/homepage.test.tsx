@@ -76,18 +76,15 @@ describe("HomePage hero proof and capabilities", () => {
 });
 
 describe("HomePage primary demo call to action", () => {
-  it("points the primary CTA at a real, non-404 demo route", () => {
+  it("points the primary CTA at the guided demo route", () => {
     const { container } = render(HomePage());
     const primary = container.querySelector("a.btn.btn-primary");
     expect(primary).not.toBeNull();
     const href = primary?.getAttribute("href") ?? "";
-    expect(href).toBe(`${base}/command-center`);
+    expect(href).toBe("/guided-demo");
 
     // The target maps to a real Next.js route directory, so the CTA cannot 404.
-    const routeDir = join(
-      process.cwd(),
-      "app/projects/[projectId]/command-center",
-    );
+    const routeDir = join(process.cwd(), "app/guided-demo");
     expect(existsSync(routeDir)).toBe(true);
   });
 

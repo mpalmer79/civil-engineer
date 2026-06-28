@@ -1,24 +1,50 @@
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
-import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
-import GuidedDemoThread from "@/components/GuidedDemoThread";
-import GuidedDemoCard from "@/components/GuidedDemoCard";
-import DemoNoteCard from "@/components/DemoNoteCard";
-import MarketingMedia from "@/components/MarketingMedia";
-import { BROOKSIDE_PROJECT_ID, demoJourneySteps } from "@/lib/demoJourney";
-import { marketingMedia } from "@/lib/marketingMedia";
+import GuidedDemoExperience, {
+  type DemoProofCard,
+} from "@/components/GuidedDemoExperience";
+import { aecDemoSteps, BROOKSIDE_PROJECT_ID } from "@/lib/demoJourney";
+import {
+  getCadReviewFindings,
+  getPlanConsistencySummary,
+  getProjectTraceability,
+} from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default function GuidedDemoPage() {
-  const base = `/projects/${BROOKSIDE_PROJECT_ID}`;
+// Build a fixture-backed proof card. When a count is available it shows the
+// number; when the backend is unavailable it falls back to a qualitative card
+// instead of inventing a value.
+function proofCard(value: number | null | undefined, label: string): DemoProofCard {
+  return { value: typeof value === "number" ? String(value) : null, label };
+}
+
+export default async function GuidedDemoPage() {
+  // Fixture-backed counts from the seeded Brookside Meadows demo, fetched in
+  // parallel. Each call returns null on a backend miss, so the demo degrades to
+  // qualitative proof cards rather than fake numbers.
+  const [traceability, planSummary, cadFindings] = await Promise.all([
+    getProjectTraceability(BROOKSIDE_PROJECT_ID),
+    getPlanConsistencySummary(BROOKSIDE_PROJECT_ID),
+    getCadReviewFindings(BROOKSIDE_PROJECT_ID),
+  ]);
+
+  const summary = traceability?.summary ?? null;
+  const proof: DemoProofCard[] = [
+    proofCard(cadFindings.length || null, "CAD review-support findings"),
+    proofCard(planSummary?.planConsistencyFindings, "Plan consistency findings"),
+    proofCard(summary?.totalTraceabilityRows, "Traceability rows"),
+    proofCard(summary?.totalWorkflowItems, "Workflow items"),
+    proofCard(summary?.totalPacketItems, "Review packet items"),
+  ];
+
   return (
     <div>
       <PageHeader
-        eyebrow="Guided demo"
-        title="Walk the Brookside Meadows reviewer journey"
-        description="Brookside Meadows is a synthetic public demo fixture. Follow the recommended demo path through the review-support workflow, then see one concern traced end to end. New here? Start Here gives the fastest overview."
+        eyebrow="Guided demo · Sample project"
+        title="Run the Brookside Meadows pre-submittal QA"
+        description="See how a civil and AEC team catches review-support issues before a stormwater package goes to a municipal reviewer. This guided demo runs on the Brookside Meadows sample project using seeded demo data. No login is needed."
         actions={
           <Link href="/start-here" className="btn btn-secondary">
             Start Here overview
@@ -26,66 +52,39 @@ export default function GuidedDemoPage() {
         }
       />
 
-      <div className="mx-auto max-w-5xl space-y-8 px-4 py-6 sm:space-y-10 sm:px-6 sm:py-10 lg:px-8">
-        <SafetyBoundaryBanner variant="compact" />
-
-        <DemoNoteCard
-          message="You are exploring the public Brookside Meadows sample project. No account is needed to look around; some deeper records may prompt sign in."
-          actionHref={base}
-          actionLabel="Open Brookside Meadows"
-        />
-
-        {/* Recommended demo path: the reviewer journey, step by step. */}
-        <section>
-          <h2 className="section-title">Recommended demo path</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            The reviewer journey in the order a reviewer works, from the sample
-            project through documents, evidence, checklist review, findings,
-            applicant responses, resubmittals, the response package, and the
-            dashboard.
+      <div className="mx-auto max-w-5xl space-y-8 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+        {/* Buyer context and what the demo will show, before the tour. */}
+        <section className="surface-card p-6">
+          <h2 className="text-lg font-semibold text-slate-900">
+            Brookside Meadows pre-submittal QA
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+            The simulated buyer is a civil and AEC team preparing a stormwater
+            and site package. They want to catch the review-support issues a
+            municipal reviewer would catch, before they submit, to reduce
+            avoidable resubmittal risk.
           </p>
-          <MarketingMedia
-            src={marketingMedia.guidedDemoJourney.src}
-            alt={marketingMedia.guidedDemoJourney.alt}
-            variant="wide"
-            className="mt-5 sm:mt-6"
-            imageClassName="object-contain p-2 sm:p-3 lg:object-cover lg:p-0"
-            label="Guided demo placeholder"
-          />
-          <ol className="mt-5 grid gap-3 sm:mt-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-            {demoJourneySteps.map((step) => (
-              <li key={step.step}>
-                <GuidedDemoCard step={step} />
+          <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            What this demo will show
+          </p>
+          <ol className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {aecDemoSteps.map((s) => (
+              <li
+                key={s.id}
+                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
+              >
+                <span className="font-semibold text-slate-900">{s.step}.</span>{" "}
+                {s.eyebrow}
               </li>
             ))}
           </ol>
         </section>
 
-        {/* One concern, end to end: the narrative deep dive. */}
-        <section>
-          <h2 className="section-title">One concern, end to end</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            For a deeper look, follow a single review-support concern, missing
-            infiltration testing and an unaddressed groundwater separation
-            discussion, from checklist requirement through finding, evidence,
-            review packet, workflow board, and draft response, ending at the
-            human-review boundary.
-          </p>
-          <div className="mt-5 sm:mt-6">
-            <GuidedDemoThread />
-          </div>
-        </section>
-
-        <MarketingMedia
-          src={marketingMedia.humanReviewBoundary.src}
-          alt={marketingMedia.humanReviewBoundary.alt}
-          variant="panel"
-          className="mx-auto max-w-2xl"
-          imageClassName="object-contain p-2 sm:p-3"
-          label="Human review placeholder"
+        <GuidedDemoExperience
+          projectId={BROOKSIDE_PROJECT_ID}
+          steps={aecDemoSteps}
+          proof={proof}
         />
-
-        <SafetyBoundaryBanner />
       </div>
     </div>
   );

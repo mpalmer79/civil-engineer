@@ -55,17 +55,38 @@ extracted from a real CAD, PDF, GIS, or plan file.
 
 ## Demo flow
 
-Brookside Meadows is the sample project. The public demo path needs no login to
-explore the review-support workflow:
+Brookside Meadows is the sample project. The public guided demo at `/guided-demo`
+is the front door: a no-login, self-running pre-submittal QA product tour reached
+from the homepage primary CTA ("Run the sample review"). It walks a focused
+civil/AEC story over five steps, each linking to the real Brookside Meadows
+surface:
 
-1. CAD intake: `/projects/proj_brookside_meadows/cad`
+1. CAD / DXF intake: `/projects/proj_brookside_meadows/cad`
 2. Plan and report consistency: `/projects/proj_brookside_meadows/plan-consistency`
 3. Evidence traceability: `/projects/proj_brookside_meadows/traceability`
-4. Draft reviewer handoff: `/projects/proj_brookside_meadows/review-packets`
-5. Command center: `/projects/proj_brookside_meadows/command-center`
+4. Workflow board: `/projects/proj_brookside_meadows/workflow-board`
+5. Draft reviewer handoff: `/projects/proj_brookside_meadows/review-packets`
 
-The guided demo at `/guided-demo` walks these steps in reviewer order. The demo
-project id is centralized as `BROOKSIDE_PROJECT_ID` in `lib/demoJourney.ts`.
+The demo opens with a fixture-backed proof band (CAD findings, plan consistency
+findings, traceability rows, workflow items, and review packet items counted from
+the seeded demo data, falling back to qualitative cards when a count is not
+available) and ends with next-step CTAs to the full demo project and the command
+center (`/projects/proj_brookside_meadows/command-center`). The boundary statement
+is present as reassurance below the tour, not as the lead message. The focused
+demo steps live in `aecDemoSteps` and the demo project id is centralized as
+`BROOKSIDE_PROJECT_ID`, both in `lib/demoJourney.ts`. The older twelve-step
+reviewer journey (`demoJourneySteps`) still powers the `/start-here` overview.
+
+## Demo analytics
+
+The guided demo uses a local, no-op analytics helper in `lib/analytics.ts`. It
+tracks `demo_started`, `demo_step_viewed`, `demo_completed`, `demo_cta_clicked`,
+and `pilot_cta_clicked`. It loads no third-party package and sends no data to any
+external service; in development it logs events to the console and in production
+it is a no-op. Only non-sensitive demo-shape properties are passed (step index,
+step id, CTA label, sample project id). No user data, file content, or secrets are
+captured. Future work: route these stable event names through a real analytics
+sink behind an explicit opt-in.
 
 ## Homepage message
 
