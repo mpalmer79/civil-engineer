@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
 import PilotRequestForm from "@/components/PilotRequestForm";
+import PilotReleaseNote from "@/components/PilotReleaseNote";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 
 // Public design-partner pilot request page. It is reachable without a login and
@@ -52,6 +53,8 @@ export default function PilotPage() {
         </section>
 
         <PilotRequestForm />
+
+        <PilotReleaseNote />
 
         <SafetyBoundaryBanner variant="compact" />
       </div>

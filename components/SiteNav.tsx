@@ -9,6 +9,7 @@ import MobileNav from "@/components/MobileNav";
 // separately through AccountNav.
 const primaryLinks = [
   { href: "/", label: "Home" },
+  { href: "/workspace", label: "Workspace" },
   { href: "/projects", label: "Projects" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/queue", label: "Reviewer Queue" },

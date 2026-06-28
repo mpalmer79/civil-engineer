@@ -22,6 +22,7 @@ from app.db import models
 from app.db.database import get_db
 from app.services.access_control_service import (
     get_optional_user,
+    require_project_read,
     require_project_reviewer,
 )
 from app.schemas.checklist_review import (
@@ -83,8 +84,11 @@ def get_rule_pack(
     response_model=list[ProjectChecklistResponse],
 )
 def list_project_checklists(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[ProjectChecklistResponse]:
+    require_project_read(db, project_id, user)
     try:
         return checklist.list_project_checklists(db, project_id)
     except (ChecklistReviewError, ValueError) as exc:
@@ -118,8 +122,10 @@ def create_checklist_from_rule_pack(
 def get_project_checklist(
     project_id: str,
     project_checklist_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> ProjectChecklistDetailResponse:
+    require_project_read(db, project_id, user)
     try:
         detail = checklist.get_project_checklist(
             db, project_id, project_checklist_id
@@ -142,8 +148,10 @@ def get_project_checklist(
 def list_checklist_items(
     project_id: str,
     project_checklist_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> list[ProjectChecklistItemResponse]:
+    require_project_read(db, project_id, user)
     try:
         return checklist.list_project_checklist_items(
             db, project_id, project_checklist_id

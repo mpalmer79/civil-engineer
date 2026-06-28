@@ -30,14 +30,21 @@ def _valid_payload(**overrides) -> dict:
     return payload
 
 
-def _register(client: TestClient) -> str:
+def _register(client: TestClient, *, organization_name: str | None = "Pilot Ops") -> str:
+    # Registering with an organization name makes the new user an org admin, which
+    # is the operator gate for the pilot request list. Pass organization_name=None
+    # to register a plain (non-admin) member.
     response = client.post(
         "/api/v1/auth/register",
         json={
             "email": f"user_{uuid.uuid4().hex[:10]}@example.com",
             "password": "password123",
             "display_name": "Pilot Lister",
-            "organization_name": None,
+            "organization_name": (
+                f"{organization_name} {uuid.uuid4().hex[:6]}"
+                if organization_name
+                else None
+            ),
         },
     )
     assert response.status_code == 201, response.text
@@ -88,12 +95,22 @@ def test_public_cannot_list_pilot_requests(client: TestClient):
     assert response.status_code == 401, response.text
 
 
-def test_authenticated_user_can_list_pilot_requests(client: TestClient):
+def test_non_admin_authenticated_user_cannot_list_pilot_requests(client: TestClient):
+    # A signed-in user who is not an organization admin must be rejected (403).
+    token = _register(client, organization_name=None)
+    response = client.get(
+        "/api/v1/pilot-requests",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 403, response.text
+
+
+def test_org_admin_can_list_pilot_requests(client: TestClient):
     submitted = client.post("/api/v1/pilot-requests", json=_valid_payload())
     assert submitted.status_code == 201, submitted.text
     submitted_id = submitted.json()["pilot_request_id"]
 
-    token = _register(client)
+    token = _register(client)  # registers with an org, so the user is an admin
     response = client.get(
         "/api/v1/pilot-requests",
         headers={"Authorization": f"Bearer {token}"},

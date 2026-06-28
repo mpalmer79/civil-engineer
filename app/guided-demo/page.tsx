@@ -4,6 +4,7 @@ import PageHeader from "@/components/PageHeader";
 import GuidedDemoExperience, {
   type DemoProofCard,
 } from "@/components/GuidedDemoExperience";
+import PilotReleaseNote from "@/components/PilotReleaseNote";
 import { aecDemoSteps, BROOKSIDE_PROJECT_ID } from "@/lib/demoJourney";
 import {
   getCadReviewFindings,
@@ -86,6 +87,8 @@ export default async function GuidedDemoPage() {
           proof={proof}
           pilotHref="/pilot"
         />
+
+        <PilotReleaseNote variant="compact" />
       </div>
     </div>
   );

@@ -58,16 +58,50 @@ function ProjectRow({ project }: { project: ProjectDetail }) {
           <span>{project.reviewType}</span>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-2">
-        <SourceBadge sourceMode={project.sourceMode} />
-        <StatusChip prefix="Status:" label={humanizeStatus(project.status)} />
-        <span className="chip chip-neutral">
-          {project.documentCount} docs
-        </span>
-        <span className="chip chip-neutral">
-          {project.findingCount} findings
-        </span>
+      <div className="flex flex-col items-start gap-2 sm:items-end">
+        <div className="flex flex-wrap items-center gap-2">
+          <SourceBadge sourceMode={project.sourceMode} />
+          <StatusChip prefix="Status:" label={humanizeStatus(project.status)} />
+          <span className="chip chip-neutral">
+            {project.documentCount} docs
+          </span>
+          <span className="chip chip-neutral">
+            {project.findingCount} findings
+          </span>
+        </div>
+        <ProjectQuickLinks projectId={project.projectId} />
       </div>
+    </div>
+  );
+}
+
+// Release-ready quick links into the most useful project surfaces. Shown on each
+// project row so an operator can jump straight to the command center,
+// traceability, or the draft review packet.
+function ProjectQuickLinks({
+  projectId,
+  demo = false,
+}: {
+  projectId: string;
+  demo?: boolean;
+}) {
+  const base = `/projects/${projectId}`;
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-water-700">
+      <Link href={`${base}/command-center`} className="hover:underline">
+        Command center
+      </Link>
+      <Link href={`${base}/traceability`} className="hover:underline">
+        Traceability
+      </Link>
+      <Link href={`${base}/review-packets`} className="hover:underline">
+        Review packet
+      </Link>
+      {demo ? (
+        <Link href="/guided-demo" className="hover:underline">
+          Run guided demo
+        </Link>
+      ) : null}
     </div>
   );
 }
@@ -197,6 +231,14 @@ export default async function ProjectsPage() {
                         Guided demo
                       </Link>
                     </div>
+                    {brooksideProject ? (
+                      <div className="mt-3">
+                        <ProjectQuickLinks
+                          projectId={brooksideProject.projectId}
+                          demo
+                        />
+                      </div>
+                    ) : null}
                   </div>
                   <ProjectMedia
                     src={projectMedia.documentsPreview.src}
