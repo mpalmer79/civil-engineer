@@ -180,11 +180,14 @@ def test_initial_migration_is_the_base_revision():
     # The initial migration is the base of the chain.
     base = script.get_revision("0001_initial_schema")
     assert base.down_revision is None
-    # The head has advanced past the initial migration and chains back to it.
+    # The head has advanced past the initial migration; the chain is linear back
+    # to the initial revision.
     head = script.get_current_head()
-    assert head == "0002_auth_billing_usage"
+    assert head == "0003_billing_events"
     head_revision = script.get_revision(head)
-    assert head_revision.down_revision == "0001_initial_schema"
+    assert head_revision.down_revision == "0002_auth_billing_usage"
+    mid_revision = script.get_revision("0002_auth_billing_usage")
+    assert mid_revision.down_revision == "0001_initial_schema"
 
 
 def test_create_all_from_metadata_builds_pilot_table():

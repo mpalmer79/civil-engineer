@@ -26,7 +26,8 @@ compliance. A human reviewer remains responsible for every finding.
   account model and adds friction without an email provider; it can be added
   behind the same mailer interface in a future phase.
 - Single sign-on (SSO) and enterprise directory sync are out of scope.
-- No real email is sent. See the Email section below.
+- Real email delivery is available via the SMTP provider; with the default noop
+  provider no email is sent. See the Email section below.
 
 ## Password reset
 
@@ -117,13 +118,18 @@ active member) and `require_org_admin` (org_admin of that organization).
 
 ## Email
 
-No real email is sent in this phase. A mailer abstraction
-(`backend/app/services/mailer.py`) provides a default `noop` provider that
-records a safe, redacted delivery log and sends nothing. It never logs a reset
-token, an invitation token, a password, or any secret.
+Real email delivery is available (Production Phase 4D). The mailer abstraction
+(`backend/app/services/mailer.py`) supports a default `noop` provider that sends
+nothing (for local development and tests) and an `smtp` provider that delivers
+real email through a configured SMTP server. Password reset and invitation flows
+send through the mailer when a provider is configured. The mailer never logs a
+reset token, an invitation token, a full link, an email body, a subject, a
+password, or any SMTP credential. See `docs/EMAIL_DELIVERY.md` for configuration
+and the email content.
 
-Before onboarding real users, a production deployment must wire a real email
-provider behind this interface and turn off `AUTH_EXPOSE_DEV_TOKENS` (it is
+Before onboarding real users, a production deployment must set
+`EMAIL_PROVIDER=smtp` and the `EMAIL_SMTP_*` settings, set `APP_PUBLIC_BASE_URL`
+to the deployed frontend origin, and keep `AUTH_EXPOSE_DEV_TOKENS` off (it is
 forced off in production regardless).
 
 ## Environment variables
@@ -134,7 +140,9 @@ Backend service variables (set on the backend only):
 - `AUTH_INVITATION_EXPIRE_DAYS` (default 14).
 - `AUTH_EXPOSE_DEV_TOKENS` (default true; forced off in production) controls
   whether reset/invite tokens are returned in API responses for local use.
-- `EMAIL_PROVIDER` (default `noop`) and `EMAIL_FROM`.
+- `EMAIL_PROVIDER` (default `noop`; `smtp` to send real email), `EMAIL_FROM`,
+  `APP_PUBLIC_BASE_URL`, and the `EMAIL_SMTP_*` settings. See
+  `docs/EMAIL_DELIVERY.md`.
 
 ## Migrations
 
@@ -153,6 +161,7 @@ client, and the accept-invite client.
 
 ## Remaining work before production onboarding
 
-- Wire a real email provider and disable dev token exposure.
+- Configure the SMTP provider (or add an HTTP email provider) and verify
+  delivery; dev token exposure is already forced off in production.
 - Add email confirmation at sign-up if required by the onboarding flow.
 - Consider SSO for larger customers (out of scope here).

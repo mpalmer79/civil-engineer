@@ -119,18 +119,20 @@ mode, the database provider class, and the migration control state without
 exposing any secret. See `docs/PRODUCTION_DATABASE.md` for the full migration
 path, commands, and Railway/Postgres setup.
 
-## Account lifecycle, team, and billing foundation
+## Account lifecycle, team, email, and billing
 
 The production SaaS account foundation now exists. Password reset (hashed,
 expiring, use-once tokens) and organization team invitations (invite by email
 with a role, list, revoke, accept) are implemented, with org_admin gating for
-team management. A billing-readiness foundation is in place: code-defined plans
-(`demo`, `design_partner`, `professional`, `team`), per-organization
-subscriptions, advisory usage metering, and workspace billing/usage/team pages.
-Stripe is deferred and billing is honestly inactive: no payment is collected and
-no subscription is charged. No real email is sent; a no-op mailer abstraction
-stands in until a provider is wired. See `docs/AUTH_LIFECYCLE.md` and
-`docs/BILLING_AND_USAGE.md`.
+team management. Real email delivery is available through an SMTP provider behind
+the mailer abstraction; the default noop provider sends nothing for local
+development and tests. Stripe checkout (professional plan) and signature-verified,
+idempotent webhooks are implemented and become active when configured; until then
+billing reports an honest inactive state and no payment is collected. Usage limits
+are advisory by default and can be hard-enforced for selected low-risk categories
+(`USAGE_ENFORCEMENT_ENABLED`). The public Brookside demo is never billed or
+enforced. See `docs/AUTH_LIFECYCLE.md`, `docs/EMAIL_DELIVERY.md`,
+`docs/STRIPE_BILLING.md`, and `docs/BILLING_AND_USAGE.md`.
 
 ## Current limitations
 
@@ -139,11 +141,14 @@ stands in until a provider is wired. See `docs/AUTH_LIFECYCLE.md` and
   at the URL/configuration level in the suite; manual Postgres verification is
   documented in `docs/PRODUCTION_DATABASE.md`.
 - Auth: local accounts and bearer tokens. Password reset and team invitations
-  are implemented; email confirmation and SSO are not. No real email is sent yet.
-  The prototype default still allows an anonymous demo-reviewer fallback for real
+  are implemented; email confirmation and SSO are not. Real email sends through
+  the SMTP provider when configured; the default noop provider sends nothing. The
+  prototype default still allows an anonymous demo-reviewer fallback for real
   projects; production must turn that off.
-- Billing: not active. The plan and usage foundation exists, but Stripe checkout
-  and webhooks are deferred and no payment is collected.
+- Billing: implemented but inactive until configured. Stripe checkout
+  (professional) and signature-verified, idempotent webhooks exist; no payment is
+  collected until Stripe keys are set. Usage limits are advisory by default and
+  enforceable for selected categories.
 - Live AI: disabled by default. The default provider is a deterministic mock;
   live calls require an explicit provider, an enable flag, and a key.
 - Capability scope: real DXF parsing (ezdxf) and PDF text-layer indexing (pypdf)
@@ -161,11 +166,12 @@ stands in until a provider is wired. See `docs/AUTH_LIFECYCLE.md` and
 
 ## What is not ready for production customers
 
-- The production database foundation (Postgres support and Alembic migrations)
-  and the account-lifecycle foundation (password reset, team invitations) are in
-  place, but billing is not active and no email provider is wired.
-- Self-serve paid onboarding is not active: Stripe checkout and webhooks are
-  deferred, and email confirmation and SSO are not implemented.
+- The production database, account-lifecycle, email, and billing foundations are
+  in place, but they require configuration before real use: a real SMTP provider,
+  Stripe keys, and the production auth posture must all be set, and the choice to
+  enforce usage limits made deliberately.
+- Self-serve paid onboarding works only once Stripe is configured; email
+  confirmation and SSO are not implemented.
 - Live AI is intentionally off by default.
 - The anonymous demo-reviewer fallback must be disabled before real tenant data
   is hosted.

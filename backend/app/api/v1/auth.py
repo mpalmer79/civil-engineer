@@ -36,7 +36,12 @@ from app.schemas.auth import (
     UserProjectSummary,
     UserRegisterRequest,
 )
-from app.services import access_control_service, auth_service, mailer
+from app.services import (
+    access_control_service,
+    auth_service,
+    email_content,
+    mailer,
+)
 from app.services.access_control_service import (
     get_current_user,
     get_optional_user,
@@ -172,16 +177,15 @@ def request_password_reset(
     if user is not None and user.is_active:
         _record, token = auth_service.create_password_reset_token(db, user)
         db.commit()
-        # The mailer is a no-op by default and logs nothing sensitive. The reset
-        # link/token is never logged.
+        # The mailer sends through the configured provider (noop by default) and
+        # logs nothing sensitive. The reset link/token is never logged.
+        subject, body = email_content.password_reset_email(token, settings=settings)
         mailer.send_email(
             to=user.email,
             category="password_reset",
-            subject="Reset your Civil Engineer AI password",
-            body=(
-                "Use this token to reset your password. If you did not request "
-                f"this, ignore this message. Token: {token}"
-            ),
+            subject=subject,
+            body=body,
+            settings=settings,
         )
         if settings.expose_dev_tokens:
             dev_token = token

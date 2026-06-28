@@ -41,6 +41,11 @@ export default function WorkspaceBillingClient() {
   const handleCheckout = async () => {
     if (!orgId) return;
     const result = await startCheckout(orgId);
+    if (result?.available && result.checkoutUrl) {
+      // Redirect to the Stripe-hosted checkout page.
+      window.location.href = result.checkoutUrl;
+      return;
+    }
     setCheckoutMessage(result?.detail ?? "Checkout is unavailable.");
   };
 
@@ -77,10 +82,15 @@ export default function WorkspaceBillingClient() {
               <span className="text-lg font-semibold text-slate-800">
                 {billing.subscription.planName}
               </span>
-              <StatusChip
-                label={billing.subscription.status}
-                prefix="billing"
-              />
+              <span className="flex items-center gap-2">
+                <span className="chip chip-neutral">
+                  mode: {billing.billing.mode}
+                </span>
+                <StatusChip
+                  label={billing.subscription.status}
+                  prefix="billing"
+                />
+              </span>
             </div>
             <div
               className={
@@ -91,17 +101,29 @@ export default function WorkspaceBillingClient() {
             >
               {billing.billing.message}
             </div>
+            <p className="text-xs text-slate-500">
+              Billing is required only for production SaaS use. The public
+              Brookside Meadows demo never requires billing.
+            </p>
             <div>
-              <button
-                type="button"
-                onClick={handleCheckout}
-                disabled={!billing.billing.enabled}
-                className="btn btn-primary btn-sm"
-              >
-                {billing.billing.enabled
-                  ? "Manage subscription"
-                  : "Billing inactive"}
-              </button>
+              {billing.checkoutAvailable ? (
+                <button
+                  type="button"
+                  onClick={handleCheckout}
+                  className="btn btn-primary btn-sm"
+                >
+                  Subscribe to Professional
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="btn btn-primary btn-sm"
+                  title="Billing is not active in this environment"
+                >
+                  Billing is not active in this environment
+                </button>
+              )}
               {checkoutMessage ? (
                 <p className="mt-2 text-sm text-slate-600">{checkoutMessage}</p>
               ) : null}

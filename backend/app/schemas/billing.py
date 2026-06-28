@@ -41,6 +41,9 @@ class OrganizationBillingResponse(BaseModel):
     subscription: SubscriptionResponse
     billing: BillingStatusResponse
     plans: list[PlanResponse]
+    # True when Stripe checkout is fully configured. The UI shows the checkout CTA
+    # only when this is true; otherwise it shows an honest unavailable state.
+    checkout_available: bool = False
 
 
 class UsageLimitItem(BaseModel):
@@ -49,6 +52,7 @@ class UsageLimitItem(BaseModel):
     used: int
     limit: int | None = None
     status: str
+    enforced: bool = False
 
 
 class UsageSummaryResponse(BaseModel):
@@ -62,9 +66,18 @@ class UsageSummaryResponse(BaseModel):
 
 
 class CheckoutResponse(BaseModel):
-    # Honest checkout response. While billing is deferred, available is false and
-    # no checkout URL is returned, so the UI shows an inactive state rather than a
+    # Honest checkout response. available is true only when Stripe checkout is
+    # configured and a session URL was created; otherwise available is false and
+    # no URL is returned, so the UI shows an unavailable state rather than a
     # button that would error.
     available: bool
     detail: str
     checkout_url: str | None = None
+
+
+class WebhookAckResponse(BaseModel):
+    # Acknowledgement returned to Stripe after a verified webhook. Carries no
+    # secret and no event payload, only that the event was received and its
+    # processing outcome (processed, duplicate, ignored).
+    received: bool
+    status: str

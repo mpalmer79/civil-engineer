@@ -3003,3 +3003,21 @@ class UsageEvent(Base):
     category: Mapped[str] = mapped_column(String, nullable=False, index=True)
     quantity: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class BillingEvent(Base):
+    __tablename__ = "billing_events"
+
+    # Idempotency ledger for processed Stripe webhook events (Production Phase
+    # 4D). stripe_event_id is unique so a duplicate webhook delivery is ignored.
+    # No Stripe secret, signature, or raw payload is stored here; only the event
+    # id, type, and the organization it mapped to. processed_at records when the
+    # event was applied to the organization subscription.
+    billing_event_id: Mapped[str] = mapped_column(String, primary_key=True)
+    stripe_event_id: Mapped[str] = mapped_column(
+        String, nullable=False, unique=True, index=True
+    )
+    event_type: Mapped[str] = mapped_column(String, nullable=False)
+    organization_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    processed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)

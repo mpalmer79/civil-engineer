@@ -20,18 +20,20 @@ describe("Phase 4B/4C documentation", () => {
     expect(existsSync(join(root, "docs/BILLING_AND_USAGE.md"))).toBe(true);
   });
 
-  it("the billing doc states Stripe is deferred and billing inactive", () => {
+  it("the billing doc states billing is inactive until configured", () => {
     const doc = readDoc("docs/BILLING_AND_USAGE.md").toLowerCase();
-    expect(doc).toContain("stripe status: deferred");
+    expect(doc).toContain("configured by environment");
     expect(doc).toContain("no payment is");
     expect(doc).toContain("advisory");
   });
 
-  it("the auth lifecycle doc states email is not sent and tokens are hashed", () => {
+  it("the auth lifecycle doc states tokens are hashed and use-once", () => {
     const doc = readDoc("docs/AUTH_LIFECYCLE.md").toLowerCase();
-    expect(doc).toContain("no real email is sent");
     expect(doc).toContain("hash");
     expect(doc).toContain("use-once");
+    // Real email is available via smtp; noop is the default.
+    expect(doc).toContain("smtp");
+    expect(doc).toContain("noop");
   });
 
   it("neither doc claims an active paid subscription", () => {

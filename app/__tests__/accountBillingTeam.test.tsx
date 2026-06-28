@@ -64,45 +64,76 @@ afterEach(() => cleanup());
 // Billing
 // ---------------------------------------------------------------------------
 
-describe("WorkspaceBillingClient", () => {
-  it("shows an honest inactive billing state and disables checkout", async () => {
-    mocks.getOrganizationBilling.mockResolvedValue({
-      subscription: {
-        subscriptionId: "s1",
-        organizationId: "o1",
+function billingPayload(overrides: Record<string, unknown> = {}) {
+  return {
+    subscription: {
+      subscriptionId: "s1",
+      organizationId: "o1",
+      planCode: "demo",
+      planName: "Demo",
+      status: "inactive",
+      currentPeriodEnd: null,
+      limits: {},
+    },
+    billing: {
+      enabled: false,
+      mode: "inactive",
+      message: "Billing is not active. No payment is collected.",
+    },
+    plans: [
+      {
         planCode: "demo",
-        planName: "Demo",
-        status: "inactive",
-        currentPeriodEnd: null,
+        name: "Demo",
+        description: "Demo",
+        priceDisplay: "Free",
+        sortOrder: 0,
         limits: {},
       },
-      billing: {
-        enabled: false,
-        mode: "inactive",
-        message: "Billing is not active. No payment is collected.",
-      },
-      plans: [
-        {
-          planCode: "demo",
-          name: "Demo",
-          description: "Demo",
-          priceDisplay: "Free",
-          sortOrder: 0,
-          limits: {},
-        },
-      ],
-    });
+    ],
+    checkoutAvailable: false,
+    ...overrides,
+  };
+}
+
+describe("WorkspaceBillingClient", () => {
+  it("shows an honest unavailable state when checkout is not configured", async () => {
+    mocks.getOrganizationBilling.mockResolvedValue(billingPayload());
     render(<WorkspaceBillingClient />);
     await waitFor(() =>
-      expect(screen.getByText("Billing inactive")).toBeInTheDocument(),
+      expect(
+        screen.getByText("Billing is not active in this environment"),
+      ).toBeInTheDocument(),
     );
-    const button = screen.getByText("Billing inactive") as HTMLButtonElement;
+    const button = screen.getByText(
+      "Billing is not active in this environment",
+    ) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
     const text = (document.body.textContent ?? "").toLowerCase();
     expect(text).toContain("not active");
     // Never claims an active subscription.
     expect(text).not.toContain("subscription active");
     expect(text).not.toContain("payment received");
+  });
+
+  it("shows the checkout CTA only when checkout is available", async () => {
+    mocks.getOrganizationBilling.mockResolvedValue(
+      billingPayload({
+        billing: { enabled: true, mode: "test", message: "Billing is configured." },
+        checkoutAvailable: true,
+      }),
+    );
+    render(<WorkspaceBillingClient />);
+    await waitFor(() =>
+      expect(screen.getByText("Subscribe to Professional")).toBeInTheDocument(),
+    );
+    const button = screen.getByText(
+      "Subscribe to Professional",
+    ) as HTMLButtonElement;
+    expect(button.disabled).toBe(false);
+    // The billing mode is shown honestly.
+    expect((document.body.textContent ?? "").toLowerCase()).toContain(
+      "mode: test",
+    );
   });
 });
 

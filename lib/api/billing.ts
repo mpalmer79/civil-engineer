@@ -36,6 +36,7 @@ export type OrganizationBilling = {
   subscription: Subscription;
   billing: BillingStatus;
   plans: Plan[];
+  checkoutAvailable: boolean;
 };
 
 export type UsageLimit = {
@@ -44,6 +45,7 @@ export type UsageLimit = {
   used: number;
   limit: number | null;
   status: string;
+  enforced: boolean;
 };
 
 export type UsageSummary = {
@@ -100,6 +102,7 @@ function mapUsageLimit(raw: Record<string, unknown>): UsageLimit {
     used: (raw.used as number) ?? 0,
     limit: (raw.limit as number) ?? null,
     status: raw.status as string,
+    enforced: (raw.enforced as boolean) ?? false,
   };
 }
 
@@ -130,6 +133,7 @@ export async function getOrganizationBilling(
     ),
     billing: mapStatus(data.billing as Record<string, unknown>),
     plans: (data.plans as Record<string, unknown>[]).map(mapPlan),
+    checkoutAvailable: (data.checkout_available as boolean) ?? false,
   };
 }
 

@@ -1,9 +1,11 @@
-"""Internal usage metering (Production Phase 4B/4C).
+"""Internal usage metering (Production Phase 4B/4C/4D).
 
-Records counts of review-support actions per organization for advisory usage
-limits, and summarizes usage against the organization's plan. Usage is advisory
-in this phase: it is tracked and surfaced with warning states, but actions are
-not hard-blocked, so existing behavior and the public demo are never interrupted.
+Records counts of review-support actions per organization, summarizes usage
+against the organization's plan, and (Phase 4D) optionally enforces hard limits
+for selected low-risk categories. Enforcement is off by default
+(USAGE_ENFORCEMENT_ENABLED), so existing behavior, local development, and tests
+are never blocked, and the public Brookside demo and the demo organization are
+never enforced.
 
 No usage record carries file content, document text, or any secret. Usage is
 never sent to any external service.
@@ -15,9 +17,11 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
+from fastapi import HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.config import Settings, get_settings
 from app.core.safety import ALLOWED_USAGE_CATEGORIES
 from app.db import models
 from app.services import billing_service
@@ -28,6 +32,18 @@ _APPROACHING_FRACTION = 0.8
 # The demo organization is excluded from usage metering so seeded demo activity
 # never counts against any plan or pollutes usage summaries.
 _EXCLUDED_ORG_IDS = {"org_internal_demo"}
+
+# Categories that are hard-enforced when USAGE_ENFORCEMENT_ENABLED is true. These
+# are single-mutation, organization-scoped, user-driven actions where a clean
+# pre-check cannot leave partial state. Other categories stay advisory: AI calls
+# (no live AI), pages indexed and CAD parses (counted inside internal/seed
+# flows), the public pilot request, and the public demo. See
+# docs/BILLING_AND_USAGE.md.
+ENFORCED_CATEGORIES = {
+    "project_created",
+    "document_uploaded",
+    "review_packet_generated",
+}
 
 
 def _now() -> datetime:
@@ -124,13 +140,19 @@ def _limit_status(used: int, limit: int | None) -> str:
     return "ok"
 
 
-def usage_summary(db: Session, organization_id: str) -> dict[str, Any]:
+def usage_summary(
+    db: Session, organization_id: str, settings: Settings | None = None
+) -> dict[str, Any]:
     """Return a usage summary for an organization against its plan limits.
 
-    Each metered limit reports the category, used count, limit, and an advisory
-    status (ok, approaching, over). Limits are advisory and do not block actions.
+    Each metered limit reports the category, used count, limit, an advisory
+    status (ok, approaching, over), and whether it is hard-enforced. The
+    top-level enforcement is "enforced" when enforcement is enabled, else
+    "advisory".
     """
 
+    settings = settings or get_settings()
+    enforcing = bool(settings.USAGE_ENFORCEMENT_ENABLED)
     sub = billing_service.get_or_create_subscription(db, organization_id)
     plan = billing_service.get_plan(sub.plan_code)
     totals = usage_totals(db, organization_id)
@@ -145,6 +167,7 @@ def usage_summary(db: Session, organization_id: str) -> dict[str, Any]:
                 "used": used,
                 "limit": limit,
                 "status": _limit_status(used, limit),
+                "enforced": enforcing and category in ENFORCED_CATEGORIES,
             }
         )
     return {
@@ -152,7 +175,60 @@ def usage_summary(db: Session, organization_id: str) -> dict[str, Any]:
         "plan_code": sub.plan_code,
         "plan_name": plan["name"],
         "subscription_status": sub.status,
-        "enforcement": "advisory",
+        "enforcement": "enforced" if enforcing else "advisory",
         "limits": limits,
         "totals": totals,
     }
+
+
+def check_limit(
+    db: Session,
+    *,
+    category: str,
+    organization_id: str | None,
+    settings: Settings | None = None,
+) -> None:
+    """Raise 402 limit_exceeded when an enforced category is at or over its limit.
+
+    A no-op unless USAGE_ENFORCEMENT_ENABLED is true and the category is in
+    ENFORCED_CATEGORIES. The demo organization and a null organization (public
+    demo or global actions) are never enforced, so the public Brookside demo is
+    never blocked. This must be called before any mutation so a blocked action
+    leaves no partial state.
+    """
+
+    settings = settings or get_settings()
+    if not settings.USAGE_ENFORCEMENT_ENABLED:
+        return
+    if category not in ENFORCED_CATEGORIES:
+        return
+    if not organization_id or organization_id in _EXCLUDED_ORG_IDS:
+        return
+    sub = billing_service.get_or_create_subscription(db, organization_id)
+    plan = billing_service.get_plan(sub.plan_code)
+    # Find the plan limit key for this category.
+    limit_key = next(
+        (k for k, c in billing_service.LIMIT_TO_CATEGORY.items() if c == category),
+        None,
+    )
+    if limit_key is None:
+        return
+    limit = plan["limits"].get(limit_key)
+    if limit is None:
+        return
+    used = usage_totals(db, organization_id).get(category, 0)
+    if used >= limit:
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "code": "limit_exceeded",
+                "category": category,
+                "limit": limit,
+                "used": used,
+                "plan_code": sub.plan_code,
+                "message": (
+                    f"Plan limit reached for {limit_key} "
+                    f"({used}/{limit}). Upgrade the plan to continue."
+                ),
+            },
+        )
