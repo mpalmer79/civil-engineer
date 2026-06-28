@@ -12,6 +12,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
 from app.schemas.plan_sheet_hotspot import (
     PlanConsistencyReviewActionCreate,
@@ -26,6 +27,11 @@ from app.services import (
     plan_sheet_hotspot_service,
     plan_sheet_service,
     project_service,
+)
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_read,
+    require_project_reviewer,
 )
 from app.services.plan_review_service import PlanReviewActionError
 
@@ -42,9 +48,12 @@ def _require_project(db: Session, project_id: str) -> None:
     response_model=list[PlanSheetHotspotRead],
 )
 def list_sheet_hotspots(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[PlanSheetHotspotRead]:
     _require_project(db, project_id)
+    require_project_read(db, project_id, user)
     return plan_sheet_hotspot_service.list_sheet_hotspots(db, project_id)
 
 
@@ -53,9 +62,12 @@ def list_sheet_hotspots(
     response_model=SheetHotspotSummary,
 )
 def sheet_hotspot_summary(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> SheetHotspotSummary:
     _require_project(db, project_id)
+    require_project_read(db, project_id, user)
     return SheetHotspotSummary(
         **plan_sheet_hotspot_service.summarize_sheet_hotspots(db, project_id)
     )
@@ -66,10 +78,14 @@ def sheet_hotspot_summary(
     response_model=list[PlanSheetHotspotRead],
 )
 def list_hotspots_for_sheet(
-    sheet_id: str, db: Session = Depends(get_db)
+    sheet_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[PlanSheetHotspotRead]:
-    if plan_sheet_service.get_plan_sheet(db, sheet_id) is None:
+    sheet = plan_sheet_service.get_plan_sheet(db, sheet_id)
+    if sheet is None:
         raise HTTPException(status_code=404, detail="Plan sheet not found")
+    require_project_read(db, sheet.project_id, user)
     return plan_sheet_hotspot_service.list_hotspots_for_sheet(db, sheet_id)
 
 
@@ -78,8 +94,14 @@ def list_hotspots_for_sheet(
     response_model=SheetViewerContext,
 )
 def get_sheet_viewer_context(
-    sheet_id: str, db: Session = Depends(get_db)
+    sheet_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> SheetViewerContext:
+    sheet = plan_sheet_service.get_plan_sheet(db, sheet_id)
+    if sheet is None:
+        raise HTTPException(status_code=404, detail="Plan sheet not found")
+    require_project_read(db, sheet.project_id, user)
     context = plan_sheet_hotspot_service.get_plan_view_context(db, sheet_id)
     if context is None:
         raise HTTPException(status_code=404, detail="Plan sheet not found")
@@ -91,11 +113,14 @@ def get_sheet_viewer_context(
     response_model=PlanSheetHotspotRead,
 )
 def get_sheet_hotspot(
-    hotspot_id: str, db: Session = Depends(get_db)
+    hotspot_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> PlanSheetHotspotRead:
     hotspot = plan_sheet_hotspot_service.inspect_sheet_hotspot(db, hotspot_id)
     if hotspot is None:
         raise HTTPException(status_code=404, detail="Sheet hotspot not found")
+    require_project_read(db, hotspot.project_id, user)
     return hotspot
 
 
@@ -106,8 +131,16 @@ def get_sheet_hotspot(
 def create_plan_consistency_review_action(
     plan_finding_id: str,
     body: PlanConsistencyReviewActionCreate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> PlanConsistencyReviewActionResult:
+    from app.services import plan_consistency_service
+
+    finding = plan_consistency_service.get_plan_consistency_finding(
+        db, plan_finding_id
+    )
+    if finding is not None:
+        require_project_reviewer(db, finding.project_id, user)
     try:
         action, finding = (
             plan_review_service.create_plan_consistency_review_action(
@@ -130,7 +163,9 @@ def create_plan_consistency_review_action(
     response_model=list[PlanConsistencyReviewActionRead],
 )
 def list_finding_review_actions(
-    plan_finding_id: str, db: Session = Depends(get_db)
+    plan_finding_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[PlanConsistencyReviewActionRead]:
     from app.services import plan_consistency_service
 
@@ -141,6 +176,7 @@ def list_finding_review_actions(
         raise HTTPException(
             status_code=404, detail="Plan consistency finding not found"
         )
+    require_project_read(db, finding.project_id, user)
     return plan_review_service.list_plan_consistency_review_actions(
         db, finding.project_id, plan_finding_id=plan_finding_id
     )
@@ -153,9 +189,11 @@ def list_finding_review_actions(
 def list_project_review_actions(
     project_id: str,
     plan_finding_id: str | None = Query(default=None),
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> list[PlanConsistencyReviewActionRead]:
     _require_project(db, project_id)
+    require_project_read(db, project_id, user)
     return plan_review_service.list_plan_consistency_review_actions(
         db, project_id, plan_finding_id=plan_finding_id
     )

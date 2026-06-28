@@ -16,6 +16,7 @@ from app.services import (
 )
 from app.services.access_control_service import (
     get_optional_user,
+    require_project_read,
     require_project_reviewer,
 )
 from app.services.page_chunking_service import ChunkingError
@@ -25,27 +26,41 @@ router = APIRouter(tags=["chunks"])
 
 @router.get("/projects/{project_id}/chunks", response_model=list[ChunkRead])
 def list_project_chunks(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[ChunkRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return retrieval_service.list_project_chunks(db, project_id)
 
 
 @router.get("/documents/{document_id}/chunks", response_model=list[ChunkRead])
 def list_document_chunks(
-    document_id: str, db: Session = Depends(get_db)
+    document_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[ChunkRead]:
-    if document_service.get_document(db, document_id) is None:
+    document = document_service.get_document(db, document_id)
+    if document is None:
         raise HTTPException(status_code=404, detail="Document not found")
+    # Resolve the owning project so a raw document id cannot bypass access.
+    require_project_read(db, document.project_id, user)
     return retrieval_service.list_document_chunks(db, document_id)
 
 
 @router.get("/chunks/{chunk_id}", response_model=ChunkRead)
-def get_chunk(chunk_id: str, db: Session = Depends(get_db)) -> ChunkRead:
+def get_chunk(
+    chunk_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
+) -> ChunkRead:
     chunk = retrieval_service.get_chunk(db, chunk_id)
     if chunk is None:
         raise HTTPException(status_code=404, detail="Chunk not found")
+    # Resolve the owning project so a raw chunk id cannot bypass access.
+    require_project_read(db, chunk.project_id, user)
     return chunk
 
 

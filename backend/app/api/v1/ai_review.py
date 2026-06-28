@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 
 from app.ai.provider import describe_provider_mode
 from app.core.config import get_settings
+from app.db import models
 from app.db.database import get_db
 from app.schemas.ai_review import (
     AIDraftFindingRead,
@@ -19,14 +20,24 @@ from app.schemas.ai_review import (
     ProviderMode,
 )
 from app.services import ai_review_service, project_service
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_read,
+    require_project_reviewer,
+)
 
 router = APIRouter(tags=["ai-review"])
 
 
 @router.get("/projects/{project_id}/ai-provider-mode", response_model=ProviderMode)
-def get_provider_mode(project_id: str, db: Session = Depends(get_db)) -> ProviderMode:
+def get_provider_mode(
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
+) -> ProviderMode:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return describe_provider_mode(get_settings())
 
 
@@ -34,10 +45,13 @@ def get_provider_mode(project_id: str, db: Session = Depends(get_db)) -> Provide
     "/projects/{project_id}/ai-review-runs", response_model=AIReviewRunRead
 )
 def start_ai_review_run(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> AIReviewRunRead:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_reviewer(db, project_id, user)
     return ai_review_service.start_ai_review_run(db, project_id)
 
 
@@ -46,20 +60,26 @@ def start_ai_review_run(
     response_model=list[AIReviewRunRead],
 )
 def list_ai_review_runs(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[AIReviewRunRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return ai_review_service.list_ai_review_runs(db, project_id)
 
 
 @router.get("/ai-review-runs/{review_run_id}", response_model=AIReviewRunRead)
 def get_ai_review_run(
-    review_run_id: str, db: Session = Depends(get_db)
+    review_run_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> AIReviewRunRead:
     run = ai_review_service.get_ai_review_run(db, review_run_id)
     if run is None:
         raise HTTPException(status_code=404, detail="AI review run not found")
+    require_project_read(db, run.project_id, user)
     return run
 
 
@@ -68,10 +88,14 @@ def get_ai_review_run(
     response_model=list[AIDraftFindingRead],
 )
 def list_run_draft_findings(
-    review_run_id: str, db: Session = Depends(get_db)
+    review_run_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[AIDraftFindingRead]:
-    if ai_review_service.get_ai_review_run(db, review_run_id) is None:
+    run = ai_review_service.get_ai_review_run(db, review_run_id)
+    if run is None:
         raise HTTPException(status_code=404, detail="AI review run not found")
+    require_project_read(db, run.project_id, user)
     return ai_review_service.list_draft_findings_for_run(db, review_run_id)
 
 
@@ -80,10 +104,13 @@ def list_run_draft_findings(
     response_model=list[AIDraftFindingRead],
 )
 def list_project_draft_findings(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[AIDraftFindingRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return ai_review_service.list_draft_findings_for_project(db, project_id)
 
 
@@ -91,9 +118,12 @@ def list_project_draft_findings(
     "/draft-findings/{draft_finding_id}", response_model=AIDraftFindingRead
 )
 def get_draft_finding(
-    draft_finding_id: str, db: Session = Depends(get_db)
+    draft_finding_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> AIDraftFindingRead:
     draft = ai_review_service.get_draft_finding(db, draft_finding_id)
     if draft is None:
         raise HTTPException(status_code=404, detail="Draft finding not found")
+    require_project_read(db, draft.project_id, user)
     return draft

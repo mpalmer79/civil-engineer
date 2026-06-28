@@ -26,6 +26,7 @@ from app.schemas.pdf_evidence import (
 from app.services import pdf_indexing_service
 from app.services.access_control_service import (
     get_optional_user,
+    require_project_read,
     require_project_reviewer,
 )
 from app.services.pdf_indexing_service import PdfIndexingError
@@ -69,8 +70,10 @@ def index_pdf(
 def list_pages(
     project_id: str,
     document_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> list[DocumentPageResponse]:
+    require_project_read(db, project_id, user)
     try:
         return pdf_indexing_service.list_document_pages(
             db, project_id, document_id
@@ -87,8 +90,10 @@ def get_page(
     project_id: str,
     document_id: str,
     page_number: int,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> DocumentPageResponse:
+    require_project_read(db, project_id, user)
     try:
         page = pdf_indexing_service.get_document_page(
             db, project_id, document_id, page_number
@@ -107,8 +112,10 @@ def get_page(
 def list_finding_citations(
     project_id: str,
     finding_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> list[EvidenceCitationResponse]:
+    require_project_read(db, project_id, user)
     return pdf_indexing_service.list_finding_citations(
         db, project_id, finding_id
     )
@@ -152,8 +159,10 @@ def create_citation(
 )
 def list_project_citations(
     project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> list[EvidenceCitationResponse]:
+    require_project_read(db, project_id, user)
     return pdf_indexing_service.list_project_citations(db, project_id)
 
 
@@ -166,8 +175,10 @@ def update_citation(
     finding_id: str,
     citation_id: str,
     body: EvidenceCitationUpdate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> EvidenceCitationResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         return pdf_indexing_service.update_evidence_citation(
             db,
@@ -191,8 +202,10 @@ def delete_citation(
     project_id: str,
     finding_id: str,
     citation_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> dict[str, str | bool]:
+    require_project_reviewer(db, project_id, user)
     try:
         pdf_indexing_service.delete_evidence_citation(
             db,

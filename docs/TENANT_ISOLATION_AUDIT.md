@@ -70,77 +70,124 @@ Relevant settings (`backend/app/core/config.py`): `AUTH_DEMO_MODE`,
 
 ## Routes reviewed and enforcement status
 
-Verified by inspecting each router for guard usage.
+Verified by inspecting each router for guard usage. As of Phase 2B, every
+project-owned router enforces the project access guards.
 
 Enforced (call `require_project_*` or `get_current_user`):
 
-- `projects.py`, `documents.py`, `findings.py`, `evidence_retrieval.py`,
-  `dashboard.py`, `checklist_review.py`, `auth.py`, and `traceability.py`
-  (hardened in this pass).
+- Phase 2A: `projects.py`, `documents.py`, `findings.py`,
+  `evidence_retrieval.py`, `dashboard.py`, `checklist_review.py`, `auth.py`,
+  `file_storage.py`, `response_matrix.py`, `reviewer_response_packages.py`,
+  `pdf_evidence.py` (mutations), `chunks.py` (mutation), and `traceability.py`.
+- Phase 2B (this pass): `cad_intake.py`, `cad_metadata.py`, `workflow.py`,
+  `review_packets.py`, `plan_consistency.py`, `command_center.py`,
+  `plan_sheets.py`, `plan_sheet_hotspots.py`, `plan_references.py`,
+  `hotspots.py`, `checklist.py`, `retrieval.py`, `chunks.py` (reads + raw ids),
+  `ai_review.py`, `human_review.py`, `evaluation.py`, `pdf_evidence.py`
+  (reads + mutations), `response_packages.py`, `review_cycle.py`, and
+  `audit.py`.
 
-Not yet enforcing project access (no guard reference found):
+Intentionally not project-scoped (no per-tenant data, so no project guard):
 
-- `cad_intake.py`, `cad_metadata.py`, `workflow.py`, `review_packets.py`,
-  `plan_consistency.py`, `command_center.py`, `plan_sheets.py`, and several
-  raw-entity-id lookups (for example `plan_sheets.py` and `cad_metadata.py`
-  fetch by sheet or metadata id with no project context).
+- `GET /cad-upload-limits` (static upload policy), `GET /evaluation-cases`
+  (seeded global reference cases), and the operational diagnostics endpoints
+  (`/readiness`, `/storage/health`, etc., which use `get_current_user` where
+  they expose environment detail).
 
-## Risks found
+## Guard-level convention applied
 
-1. Raw-entity-id bypass. Read endpoints keyed by a raw child-entity id without a
-   project context can return data across tenants. Confirmed and fixed for
-   `GET /documents/{document_id}`. The same shape still exists for
-   `GET /plan-sheets/{sheet_id}`, `GET /cad-metadata/{cad_metadata_id}`, and
-   similar lookups.
-2. Unguarded project-scoped read routes. The routers listed above read
-   project-scoped data without calling a guard, so any caller who knows a
-   `project_id` can read another tenant's CAD, workflow, plan-consistency,
-   command-center, review-packet, and plan-sheet data.
-3. Child entities have no independent tenancy column, so correctness depends on
-   the guard being applied at every route. A single missing guard is a leak.
+- Read-only project data uses `require_project_read`.
+- Routes that generate, create, promote, regenerate, or mutate reviewer state
+  use `require_project_reviewer`.
+- Routes keyed by a raw entity id (document, chunk, plan sheet, CAD file, parse
+  run, CAD finding, workflow item, review packet, plan consistency finding,
+  checklist item, finding, AI run, draft finding, evaluation result, response
+  package, review cycle, resubmittal, applicant response, comparison run,
+  resolution record) resolve the owning project first, then apply the guard, so
+  a raw id cannot bypass tenant scoping. Mutating raw-id routes enforce the
+  guard when the entity resolves and otherwise let the service raise its
+  existing 404.
+
+## Risks found and their current status
+
+1. Raw-entity-id bypass. CLOSED across the API. Every raw-id route now resolves
+   the owning project and guards on it (`GET /documents/{document_id}`,
+   `GET /plan-sheets/{sheet_id}`, `GET /cad-metadata/{cad_metadata_id}`,
+   `GET /chunks/{chunk_id}`, `GET /review-packets/{packet_id}`,
+   `GET /workflow-items/{id}`, `GET /review-cycles/{id}`,
+   `GET /resubmittals/{id}`, `GET /revision-comparisons/{id}`, and the rest).
+2. Unguarded project-scoped read routes. CLOSED. All previously unguarded
+   routers now call a guard.
+3. Child entities have no independent tenancy column, so correctness still
+   depends on the guard being applied at every route. This is now true for every
+   project-owned route; the residual risk is a future route shipping without a
+   guard (see deferred work for the recommended automated check).
 4. Demo-mode posture. With `AUTH_REQUIRE_LOGIN_FOR_REAL_PROJECTS=false` and
    `AUTH_DEMO_MODE=true` (the prototype default), anonymous callers fall back to
    a demo reviewer identity on real projects. This is acceptable for a prototype
-   but must be off in production multi-tenant operation.
+   but must be off in production multi-tenant operation. Unchanged in this phase.
 
-## Hardening completed in this pass
+## Hardening completed
 
-- `traceability.py`: added `require_project_read` to the project traceability GET
-  and the review-action history GET, and `require_project_reviewer` to the
-  review-action POST. Public demo reads still work; non-members of a real project
-  now receive 403, and anonymous callers receive 401 when login is required.
-- `documents.py`: `GET /documents/{document_id}` now resolves the document's
-  project and calls `require_project_read`, closing the raw-id bypass for
-  documents.
+Phase 2A:
+
+- `traceability.py`: `require_project_read` on the GETs and
+  `require_project_reviewer` on the review-action POST.
+- `documents.py`: `GET /documents/{document_id}` resolves the document's project
+  and calls `require_project_read`.
+
+Phase 2B (this pass): added the guards above to every remaining project-owned
+router and closed every raw-id bypass. Public Brookside Meadows demo reads stay
+anonymous through both project-scoped and raw-id routes. No analytical behavior
+changed; the edits add access checks and project resolution only.
 
 ## Tests added
 
 In `backend/tests/test_tenant_isolation.py`:
 
-- A non-member cannot read another project's traceability (403).
-- The owner can read their own project's traceability (200).
-- A non-member cannot record a traceability review action (403).
-- An anonymous caller cannot read a real project's traceability under strict
-  login (401).
-- The public demo project's traceability stays readable anonymously, including
-  under strict login (200).
-- A non-member cannot fetch a document by raw id (403); the owner can (200).
+- Phase 2A: traceability (member 200, non-member 403, review-action 403,
+  anonymous-strict 401, demo public 200) and document raw-id (non-member 403,
+  owner 200).
+- Phase 2B: a parametrized matrix over 29 project-scoped read paths spanning
+  every hardened router (CAD intake, CAD metadata, workflow board, review
+  packets, plan consistency, plan references, plan sheets, sheet hotspots,
+  hotspots, checklist, chunks, AI review, human review, evaluation, review
+  cycles, resubmittals, applicant responses, carry-forwards, resolution records,
+  response packages, audit events, traceability, command center) asserting
+  non-member 403, owner 200, and anonymous demo 200. Plus a raw-id cross-tenant
+  test (review cycle: non-member 403, owner 200), an anonymous-under-strict-login
+  block (401), and a plan-sheet raw-id demo-public check.
 
 The pilot request suite (`backend/tests/test_pilot_requests.py`) also asserts the
-public/protected boundary for the new lead endpoint: anyone may submit, only an
+public/protected boundary for the lead endpoint: anyone may submit, only an
 authenticated user may list.
+
+## Public demo behavior
+
+Preserved. The Brookside Meadows demo project (`proj_brookside_meadows`,
+`demo_public = True`) remains readable without a login through both
+project-scoped and raw-id routes, so `/guided-demo`, the homepage, and the demo
+surfaces keep working. The frontend `safeFetch` helper returns `null` on a 401 or
+403 and callers fall back to seeded data, so guarded responses never surface a
+stack trace.
+
+## Release readiness
+
+The project-owned API surface now uniformly enforces tenant access, and raw-id
+bypasses are closed, which removes the cross-tenant data-leak class that would
+block a B2B deal. This is the access-control prerequisite for the next phase. It
+is not, by itself, production multi-tenancy: the prototype still defaults to the
+anonymous demo-reviewer fallback for real projects, runs on SQLite, and has no
+full auth lifecycle or billing. Those remain deferred.
 
 ## Deferred work before production SaaS
 
-- Apply `require_project_*` to the remaining unguarded routers
-  (`cad_intake`, `cad_metadata`, `workflow`, `review_packets`,
-  `plan_consistency`, `command_center`, `plan_sheets`) and to raw-id lookups for
-  plan sheets and CAD metadata, with cross-tenant tests for each, ideally by
-  centralizing the project-resolution-plus-guard step.
-- Add an automated check that every project-scoped route references a guard, so a
-  new route cannot ship without one.
+- Add an automated check (a test that introspects the router table) that every
+  project-scoped route references a guard, so a new route cannot ship without
+  one.
 - Turn off the anonymous demo-reviewer fallback for real projects in production
-  and require a signed-in member.
+  and require a signed-in member (`AUTH_REQUIRE_LOGIN_FOR_REAL_PROJECTS=true`,
+  `AUTH_DEMO_MODE=false`).
 - Consider denormalizing `organization_id` onto child entities, or enforcing a
   single query helper that always joins through the project, to remove the
   per-route dependency.
