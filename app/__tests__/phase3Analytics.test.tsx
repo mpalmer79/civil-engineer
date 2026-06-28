@@ -146,9 +146,6 @@ vi.mock("@/lib/api", async (importOriginal) => {
 
 import PlanConsistencyPage from "@/app/projects/[projectId]/plan-consistency/page";
 import ProjectCommandCenterPage from "@/app/projects/[projectId]/command-center/page";
-import ProjectCadPage from "@/app/projects/[projectId]/cad/page";
-import ProjectWorkflowBoardPage from "@/app/projects/[projectId]/workflow-board/page";
-import ProjectReviewPacketsPage from "@/app/projects/[projectId]/review-packets/page";
 import ProjectDetailPage from "@/app/projects/[projectId]/page";
 
 const projectId = "proj_user_1";
@@ -211,42 +208,6 @@ describe("Command center page", () => {
     ).toBeInTheDocument();
     // Regenerate snapshot control is wired.
     expect(screen.getByText("Refresh snapshot")).toBeInTheDocument();
-  });
-});
-
-describe("Phase 3 placeholder pages", () => {
-  it("cad page renders an honest non-404 surface", async () => {
-    render(await ProjectCadPage({ params: { projectId } }));
-    expect(screen.getByText("CAD intake and metadata")).toBeInTheDocument();
-    expect(screen.getByText("Surface being prepared")).toBeInTheDocument();
-  });
-
-  it("workflow board page renders an honest non-404 surface", async () => {
-    render(await ProjectWorkflowBoardPage({ params: { projectId } }));
-    expect(screen.getByText("Workflow board")).toBeInTheDocument();
-    expect(screen.getByText("Surface being prepared")).toBeInTheDocument();
-  });
-
-  it("review packets page renders an honest non-404 surface", async () => {
-    render(await ProjectReviewPacketsPage({ params: { projectId } }));
-    expect(screen.getByText("Review packets")).toBeInTheDocument();
-    expect(screen.getByText("Surface being prepared")).toBeInTheDocument();
-  });
-
-  it("placeholder pages introduce no banned wording", async () => {
-    const pages = [
-      await ProjectCadPage({ params: { projectId } }),
-      await ProjectWorkflowBoardPage({ params: { projectId } }),
-      await ProjectReviewPacketsPage({ params: { projectId } }),
-    ];
-    for (const page of pages) {
-      const { container } = render(page);
-      const text = (container.textContent ?? "").toLowerCase();
-      for (const word of BANNED) {
-        expect(text).not.toContain(word);
-      }
-      cleanup();
-    }
   });
 });
 

@@ -245,13 +245,16 @@ function mapItemDetail(i: ApiWorkflowItemDetail): WorkflowItemDetail {
   };
 }
 
-export async function getWorkflowItems(filters?: {
-  status?: string;
-  severity?: string;
-  sectionType?: string;
-  assignedRole?: string;
-  sourceType?: string;
-}): Promise<WorkflowItem[]> {
+export async function getWorkflowItems(
+  filters?: {
+    status?: string;
+    severity?: string;
+    sectionType?: string;
+    assignedRole?: string;
+    sourceType?: string;
+  },
+  projectId: string = PROJECT_ID,
+): Promise<WorkflowItem[]> {
   const params = new URLSearchParams();
   if (filters?.status) params.set("status", filters.status);
   if (filters?.severity) params.set("severity", filters.severity);
@@ -260,7 +263,7 @@ export async function getWorkflowItems(filters?: {
   if (filters?.sourceType) params.set("source_type", filters.sourceType);
   const query = params.toString();
   const data = await safeFetch<ApiWorkflowItem[]>(
-    `/api/v1/projects/${PROJECT_ID}/workflow-board${query ? `?${query}` : ""}`,
+    `/api/v1/projects/${projectId}/workflow-board${query ? `?${query}` : ""}`,
   );
   return data ? data.map(mapItem) : [];
 }
@@ -294,7 +297,9 @@ export async function getWorkflowItemHistory(
   };
 }
 
-export async function getWorkflowBoardSummary(): Promise<WorkflowBoardSummary | null> {
+export async function getWorkflowBoardSummary(
+  projectId: string = PROJECT_ID,
+): Promise<WorkflowBoardSummary | null> {
   const data = await safeFetch<{
     project_id: string;
     total_items: number;
@@ -306,7 +311,7 @@ export async function getWorkflowBoardSummary(): Promise<WorkflowBoardSummary | 
     open_follow_up_count: number;
     ready_for_handoff_count: number;
     note: string;
-  }>(`/api/v1/projects/${PROJECT_ID}/workflow-board/summary`);
+  }>(`/api/v1/projects/${projectId}/workflow-board/summary`);
   if (!data) return null;
   return {
     projectId: data.project_id,
@@ -322,7 +327,9 @@ export async function getWorkflowBoardSummary(): Promise<WorkflowBoardSummary | 
   };
 }
 
-export async function getReadyForHandoffSummary(): Promise<ReadyForHandoffSummary | null> {
+export async function getReadyForHandoffSummary(
+  projectId: string = PROJECT_ID,
+): Promise<ReadyForHandoffSummary | null> {
   const data = await safeFetch<{
     project_id: string;
     total_items: number;
@@ -330,7 +337,7 @@ export async function getReadyForHandoffSummary(): Promise<ReadyForHandoffSummar
     outstanding_follow_up_count: number;
     items: ApiWorkflowItem[];
     note: string;
-  }>(`/api/v1/projects/${PROJECT_ID}/workflow-board/ready-for-handoff`);
+  }>(`/api/v1/projects/${projectId}/workflow-board/ready-for-handoff`);
   if (!data) return null;
   return {
     projectId: data.project_id,
@@ -342,7 +349,9 @@ export async function getReadyForHandoffSummary(): Promise<ReadyForHandoffSummar
   };
 }
 
-export async function generateWorkflowBoard(): Promise<{
+export async function generateWorkflowBoard(
+  projectId: string = PROJECT_ID,
+): Promise<{
   ok: boolean;
   backendReachable: boolean;
   items?: WorkflowItem[];
@@ -350,7 +359,7 @@ export async function generateWorkflowBoard(): Promise<{
 }> {
   try {
     const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${PROJECT_ID}/workflow-board/generate`,
+      `${API_BASE_URL}/api/v1/projects/${projectId}/workflow-board/generate`,
       { method: "POST", cache: "no-store" },
     );
     if (!res.ok) {

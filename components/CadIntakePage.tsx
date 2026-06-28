@@ -58,8 +58,10 @@ type Tab = "layers" | "text" | "blocks" | "references" | "findings" | "compare";
 // the browser.
 export default function CadIntakePage({
   initialCadFileId,
+  projectId,
 }: {
   initialCadFileId?: string;
+  projectId?: string;
 }) {
   const [files, setFiles] = useState<CadFileUpload[]>([]);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(
@@ -112,24 +114,24 @@ export default function CadIntakePage({
       setTexts([]);
       setBlocks([]);
     }
-    setFindings(await getCadReviewFindings());
-  }, []);
+    setFindings(await getCadReviewFindings(projectId));
+  }, [projectId]);
 
   const refreshIntake = useCallback(async () => {
     const [d, q, u] = await Promise.all([
-      getCadIntakeDashboard(),
-      getCadParseQueue(),
-      getUnpromotedCadFindings(),
+      getCadIntakeDashboard(projectId),
+      getCadParseQueue(projectId),
+      getUnpromotedCadFindings(projectId),
     ]);
     setDashboard(d);
     setQueue(q);
     setUnpromoted(u);
-  }, []);
+  }, [projectId]);
 
   useEffect(() => {
     (async () => {
       const [cadFiles, uploadLimits] = await Promise.all([
-        getCadFiles(),
+        getCadFiles(projectId),
         getCadUploadLimits(),
       ]);
       setFiles(cadFiles);
@@ -141,7 +143,7 @@ export default function CadIntakePage({
       await refreshIntake();
       setLoaded(true);
     })();
-  }, [initialCadFileId, loadForFile, refreshIntake]);
+  }, [initialCadFileId, loadForFile, refreshIntake, projectId]);
 
   const handleSelect = useCallback(
     async (cadFileId: string) => {
@@ -155,23 +157,23 @@ export default function CadIntakePage({
     if (context?.parseRun?.parseRunId) {
       const [s, f] = await Promise.all([
         getCadParseSummary(context.parseRun.parseRunId),
-        getCadReviewFindings(),
+        getCadReviewFindings(projectId),
       ]);
       setSummary(s);
       setFindings(f);
     }
     await refreshIntake();
-  }, [context, refreshIntake]);
+  }, [context, refreshIntake, projectId]);
 
   const handleUploaded = useCallback(
     async (cadFileId: string) => {
-      const cadFiles = await getCadFiles();
+      const cadFiles = await getCadFiles(projectId);
       setFiles(cadFiles);
       setSelectedFileId(cadFileId);
       await loadForFile(cadFileId);
       await refreshIntake();
     },
-    [loadForFile, refreshIntake],
+    [loadForFile, refreshIntake, projectId],
   );
 
   const handleRequestParse = useCallback(
@@ -185,20 +187,20 @@ export default function CadIntakePage({
         setMessage(
           `Parse ${result.run?.status?.replace(/_/g, " ") ?? "requested"} for the DXF file.`,
         );
-        const cadFiles = await getCadFiles();
+        const cadFiles = await getCadFiles(projectId);
         setFiles(cadFiles);
         if (cadFileId === selectedFileId) await loadForFile(cadFileId);
       }
       await refreshIntake();
       setParseBusyId(null);
     },
-    [loadForFile, refreshIntake, selectedFileId],
+    [loadForFile, refreshIntake, selectedFileId, projectId],
   );
 
   const handleLoadSample = useCallback(async () => {
     setBusy(true);
     setMessage(null);
-    const created = await createCadFileRecord();
+    const created = await createCadFileRecord(undefined, undefined, projectId);
     if (!created.ok || !created.cadFile) {
       setMessage(created.error ?? "Could not register the sample DXF.");
       setBusy(false);
@@ -210,14 +212,14 @@ export default function CadIntakePage({
       setBusy(false);
       return;
     }
-    const cadFiles = await getCadFiles();
+    const cadFiles = await getCadFiles(projectId);
     setFiles(cadFiles);
     setSelectedFileId(created.cadFile.cadFileId);
     await loadForFile(created.cadFile.cadFileId);
     await refreshIntake();
     setMessage("Sample DXF registered and parsed.");
     setBusy(false);
-  }, [loadForFile, refreshIntake]);
+  }, [loadForFile, refreshIntake, projectId]);
 
   const toggleFinding = useCallback((id: string) => {
     setSelectedFindingIds((prev) => {
@@ -275,6 +277,7 @@ export default function CadIntakePage({
       Array.from(selectedFindingIds),
       reviewerName || "reviewer",
       reviewerNote || undefined,
+      projectId,
     );
     if (!result.ok) {
       setPromoteMessage(result.error ?? "Could not promote the findings.");
@@ -296,6 +299,7 @@ export default function CadIntakePage({
     reviewerNote,
     selectedFileId,
     selectedFindingIds,
+    projectId,
   ]);
 
   const tabs: Tab[] = useMemo(
@@ -317,7 +321,7 @@ export default function CadIntakePage({
 
       {/* Phase 12 intake: upload, dashboard, parse queue, and promotion. */}
       <CadUploadLimitsNotice limits={limits} />
-      <CadUploadPanel limits={limits} onUploaded={handleUploaded} />
+      <CadUploadPanel limits={limits} onUploaded={handleUploaded} projectId={projectId} />
       <CadIntakeDashboard dashboard={dashboard} />
       <CadParseFailurePanel items={queue} />
       <CadParseQueue

@@ -127,7 +127,7 @@ function FindingCardItem({
       <RelatedIds
         label="Related sheets"
         ids={finding.relatedSheetIds}
-        unavailableNote="A project plan-sheet view is being prepared."
+        hrefFor={(id) => `${base}/plan-sheets/${id}`}
       />
       <PlanConsistencyFindingActions
         planFindingId={finding.planFindingId}

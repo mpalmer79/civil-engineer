@@ -124,9 +124,9 @@ export default function ProjectDashboard({
         <CommandCenterBoundaryNotice />
         <div className="surface-card p-6">
           <p className="text-sm text-slate-600">
-            The command center is unavailable. Start the backend API to load the
-            Brookside Meadows project dashboard. Command center data is not
-            simulated in the browser.
+            The command center is unavailable. Start the backend API to load this
+            project&rsquo;s command center. Command center data is not simulated
+            in the browser.
           </p>
           <button
             type="button"

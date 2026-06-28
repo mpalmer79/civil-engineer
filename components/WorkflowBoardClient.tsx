@@ -39,8 +39,10 @@ type Tab = "board" | "handoff";
 // and the ready-for-handoff summary.
 export default function WorkflowBoardClient({
   initialItemId,
+  projectId,
 }: {
   initialItemId?: string;
+  projectId?: string;
 }) {
   const [items, setItems] = useState<WorkflowItem[]>([]);
   const [summary, setSummary] = useState<WorkflowBoardSummary | null>(null);
@@ -57,15 +59,15 @@ export default function WorkflowBoardClient({
 
   const refreshBoard = useCallback(async () => {
     const [boardItems, boardSummary, handoffSummary] = await Promise.all([
-      getWorkflowItems(),
-      getWorkflowBoardSummary(),
-      getReadyForHandoffSummary(),
+      getWorkflowItems(undefined, projectId),
+      getWorkflowBoardSummary(projectId),
+      getReadyForHandoffSummary(projectId),
     ]);
     setItems(boardItems);
     setSummary(boardSummary);
     setHandoff(handoffSummary);
     return boardItems;
-  }, []);
+  }, [projectId]);
 
   const loadDetail = useCallback(async (id: string | null) => {
     if (!id) {
@@ -102,7 +104,7 @@ export default function WorkflowBoardClient({
   const handleGenerate = useCallback(async () => {
     setBusy(true);
     setMessage(null);
-    const result = await generateWorkflowBoard();
+    const result = await generateWorkflowBoard(projectId);
     if (result.ok) {
       const boardItems = await refreshBoard();
       const first = boardItems.length > 0 ? boardItems[0].workflowItemId : null;
@@ -113,7 +115,7 @@ export default function WorkflowBoardClient({
       setMessage(result.error ?? "Could not generate the workflow board.");
     }
     setBusy(false);
-  }, [refreshBoard, loadDetail]);
+  }, [refreshBoard, loadDetail, projectId]);
 
   if (loaded && items.length === 0) {
     return (
@@ -121,8 +123,8 @@ export default function WorkflowBoardClient({
         <ProfessionalLimitationsNotice text="This board organizes review-support items for human reviewers. It does not approve plans, certify compliance, verify CAD, validate a design, or replace a licensed Professional Engineer." />
         <div className="surface-card p-6">
           <p className="text-sm text-slate-600">
-            No workflow board is loaded yet. Generate the Brookside Meadows
-            reviewer workflow board from the latest review packet to begin.
+            No workflow board is loaded yet. Generate the reviewer workflow board
+            for this project from the latest review packet to begin.
           </p>
           <button
             type="button"

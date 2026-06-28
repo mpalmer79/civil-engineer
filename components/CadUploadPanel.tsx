@@ -12,9 +12,11 @@ import CadUploadValidationNotice from "@/components/CadUploadValidationNotice";
 export default function CadUploadPanel({
   limits,
   onUploaded,
+  projectId,
 }: {
   limits: CadUploadLimits | null;
   onUploaded: (cadFileId: string) => void | Promise<void>;
+  projectId?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -33,7 +35,7 @@ export default function CadUploadPanel({
     setBusy(true);
     setStatus(null);
     setMessage(null);
-    const result = await uploadCadFile(file, uploadedBy || "reviewer");
+    const result = await uploadCadFile(file, uploadedBy || "reviewer", projectId);
     setBusy(false);
     if (!result.ok) {
       setStatus(result.validationStatus ?? "rejected");
