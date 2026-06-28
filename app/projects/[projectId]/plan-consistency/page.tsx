@@ -175,6 +175,12 @@ export default async function PlanConsistencyPage({
           <Link href={`${base}/command-center`} className="nav-link">
             Command center
           </Link>
+          <Link href={`${base}/plan-sheets`} className="nav-link">
+            Plan sheets
+          </Link>
+          <Link href={`${base}/cad`} className="nav-link">
+            CAD intake
+          </Link>
           <Link href={`${base}/documents`} className="nav-link">
             Documents
           </Link>

@@ -40,6 +40,9 @@ export default async function ProjectWorkflowBoardPage({
           <Link href={`${base}/review-packets`} className="nav-link">
             Review packets
           </Link>
+          <Link href={`${base}/traceability`} className="nav-link">
+            Traceability
+          </Link>
         </div>
 
         <WorkflowBoardClient projectId={project.projectId} />

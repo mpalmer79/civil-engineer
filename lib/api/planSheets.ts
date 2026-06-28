@@ -106,16 +106,20 @@ function mapPlanSheetSummary(s: ApiPlanSheetSummary): PlanSheetSummary {
   };
 }
 
-export async function getPlanSheets(): Promise<PlanSheet[]> {
+export async function getPlanSheets(
+  projectId: string = PROJECT_ID,
+): Promise<PlanSheet[]> {
   const data = await safeFetch<ApiPlanSheet[]>(
-    `/api/v1/projects/${PROJECT_ID}/plan-sheets`,
+    `/api/v1/projects/${projectId}/plan-sheets`,
   );
   return data ? data.map(mapPlanSheet) : [];
 }
 
-export async function getPlanSheetSummary(): Promise<PlanSheetSummary | null> {
+export async function getPlanSheetSummary(
+  projectId: string = PROJECT_ID,
+): Promise<PlanSheetSummary | null> {
   const data = await safeFetch<ApiPlanSheetSummary>(
-    `/api/v1/projects/${PROJECT_ID}/plan-sheets/summary`,
+    `/api/v1/projects/${projectId}/plan-sheets/summary`,
   );
   return data ? mapPlanSheetSummary(data) : null;
 }
@@ -266,9 +270,11 @@ function mapPlanReviewAction(
   };
 }
 
-export async function getSheetHotspots(): Promise<PlanSheetHotspot[]> {
+export async function getSheetHotspots(
+  projectId: string = PROJECT_ID,
+): Promise<PlanSheetHotspot[]> {
   const data = await safeFetch<ApiPlanSheetHotspot[]>(
-    `/api/v1/projects/${PROJECT_ID}/sheet-hotspots`,
+    `/api/v1/projects/${projectId}/sheet-hotspots`,
   );
   return data ? data.map(mapSheetHotspot) : [];
 }
