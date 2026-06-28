@@ -4,6 +4,30 @@ Civil Engineer AI is a document-first, evidence-first, reviewer-controlled storm
 
 It does not approve plans, certify compliance, verify CAD, validate design, declare safety, resolve issues, close issues, or replace a licensed Professional Engineer.
 
+## Pilot release status
+
+Civil Engineer AI is a pilot-ready prototype for early design-partner
+conversations, not a production multi-tenant SaaS. The public Brookside Meadows
+demo and `/guided-demo` run without a login, `/pilot` collects design-partner
+requests, and a signed-in organization admin can review them at
+`/admin/pilot-requests` and use the `/workspace` home. Billing is not active and
+live AI is disabled by default. Every project-owned API route enforces tenant
+access guards, with a guard-regression test to keep new routes covered.
+
+- Run locally: see [Local development](#local-development).
+- Run tests: `npm test` (frontend) and `pytest` from `backend/` (backend); see
+  [Testing summary](#testing-summary).
+- Verify the public demo: load `/` and `/guided-demo`; the demo reviews the
+  seeded Brookside Meadows fixture.
+- Verify the pilot flow: submit the `/pilot` form and confirm the honest success
+  state; review it at `/admin/pilot-requests` as an organization admin.
+- Limitations and steps: see `docs/RELEASE_READINESS.md` and
+  `docs/PILOT_RELEASE_CHECKLIST.md`.
+
+Capability wording follows `docs/SAAS_POSITIONING.md`: real DXF parsing (ezdxf)
+and PDF text-layer indexing (pypdf), with no OCR, DWG, GIS, or vector search. A
+human reviewer remains responsible for every review-support finding.
+
 ## Live demo
 
 - https://civil-engineer.up.railway.app/

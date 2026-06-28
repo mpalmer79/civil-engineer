@@ -22,6 +22,7 @@ from app.db import models
 from app.db.database import get_db
 from app.services.access_control_service import (
     get_optional_user,
+    require_project_read,
     require_project_reviewer,
 )
 from app.schemas.evidence_retrieval import (
@@ -165,8 +166,10 @@ def suggest_chunk_links(
 def search_checklist_evidence(
     project_id: str,
     checklist_item_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> EvidenceSearchResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         result = retrieval.search_by_checklist_item(
             db, project_id, checklist_item_id
@@ -183,8 +186,10 @@ def search_checklist_evidence(
 def search_finding_evidence(
     project_id: str,
     finding_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> EvidenceSearchResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         result = retrieval.search_by_finding_context(db, project_id, finding_id)
     except (RetrievalError, ValueError) as exc:
@@ -200,8 +205,10 @@ def list_candidates(
     project_id: str,
     candidate_status: str | None = Query(default=None),
     finding_id: str | None = Query(default=None),
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> list[EvidenceCandidateResponse]:
+    require_project_read(db, project_id, user)
     return retrieval.list_project_candidates(
         db,
         project_id,
@@ -237,8 +244,10 @@ def save_candidate(
 def get_candidate(
     project_id: str,
     candidate_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> EvidenceCandidateResponse:
+    require_project_read(db, project_id, user)
     try:
         return retrieval.get_candidate(db, project_id, candidate_id)
     except (RetrievalError, ValueError) as exc:
@@ -253,8 +262,10 @@ def update_candidate(
     project_id: str,
     candidate_id: str,
     body: EvidenceCandidateUpdate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> EvidenceCandidateResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         return retrieval.update_candidate_status(
             db, project_id, candidate_id, body.model_dump(exclude_none=True)
@@ -271,8 +282,10 @@ def dismiss_candidate(
     project_id: str,
     candidate_id: str,
     body: CandidateDismissRequest,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> EvidenceCandidateResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         return retrieval.dismiss_candidate(
             db, project_id, candidate_id, note=body.reviewer_note
@@ -315,6 +328,8 @@ def promote_candidate(
 )
 def list_retrieval_queries(
     project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> list[RetrievalQueryResponse]:
+    require_project_read(db, project_id, user)
     return retrieval.list_retrieval_queries(db, project_id)

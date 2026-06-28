@@ -26,6 +26,65 @@ export type PilotRequestAck = {
   message: string;
 };
 
+// A stored pilot lead, as returned to an authorized operator. No file content is
+// ever included; has_sample_package is a boolean flag only.
+export type PilotRequestRecord = {
+  pilotRequestId: string;
+  fullName: string;
+  workEmail: string;
+  firmName: string;
+  roleTitle: string;
+  projectType: string;
+  primaryPain: string;
+  interestLevel: string;
+  notes: string | null;
+  hasSamplePackage: boolean;
+  createdAt: string | null;
+};
+
+// Discriminated result so the admin view can render an honest state for each
+// outcome without ever exposing a raw error or a stack trace.
+export type PilotListResult =
+  | { status: "ok"; data: PilotRequestRecord[] }
+  | { status: "unauthorized" }
+  | { status: "forbidden" }
+  | { status: "unreachable" }
+  | { status: "error"; message: string };
+
+function mapPilotRecord(raw: Record<string, unknown>): PilotRequestRecord {
+  return {
+    pilotRequestId: (raw.pilot_request_id as string) ?? "",
+    fullName: (raw.full_name as string) ?? "",
+    workEmail: (raw.work_email as string) ?? "",
+    firmName: (raw.firm_name as string) ?? "",
+    roleTitle: (raw.role_title as string) ?? "",
+    projectType: (raw.project_type as string) ?? "",
+    primaryPain: (raw.primary_pain as string) ?? "",
+    interestLevel: (raw.interest_level as string) ?? "",
+    notes: (raw.notes as string) ?? null,
+    hasSamplePackage: (raw.has_sample_package as boolean) ?? false,
+    createdAt: (raw.created_at as string) ?? null,
+  };
+}
+
+export async function listPilotRequests(): Promise<PilotListResult> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/pilot-requests`, {
+      headers: authHeaders(),
+      cache: "no-store",
+    });
+    if (res.status === 401) return { status: "unauthorized" };
+    if (res.status === 403) return { status: "forbidden" };
+    if (!res.ok) {
+      return { status: "error", message: `Request failed (${res.status}).` };
+    }
+    const raw = (await res.json()) as Record<string, unknown>[];
+    return { status: "ok", data: raw.map(mapPilotRecord) };
+  } catch {
+    return { status: "unreachable" };
+  }
+}
+
 export type PilotSubmitResult = {
   ok: boolean;
   backendReachable: boolean;

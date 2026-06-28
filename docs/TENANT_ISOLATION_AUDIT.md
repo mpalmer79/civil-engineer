@@ -180,11 +180,34 @@ is not, by itself, production multi-tenancy: the prototype still defaults to the
 anonymous demo-reviewer fallback for real projects, runs on SQLite, and has no
 full auth lifecycle or billing. Those remain deferred.
 
+## Guard-regression test (Phase 2C)
+
+`backend/tests/test_guard_coverage.py` introspects the live FastAPI router table
+and, for every route whose path contains `{project_id}`, inspects the endpoint
+function source for a guard call (`require_project_read`,
+`require_project_reviewer`, `require_project_admin`, `require_admin_user`, or
+`get_current_user`). A new project-scoped route that ships without a guard fails
+the test, which names the offending `METHOD /path`. Source inspection is used
+because the guards are invoked in the function body, not declared as `Depends`
+dependencies, which keeps the test resilient to route ordering.
+
+Intentional exceptions go in an `ALLOWLIST` with a reason (empty today: every
+`{project_id}` route is guarded). A companion test fails on stale allowlist
+entries, and a third asserts the introspection still sees the project-scoped API
+so the suite cannot silently become a no-op.
+
+Adding this test surfaced and closed a further set of routes that the Phase 2A/2B
+inspection had missed: the project checklist read routes in `checklist_review.py`
+and the evidence-candidate, retrieval-query, and checklist/finding evidence-search
+routes in `evidence_retrieval.py` now call the appropriate guard.
+
+Known limitation: the test covers `{project_id}` path routes. Raw-id routes
+(keyed by a child-entity id with no project in the path) are guarded by project
+resolution but are not auto-detected by this test; they are covered by the
+explicit cross-tenant cases in `test_tenant_isolation.py`.
+
 ## Deferred work before production SaaS
 
-- Add an automated check (a test that introspects the router table) that every
-  project-scoped route references a guard, so a new route cannot ship without
-  one.
 - Turn off the anonymous demo-reviewer fallback for real projects in production
   and require a signed-in member (`AUTH_REQUIRE_LOGIN_FOR_REAL_PROJECTS=true`,
   `AUTH_DEMO_MODE=false`).
