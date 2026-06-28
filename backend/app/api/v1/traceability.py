@@ -19,6 +19,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
 from app.schemas.traceability import (
     ProjectTraceabilityResponse,
@@ -27,6 +28,11 @@ from app.schemas.traceability import (
     TraceabilityReviewActionRead,
 )
 from app.services import traceability_service
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_read,
+    require_project_reviewer,
+)
 from app.services.traceability_service import TraceabilityError
 
 router = APIRouter(tags=["traceability"])
@@ -43,8 +49,13 @@ REVIEW_ACTION_HISTORY_NOTE = (
     response_model=ProjectTraceabilityResponse,
 )
 def get_project_traceability(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> ProjectTraceabilityResponse:
+    # Enforce project access (public demo stays readable; a non-member of a real
+    # project is rejected) before reading any traceability data.
+    require_project_read(db, project_id, user)
     result = traceability_service.build_project_traceability(db, project_id)
     if result is None:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -60,8 +71,11 @@ def create_traceability_review_action(
     project_id: str,
     traceability_row_key: str,
     body: TraceabilityReviewActionCreate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> TraceabilityReviewActionRead:
+    # Recording a review action is a reviewer write, so require reviewer access.
+    require_project_reviewer(db, project_id, user)
     try:
         record = traceability_service.record_traceability_review_action(
             db,
@@ -92,8 +106,10 @@ def create_traceability_review_action(
 def list_traceability_review_actions(
     project_id: str,
     traceability_row_key: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> TraceabilityReviewActionHistory:
+    require_project_read(db, project_id, user)
     if traceability_service.build_project_traceability(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
     actions = traceability_service.list_traceability_review_actions(

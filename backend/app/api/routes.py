@@ -24,6 +24,7 @@ from app.api.v1 import (
     hotspots,
     human_review,
     pdf_evidence,
+    pilot,
     plan_consistency,
     plan_references,
     plan_sheet_hotspots,
@@ -72,3 +73,4 @@ api_router.include_router(response_matrix.router)
 api_router.include_router(reviewer_response_packages.router)
 api_router.include_router(dashboard.router)
 api_router.include_router(diagnostics.router)
+api_router.include_router(pilot.router)

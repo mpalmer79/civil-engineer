@@ -167,10 +167,21 @@ describe("HomePage professional boundary", () => {
 });
 
 describe("HomePage pilot call to action", () => {
-  it("offers a non-breaking pilot CTA when no contact route exists", () => {
+  it("links the pilot CTA to the public pilot request route", () => {
+    const { container } = render(HomePage());
+    const pilot = container.querySelector('a[href="/pilot"]');
+    expect(pilot).not.toBeNull();
+    expect(pilot?.textContent?.toLowerCase()).toContain("pilot");
+
+    // The pilot CTA maps to a real Next.js route directory, so it cannot 404.
+    expect(existsSync(join(process.cwd(), "app/pilot"))).toBe(true);
+  });
+
+  it("no longer shows a disabled pilot placeholder control", () => {
     render(HomePage());
-    const pilot = screen.getByRole("button", { name: /pilot access coming soon/i });
-    expect(pilot).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: /pilot access coming soon/i }),
+    ).toBeNull();
   });
 });
 

@@ -116,9 +116,13 @@ async def upload_document(
 
 @router.get("/documents/{document_id}", response_model=DocumentRead)
 def get_document(
-    document_id: str, db: Session = Depends(get_db)
+    document_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> DocumentRead:
     document = document_service.get_document(db, document_id)
     if document is None:
         raise HTTPException(status_code=404, detail="Document not found")
+    # Enforce project access so a raw document id cannot bypass tenant scoping.
+    require_project_read(db, document.project_id, user)
     return document

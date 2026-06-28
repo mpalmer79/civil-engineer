@@ -118,6 +118,14 @@ describe("Guided demo route", () => {
     }
   });
 
+  it("points the final pilot CTA at the public pilot route", async () => {
+    const { container } = render(await GuidedDemoPage());
+    const pilot = container.querySelector('a[href="/pilot"]');
+    expect(pilot).not.toBeNull();
+    expect(pilot?.textContent?.toLowerCase()).toContain("pilot");
+    expect(existsSync(join(process.cwd(), "app/pilot"))).toBe(true);
+  });
+
   it("shows fixture-backed proof counts when available", async () => {
     render(await GuidedDemoPage());
     expect(screen.getByText("Traceability rows")).toBeInTheDocument();

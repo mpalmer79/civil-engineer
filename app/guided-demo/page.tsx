@@ -84,6 +84,7 @@ export default async function GuidedDemoPage() {
           projectId={BROOKSIDE_PROJECT_ID}
           steps={aecDemoSteps}
           proof={proof}
+          pilotHref="/pilot"
         />
       </div>
     </div>
