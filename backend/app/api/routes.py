@@ -35,6 +35,7 @@ from app.api.v1 import (
     reviewer_response_packages,
     review_cycle,
     review_packets,
+    traceability,
     workflow,
 )
 
@@ -56,6 +57,7 @@ api_router.include_router(plan_references.router)
 api_router.include_router(plan_consistency.router)
 api_router.include_router(plan_sheet_hotspots.router)
 api_router.include_router(review_packets.router)
+api_router.include_router(traceability.router)
 api_router.include_router(workflow.router)
 api_router.include_router(response_packages.router)
 api_router.include_router(cad_intake.router)
