@@ -96,6 +96,12 @@ export default async function ProjectDetailPage({
             <Link href={`${base}/plan-consistency`} className="menu-item">
               Plan consistency
             </Link>
+            <Link href={`${base}/plan-sheets`} className="menu-item">
+              Plan sheets
+            </Link>
+            <Link href={`${base}/traceability`} className="menu-item">
+              Traceability
+            </Link>
             <Link href={`${base}/cad`} className="menu-item">
               CAD intake and metadata
             </Link>

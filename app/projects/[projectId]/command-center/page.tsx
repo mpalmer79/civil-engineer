@@ -34,11 +34,17 @@ export default async function ProjectCommandCenterPage({
           <Link href={`${base}/plan-consistency`} className="nav-link">
             Plan consistency
           </Link>
+          <Link href={`${base}/workflow-board`} className="nav-link">
+            Workflow board
+          </Link>
+          <Link href={`${base}/review-packets`} className="nav-link">
+            Review packets
+          </Link>
+          <Link href={`${base}/traceability`} className="nav-link">
+            Traceability
+          </Link>
           <Link href={`${base}/documents`} className="nav-link">
             Documents
-          </Link>
-          <Link href={`${base}/findings`} className="nav-link">
-            Reviewer findings
           </Link>
         </div>
 

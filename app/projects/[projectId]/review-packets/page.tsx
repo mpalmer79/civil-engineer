@@ -37,6 +37,9 @@ export default async function ProjectReviewPacketsPage({
           <Link href={`${base}/workflow-board`} className="nav-link">
             Workflow board
           </Link>
+          <Link href={`${base}/traceability`} className="nav-link">
+            Traceability
+          </Link>
           <Link href={`${base}/response-packages`} className="nav-link">
             Response packages
           </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   generateWorkflowBoard,
   getReadyForHandoffSummary,
@@ -56,6 +56,65 @@ export default function WorkflowBoardClient({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+
+  // Client-side filters. The backend getWorkflowItems supports these as query
+  // params, but the board groups items into status columns, so filtering is
+  // applied client-side here to keep the grouped columns intact without
+  // re-fetching. Each value of "all" means no constraint on that dimension.
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterSeverity, setFilterSeverity] = useState("all");
+  const [filterSection, setFilterSection] = useState("all");
+  const [filterRole, setFilterRole] = useState("all");
+  const [filterReview, setFilterReview] = useState("all");
+  const [filterSource, setFilterSource] = useState("all");
+
+  const uniqueValues = useCallback(
+    (selector: (item: WorkflowItem) => string) =>
+      Array.from(new Set(items.map(selector).filter(Boolean))).sort(),
+    [items],
+  );
+
+  const filteredItems = useMemo(() => {
+    return items.filter((item) => {
+      if (filterStatus !== "all" && item.status !== filterStatus) return false;
+      if (filterSeverity !== "all" && item.severity !== filterSeverity)
+        return false;
+      if (filterSection !== "all" && item.sectionType !== filterSection)
+        return false;
+      if (filterRole !== "all" && item.assignedRole !== filterRole) return false;
+      if (filterSource !== "all" && item.sourceType !== filterSource)
+        return false;
+      if (filterReview === "yes" && !item.requiresHumanReview) return false;
+      if (filterReview === "no" && item.requiresHumanReview) return false;
+      return true;
+    });
+  }, [
+    items,
+    filterStatus,
+    filterSeverity,
+    filterSection,
+    filterRole,
+    filterSource,
+    filterReview,
+  ]);
+
+  const activeFilterCount = [
+    filterStatus,
+    filterSeverity,
+    filterSection,
+    filterRole,
+    filterSource,
+    filterReview,
+  ].filter((value) => value !== "all").length;
+
+  const resetFilters = useCallback(() => {
+    setFilterStatus("all");
+    setFilterSeverity("all");
+    setFilterSection("all");
+    setFilterRole("all");
+    setFilterReview("all");
+    setFilterSource("all");
+  }, []);
 
   const refreshBoard = useCallback(async () => {
     const [boardItems, boardSummary, handoffSummary] = await Promise.all([
@@ -193,6 +252,68 @@ export default function WorkflowBoardClient({
 
       {tab === "board" ? (
         <>
+          <div className="surface-card p-4">
+            <div className="flex flex-wrap items-end gap-3">
+              <FilterSelect
+                label="Status"
+                value={filterStatus}
+                onChange={setFilterStatus}
+                options={COLUMNS.map((c) => c.status)}
+              />
+              <FilterSelect
+                label="Severity"
+                value={filterSeverity}
+                onChange={setFilterSeverity}
+                options={uniqueValues((i) => i.severity)}
+              />
+              <FilterSelect
+                label="Section type"
+                value={filterSection}
+                onChange={setFilterSection}
+                options={uniqueValues((i) => i.sectionType)}
+              />
+              <FilterSelect
+                label="Assigned role"
+                value={filterRole}
+                onChange={setFilterRole}
+                options={uniqueValues((i) => i.assignedRole)}
+              />
+              <FilterSelect
+                label="Source type"
+                value={filterSource}
+                onChange={setFilterSource}
+                options={uniqueValues((i) => i.sourceType)}
+              />
+              <FilterSelect
+                label="Requires human review"
+                value={filterReview}
+                onChange={setFilterReview}
+                options={["yes", "no"]}
+              />
+              <button
+                type="button"
+                onClick={resetFilters}
+                disabled={activeFilterCount === 0}
+                className="rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+              >
+                Reset filters
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-slate-500">
+              {activeFilterCount === 0
+                ? "No filters applied. Showing all review-support items."
+                : `${activeFilterCount} filter(s) applied. Showing ${filteredItems.length} of ${items.length} items.`}
+            </p>
+          </div>
+
+          {filteredItems.length === 0 ? (
+            <p className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-600">
+              No items match the current filters. Adjust or reset the filters.
+              This is a filtered view, not a statement that the project is
+              complete.
+            </p>
+          ) : null}
+
           <div className="overflow-x-auto pb-2">
             <div className="flex gap-3">
               {COLUMNS.map((col) => (
@@ -200,7 +321,7 @@ export default function WorkflowBoardClient({
                   key={col.status}
                   label={col.label}
                   status={col.status}
-                  items={items}
+                  items={filteredItems}
                   selectedItemId={selectedId}
                   onSelectItem={handleSelect}
                 />
@@ -225,5 +346,36 @@ export default function WorkflowBoardClient({
         <ReadyForHandoffPanel summary={handoff} />
       )}
     </div>
+  );
+}
+
+function FilterSelect({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: string[];
+}) {
+  return (
+    <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+      <span className="block">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={label}
+        className="mt-1 rounded-md border border-slate-300 px-2 py-1.5 text-sm font-normal normal-case text-slate-700"
+      >
+        <option value="all">All</option>
+        {options.map((opt) => (
+          <option key={opt} value={opt}>
+            {opt.replace(/_/g, " ")}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }
