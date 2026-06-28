@@ -777,6 +777,22 @@ ALLOWED_CITATION_STATUSES: set[str] = {
 }
 
 
+# Phase 4B traceability row review actions. A reviewer records how they reviewed
+# one traceability link. reviewer_confirmed_link means the reviewer confirmed the
+# relationship is useful for review; it never means the requirement is satisfied,
+# approved, certified, verified, validated, or compliant. link_rejected discards
+# the link relationship for review without deleting any source record. There is
+# intentionally no action called approve.
+ALLOWED_TRACEABILITY_REVIEW_ACTIONS: set[str] = {
+    "needs_review",
+    "reviewer_confirmed_link",
+    "needs_more_information",
+    "not_applicable",
+    "link_rejected",
+    "follow_up_needed",
+}
+
+
 class ProhibitedLanguageError(ValueError):
     """Raised when user-provided text contains final-decision wording."""
 

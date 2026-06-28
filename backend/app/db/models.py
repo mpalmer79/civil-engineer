@@ -2821,3 +2821,49 @@ class ReviewerResponsePackageRevision(Base):
     )
     created_by_name: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class TraceabilityReviewAction(Base):
+    """A reviewer-recorded review action on one project traceability row (Phase 4B).
+
+    Project traceability rows are computed read-only from existing links, so they
+    have no stable stored primary key. This append-only table stores a reviewer's
+    review state for a row, keyed by a stable traceability_row_key derived from the
+    row's existing entity IDs (checklist item, evidence citation or candidate,
+    finding, and relationship), not by the positional row id.
+
+    A review action records how the reviewer reviewed the link. It never approves a
+    plan, certifies compliance, verifies CAD, validates a design, or marks a
+    requirement satisfied. reviewer_confirmed_link means the reviewer confirmed the
+    link is useful for review only. link_rejected discards the link for review
+    without deleting any source record. Recording an action does not mutate the
+    checklist item, evidence, finding, workflow item, or packet it references.
+    """
+
+    __tablename__ = "traceability_review_actions"
+
+    action_id: Mapped[str] = mapped_column(String, primary_key=True)
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.project_id"), nullable=False
+    )
+    # Stable key derived from the row's existing entity IDs. Used to group a row's
+    # action history and to address the row in the review-actions routes.
+    traceability_row_key: Mapped[str] = mapped_column(String, nullable=False)
+    action_type: Mapped[str] = mapped_column(String, nullable=False)
+    reviewer_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_by: Mapped[str] = mapped_column(String, nullable=False)
+    # Component IDs kept for transparency and audit, mirroring the row the action
+    # was recorded against. All nullable: a no-linked-evidence row carries only a
+    # checklist item id.
+    checklist_item_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    evidence_citation_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    evidence_candidate_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    finding_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    workflow_item_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    review_packet_item_id: Mapped[str | None] = mapped_column(
+        String, nullable=True
+    )
+    relationship_type: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)

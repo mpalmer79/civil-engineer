@@ -77,9 +77,25 @@ const traceability = {
     totalTraceabilityRows: 2,
     rowsRequiringReviewerConfirmation: 2,
   },
+  handoffReadiness: {
+    totalTraceabilityRows: 2,
+    rowsWithLinkedEvidence: 1,
+    rowsWithoutLinkedEvidence: 1,
+    rowsWithReviewerAction: 0,
+    rowsNeedingMoreInformation: 0,
+    rowsFollowUpNeeded: 0,
+    rowsNotInPacket: 2,
+    packetContextCount: 0,
+    readyForReviewerHandoffCount: 0,
+    note: "Handoff readiness signals. They do not determine whether a requirement is satisfied.",
+  },
   rows: [
     {
       traceabilityRowId: "trace_1",
+      traceabilityRowKey: "trk_1",
+      packetContexts: [],
+      packetContextCount: 0,
+      latestReviewAction: null,
       checklistItemId: "ci_1",
       checklistTitle: "SW-1",
       checklistRequirement: "Detention basin outlet detail required.",
@@ -114,6 +130,10 @@ const traceability = {
     },
     {
       traceabilityRowId: "trace_2",
+      traceabilityRowKey: "trk_2",
+      packetContexts: [],
+      packetContextCount: 0,
+      latestReviewAction: null,
       checklistItemId: "ci_2",
       checklistTitle: "SW-2",
       checklistRequirement: "Erosion control plan required.",
@@ -160,6 +180,8 @@ const printView = {
     "This packet does not approve plans or replace a licensed Professional Engineer.",
   draftNotice: "Draft handoff package. Requires reviewer confirmation.",
   sections: [],
+  traceabilityReviewRows: [],
+  traceabilityNote: null,
 };
 
 vi.mock("@/lib/api", async (importOriginal) => {
@@ -184,7 +206,12 @@ describe("Project traceability page", () => {
     // Summary tiles.
     expect(screen.getByText("Checklist items")).toBeInTheDocument();
     expect(screen.getByText("With linked evidence")).toBeInTheDocument();
-    expect(screen.getByText("No linked evidence yet")).toBeInTheDocument();
+    expect(
+      screen.getAllByText("No linked evidence yet").length,
+    ).toBeGreaterThan(0);
+    // Handoff readiness panel is present.
+    expect(screen.getByText("Handoff readiness signals")).toBeInTheDocument();
+    expect(screen.getByText("Ready for reviewer handoff")).toBeInTheDocument();
     // Limitations note (appears in the page description and the boundary note).
     expect(
       screen.getAllByText(

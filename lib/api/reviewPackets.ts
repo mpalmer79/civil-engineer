@@ -104,6 +104,17 @@ export type ReviewPacketPrintSection = {
   items: ReviewPacketItem[];
 };
 
+export type ReviewPacketTraceabilityReviewRow = {
+  traceabilityRowKey: string;
+  checklistTitle: string | null;
+  checklistRequirement: string | null;
+  relationshipType: string;
+  reviewActionType: string | null;
+  reviewerNote: string | null;
+  createdBy: string | null;
+  requiresReviewerConfirmation: boolean;
+};
+
 export type ReviewPacketPrintView = {
   packetId: string;
   projectId: string;
@@ -118,6 +129,8 @@ export type ReviewPacketPrintView = {
   professionalLimitations: string;
   draftNotice: string;
   sections: ReviewPacketPrintSection[];
+  traceabilityReviewRows: ReviewPacketTraceabilityReviewRow[];
+  traceabilityNote: string | null;
 };
 
 export type ReviewPacketSummary = {
@@ -380,6 +393,17 @@ export async function getReviewPacketPrintView(
       summary: string;
       items: ApiPacketItem[];
     }[];
+    traceability_review_rows?: {
+      traceability_row_key: string;
+      checklist_title: string | null;
+      checklist_requirement: string | null;
+      relationship_type: string;
+      review_action_type: string | null;
+      reviewer_note: string | null;
+      created_by: string | null;
+      requires_reviewer_confirmation: boolean;
+    }[];
+    traceability_note?: string | null;
   }>(`/api/v1/review-packets/${packetId}/print-view`);
   if (!data) return null;
   return {
@@ -401,6 +425,17 @@ export async function getReviewPacketPrintView(
       summary: s.summary,
       items: (s.items ?? []).map(mapPacketItem),
     })),
+    traceabilityReviewRows: (data.traceability_review_rows ?? []).map((r) => ({
+      traceabilityRowKey: r.traceability_row_key,
+      checklistTitle: r.checklist_title,
+      checklistRequirement: r.checklist_requirement,
+      relationshipType: r.relationship_type,
+      reviewActionType: r.review_action_type,
+      reviewerNote: r.reviewer_note,
+      createdBy: r.created_by,
+      requiresReviewerConfirmation: r.requires_reviewer_confirmation,
+    })),
+    traceabilityNote: data.traceability_note ?? null,
   };
 }
 

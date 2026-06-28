@@ -4,14 +4,40 @@ import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 
 import StatusChip, { humanizeStatus } from "@/components/StatusChip";
-import type {
-  ProjectTraceabilityRow,
-  ProjectTraceabilitySourceLink,
+import {
+  getTraceabilityReviewActions,
+  recordTraceabilityReviewAction,
+  type ProjectTraceabilityLatestAction,
+  type ProjectTraceabilityReviewAction,
+  type ProjectTraceabilityRow,
+  type ProjectTraceabilitySourceLink,
 } from "@/lib/api";
 
-// Review-support traceability matrix with client-side filters. Rows organize
-// existing links only; nothing here states a requirement is satisfied. Source
-// links resolve to real project routes, or render "source link unavailable".
+// Review-support traceability matrix with client-side filters, inline review
+// packet context, and reviewer review controls. Rows organize existing links and
+// record how a reviewer reviewed each link. Nothing here states a requirement is
+// satisfied, approved, certified, verified, or validated. Source links resolve to
+// real project routes, or render "source link unavailable".
+
+// Reviewer review action options. Labels stay review-support only: confirming a
+// link confirms it is useful for review, not that a requirement is satisfied.
+const REVIEW_ACTIONS: { value: string; label: string }[] = [
+  { value: "reviewer_confirmed_link", label: "Confirm link for review" },
+  { value: "needs_more_information", label: "Needs more information" },
+  { value: "not_applicable", label: "Not applicable" },
+  { value: "link_rejected", label: "Reject link" },
+  { value: "follow_up_needed", label: "Follow-up needed" },
+  { value: "needs_review", label: "Needs review" },
+];
+
+const ACTION_LABELS: Record<string, string> = Object.fromEntries(
+  REVIEW_ACTIONS.map((a) => [a.value, a.label]),
+);
+
+function actionLabel(actionType: string): string {
+  return ACTION_LABELS[actionType] ?? humanizeStatus(actionType);
+}
+
 function resolveRoute(
   projectId: string,
   link: ProjectTraceabilitySourceLink,
@@ -79,6 +105,210 @@ function FilterSelect({
   );
 }
 
+function PacketContextCell({
+  projectId,
+  row,
+}: {
+  projectId: string;
+  row: ProjectTraceabilityRow;
+}) {
+  const contexts = row.packetContexts ?? [];
+  if (contexts.length === 0) {
+    return (
+      <span className="text-xs text-slate-400">
+        not included in a packet yet
+      </span>
+    );
+  }
+  return (
+    <div className="space-y-1.5 text-xs">
+      {contexts.map((ctx) => (
+        <div key={ctx.reviewPacketItemId}>
+          <Link
+            href={`/projects/${projectId}/review-packets`}
+            className="font-medium text-water-700 hover:underline"
+          >
+            {ctx.reviewPacketTitle ?? "Review packet"}
+          </Link>
+          {ctx.packetItemStatus ? (
+            <span className="block text-slate-500">
+              {humanizeStatus(ctx.packetItemStatus)}
+            </span>
+          ) : null}
+        </div>
+      ))}
+      {row.packetContextCount > contexts.length ? (
+        <span className="block text-slate-400">
+          and {row.packetContextCount - contexts.length} more
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+function RowReviewCell({
+  projectId,
+  row,
+}: {
+  projectId: string;
+  row: ProjectTraceabilityRow;
+}) {
+  const [latest, setLatest] = useState<ProjectTraceabilityLatestAction | null>(
+    row.latestReviewAction,
+  );
+  const [actionType, setActionType] = useState("");
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<
+    ProjectTraceabilityReviewAction[] | null
+  >(null);
+  const [showHistory, setShowHistory] = useState(false);
+
+  const loadHistory = useCallback(async () => {
+    const items = await getTraceabilityReviewActions(
+      projectId,
+      row.traceabilityRowKey,
+    );
+    setHistory(items);
+  }, [projectId, row.traceabilityRowKey]);
+
+  async function submit() {
+    if (!actionType) return;
+    setBusy(true);
+    setError(null);
+    const result = await recordTraceabilityReviewAction(
+      projectId,
+      row.traceabilityRowKey,
+      {
+        actionType,
+        reviewerNote: note.trim() || undefined,
+        checklistItemId: row.checklistItemId,
+        evidenceCitationId: row.evidenceCitationId,
+        evidenceCandidateId: row.evidenceCandidateId,
+        findingId: row.findingId,
+        workflowItemId: row.workflowItemId,
+        reviewPacketItemId: row.reviewPacketItemId,
+        relationshipType: row.relationshipType,
+      },
+    );
+    setBusy(false);
+    if (!result.ok || !result.action) {
+      setError(result.error ?? "Could not record the review action.");
+      return;
+    }
+    setLatest({
+      actionId: result.action.actionId,
+      actionType: result.action.actionType,
+      reviewerNote: result.action.reviewerNote,
+      createdBy: result.action.createdBy,
+      createdAt: result.action.createdAt,
+    });
+    setActionType("");
+    setNote("");
+    if (showHistory) await loadHistory();
+  }
+
+  async function toggleHistory() {
+    const next = !showHistory;
+    setShowHistory(next);
+    if (next && history === null) await loadHistory();
+  }
+
+  return (
+    <div className="space-y-2 text-xs">
+      <div>
+        {latest ? (
+          <span className="text-slate-700">
+            Latest:{" "}
+            <span className="font-medium">{actionLabel(latest.actionType)}</span>
+            {latest.createdBy ? (
+              <span className="text-slate-500"> by {latest.createdBy}</span>
+            ) : null}
+            {latest.reviewerNote ? (
+              <span className="block italic text-slate-500">
+                &ldquo;{latest.reviewerNote}&rdquo;
+              </span>
+            ) : null}
+          </span>
+        ) : (
+          <span className="text-amber-700">requires reviewer confirmation</span>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        <select
+          value={actionType}
+          onChange={(e) => setActionType(e.target.value)}
+          aria-label={`Review action for ${
+            row.checklistTitle ?? row.traceabilityRowKey
+          }`}
+          className="rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700"
+        >
+          <option value="">Record review action...</option>
+          {REVIEW_ACTIONS.map((a) => (
+            <option key={a.value} value={a.value}>
+              {a.label}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          onClick={submit}
+          disabled={!actionType || busy}
+          className="rounded-md bg-water-600 px-2 py-1 text-xs font-semibold text-white hover:bg-water-700 disabled:opacity-50"
+        >
+          {busy ? "Saving..." : "Save"}
+        </button>
+        <button
+          type="button"
+          onClick={toggleHistory}
+          className="rounded-md border border-slate-300 px-2 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+        >
+          {showHistory ? "Hide history" : "View history"}
+        </button>
+      </div>
+
+      <input
+        type="text"
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        placeholder="Optional reviewer note"
+        aria-label={`Reviewer note for ${
+          row.checklistTitle ?? row.traceabilityRowKey
+        }`}
+        className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs text-slate-700"
+      />
+
+      {error ? <p className="text-rose-600">{error}</p> : null}
+
+      {showHistory ? (
+        history && history.length > 0 ? (
+          <ul className="space-y-1 border-l border-slate-200 pl-2">
+            {history.map((h) => (
+              <li key={h.actionId} className="text-slate-600">
+                <span className="font-medium">{actionLabel(h.actionType)}</span>
+                {h.createdBy ? (
+                  <span className="text-slate-500"> by {h.createdBy}</span>
+                ) : null}
+                {h.reviewerNote ? (
+                  <span className="block italic text-slate-500">
+                    &ldquo;{h.reviewerNote}&rdquo;
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-slate-400">
+            No reviewer review actions recorded yet.
+          </p>
+        )
+      ) : null}
+    </div>
+  );
+}
+
 export default function TraceabilityMatrix({
   projectId,
   rows,
@@ -91,6 +321,7 @@ export default function TraceabilityMatrix({
   const [action, setAction] = useState("all");
   const [documentId, setDocumentId] = useState("all");
   const [source, setSource] = useState("all");
+  const [packet, setPacket] = useState("all");
 
   const unique = useCallback(
     (selector: (r: ProjectTraceabilityRow) => string | null) =>
@@ -110,14 +341,21 @@ export default function TraceabilityMatrix({
         if (action === "no" && r.reviewerActionNeeded) return false;
         if (documentId !== "all" && r.documentId !== documentId) return false;
         if (source !== "all" && r.relationshipSource !== source) return false;
+        if (packet === "in" && (r.packetContextCount ?? 0) === 0) return false;
+        if (packet === "out" && (r.packetContextCount ?? 0) > 0) return false;
         return true;
       }),
-    [rows, status, relationship, action, documentId, source],
+    [rows, status, relationship, action, documentId, source, packet],
   );
 
-  const activeCount = [status, relationship, action, documentId, source].filter(
-    (v) => v !== "all",
-  ).length;
+  const activeCount = [
+    status,
+    relationship,
+    action,
+    documentId,
+    source,
+    packet,
+  ].filter((v) => v !== "all").length;
 
   const reset = () => {
     setStatus("all");
@@ -125,6 +363,7 @@ export default function TraceabilityMatrix({
     setAction("all");
     setDocumentId("all");
     setSource("all");
+    setPacket("all");
   };
 
   return (
@@ -161,6 +400,12 @@ export default function TraceabilityMatrix({
             onChange={setSource}
             options={unique((r) => r.relationshipSource)}
           />
+          <FilterSelect
+            label="Packet inclusion"
+            value={packet}
+            onChange={setPacket}
+            options={["in", "out"]}
+          />
           <button
             type="button"
             onClick={reset}
@@ -190,9 +435,10 @@ export default function TraceabilityMatrix({
                 <th className="py-2 pr-4">Requirement</th>
                 <th className="py-2 pr-4">Linked evidence</th>
                 <th className="py-2 pr-4">Finding / workflow</th>
+                <th className="py-2 pr-4">Packet context</th>
                 <th className="py-2 pr-4">Relationship</th>
-                <th className="py-2 pr-4">Reviewer action</th>
                 <th className="py-2 pr-4">Source links</th>
+                <th className="py-2 pr-4">Reviewer review</th>
               </tr>
             </thead>
             <tbody>
@@ -251,16 +497,10 @@ export default function TraceabilityMatrix({
                     ) : null}
                   </td>
                   <td className="py-2 pr-4">
-                    <StatusChip label={humanizeStatus(r.relationshipType)} />
+                    <PacketContextCell projectId={projectId} row={r} />
                   </td>
-                  <td className="py-2 pr-4 text-xs">
-                    {r.reviewerActionNeeded ? (
-                      <span className="text-amber-700">
-                        requires reviewer confirmation
-                      </span>
-                    ) : (
-                      <span className="text-slate-500">reviewer reviewed</span>
-                    )}
+                  <td className="py-2 pr-4">
+                    <StatusChip label={humanizeStatus(r.relationshipType)} />
                   </td>
                   <td className="py-2 pr-4 text-xs">
                     <div className="flex flex-wrap gap-1.5">
@@ -288,6 +528,9 @@ export default function TraceabilityMatrix({
                         })
                       )}
                     </div>
+                  </td>
+                  <td className="py-2 pr-4">
+                    <RowReviewCell projectId={projectId} row={r} />
                   </td>
                 </tr>
               ))}
