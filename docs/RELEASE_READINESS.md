@@ -66,6 +66,11 @@ protected while the public demo keeps working:
 - `AUTH_ALLOW_PUBLIC_DEMO=true` - keeps the Brookside demo project readable
   without a login.
 
+For a production SaaS deployment, also set `APP_ENV=production` and point
+`DATABASE_URL` at a Postgres database, then run `alembic upgrade head`. In
+production mode the backend refuses to start on SQLite. SQLite stays the default
+for local development and the pilot prototype. See `docs/PRODUCTION_DATABASE.md`.
+
 `backend/tests/test_release_posture.py` pins this behavior: under these flags the
 Brookside demo stays anonymously readable, a real project rejects anonymous (401)
 and non-member (403) access, the owner reads it (200), public pilot submission
@@ -101,9 +106,25 @@ status, save notes, and export a CSV at `/admin/pilot-requests`. Internal notes
 are never returned by the public submission endpoint. See
 `docs/PILOT_OPERATIONS.md` and `docs/DESIGN_PARTNER_OUTREACH.md`.
 
+## Production database foundation
+
+The data layer is now production-ready in posture. SQLite remains the default for
+local development and tests, and Postgres is required for production SaaS. The
+provider is selected from `DATABASE_URL`, the legacy `postgres://` scheme is
+normalized automatically, and the schema is managed with Alembic migrations
+(initial migration `0001_initial_schema`, which includes the pilot request
+operator fields). In strict production mode (`APP_ENV=production`) the backend
+refuses to start on SQLite. The public readiness summary reports the deployment
+mode, the database provider class, and the migration control state without
+exposing any secret. See `docs/PRODUCTION_DATABASE.md` for the full migration
+path, commands, and Railway/Postgres setup.
+
 ## Current limitations
 
-- Database: SQLite. No Postgres migration in this phase.
+- Database: SQLite for local development and tests; Postgres required for
+  production SaaS. Alembic migrations are in place. Postgres handling is verified
+  at the URL/configuration level in the suite; manual Postgres verification is
+  documented in `docs/PRODUCTION_DATABASE.md`.
 - Auth: local accounts and bearer tokens only. No password reset, no team
   invitations, no SSO. The prototype default still allows an anonymous
   demo-reviewer fallback for real projects; production must turn that off.
@@ -125,7 +146,8 @@ are never returned by the public submission endpoint. See
 
 ## What is not ready for production customers
 
-- No production database, auth lifecycle, or billing.
+- The production database foundation is in place (Postgres support and Alembic
+  migrations), but auth lifecycle and billing are not.
 - No team invitations or self-serve onboarding.
 - Live AI is intentionally off by default.
 - The anonymous demo-reviewer fallback must be disabled before real tenant data

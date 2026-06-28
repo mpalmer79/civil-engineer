@@ -22,6 +22,13 @@ class ReadinessResponse(BaseModel):
     service: str
     version: str
     demo_mode: bool
+    # Safe operational context. app_env is the deployment mode; database_provider
+    # is the provider class (sqlite/postgres/other) derived from the URL scheme
+    # only; migration_status reports schema-control state. No secret, URL, host,
+    # credential, or path appears here.
+    app_env: str
+    database_provider: str
+    migration_status: str
     checks: list[ReadinessCheck]
 
 

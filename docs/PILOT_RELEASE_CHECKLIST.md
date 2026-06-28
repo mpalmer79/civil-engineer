@@ -10,7 +10,11 @@ Backend:
 
 - `AUTH_SECRET_KEY` - secret used to sign bearer tokens. Set a strong unique
   value in any shared or deployed environment.
-- `DATABASE_URL` - database connection string (SQLite for the pilot).
+- `DATABASE_URL` - database connection string. SQLite is acceptable for local
+  development, tests, and the pilot prototype. Production SaaS requires a Postgres
+  URL. See `docs/PRODUCTION_DATABASE.md`.
+- `APP_ENV` - deployment mode (`development`, `pilot`, or `production`). Defaults
+  to `development`. In `production` the backend refuses to start on SQLite.
 
 Frontend:
 
@@ -77,8 +81,23 @@ live external services.
 
 - `GET /health` returns `{ status: "ok", service, version, demo_mode }`. No
   secrets.
-- `GET /api/v1/readiness` returns the sanitized readiness summary (database,
-  config, storage) for a deeper operational check.
+- `GET /api/v1/readiness` returns the sanitized readiness summary for a deeper
+  operational check. It reports the deployment mode (`app_env`), the database
+  provider class (`database_provider`: `sqlite`, `postgres`, or `other`), the
+  migration control state (`migration_status`), and per-category checks for
+  database connectivity, migrations, authentication, and storage. No secret,
+  URL, host, credential, or path appears in the output.
+
+## Database and migrations
+
+- SQLite is acceptable for local development, tests, and the pilot prototype.
+  Postgres is required for production SaaS.
+- Migrations are managed with Alembic. Apply them with `alembic upgrade head`
+  from `backend/`; check status with `alembic current`. The initial migration is
+  `0001_initial_schema`.
+- For a production deployment, set `APP_ENV=production` and a Postgres
+  `DATABASE_URL`, then run `alembic upgrade head`. See
+  `docs/PRODUCTION_DATABASE.md` for the full path and Railway/Postgres notes.
 
 ## Frontend health check
 
@@ -152,7 +171,10 @@ live external services.
 
 ## Known limitations
 
-- SQLite database; no Postgres migration.
+- SQLite is the default for local development, tests, and the pilot prototype;
+  Postgres is required for production SaaS. Alembic migrations are in place.
+  Postgres handling is verified at the URL/configuration level in the suite, with
+  manual Postgres verification documented in `docs/PRODUCTION_DATABASE.md`.
 - Local accounts only; no password reset, team invitations, or SSO.
 - Billing is not active.
 - Live AI is disabled by default.

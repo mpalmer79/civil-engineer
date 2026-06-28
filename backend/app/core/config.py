@@ -25,6 +25,20 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     API_V1_PREFIX: str = "/api/v1"
 
+    # Deployment mode. "development" and "pilot" allow a local SQLite database so
+    # the prototype and tests run with no external service. "production" requires
+    # a Postgres DATABASE_URL: production SaaS data must not live on ephemeral
+    # SQLite. The strict check is enforced at startup only when APP_ENV is
+    # "production", so local development, tests, and preview builds are never
+    # blocked. See docs/PRODUCTION_DATABASE.md.
+    APP_ENV: str = "development"
+
+    # Database connection string. SQLite is the default for local development and
+    # tests. For production SaaS a Postgres URL is required (for example a Railway
+    # Postgres plugin URL). Railway and some providers hand out a legacy
+    # "postgres://" scheme; it is normalized to a SQLAlchemy driver URL by
+    # app.db.database. No secret in this value is ever logged or returned by the
+    # diagnostics or readiness APIs.
     DATABASE_URL: str = "sqlite:///./civil_engineer_ai.db"
 
     # Browser origins allowed to call the API. CORS_ORIGINS is a comma separated
@@ -128,6 +142,18 @@ class Settings(BaseSettings):
     AI_ENABLE_LIVE_CALLS: bool = False
     OPENAI_API_KEY: str = ""
     PROMPT_VERSION: str = "checklist_review_v1"
+
+    @property
+    def app_env(self) -> str:
+        """Return the normalized deployment mode (lowercase, trimmed)."""
+
+        return (self.APP_ENV or "development").strip().lower()
+
+    @property
+    def is_production(self) -> bool:
+        """Return True when running in strict production mode."""
+
+        return self.app_env == "production"
 
     @property
     def cors_origins_list(self) -> list[str]:

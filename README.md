@@ -171,7 +171,8 @@ Plan review is evidence work. Reviewers spend time finding what was submitted, c
 ## Technical architecture
 
 - **Frontend**: Next.js (App Router) with a TypeScript API client and Tailwind CSS.
-- **Backend**: FastAPI with a versioned review-support API and SQLAlchemy models on SQLite.
+- **Backend**: FastAPI with a versioned review-support API and SQLAlchemy models.
+- **Database**: SQLite for local development and tests; Postgres required for production SaaS. The provider is selected from `DATABASE_URL` and the schema is managed with Alembic migrations. See `docs/PRODUCTION_DATABASE.md`.
 - **DXF parsing**: Python DXF metadata parsing with the ezdxf library (a lightweight, pure-Python library). DXF is the only supported file type.
 - **API client**: a typed TypeScript client that reads the backend base URL from an environment variable and falls back to seeded data when the backend is unavailable.
 - **Deployment**: the backend and frontend deploy as two separate services in one Railway project.
@@ -253,7 +254,7 @@ Upload storage note: uploaded DXF files are stored on the backend service file s
 
 ## Future production work
 
-This is a real-world foundation, not a full production release. The production foundation sprints have already added local authentication and role-based access control (Sprint 5) and durable object storage support (Sprint 6). Work that remains out of scope here includes enterprise single sign-on, a managed database with migrations, production security hardening, a full applicant portal, OCR, live AI calls, and real plan rendering. CAD scope beyond DXF metadata (DWG, Autodesk, Civil 3D, GIS, and computer vision) is also future work.
+This is a real-world foundation, not a full production release. The production foundation work has already added local authentication and role-based access control, durable object storage support, and a production database foundation: Postgres support and an Alembic migration framework, while keeping SQLite for local development and tests. Work that remains out of scope here includes enterprise single sign-on, auth lifecycle, billing, production security hardening, a full applicant portal, OCR, live AI calls, and real plan rendering. CAD scope beyond DXF metadata (DWG, Autodesk, Civil 3D, GIS, and computer vision) is also future work.
 
 ## Portfolio note
 

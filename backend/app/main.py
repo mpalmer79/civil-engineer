@@ -17,7 +17,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import api_router
 from app.core.config import get_settings
 from app.core.logging import log_event
-from app.db.database import SessionLocal, init_db
+from app.db.database import (
+    SessionLocal,
+    check_production_database,
+    database_provider,
+    init_db,
+)
 from app.db.seed import PROJECT_ID, seed_database
 from app.db.seed_evidence import seed_evidence
 from app.db.seed_plansheets import seed_plansheets
@@ -40,6 +45,9 @@ settings = get_settings()
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     """Create tables and load the seed fixture if the database is empty."""
 
+    # In strict production mode, refuse to start on SQLite. This is a no-op for
+    # development, pilot, and test modes, so local boot and tests are unaffected.
+    check_production_database(settings)
     init_db()
     db = SessionLocal()
     try:
@@ -91,11 +99,9 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 def _log_startup_configuration() -> None:
     """Log selected operational configuration without any secrets."""
 
-    database_kind = (
-        "sqlite"
-        if settings.DATABASE_URL.strip().lower().startswith("sqlite")
-        else "external"
-    )
+    # database_provider inspects only the URL scheme, never a host, credential,
+    # or path, so it is safe to log. It reports sqlite, postgres, or other.
+    database_kind = database_provider(settings.DATABASE_URL)
     object_storage_configured = (
         bool(settings.OBJECT_STORAGE_BUCKET)
         if (settings.STORAGE_PROVIDER or "local").lower() == "s3"
@@ -106,6 +112,7 @@ def _log_startup_configuration() -> None:
         service=settings.PROJECT_NAME,
         version=settings.APP_VERSION,
         api_prefix=settings.API_V1_PREFIX,
+        app_env=settings.app_env,
         database_kind=database_kind,
         storage_provider=(settings.STORAGE_PROVIDER or "local").lower(),
         object_storage_configured=object_storage_configured,
