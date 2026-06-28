@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 
 export type NavLink = {
@@ -13,32 +13,50 @@ type MobileNavProps = {
   demoModuleLinks: NavLink[];
 };
 
-// Client wrapper for the small-screen navigation. The native details/summary
-// disclosure stays accessible, but its open state is controlled by React so the
-// menu collapses immediately after a client-side navigation. Without this, the
-// disclosure would remain open after a link is selected and keep covering the
-// page content.
 export default function MobileNav({
   primaryLinks,
   demoModuleLinks,
 }: MobileNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDetailsElement | null>(null);
 
-  // Close the mobile menu after any navigation link is selected, including the
-  // grouped Demo modules links.
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+
+      if (!(target instanceof Node)) return;
+
+      if (!menuRef.current?.contains(target)) {
+        setMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [menuOpen]);
+
   const closeMenu = () => setMenuOpen(false);
 
-  // Controlled toggling for the disclosure. preventDefault keeps the native open
-  // state in sync with React state instead of letting the browser flip it
-  // independently. The summary still responds to mouse and keyboard, so the menu
-  // remains accessible.
   const toggleMenu = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault();
     setMenuOpen((open) => !open);
   };
 
   return (
-    <details className="group relative" open={menuOpen}>
+    <details ref={menuRef} className="group relative" open={menuOpen}>
       <summary
         onClick={toggleMenu}
         className="btn btn-secondary btn-sm cursor-pointer list-none"
