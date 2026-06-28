@@ -30,6 +30,16 @@ Frontend:
 - `AI_PROVIDER`, `AI_ENABLE_LIVE_CALLS`, `AI_MODEL`, `OPENAI_API_KEY` - live AI is
   off by default. All are required together to enable live calls; leave unset to
   keep the deterministic mock provider.
+- `AUTH_PASSWORD_RESET_EXPIRE_MINUTES`, `AUTH_INVITATION_EXPIRE_DAYS`,
+  `AUTH_EXPOSE_DEV_TOKENS` - account-lifecycle token validity and dev-token
+  exposure. `AUTH_EXPOSE_DEV_TOKENS` is forced off in production. See
+  `docs/AUTH_LIFECYCLE.md`.
+- `EMAIL_PROVIDER`, `EMAIL_FROM` - email delivery. The default `noop` provider
+  sends nothing; a real provider must be wired before onboarding real users.
+- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PROFESSIONAL`,
+  `STRIPE_TEST_MODE` - billing. Billing is deferred and inactive until a Stripe
+  key is set; none are required for local development or tests. See
+  `docs/BILLING_AND_USAGE.md`.
 - `STORAGE_PROVIDER`, `LOCAL_STORAGE_DIR`, and the `OBJECT_STORAGE_*` keys -
   document storage. Local storage is the default.
 - `CAD_UPLOAD_DIR`, `CAD_MAX_UPLOAD_BYTES`, `PROJECT_UPLOAD_DIR` - upload handling.
@@ -175,8 +185,12 @@ live external services.
   Postgres is required for production SaaS. Alembic migrations are in place.
   Postgres handling is verified at the URL/configuration level in the suite, with
   manual Postgres verification documented in `docs/PRODUCTION_DATABASE.md`.
-- Local accounts only; no password reset, team invitations, or SSO.
-- Billing is not active.
+- Local accounts with password reset and team invitations; no email confirmation,
+  no SSO, and no real email is sent yet (a no-op mailer stands in). See
+  `docs/AUTH_LIFECYCLE.md`.
+- Billing foundation exists but is inactive: Stripe checkout and webhooks are
+  deferred and no payment is collected. Usage limits are advisory, not enforced.
+  See `docs/BILLING_AND_USAGE.md`.
 - Live AI is disabled by default.
 - The anonymous demo-reviewer fallback must be turned off before hosting real
   tenant data.

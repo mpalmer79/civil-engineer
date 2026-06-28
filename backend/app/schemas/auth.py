@@ -93,3 +93,36 @@ class UserProjectSummary(BaseModel):
 
 class PermissionErrorResponse(BaseModel):
     detail: str
+
+
+# Production Phase 4B account lifecycle: password reset. Tokens are never stored
+# in plaintext and the confirm endpoint never echoes a token.
+
+
+class PasswordResetRequest(BaseModel):
+    email: str
+
+
+class PasswordResetRequestResponse(BaseModel):
+    # The response never confirms whether an account exists (it always reports the
+    # same message). dev_reset_token is populated only outside production when
+    # AUTH_EXPOSE_DEV_TOKENS is on, so local development and tests can complete the
+    # flow without an email provider. It is null in production.
+    detail: str
+    dev_reset_token: str | None = None
+
+
+class PasswordResetConfirmRequest(BaseModel):
+    token: str
+    new_password: str
+
+
+class PasswordResetConfirmResponse(BaseModel):
+    detail: str
+
+
+class AccountProfileResponse(BaseModel):
+    # Aggregate profile for the workspace account page: identity plus a summary of
+    # organization memberships. Carries no secret and no password hash.
+    user: CurrentUserResponse
+    organizations: list[OrganizationResponse]

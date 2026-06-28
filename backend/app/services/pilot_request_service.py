@@ -54,6 +54,13 @@ def create_pilot_request(
         source=source,
     )
     db.add(record)
+    # Record a global usage event for the submitted lead (best-effort, no tenant
+    # and no file content). Metering never blocks the public submission.
+    from app.services import usage_service
+
+    usage_service.record_usage_safe(
+        db, category="pilot_request_submitted", organization_id=None
+    )
     db.commit()
     db.refresh(record)
     return record

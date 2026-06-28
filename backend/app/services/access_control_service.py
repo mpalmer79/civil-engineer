@@ -619,6 +619,45 @@ def require_admin_user(
     )
 
 
+def require_org_member(
+    db: Session, organization_id: str, user: models.UserAccount | None
+) -> models.UserAccount:
+    """Require the user to be a member of the organization. Returns the user.
+
+    Raises 401 when anonymous and 403 when the user is not a member. Used to gate
+    organization-scoped reads (members, invitations list, billing, usage).
+    """
+
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    if organization_id not in user_org_ids(db, user.user_id):
+        raise HTTPException(
+            status_code=403,
+            detail="You are not a member of this organization.",
+        )
+    return user
+
+
+def require_org_admin(
+    db: Session, organization_id: str, user: models.UserAccount | None
+) -> models.UserAccount:
+    """Require the user to be an org_admin of the organization. Returns the user.
+
+    Raises 401 when anonymous and 403 when the user is not an org_admin of the
+    organization. Used to gate team management (invite, revoke) and other
+    owner/admin organization actions.
+    """
+
+    if user is None:
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    if organization_id not in org_admin_org_ids(db, user.user_id):
+        raise HTTPException(
+            status_code=403,
+            detail="Organization admin access is required for this action.",
+        )
+    return user
+
+
 def context_for_create(user: models.UserAccount | None) -> ActorContext:
     """Resolve the actor context for creating a new project (not yet scoped).
 

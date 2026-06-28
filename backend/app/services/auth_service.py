@@ -279,6 +279,104 @@ def get_current_user_from_token(
     return user
 
 
+# ---------------------------------------------------------------------------
+# Opaque tokens (password reset, invitations)
+# ---------------------------------------------------------------------------
+
+
+def generate_opaque_token() -> str:
+    """Return a high-entropy URL-safe token for reset/invite links."""
+
+    return secrets.token_urlsafe(32)
+
+
+def hash_token(token: str) -> str:
+    """Return a one-way SHA-256 hash of an opaque token for storage.
+
+    Only the hash is stored. The plaintext token is delivered to the user (or a
+    dev mailer) and is never persisted, so a database leak cannot reveal a usable
+    reset or invitation token.
+    """
+
+    return hashlib.sha256((token or "").encode("utf-8")).hexdigest()
+
+
+def create_password_reset_token(
+    db: Session, user: models.UserAccount
+) -> tuple[models.PasswordResetToken, str]:
+    """Create a password reset token for a user and return (record, plaintext).
+
+    The plaintext token is returned to the caller for delivery and is never
+    stored; only its hash is persisted. Any older unused tokens for the user are
+    marked used so only the newest token works.
+    """
+
+    settings = get_settings()
+    token = generate_opaque_token()
+    now = _now()
+    # Invalidate prior unused tokens for this user.
+    existing = db.scalars(
+        select(models.PasswordResetToken).where(
+            models.PasswordResetToken.user_id == user.user_id,
+            models.PasswordResetToken.used_at.is_(None),
+        )
+    ).all()
+    for prior in existing:
+        prior.used_at = now
+    record = models.PasswordResetToken(
+        reset_token_id=f"prt_{_short()}",
+        user_id=user.user_id,
+        token_hash=hash_token(token),
+        expires_at=now
+        + timedelta(minutes=settings.AUTH_PASSWORD_RESET_EXPIRE_MINUTES),
+        created_at=now,
+    )
+    db.add(record)
+    db.flush()
+    return record, token
+
+
+def reset_password_with_token(
+    db: Session, *, token: str, new_password: str
+) -> models.UserAccount:
+    """Verify a reset token and set a new password. Raises AuthError on failure.
+
+    The token must exist (by hash), be unused, and be unexpired. On success the
+    user's password hash is replaced and the token is marked used so it cannot be
+    reused. The token is never logged.
+    """
+
+    settings = get_settings()
+    if len(new_password or "") < settings.AUTH_MIN_PASSWORD_LENGTH:
+        raise AuthError(
+            "Password must be at least "
+            f"{settings.AUTH_MIN_PASSWORD_LENGTH} characters.",
+            status_code=422,
+        )
+    record = db.scalars(
+        select(models.PasswordResetToken).where(
+            models.PasswordResetToken.token_hash == hash_token(token)
+        )
+    ).first()
+    if record is None:
+        raise AuthError("Invalid or expired reset link.", status_code=400)
+    if record.used_at is not None:
+        raise AuthError("This reset link has already been used.", status_code=400)
+    expires_at = record.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at < _now():
+        raise AuthError("This reset link has expired.", status_code=400)
+    user = db.get(models.UserAccount, record.user_id)
+    if user is None or not user.is_active:
+        raise AuthError("Account not found or inactive.", status_code=400)
+    user.password_hash = hash_password(new_password)
+    user.updated_at = _now()
+    record.used_at = _now()
+    db.flush()
+    return user
+
+
 def user_public_dict(user: models.UserAccount) -> dict:
     """Return a safe public dict for a user. Never includes the password hash."""
 

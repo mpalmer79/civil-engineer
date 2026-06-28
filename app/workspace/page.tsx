@@ -60,6 +60,9 @@ export default function WorkspacePage() {
 
   const quickLinks: { href: string; label: string; note: string }[] = [
     { href: "/projects", label: "Projects", note: "Open accessible review records" },
+    { href: "/workspace/team", label: "Team", note: "Invite and manage teammates" },
+    { href: "/workspace/billing", label: "Billing", note: "Plan and billing status (inactive)" },
+    { href: "/workspace/usage", label: "Usage", note: "Usage against advisory plan limits" },
     { href: "/guided-demo", label: "Guided demo", note: "Run the Brookside Meadows tour" },
     { href: `/projects/${BROOKSIDE_ID}/command-center`, label: "Command center", note: "Sample project operations" },
     { href: "/pilot", label: "Public pilot form", note: "Share with a design-partner firm" },

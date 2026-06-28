@@ -133,6 +133,34 @@ class Settings(BaseSettings):
     AUTH_DEMO_REVIEWER_PASSWORD: str = "demo-reviewer-pass"
     AUTH_DEMO_ADMIN_PASSWORD: str = "demo-admin-pass"
 
+    # Production Phase 4B/4C auth lifecycle and team invitations. Reset and
+    # invitation tokens are stored only as a one-way hash; these set their
+    # validity windows. AUTH_EXPOSE_DEV_TOKENS lets non-production environments
+    # return the plaintext reset/invite token in the API response so local
+    # development and tests can complete the flow without an email provider. It is
+    # forced off in production regardless of this value (see expose_dev_tokens).
+    AUTH_PASSWORD_RESET_EXPIRE_MINUTES: int = 60
+    AUTH_INVITATION_EXPIRE_DAYS: int = 14
+    AUTH_EXPOSE_DEV_TOKENS: bool = True
+
+    # Email provider. No real email is sent unless EMAIL_PROVIDER is set to a real
+    # provider in a future phase; the default "noop" mailer logs a redacted
+    # delivery record and sends nothing. EMAIL_FROM is the address a future
+    # provider would send from. No SMTP credential is read while the provider is
+    # "noop".
+    EMAIL_PROVIDER: str = "noop"
+    EMAIL_FROM: str = "no-reply@example.com"
+
+    # Billing and Stripe. Billing is deferred in this phase: the billing-readiness
+    # models, usage limits, and UI exist, but live Stripe checkout and webhooks
+    # are not wired. Billing is considered active only when STRIPE_SECRET_KEY is
+    # set (see billing_enabled). These are backend-only and are never exposed to
+    # the frontend. No real payment is processed while STRIPE_SECRET_KEY is unset.
+    STRIPE_SECRET_KEY: str = ""
+    STRIPE_WEBHOOK_SECRET: str = ""
+    STRIPE_PRICE_PROFESSIONAL: str = ""
+    STRIPE_TEST_MODE: bool = True
+
     # AI provider configuration. The default is the deterministic mock provider
     # so the project runs and tests pass without any paid API key. Live calls
     # are disabled by default and require both a provider key and an explicit
@@ -154,6 +182,29 @@ class Settings(BaseSettings):
         """Return True when running in strict production mode."""
 
         return self.app_env == "production"
+
+    @property
+    def billing_enabled(self) -> bool:
+        """Return True only when a Stripe secret key is configured.
+
+        Billing is deferred in this phase, so this is False by default. The
+        billing UI and API report an honest inactive state until a real Stripe
+        secret key is set. No real payment is processed while this is False.
+        """
+
+        return bool(self.STRIPE_SECRET_KEY.strip())
+
+    @property
+    def expose_dev_tokens(self) -> bool:
+        """Return True when plaintext reset/invite tokens may be returned.
+
+        Allowed only outside strict production mode and only when
+        AUTH_EXPOSE_DEV_TOKENS is on, so local development and tests can complete
+        the reset/invite flow without an email provider. Production never exposes
+        a token in an API response.
+        """
+
+        return self.AUTH_EXPOSE_DEV_TOKENS and not self.is_production
 
     @property
     def cors_origins_list(self) -> list[str]:

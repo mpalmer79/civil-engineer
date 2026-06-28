@@ -4,6 +4,18 @@ How to run the design-partner pilot once requests start arriving. This is an
 internal operator guide. It pairs with `docs/RELEASE_READINESS.md`,
 `docs/PILOT_RELEASE_CHECKLIST.md`, and `docs/DESIGN_PARTNER_OUTREACH.md`.
 
+## Operator model
+
+The pilot operator is an organization admin (`org_admin`). The pilot admin APIs
+and the `/admin/pilot-requests` page are gated by `require_admin_user`, which
+requires a signed-in org_admin: an anonymous caller gets 401 and a signed-in
+non-admin gets 403. A dedicated `pilot_operator` role was considered in
+Production Phase 4B and deliberately not added, because organization admin is
+sufficient for the current pilot and a separate role would add membership-model
+churn without a clear benefit. If a finer-grained operator separation is needed
+later, add a `pilot_operator` role behind the same gate. The public pilot request
+form stays public.
+
 ## Where requests live
 
 Submitted pilot requests are stored locally (no email, no external service).

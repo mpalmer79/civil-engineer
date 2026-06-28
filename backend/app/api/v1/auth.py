@@ -21,17 +21,22 @@ from app.core.safety import ALLOWED_ORGANIZATION_TYPES
 from app.db import models
 from app.db.database import get_db
 from app.schemas.auth import (
+    AccountProfileResponse,
     AuthTokenResponse,
     CurrentUserResponse,
     MembershipResponse,
     OrganizationResponse,
+    PasswordResetConfirmRequest,
+    PasswordResetConfirmResponse,
+    PasswordResetRequest,
+    PasswordResetRequestResponse,
     ProjectAccessGrantRequest,
     ProjectAccessResponse,
     UserLoginRequest,
     UserProjectSummary,
     UserRegisterRequest,
 )
-from app.services import access_control_service, auth_service
+from app.services import access_control_service, auth_service, mailer
 from app.services.access_control_service import (
     get_current_user,
     get_optional_user,
@@ -134,6 +139,94 @@ def logout() -> dict[str, bool | str]:
     # Tokens are stateless; logout is handled client-side by discarding the
     # token. This endpoint documents that contract.
     return {"ok": True, "detail": "Discard the access token on the client."}
+
+
+# ---------------------------------------------------------------------------
+# Password reset (Production Phase 4B)
+# ---------------------------------------------------------------------------
+
+_RESET_REQUEST_MESSAGE = (
+    "If an account exists for that email, a password reset link has been issued."
+)
+
+
+@router.post(
+    "/auth/password-reset/request",
+    response_model=PasswordResetRequestResponse,
+)
+def request_password_reset(
+    body: PasswordResetRequest, db: Session = Depends(get_db)
+) -> PasswordResetRequestResponse:
+    """Request a password reset link.
+
+    Always returns the same message so the endpoint never reveals whether an
+    account exists. When the email matches an active account, a reset token is
+    created and delivered through the mailer. Outside production, the plaintext
+    token is also returned so local development and tests can complete the flow
+    without an email provider.
+    """
+
+    settings = get_settings()
+    user = auth_service.get_user_by_email(db, body.email)
+    dev_token: str | None = None
+    if user is not None and user.is_active:
+        _record, token = auth_service.create_password_reset_token(db, user)
+        db.commit()
+        # The mailer is a no-op by default and logs nothing sensitive. The reset
+        # link/token is never logged.
+        mailer.send_email(
+            to=user.email,
+            category="password_reset",
+            subject="Reset your Civil Engineer AI password",
+            body=(
+                "Use this token to reset your password. If you did not request "
+                f"this, ignore this message. Token: {token}"
+            ),
+        )
+        if settings.expose_dev_tokens:
+            dev_token = token
+    return PasswordResetRequestResponse(
+        detail=_RESET_REQUEST_MESSAGE, dev_reset_token=dev_token
+    )
+
+
+@router.post(
+    "/auth/password-reset/confirm",
+    response_model=PasswordResetConfirmResponse,
+)
+def confirm_password_reset(
+    body: PasswordResetConfirmRequest, db: Session = Depends(get_db)
+) -> PasswordResetConfirmResponse:
+    """Set a new password using a valid reset token."""
+
+    try:
+        auth_service.reset_password_with_token(
+            db, token=body.token, new_password=body.new_password
+        )
+        db.commit()
+    except AuthError as exc:
+        raise _handle(exc) from exc
+    return PasswordResetConfirmResponse(
+        detail="Your password has been reset. Sign in with your new password."
+    )
+
+
+@router.get("/account/profile", response_model=AccountProfileResponse)
+def account_profile(
+    user: models.UserAccount = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> AccountProfileResponse:
+    """Return the signed-in user's profile and organization membership summary."""
+
+    return AccountProfileResponse(
+        user=CurrentUserResponse(**auth_service.user_public_dict(user)),
+        organizations=[
+            OrganizationResponse(**org)
+            for org in access_control_service.list_user_organizations(
+                db, user.user_id
+            )
+        ],
+    )
 
 
 # ---------------------------------------------------------------------------

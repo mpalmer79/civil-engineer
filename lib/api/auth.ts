@@ -285,3 +285,36 @@ export async function grantProjectAccess(
     mapAccess,
   );
 }
+
+// Production Phase 4B password reset. The reset token is delivered by email in
+// production; outside production the backend also returns a dev token so the
+// flow can be completed locally. The token is never logged.
+
+export type PasswordResetRequestResult = {
+  detail: string;
+  devResetToken: string | null;
+};
+
+export async function requestPasswordReset(
+  email: string,
+): Promise<MutationResult<PasswordResetRequestResult>> {
+  return authPost<PasswordResetRequestResult>(
+    "/api/v1/auth/password-reset/request",
+    { email },
+    (raw) => ({
+      detail: raw.detail as string,
+      devResetToken: (raw.dev_reset_token as string) ?? null,
+    }),
+  );
+}
+
+export async function confirmPasswordReset(
+  token: string,
+  newPassword: string,
+): Promise<MutationResult<{ detail: string }>> {
+  return authPost<{ detail: string }>(
+    "/api/v1/auth/password-reset/confirm",
+    { token, new_password: newPassword },
+    (raw) => ({ detail: raw.detail as string }),
+  );
+}
