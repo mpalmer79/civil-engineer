@@ -10,7 +10,8 @@
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "verify:live": "node scripts/verify-live-site.mjs"
+    "verify:live": "node scripts/verify-live-site.mjs",
+    "verify:pilot": "node scripts/verify-pilot-release.mjs"
   },
   "dependencies": {
     "next": "^14.2.35",

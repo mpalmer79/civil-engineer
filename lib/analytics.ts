@@ -19,7 +19,12 @@ export type DemoAnalyticsEvent =
   | "pilot_cta_clicked"
   | "pilot_form_started"
   | "pilot_form_submitted"
-  | "pilot_form_error";
+  | "pilot_form_error"
+  | "pilot_admin_viewed"
+  | "pilot_request_status_changed"
+  | "pilot_request_note_saved"
+  | "pilot_request_exported"
+  | "release_checklist_viewed";
 
 // Only non-sensitive, demo-shape properties are ever passed (step index, step
 // id, CTA label, sample project id, source route, success/failure state). No

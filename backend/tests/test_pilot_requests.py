@@ -139,3 +139,164 @@ def test_pilot_request_stores_flag_not_file_content(client: TestClient):
     for row in rows:
         for forbidden in ("file", "file_content", "attachment", "upload"):
             assert forbidden not in row
+
+
+# ---------------------------------------------------------------------------
+# Phase 3A/3B: operator status tracking, internal notes, and CSV export.
+# All of these are operator-gated (organization admin). A signed-in non-admin and
+# an anonymous caller are both rejected.
+# ---------------------------------------------------------------------------
+
+
+def _submit(client: TestClient) -> str:
+    response = client.post("/api/v1/pilot-requests", json=_valid_payload())
+    assert response.status_code == 201, response.text
+    return response.json()["pilot_request_id"]
+
+
+def test_new_request_defaults_to_status_new(client: TestClient):
+    request_id = _submit(client)
+    token = _register(client)
+    listed = client.get(
+        "/api/v1/pilot-requests", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert listed.status_code == 200, listed.text
+    row = next(r for r in listed.json() if r["pilot_request_id"] == request_id)
+    assert row["status"] == "new"
+
+
+def test_public_ack_does_not_expose_internal_notes(client: TestClient):
+    response = client.post("/api/v1/pilot-requests", json=_valid_payload())
+    assert response.status_code == 201, response.text
+    body = response.json()
+    assert "internal_notes" not in body
+    assert "status" not in body
+
+
+def test_org_admin_can_update_status(client: TestClient):
+    request_id = _submit(client)
+    token = _register(client)
+    response = client.patch(
+        f"/api/v1/pilot-requests/{request_id}/status",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"status": "contacted", "mark_contacted": True},
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["status"] == "contacted"
+    assert body["last_contacted_at"] is not None
+
+
+def test_status_update_rejects_invalid_status(client: TestClient):
+    request_id = _submit(client)
+    token = _register(client)
+    response = client.patch(
+        f"/api/v1/pilot-requests/{request_id}/status",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"status": "won"},
+    )
+    assert response.status_code == 422, response.text
+
+
+def test_status_update_unknown_request_is_404(client: TestClient):
+    token = _register(client)
+    response = client.patch(
+        "/api/v1/pilot-requests/pilot_missing/status",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"status": "qualified"},
+    )
+    assert response.status_code == 404, response.text
+
+
+def test_anonymous_cannot_update_status(client: TestClient):
+    request_id = _submit(client)
+    response = client.patch(
+        f"/api/v1/pilot-requests/{request_id}/status",
+        json={"status": "contacted"},
+    )
+    assert response.status_code == 401, response.text
+
+
+def test_non_admin_cannot_update_status(client: TestClient):
+    request_id = _submit(client)
+    token = _register(client, organization_name=None)
+    response = client.patch(
+        f"/api/v1/pilot-requests/{request_id}/status",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"status": "contacted"},
+    )
+    assert response.status_code == 403, response.text
+
+
+def test_org_admin_can_save_internal_notes(client: TestClient):
+    request_id = _submit(client)
+    token = _register(client)
+    response = client.patch(
+        f"/api/v1/pilot-requests/{request_id}/notes",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"internal_notes": "Left a voicemail; follow up next week."},
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["internal_notes"].startswith("Left a voicemail")
+
+
+def test_anonymous_and_non_admin_cannot_save_notes(client: TestClient):
+    request_id = _submit(client)
+    anon = client.patch(
+        f"/api/v1/pilot-requests/{request_id}/notes",
+        json={"internal_notes": "x"},
+    )
+    assert anon.status_code == 401, anon.text
+    token = _register(client, organization_name=None)
+    forbidden = client.patch(
+        f"/api/v1/pilot-requests/{request_id}/notes",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"internal_notes": "x"},
+    )
+    assert forbidden.status_code == 403, forbidden.text
+
+
+def test_org_admin_can_export_csv(client: TestClient):
+    _submit(client)
+    token = _register(client)
+    response = client.get(
+        "/api/v1/pilot-requests/export",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200, response.text
+    assert response.headers["content-type"].startswith("text/csv")
+    text = response.text
+    header = text.splitlines()[0]
+    assert "work_email" in header
+    assert "status" in header
+    # No file content column exists, and no secret/auth field is exported.
+    for forbidden in ("file", "attachment", "upload", "password", "token", "secret"):
+        assert forbidden not in header.lower()
+
+
+def test_anonymous_and_non_admin_cannot_export_csv(client: TestClient):
+    anon = client.get("/api/v1/pilot-requests/export")
+    assert anon.status_code == 401, anon.text
+    token = _register(client, organization_name=None)
+    forbidden = client.get(
+        "/api/v1/pilot-requests/export",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert forbidden.status_code == 403, forbidden.text
+
+
+def test_status_filter_narrows_the_list(client: TestClient):
+    request_id = _submit(client)
+    token = _register(client)
+    client.patch(
+        f"/api/v1/pilot-requests/{request_id}/status",
+        headers={"Authorization": f"Bearer {token}"},
+        json={"status": "qualified"},
+    )
+    filtered = client.get(
+        "/api/v1/pilot-requests?status=qualified",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert filtered.status_code == 200, filtered.text
+    assert all(r["status"] == "qualified" for r in filtered.json())
+    assert any(r["pilot_request_id"] == request_id for r in filtered.json())

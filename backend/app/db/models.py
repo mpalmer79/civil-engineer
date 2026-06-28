@@ -2893,4 +2893,16 @@ class PilotRequest(Base):
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     has_sample_package: Mapped[bool] = mapped_column(default=False)
     source: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Operator pipeline state. status tracks the design-partner conversation;
+    # internal_notes are operator-only and never returned by the public POST.
+    # last_contacted_at records the most recent outreach. These support pilot
+    # operations only and carry no review-support or engineering meaning.
+    status: Mapped[str] = mapped_column(String, nullable=False, default="new")
+    internal_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    last_contacted_at: Mapped[datetime | None] = mapped_column(
+        DateTime, nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, default=_utcnow, onupdate=_utcnow
+    )

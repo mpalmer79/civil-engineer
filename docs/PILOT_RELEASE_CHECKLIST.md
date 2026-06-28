@@ -45,6 +45,34 @@ Frontend:
    origin, and redeploy the frontend after the backend URL changes.
 3. Confirm `CORS_ORIGINS` includes the frontend origin.
 
+## Production posture for public sharing
+
+Set these backend flags before sharing the site publicly so real project data is
+protected while the public demo keeps working:
+
+- `AUTH_REQUIRE_LOGIN_FOR_REAL_PROJECTS=true`
+- `AUTH_DEMO_MODE=false`
+- `AUTH_ALLOW_PUBLIC_DEMO=true`
+
+Under this posture a real project rejects anonymous (401) and non-member (403)
+access, the Brookside demo stays anonymously readable, and the pilot admin stays
+protected. This behavior is pinned by `backend/tests/test_release_posture.py`.
+
+## Disable real-project anonymous access
+
+The prototype default leaves the anonymous demo-reviewer fallback on for
+convenience. To disable it for a public deployment, set `AUTH_DEMO_MODE=false`
+and `AUTH_REQUIRE_LOGIN_FOR_REAL_PROJECTS=true` as above. The public Brookside
+demo is unaffected because it is gated by `AUTH_ALLOW_PUBLIC_DEMO`.
+
+## Automated verification
+
+Run `npm run verify:pilot` to check the release docs, public/protected route
+listing, posture-flag documentation, and that no attribution footer or prohibited
+final-decision wording appears in public docs or copy. Pass `--backend <url>` to
+also probe `/health` and `/api/v1/readiness`. The check requires no secrets and no
+live external services.
+
 ## Backend health check
 
 - `GET /health` returns `{ status: "ok", service, version, demo_mode }`. No
@@ -93,6 +121,21 @@ Frontend:
 - Signed in as a non-admin: returns 403; the admin page shows the forbidden
   state.
 - Signed in as an organization admin: returns 200; the admin page lists requests.
+
+## Pilot operations verification
+
+- As an organization admin, filter by status/interest/sample-package and search by
+  firm, name, or email at `/admin/pilot-requests`.
+- Update a request status (and mark contacted) and confirm the saved state; the
+  status set is `new`, `contacted`, `qualified`, `active_pilot`, `closed`,
+  `rejected`.
+- Save operator-only internal notes and confirm they are not returned by the
+  public `POST /api/v1/pilot-requests` response.
+- Export the CSV (`GET /api/v1/pilot-requests/export`) as an admin; confirm 401
+  for anonymous and 403 for a signed-in non-admin. The CSV contains no file
+  content and no secrets.
+- See `docs/PILOT_OPERATIONS.md` for the full operator workflow and
+  `docs/DESIGN_PARTNER_OUTREACH.md` for outreach templates.
 
 ## Tenant guard verification
 
