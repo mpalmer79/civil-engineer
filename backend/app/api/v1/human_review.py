@@ -11,6 +11,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
 from app.schemas.ai_review import AIDraftFindingRead
 from app.schemas.human_review import (
@@ -19,6 +20,11 @@ from app.schemas.human_review import (
     ReviewActionResult,
 )
 from app.services import ai_review_service, human_review_service, project_service
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_read,
+    require_project_reviewer,
+)
 from app.services.human_review_service import ReviewActionError
 
 router = APIRouter(tags=["human-review"])
@@ -29,10 +35,13 @@ router = APIRouter(tags=["human-review"])
     response_model=list[AIDraftFindingRead],
 )
 def get_human_review_queue(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[AIDraftFindingRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return human_review_service.list_human_review_queue(db, project_id)
 
 
@@ -43,10 +52,13 @@ def get_human_review_queue(
 def create_review_action(
     draft_finding_id: str,
     body: ReviewActionCreate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> ReviewActionResult:
-    if ai_review_service.get_draft_finding(db, draft_finding_id) is None:
+    draft = ai_review_service.get_draft_finding(db, draft_finding_id)
+    if draft is None:
         raise HTTPException(status_code=404, detail="Draft finding not found")
+    require_project_reviewer(db, draft.project_id, user)
     try:
         action, draft = human_review_service.apply_review_action(
             db,
@@ -70,10 +82,14 @@ def create_review_action(
     response_model=list[HumanReviewActionRead],
 )
 def list_draft_review_actions(
-    draft_finding_id: str, db: Session = Depends(get_db)
+    draft_finding_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[HumanReviewActionRead]:
-    if ai_review_service.get_draft_finding(db, draft_finding_id) is None:
+    draft = ai_review_service.get_draft_finding(db, draft_finding_id)
+    if draft is None:
         raise HTTPException(status_code=404, detail="Draft finding not found")
+    require_project_read(db, draft.project_id, user)
     return human_review_service.list_review_actions_for_draft(
         db, draft_finding_id
     )
@@ -84,8 +100,11 @@ def list_draft_review_actions(
     response_model=list[HumanReviewActionRead],
 )
 def list_project_review_actions(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[HumanReviewActionRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return human_review_service.list_review_actions_for_project(db, project_id)

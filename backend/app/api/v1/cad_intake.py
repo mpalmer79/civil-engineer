@@ -19,8 +19,10 @@ access.
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
 from app.schemas.cad_intake import (
     CadBlockExtractRead,
@@ -46,13 +48,38 @@ from app.schemas.cad_intake import (
     CadWorkflowItemsResult,
 )
 from app.services import cad_intake_service, project_service
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_read,
+    require_project_reviewer,
+)
 from app.services.cad_intake_service import CadIntakeError
 
 router = APIRouter(tags=["cad-intake"])
 
+User = models.UserAccount | None
+
+
+def _guard_parse_run_read(db: Session, parse_run_id: str, user: User) -> None:
+    """404 if the parse run is missing, otherwise require read access."""
+
+    run = cad_intake_service.get_cad_parse_run(db, parse_run_id)
+    if run is None:
+        raise HTTPException(status_code=404, detail="Parse run not found")
+    require_project_read(db, run.project_id, user)
+
+
+def _guard_cad_file_reviewer(db: Session, cad_file_id: str, user: User) -> None:
+    """Require reviewer access for an existing CAD file; service 404s if missing."""
+
+    cad_file = cad_intake_service.get_cad_file(db, cad_file_id)
+    if cad_file is not None:
+        require_project_reviewer(db, cad_file.project_id, user)
+
 
 @router.get("/cad-upload-limits", response_model=CadUploadLimits)
 def get_cad_upload_limits() -> CadUploadLimits:
+    # Static upload-policy information; not project-scoped data.
     return CadUploadLimits.model_validate(
         cad_intake_service.get_cad_upload_limits()
     )
@@ -66,10 +93,12 @@ async def upload_cad_file(
     project_id: str,
     file: UploadFile = File(...),
     uploaded_by: str = Form("reviewer"),
+    user: User = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> CadUploadResponse:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_reviewer(db, project_id, user)
     content_bytes = await file.read()
     try:
         cad_file = cad_intake_service.create_cad_file_from_upload(
@@ -104,10 +133,12 @@ async def upload_cad_file(
 def create_cad_file(
     project_id: str,
     body: CadFileCreate,
+    user: User = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> CadFileUploadRead:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_reviewer(db, project_id, user)
     try:
         cad_file = cad_intake_service.create_cad_file_from_sample(
             db,
@@ -124,8 +155,11 @@ def create_cad_file(
 
 @router.post("/cad-files/{cad_file_id}/parse", response_model=CadParseRunRead)
 def parse_cad_file(
-    cad_file_id: str, db: Session = Depends(get_db)
+    cad_file_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> CadParseRunRead:
+    _guard_cad_file_reviewer(db, cad_file_id, user)
     try:
         run = cad_intake_service.parse_dxf_file(db, cad_file_id)
     except CadIntakeError as exc:
@@ -140,10 +174,13 @@ def parse_cad_file(
     response_model=list[CadFileUploadRead],
 )
 def list_cad_files(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[CadFileUploadRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return cad_intake_service.list_cad_files(db, project_id)
 
 
@@ -152,20 +189,26 @@ def list_cad_files(
     response_model=list[CadParseRunRead],
 )
 def list_cad_parse_runs(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[CadParseRunRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return cad_intake_service.list_cad_parse_runs(db, project_id)
 
 
 @router.get("/cad-parse-runs/{parse_run_id}", response_model=CadParseRunRead)
 def get_cad_parse_run(
-    parse_run_id: str, db: Session = Depends(get_db)
+    parse_run_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> CadParseRunRead:
     run = cad_intake_service.get_cad_parse_run(db, parse_run_id)
     if run is None:
         raise HTTPException(status_code=404, detail="Parse run not found")
+    require_project_read(db, run.project_id, user)
     return run
 
 
@@ -174,8 +217,11 @@ def get_cad_parse_run(
     response_model=CadParseSummary,
 )
 def get_cad_parse_summary(
-    parse_run_id: str, db: Session = Depends(get_db)
+    parse_run_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> CadParseSummary:
+    _guard_parse_run_read(db, parse_run_id, user)
     result = cad_intake_service.get_cad_parse_summary(db, parse_run_id)
     if result is None:
         raise HTTPException(status_code=404, detail="Parse run not found")
@@ -187,10 +233,11 @@ def get_cad_parse_summary(
     response_model=list[CadLayerExtractRead],
 )
 def list_cad_layers(
-    parse_run_id: str, db: Session = Depends(get_db)
+    parse_run_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[CadLayerExtractRead]:
-    if cad_intake_service.get_cad_parse_run(db, parse_run_id) is None:
-        raise HTTPException(status_code=404, detail="Parse run not found")
+    _guard_parse_run_read(db, parse_run_id, user)
     return cad_intake_service.list_cad_layers(db, parse_run_id)
 
 
@@ -199,10 +246,11 @@ def list_cad_layers(
     response_model=list[CadEntityExtractRead],
 )
 def list_cad_entities(
-    parse_run_id: str, db: Session = Depends(get_db)
+    parse_run_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[CadEntityExtractRead]:
-    if cad_intake_service.get_cad_parse_run(db, parse_run_id) is None:
-        raise HTTPException(status_code=404, detail="Parse run not found")
+    _guard_parse_run_read(db, parse_run_id, user)
     return cad_intake_service.list_cad_entities(db, parse_run_id)
 
 
@@ -211,10 +259,11 @@ def list_cad_entities(
     response_model=list[CadBlockExtractRead],
 )
 def list_cad_blocks(
-    parse_run_id: str, db: Session = Depends(get_db)
+    parse_run_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[CadBlockExtractRead]:
-    if cad_intake_service.get_cad_parse_run(db, parse_run_id) is None:
-        raise HTTPException(status_code=404, detail="Parse run not found")
+    _guard_parse_run_read(db, parse_run_id, user)
     return cad_intake_service.list_cad_blocks(db, parse_run_id)
 
 
@@ -223,10 +272,11 @@ def list_cad_blocks(
     response_model=list[CadTextExtractRead],
 )
 def list_cad_text(
-    parse_run_id: str, db: Session = Depends(get_db)
+    parse_run_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[CadTextExtractRead]:
-    if cad_intake_service.get_cad_parse_run(db, parse_run_id) is None:
-        raise HTTPException(status_code=404, detail="Parse run not found")
+    _guard_parse_run_read(db, parse_run_id, user)
     return cad_intake_service.list_cad_text(db, parse_run_id)
 
 
@@ -235,10 +285,11 @@ def list_cad_text(
     response_model=list[CadReferenceCandidateRead],
 )
 def list_cad_reference_candidates(
-    parse_run_id: str, db: Session = Depends(get_db)
+    parse_run_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[CadReferenceCandidateRead]:
-    if cad_intake_service.get_cad_parse_run(db, parse_run_id) is None:
-        raise HTTPException(status_code=404, detail="Parse run not found")
+    _guard_parse_run_read(db, parse_run_id, user)
     return cad_intake_service.list_cad_reference_candidates(db, parse_run_id)
 
 
@@ -247,8 +298,13 @@ def list_cad_reference_candidates(
     response_model=CadPlanSheetComparison,
 )
 def compare_plan_sheets(
-    parse_run_id: str, db: Session = Depends(get_db)
+    parse_run_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> CadPlanSheetComparison:
+    run = cad_intake_service.get_cad_parse_run(db, parse_run_id)
+    if run is not None:
+        require_project_reviewer(db, run.project_id, user)
     result = cad_intake_service.compare_cad_references_to_plan_sheets(
         db, parse_run_id
     )
@@ -262,10 +318,13 @@ def compare_plan_sheets(
     response_model=list[CadReviewFindingRead],
 )
 def list_cad_review_findings(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[CadReviewFindingRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return cad_intake_service.list_cad_review_findings(db, project_id)
 
 
@@ -274,8 +333,11 @@ def list_cad_review_findings(
     response_model=CadWorkflowItemsResult,
 )
 def create_workflow_items_from_cad_findings(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> CadWorkflowItemsResult:
+    require_project_reviewer(db, project_id, user)
     try:
         result = cad_intake_service.create_workflow_items_from_cad_findings(
             db, project_id
@@ -292,8 +354,14 @@ def create_workflow_items_from_cad_findings(
     response_model=CadFileReviewContext,
 )
 def get_cad_file_review_context(
-    cad_file_id: str, db: Session = Depends(get_db)
+    cad_file_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> CadFileReviewContext:
+    cad_file = cad_intake_service.get_cad_file(db, cad_file_id)
+    if cad_file is None:
+        raise HTTPException(status_code=404, detail="CAD file not found")
+    require_project_read(db, cad_file.project_id, user)
     result = cad_intake_service.get_cad_file_review_context(db, cad_file_id)
     if result is None:
         raise HTTPException(status_code=404, detail="CAD file not found")
@@ -305,8 +373,11 @@ def get_cad_file_review_context(
     response_model=CadParseRunRead,
 )
 def request_cad_parse(
-    cad_file_id: str, db: Session = Depends(get_db)
+    cad_file_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> CadParseRunRead:
+    _guard_cad_file_reviewer(db, cad_file_id, user)
     try:
         run = cad_intake_service.request_cad_parse(db, cad_file_id)
     except CadIntakeError as exc:
@@ -321,8 +392,11 @@ def request_cad_parse(
     response_model=list[CadParseQueueItem],
 )
 def get_cad_parse_queue(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[CadParseQueueItem]:
+    require_project_read(db, project_id, user)
     try:
         rows = cad_intake_service.get_cad_parse_queue(db, project_id)
     except CadIntakeError as exc:
@@ -337,8 +411,11 @@ def get_cad_parse_queue(
     response_model=CadIntakeDashboard,
 )
 def get_cad_intake_dashboard(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> CadIntakeDashboard:
+    require_project_read(db, project_id, user)
     try:
         result = cad_intake_service.get_cad_intake_dashboard(db, project_id)
     except CadIntakeError as exc:
@@ -353,10 +430,13 @@ def get_cad_intake_dashboard(
     response_model=list[CadReviewFindingRead],
 )
 def list_unpromoted_cad_findings(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: User = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[CadReviewFindingRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return cad_intake_service.list_unpromoted_cad_findings(db, project_id)
 
 
@@ -367,8 +447,16 @@ def list_unpromoted_cad_findings(
 def promote_cad_finding_to_workflow(
     cad_review_finding_id: str,
     body: CadFindingPromotionRequest | None = None,
+    user: User = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> CadFindingPromotionResponse:
+    finding = db.execute(
+        select(models.CadReviewFinding).where(
+            models.CadReviewFinding.cad_review_finding_id == cad_review_finding_id
+        )
+    ).scalar_one_or_none()
+    if finding is not None:
+        require_project_reviewer(db, finding.project_id, user)
     payload = body or CadFindingPromotionRequest()
     try:
         result = cad_intake_service.promote_cad_finding_to_workflow(
@@ -391,8 +479,10 @@ def promote_cad_finding_to_workflow(
 def promote_selected_cad_findings(
     project_id: str,
     body: CadSelectedPromotionRequest,
+    user: User = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> CadSelectedPromotionResponse:
+    require_project_reviewer(db, project_id, user)
     try:
         result = cad_intake_service.promote_selected_cad_findings_to_workflow(
             db,

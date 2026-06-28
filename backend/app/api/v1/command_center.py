@@ -18,6 +18,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
 from app.schemas.command_center import (
     AttentionItemStatusUpdate,
@@ -34,6 +35,11 @@ from app.schemas.command_center import (
     ReviewReadinessCheckRead,
 )
 from app.services import command_center_service, project_service
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_read,
+    require_project_reviewer,
+)
 from app.services.command_center_service import CommandCenterError
 
 router = APIRouter(tags=["command-center"])
@@ -48,8 +54,11 @@ def _handle(exc: CommandCenterError) -> HTTPException:
     response_model=ProjectCommandCenterSnapshotRead,
 )
 def generate_snapshot(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> ProjectCommandCenterSnapshotRead:
+    require_project_reviewer(db, project_id, user)
     try:
         return command_center_service.generate_command_center_snapshot(
             db, project_id
@@ -63,8 +72,11 @@ def generate_snapshot(
     response_model=ProjectCommandCenterPayload,
 )
 def get_command_center(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> ProjectCommandCenterPayload:
+    require_project_read(db, project_id, user)
     try:
         result = command_center_service.get_project_command_center(db, project_id)
     except CommandCenterError as exc:
@@ -77,8 +89,11 @@ def get_command_center(
     response_model=ProjectCommandCenterSnapshotRead,
 )
 def get_latest_snapshot(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> ProjectCommandCenterSnapshotRead:
+    require_project_read(db, project_id, user)
     try:
         snapshot = command_center_service.get_latest_command_center_snapshot(
             db, project_id
@@ -95,8 +110,11 @@ def get_latest_snapshot(
     response_model=list[ProjectHealthMetricRead],
 )
 def get_health_metrics(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[ProjectHealthMetricRead]:
+    require_project_read(db, project_id, user)
     try:
         return command_center_service.get_project_health_metrics(db, project_id)
     except CommandCenterError as exc:
@@ -113,8 +131,10 @@ def get_attention_items(
     severity: str | None = None,
     source_module: str | None = None,
     attention_type: str | None = None,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> list[ReviewerAttentionItemRead]:
+    require_project_read(db, project_id, user)
     try:
         return command_center_service.get_reviewer_attention_items(
             db,
@@ -135,8 +155,13 @@ def get_attention_items(
 def update_attention_item_status(
     attention_item_id: str,
     body: AttentionItemStatusUpdate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> ReviewerAttentionItemRead:
+    # Resolve the owning project so a raw attention-item id cannot bypass access.
+    item = db.get(models.ReviewerAttentionItem, attention_item_id)
+    if item is not None:
+        require_project_reviewer(db, item.project_id, user)
     try:
         return command_center_service.update_attention_item_status(
             db,
@@ -154,8 +179,11 @@ def update_attention_item_status(
     response_model=list[ProjectTimelineEventRead],
 )
 def get_timeline(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[ProjectTimelineEventRead]:
+    require_project_read(db, project_id, user)
     try:
         return command_center_service.get_project_timeline(db, project_id)
     except CommandCenterError as exc:
@@ -167,8 +195,11 @@ def get_timeline(
     response_model=list[ReviewReadinessCheckRead],
 )
 def get_readiness_checks(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[ReviewReadinessCheckRead]:
+    require_project_read(db, project_id, user)
     try:
         return command_center_service.get_review_readiness_checks(db, project_id)
     except CommandCenterError as exc:
@@ -182,8 +213,10 @@ def get_readiness_checks(
 def add_note(
     project_id: str,
     body: DashboardReviewerNoteCreate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> DashboardReviewerNoteRead:
+    require_project_reviewer(db, project_id, user)
     try:
         return command_center_service.add_dashboard_reviewer_note(
             db,
@@ -202,8 +235,11 @@ def add_note(
     response_model=list[DashboardReviewerNoteRead],
 )
 def get_notes(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[DashboardReviewerNoteRead]:
+    require_project_read(db, project_id, user)
     try:
         return command_center_service.get_dashboard_reviewer_notes(db, project_id)
     except CommandCenterError as exc:
@@ -215,8 +251,11 @@ def get_notes(
     response_model=ReviewerNextSteps,
 )
 def get_next_steps(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> ReviewerNextSteps:
+    require_project_read(db, project_id, user)
     try:
         return ReviewerNextSteps.model_validate(
             command_center_service.get_reviewer_next_steps(db, project_id)
@@ -230,8 +269,11 @@ def get_next_steps(
     response_model=ProjectModuleLinks,
 )
 def get_module_links(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> ProjectModuleLinks:
+    require_project_read(db, project_id, user)
     try:
         return ProjectModuleLinks.model_validate(
             command_center_service.get_project_module_links(db, project_id)
@@ -245,8 +287,11 @@ def get_module_links(
     response_model=ProjectHealthSummary,
 )
 def get_health_summary(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> ProjectHealthSummary:
+    require_project_read(db, project_id, user)
     try:
         return ProjectHealthSummary.model_validate(
             command_center_service.get_project_health_summary(db, project_id)

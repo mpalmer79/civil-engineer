@@ -19,6 +19,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
 from app.schemas.workflow import (
     ReadyForHandoffSummary,
@@ -33,7 +34,24 @@ from app.schemas.workflow import (
     WorkflowNoteCreate,
 )
 from app.services import project_service, workflow_service
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_read,
+    require_project_reviewer,
+)
 from app.services.workflow_service import WorkflowError
+
+
+def _require_item_project(
+    db: Session, workflow_item_id: str
+) -> models.WorkflowItem:
+    """Resolve a workflow item to its owning project, 404 if missing."""
+
+    record = workflow_service.get_workflow_item_record(db, workflow_item_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Workflow item not found")
+    return record
+
 
 router = APIRouter(tags=["workflow-board"])
 
@@ -43,10 +61,13 @@ router = APIRouter(tags=["workflow-board"])
     response_model=list[WorkflowItemRead],
 )
 def generate_workflow_board(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[WorkflowItemRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_reviewer(db, project_id, user)
     try:
         items = workflow_service.generate_workflow_items_from_review_packet(
             db, project_id
@@ -69,10 +90,12 @@ def list_workflow_items(
     section_type: str | None = None,
     assigned_role: str | None = None,
     source_type: str | None = None,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> list[WorkflowItemRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return workflow_service.list_workflow_items(
         db,
         project_id,
@@ -89,8 +112,11 @@ def list_workflow_items(
     response_model=WorkflowBoardSummary,
 )
 def get_workflow_board_summary(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> WorkflowBoardSummary:
+    require_project_read(db, project_id, user)
     result = workflow_service.get_workflow_board_summary(db, project_id)
     if result is None:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -102,8 +128,11 @@ def get_workflow_board_summary(
     response_model=ReadyForHandoffSummary,
 )
 def get_ready_for_handoff_summary(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> ReadyForHandoffSummary:
+    require_project_read(db, project_id, user)
     result = workflow_service.get_ready_for_handoff_summary(db, project_id)
     if result is None:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -115,8 +144,12 @@ def get_ready_for_handoff_summary(
     response_model=WorkflowItemDetail,
 )
 def get_workflow_item(
-    workflow_item_id: str, db: Session = Depends(get_db)
+    workflow_item_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> WorkflowItemDetail:
+    record = _require_item_project(db, workflow_item_id)
+    require_project_read(db, record.project_id, user)
     detail = workflow_service.get_workflow_item(db, workflow_item_id)
     if detail is None:
         raise HTTPException(status_code=404, detail="Workflow item not found")
@@ -128,8 +161,12 @@ def get_workflow_item(
     response_model=WorkflowItemHistory,
 )
 def get_workflow_item_history(
-    workflow_item_id: str, db: Session = Depends(get_db)
+    workflow_item_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> WorkflowItemHistory:
+    record = _require_item_project(db, workflow_item_id)
+    require_project_read(db, record.project_id, user)
     result = workflow_service.get_workflow_item_history(db, workflow_item_id)
     if result is None:
         raise HTTPException(status_code=404, detail="Workflow item not found")
@@ -141,10 +178,12 @@ def get_workflow_item_history(
     response_model=list[WorkflowActionRead],
 )
 def list_workflow_actions(
-    workflow_item_id: str, db: Session = Depends(get_db)
+    workflow_item_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[WorkflowActionRead]:
-    if workflow_service.get_workflow_item_record(db, workflow_item_id) is None:
-        raise HTTPException(status_code=404, detail="Workflow item not found")
+    record = _require_item_project(db, workflow_item_id)
+    require_project_read(db, record.project_id, user)
     return workflow_service.list_workflow_actions(db, workflow_item_id)
 
 
@@ -153,10 +192,12 @@ def list_workflow_actions(
     response_model=list[WorkflowFollowUpRequestRead],
 )
 def list_follow_up_requests(
-    workflow_item_id: str, db: Session = Depends(get_db)
+    workflow_item_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[WorkflowFollowUpRequestRead]:
-    if workflow_service.get_workflow_item_record(db, workflow_item_id) is None:
-        raise HTTPException(status_code=404, detail="Workflow item not found")
+    record = _require_item_project(db, workflow_item_id)
+    require_project_read(db, record.project_id, user)
     return workflow_service.list_follow_up_requests(db, workflow_item_id)
 
 
@@ -167,8 +208,11 @@ def list_follow_up_requests(
 def update_workflow_item_status(
     workflow_item_id: str,
     body: WorkflowItemStatusUpdate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> WorkflowItemRead:
+    record = _require_item_project(db, workflow_item_id)
+    require_project_reviewer(db, record.project_id, user)
     try:
         item = workflow_service.update_workflow_item_status(
             db,
@@ -192,8 +236,11 @@ def update_workflow_item_status(
 def add_workflow_note(
     workflow_item_id: str,
     body: WorkflowNoteCreate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> WorkflowItemRead:
+    record = _require_item_project(db, workflow_item_id)
+    require_project_reviewer(db, record.project_id, user)
     try:
         item = workflow_service.add_workflow_note(
             db,
@@ -215,8 +262,11 @@ def add_workflow_note(
 def create_follow_up_request(
     workflow_item_id: str,
     body: WorkflowFollowUpRequestCreate,
+    user: models.UserAccount | None = Depends(get_optional_user),
     db: Session = Depends(get_db),
 ) -> WorkflowFollowUpRequestRead:
+    record = _require_item_project(db, workflow_item_id)
+    require_project_reviewer(db, record.project_id, user)
     try:
         follow_up = workflow_service.create_follow_up_request(
             db,

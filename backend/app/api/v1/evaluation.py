@@ -10,6 +10,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.db import models
 from app.db.database import get_db
 from app.schemas.evaluation import (
     AIEvaluationResultDetail,
@@ -22,6 +23,11 @@ from app.services import (
     evaluation_service,
     project_service,
 )
+from app.services.access_control_service import (
+    get_optional_user,
+    require_project_read,
+    require_project_reviewer,
+)
 from app.services.evaluation_scoring_service import EvaluationError
 
 router = APIRouter(tags=["evaluation"])
@@ -31,6 +37,7 @@ router = APIRouter(tags=["evaluation"])
 def list_evaluation_cases(
     db: Session = Depends(get_db),
 ) -> list[EvaluationCaseRead]:
+    # Seeded global evaluation reference cases, not tenant-owned project data.
     return evaluation_service.list_evaluation_cases(db)
 
 
@@ -39,10 +46,13 @@ def list_evaluation_cases(
     response_model=list[EvaluationCaseRead],
 )
 def list_project_evaluation_cases(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[EvaluationCaseRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return evaluation_service.list_evaluation_cases(db, project_id)
 
 
@@ -51,10 +61,14 @@ def list_project_evaluation_cases(
     response_model=AIEvaluationResultDetail,
 )
 def evaluate_ai_review_run(
-    review_run_id: str, db: Session = Depends(get_db)
+    review_run_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> AIEvaluationResultDetail:
-    if ai_review_service.get_ai_review_run(db, review_run_id) is None:
+    run = ai_review_service.get_ai_review_run(db, review_run_id)
+    if run is None:
         raise HTTPException(status_code=404, detail="AI review run not found")
+    require_project_reviewer(db, run.project_id, user)
     try:
         result = evaluation_scoring_service.evaluate_review_run(db, review_run_id)
     except EvaluationError as exc:
@@ -74,10 +88,14 @@ def evaluate_ai_review_run(
     response_model=AIEvaluationResultDetail,
 )
 def get_ai_review_run_evaluation(
-    review_run_id: str, db: Session = Depends(get_db)
+    review_run_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> AIEvaluationResultDetail:
-    if ai_review_service.get_ai_review_run(db, review_run_id) is None:
+    run = ai_review_service.get_ai_review_run(db, review_run_id)
+    if run is None:
         raise HTTPException(status_code=404, detail="AI review run not found")
+    require_project_read(db, run.project_id, user)
     result = evaluation_scoring_service.get_latest_evaluation_for_run(
         db, review_run_id
     )
@@ -99,10 +117,13 @@ def get_ai_review_run_evaluation(
     response_model=list[AIEvaluationResultRead],
 )
 def list_project_evaluation_results(
-    project_id: str, db: Session = Depends(get_db)
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> list[AIEvaluationResultRead]:
     if project_service.get_project(db, project_id) is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    require_project_read(db, project_id, user)
     return evaluation_scoring_service.list_evaluation_results_for_project(
         db, project_id
     )
@@ -113,7 +134,9 @@ def list_project_evaluation_results(
     response_model=AIEvaluationResultDetail,
 )
 def get_evaluation_result(
-    evaluation_result_id: str, db: Session = Depends(get_db)
+    evaluation_result_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
 ) -> AIEvaluationResultDetail:
     result = evaluation_scoring_service.get_evaluation_result(
         db, evaluation_result_id
@@ -122,6 +145,7 @@ def get_evaluation_result(
         raise HTTPException(
             status_code=404, detail="Evaluation result not found"
         )
+    require_project_read(db, result.project_id, user)
     matches = evaluation_scoring_service.get_matches_for_result(
         db, evaluation_result_id
     )
