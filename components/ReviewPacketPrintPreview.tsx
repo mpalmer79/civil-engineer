@@ -41,14 +41,14 @@ export default function ReviewPacketPrintPreview({
     <div className="surface-card p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-base font-semibold text-slate-900">
-          Printable review-support summary
+          Reviewer handoff package (draft)
         </h3>
         <button
           type="button"
           onClick={() => window.print()}
           className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
         >
-          Print
+          Open print view
         </button>
       </div>
 

@@ -170,7 +170,7 @@ export default function ReviewPacketBuilder({
                 ? "Sections and items"
                 : t === "traceability"
                   ? "Traceability matrix"
-                  : "Printable summary"}
+                  : "Reviewer handoff (print)"}
             </button>
           ))}
         </div>

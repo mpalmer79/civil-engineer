@@ -33,6 +33,7 @@ export * from "./realProjects";
 export * from "./pdfEvidence";
 export * from "./evidenceRetrieval";
 export * from "./checklistReview";
+export * from "./traceability";
 export {
   getReviewerDashboard,
   getReviewerQueue,
