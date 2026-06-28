@@ -26,8 +26,22 @@ export type PilotRequestAck = {
   message: string;
 };
 
+// Operator pipeline statuses for a design-partner conversation. Outreach state
+// only; no review-support or engineering meaning.
+export const PILOT_STATUSES = [
+  "new",
+  "contacted",
+  "qualified",
+  "active_pilot",
+  "closed",
+  "rejected",
+] as const;
+
+export type PilotStatus = (typeof PILOT_STATUSES)[number];
+
 // A stored pilot lead, as returned to an authorized operator. No file content is
-// ever included; has_sample_package is a boolean flag only.
+// ever included; has_sample_package is a boolean flag only. internal_notes are
+// operator-only and are never returned by the public submission endpoint.
 export type PilotRequestRecord = {
   pilotRequestId: string;
   fullName: string;
@@ -39,7 +53,11 @@ export type PilotRequestRecord = {
   interestLevel: string;
   notes: string | null;
   hasSamplePackage: boolean;
+  status: string;
+  internalNotes: string | null;
+  lastContactedAt: string | null;
   createdAt: string | null;
+  updatedAt: string | null;
 };
 
 // Discriminated result so the admin view can render an honest state for each
@@ -63,8 +81,90 @@ function mapPilotRecord(raw: Record<string, unknown>): PilotRequestRecord {
     interestLevel: (raw.interest_level as string) ?? "",
     notes: (raw.notes as string) ?? null,
     hasSamplePackage: (raw.has_sample_package as boolean) ?? false,
+    status: (raw.status as string) ?? "new",
+    internalNotes: (raw.internal_notes as string) ?? null,
+    lastContactedAt: (raw.last_contacted_at as string) ?? null,
     createdAt: (raw.created_at as string) ?? null,
+    updatedAt: (raw.updated_at as string) ?? null,
   };
+}
+
+// Result of an operator mutation (status/notes). Mirrors the list result's honest
+// states so the admin UI never shows a raw error.
+export type PilotMutationResult =
+  | { status: "ok"; data: PilotRequestRecord }
+  | { status: "unauthorized" }
+  | { status: "forbidden" }
+  | { status: "unreachable" }
+  | { status: "error"; message: string };
+
+async function pilotPatch(
+  path: string,
+  body: unknown,
+): Promise<PilotMutationResult> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/pilot-requests${path}`, {
+      method: "PATCH",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(body),
+      cache: "no-store",
+    });
+    if (res.status === 401) return { status: "unauthorized" };
+    if (res.status === 403) return { status: "forbidden" };
+    if (!res.ok) {
+      return { status: "error", message: `Request failed (${res.status}).` };
+    }
+    const raw = (await res.json()) as Record<string, unknown>;
+    return { status: "ok", data: mapPilotRecord(raw) };
+  } catch {
+    return { status: "unreachable" };
+  }
+}
+
+export function updatePilotRequestStatus(
+  pilotRequestId: string,
+  status: PilotStatus,
+  markContacted = false,
+): Promise<PilotMutationResult> {
+  return pilotPatch(`/${pilotRequestId}/status`, {
+    status,
+    mark_contacted: markContacted,
+  });
+}
+
+export function updatePilotRequestNotes(
+  pilotRequestId: string,
+  internalNotes: string,
+): Promise<PilotMutationResult> {
+  return pilotPatch(`/${pilotRequestId}/notes`, {
+    internal_notes: internalNotes,
+  });
+}
+
+// CSV export. Returns the raw CSV text for an authorized operator so the caller
+// can trigger a client-side download. No data leaves this app.
+export type PilotExportResult =
+  | { status: "ok"; csv: string }
+  | { status: "unauthorized" }
+  | { status: "forbidden" }
+  | { status: "unreachable" }
+  | { status: "error"; message: string };
+
+export async function exportPilotRequestsCsv(): Promise<PilotExportResult> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/v1/pilot-requests/export`, {
+      headers: authHeaders(),
+      cache: "no-store",
+    });
+    if (res.status === 401) return { status: "unauthorized" };
+    if (res.status === 403) return { status: "forbidden" };
+    if (!res.ok) {
+      return { status: "error", message: `Request failed (${res.status}).` };
+    }
+    return { status: "ok", csv: await res.text() };
+  } catch {
+    return { status: "unreachable" };
+  }
 }
 
 export async function listPilotRequests(): Promise<PilotListResult> {

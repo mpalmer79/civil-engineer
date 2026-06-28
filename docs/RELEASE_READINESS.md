@@ -54,6 +54,53 @@ guard-regression test (`backend/tests/test_guard_coverage.py`) fails if a new
 `{project_id}` route ships without a guard. The Brookside demo exception is scoped
 to that one project. See `docs/TENANT_ISOLATION_AUDIT.md`.
 
+## Production-posture environment profile
+
+For a public pilot deployment, set these backend flags so real project data is
+protected while the public demo keeps working:
+
+- `AUTH_REQUIRE_LOGIN_FOR_REAL_PROJECTS=true` - a real project rejects anonymous
+  access (401) and non-member access (403).
+- `AUTH_DEMO_MODE=false` - turns off the anonymous demo-reviewer fallback for real
+  projects.
+- `AUTH_ALLOW_PUBLIC_DEMO=true` - keeps the Brookside demo project readable
+  without a login.
+
+`backend/tests/test_release_posture.py` pins this behavior: under these flags the
+Brookside demo stays anonymously readable, a real project rejects anonymous (401)
+and non-member (403) access, the owner reads it (200), public pilot submission
+still works, and the pilot admin list stays protected (401 for anonymous).
+
+## Public route allowlist
+
+Only these surfaces are intended to be reachable without a login:
+
+- `/` (homepage)
+- `/guided-demo`
+- `/pilot`
+- `/start-here`
+- The Brookside Meadows demo project surfaces used by the guided demo
+  (`/projects/proj_brookside_meadows/...`), which stay public because the project
+  is `demo_public`.
+- `/health` and `/api/v1/readiness` (no secrets in their output).
+- Static assets under `public/`.
+
+Everything else is protected: `/workspace`, `/workspace/settings`,
+`/admin/pilot-requests`, all real tenant projects and their project-owned API
+routes, and the pilot request list/admin/export/status/notes APIs. This allowlist
+is enforced by the access guards and the auth posture flags above, not by a
+separate route table, so a new project-owned route is protected by default and is
+caught by the guard-regression test if it is not.
+
+## Pilot operations
+
+Submitted pilot requests carry an operator pipeline status (`new`, `contacted`,
+`qualified`, `active_pilot`, `closed`, `rejected`), operator-only internal notes,
+and a last-contacted timestamp. An organization admin can filter, search, update
+status, save notes, and export a CSV at `/admin/pilot-requests`. Internal notes
+are never returned by the public submission endpoint. See
+`docs/PILOT_OPERATIONS.md` and `docs/DESIGN_PARTNER_OUTREACH.md`.
+
 ## Current limitations
 
 - Database: SQLite. No Postgres migration in this phase.

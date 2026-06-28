@@ -25,6 +25,18 @@ ALLOWED_INTEREST_LEVELS: set[str] = {
     "ready_to_pilot",
 }
 
+# Operator pipeline statuses for a design-partner conversation. These describe the
+# outreach state of a lead only; they carry no review-support or engineering
+# meaning. "new" is the default assigned at creation.
+PILOT_STATUSES: tuple[str, ...] = (
+    "new",
+    "contacted",
+    "qualified",
+    "active_pilot",
+    "closed",
+    "rejected",
+)
+
 
 class PilotRequestCreate(BaseModel):
     full_name: str = Field(min_length=1, max_length=200)
@@ -71,7 +83,32 @@ class PilotRequestRead(BaseModel):
     notes: str | None = None
     has_sample_package: bool = False
     source: str | None = None
+    status: str = "new"
+    internal_notes: str | None = None
+    last_contacted_at: datetime | None = None
     created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class PilotRequestStatusUpdate(BaseModel):
+    status: str = Field(min_length=1, max_length=40)
+    # Optional flag to stamp last_contacted_at to now when an operator records an
+    # outreach. No prospect data is sent anywhere.
+    mark_contacted: bool = False
+
+    @field_validator("status")
+    @classmethod
+    def _validate_status(cls, value: str) -> str:
+        cleaned = value.strip()
+        if cleaned not in PILOT_STATUSES:
+            raise ValueError(
+                "status must be one of: " + ", ".join(PILOT_STATUSES)
+            )
+        return cleaned
+
+
+class PilotRequestNotesUpdate(BaseModel):
+    internal_notes: str | None = Field(default=None, max_length=8000)
 
 
 class PilotRequestAck(BaseModel):

@@ -37,6 +37,24 @@ describe("Release docs exist", () => {
     expect(existsSync(join(root, "docs/PILOT_RELEASE_CHECKLIST.md"))).toBe(true);
   });
 
+  it("ships the pilot operations and design-partner outreach docs", () => {
+    expect(existsSync(join(root, "docs/PILOT_OPERATIONS.md"))).toBe(true);
+    expect(existsSync(join(root, "docs/DESIGN_PARTNER_OUTREACH.md"))).toBe(true);
+  });
+
+  it("ships the pilot release verification script and npm script", () => {
+    expect(existsSync(join(root, "scripts/verify-pilot-release.mjs"))).toBe(true);
+    expect(read("package.json")).toContain("verify:pilot");
+  });
+
+  it("documents the production-posture flags and public route allowlist", () => {
+    const readiness = read("docs/RELEASE_READINESS.md");
+    expect(readiness).toContain("AUTH_REQUIRE_LOGIN_FOR_REAL_PROJECTS");
+    expect(readiness).toContain("AUTH_DEMO_MODE");
+    expect(readiness).toContain("AUTH_ALLOW_PUBLIC_DEMO");
+    expect(readiness.toLowerCase()).toContain("public route allowlist");
+  });
+
   it("does not duplicate the release docs", () => {
     // A single canonical readiness doc and a single checklist doc.
     expect(existsSync(join(root, "docs/RELEASE_READINESS.md"))).toBe(true);
@@ -71,6 +89,8 @@ describe("No attribution footer in release docs and operational copy", () => {
   const files = [
     "docs/RELEASE_READINESS.md",
     "docs/PILOT_RELEASE_CHECKLIST.md",
+    "docs/PILOT_OPERATIONS.md",
+    "docs/DESIGN_PARTNER_OUTREACH.md",
     "app/workspace/page.tsx",
     "app/admin/pilot-requests/page.tsx",
     "components/PilotReleaseNote.tsx",
