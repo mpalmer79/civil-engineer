@@ -92,11 +92,15 @@ def _application_items(settings: Settings) -> list[dict[str, Any]]:
 
 
 def _database_items(settings: Settings) -> list[dict[str, Any]]:
+    from app.db.database import database_provider
+
     configured = bool(settings.DATABASE_URL)
-    is_sqlite = settings.DATABASE_URL.strip().lower().startswith("sqlite")
-    # The kind of database is a safe operational hint; the URL itself is never
-    # returned. SQLite on a deployment without a mounted volume is ephemeral, so
-    # it is surfaced for operator review rather than treated as ready.
+    provider = database_provider(settings.DATABASE_URL)
+    is_sqlite = provider == "sqlite"
+    # The provider class is a safe operational hint derived from the URL scheme
+    # only; the URL itself is never returned. SQLite on a deployment without a
+    # mounted volume is ephemeral, and in strict production mode it is not
+    # supported at all, so it is surfaced for operator review.
     if not configured:
         return [
             _item(
@@ -114,6 +118,27 @@ def _database_items(settings: Settings) -> list[dict[str, Any]]:
             )
         ]
     if is_sqlite:
+        if settings.is_production:
+            return [
+                _item(
+                    category="database",
+                    key="DATABASE_URL",
+                    status="missing_required",
+                    severity="critical",
+                    message=(
+                        "SQLite is configured but APP_ENV is production. "
+                        "Production SaaS requires a Postgres database."
+                    ),
+                    required=True,
+                    configured=True,
+                    public_hint="sqlite",
+                    remediation_hint=(
+                        "Set DATABASE_URL to a Postgres connection string for "
+                        "production, or set APP_ENV to development or pilot for "
+                        "prototype use."
+                    ),
+                )
+            ]
         return [
             _item(
                 category="database",
@@ -121,16 +146,17 @@ def _database_items(settings: Settings) -> list[dict[str, Any]]:
                 status="warning",
                 severity="warning",
                 message=(
-                    "A local SQLite database is configured. On a deployment "
-                    "without a mounted volume it is recreated from seed data on "
-                    "each redeploy."
+                    "A local SQLite database is configured. It is supported for "
+                    "local development, tests, and the pilot prototype. On a "
+                    "deployment without a mounted volume it is recreated from "
+                    "seed data on each redeploy."
                 ),
                 required=True,
                 configured=True,
                 public_hint="sqlite",
                 remediation_hint=(
-                    "For durable deployment data, point DATABASE_URL at an "
-                    "external database or mount a persistent volume."
+                    "For production SaaS, set DATABASE_URL to a Postgres "
+                    "connection string and run 'alembic upgrade head'."
                 ),
             )
         ]
@@ -140,10 +166,14 @@ def _database_items(settings: Settings) -> list[dict[str, Any]]:
             key="DATABASE_URL",
             status="configured",
             severity="info",
-            message="An external database connection is configured.",
+            message=(
+                "A Postgres database connection is configured."
+                if provider == "postgres"
+                else "An external database connection is configured."
+            ),
             required=True,
             configured=True,
-            public_hint="external",
+            public_hint=provider if provider == "postgres" else "external",
         )
     ]
 
@@ -560,14 +590,21 @@ def get_readiness(
     settings = settings or get_settings()
     checks: list[dict[str, Any]] = []
 
-    # Database connectivity: run a trivial query. Never report the URL.
+    # Database connectivity: run a trivial query. Never report the URL. The
+    # provider class (sqlite/postgres/other) is a safe operational hint derived
+    # from the URL scheme only; no host, credential, or path is read.
+    from app.db.database import database_provider
+
+    db_provider = database_provider(settings.DATABASE_URL)
     try:
         db.execute(text("SELECT 1"))
         checks.append(
             {
                 "category": "database",
                 "status": "ready",
-                "message": "Database connection responded.",
+                "message": (
+                    f"Database connection responded (provider: {db_provider})."
+                ),
             }
         )
     except Exception:  # noqa: BLE001 - connectivity failure is reported safely
@@ -575,9 +612,28 @@ def get_readiness(
             {
                 "category": "database",
                 "status": "unavailable",
-                "message": "Database connection did not respond.",
+                "message": (
+                    f"Database connection did not respond "
+                    f"(provider: {db_provider})."
+                ),
             }
         )
+
+    # Migration status: whether the schema is under Alembic control and current.
+    # Reported revisions are short Alembic hashes, never connection details.
+    from app.db.migration_status import get_migration_status
+
+    migration = get_migration_status(db)
+    migration_check_status = (
+        "ready" if migration["status"] in {"up_to_date", "managed"} else "warning"
+    )
+    checks.append(
+        {
+            "category": "migrations",
+            "status": migration_check_status,
+            "message": migration["message"],
+        }
+    )
 
     # Required configuration presence.
     if settings.AUTH_SECRET_KEY:
@@ -626,6 +682,12 @@ def get_readiness(
         "service": settings.PROJECT_NAME,
         "version": settings.APP_VERSION,
         "demo_mode": settings.DEMO_MODE,
+        # Safe operational context. app_env and the database provider class carry
+        # no secret; migration_status reports control state and short revision
+        # hashes only. None of these expose a URL, host, credential, or path.
+        "app_env": settings.app_env,
+        "database_provider": db_provider,
+        "migration_status": migration["status"],
         "checks": checks,
     }
 

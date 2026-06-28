@@ -247,6 +247,31 @@ def test_readiness_does_not_expose_secrets(client: TestClient):
     _assert_no_secrets(resp.json())
 
 
+def test_readiness_reports_provider_and_migration_posture(client: TestClient):
+    resp = client.get("/api/v1/readiness")
+    body = resp.json()
+    # Tests run on SQLite; the provider class is reported without any URL.
+    assert body["database_provider"] == "sqlite"
+    assert body["app_env"] in {"development", "pilot", "production"}
+    # The migration status is one of the safe control-state labels.
+    assert body["migration_status"] in {
+        "unmanaged",
+        "up_to_date",
+        "managed",
+        "behind",
+    }
+    categories = {c["category"] for c in body["checks"]}
+    assert "migrations" in categories
+
+
+def test_readiness_provider_is_a_class_not_a_url(client: TestClient):
+    body = client.get("/api/v1/readiness").json()
+    # The provider hint is a class label, never a connection string.
+    assert "://" not in body["database_provider"]
+    blob = str(body)
+    assert "sqlite:///" not in blob
+
+
 # ---------------------------------------------------------------------------
 # Diagnostics access control
 # ---------------------------------------------------------------------------
