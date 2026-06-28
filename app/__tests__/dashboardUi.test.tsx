@@ -283,7 +283,7 @@ describe("Reviewer dashboard page", () => {
         screen.getByText(/Sign in to view your reviewer dashboard/i),
       ).toBeInTheDocument(),
     );
-    const demoLink = screen.getByRole("link", { name: /Brookside Meadows demo/i });
+    const demoLink = screen.getByRole("link", { name: /Brookside Meadows/i });
     expect(demoLink).toHaveAttribute(
       "href",
       "/projects/proj_brookside_meadows",

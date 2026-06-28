@@ -231,13 +231,21 @@ Each step is small, reversible, and keeps existing behavior intact. No step in
 this pass adds OCR, embeddings, pgvector, migrations, or frontend changes; those
 are listed where they would belong in later phases.
 
-1. PR 1: Real chunk pipeline from indexed pages (backend, behind existing
-   models). Add a service that reads real `DocumentPage.extracted_text` for an
-   indexed document and produces `DocumentChunk` rows with page number, a simple
-   section heading heuristic, keywords, and a source mode marking them as
-   derived from real indexed text. Run it as a step after indexing, or as a
-   separate explicit route. Add tests. Do not change the existing seeded chunk
-   path.
+1. PR 1 (implemented): Real chunk pipeline from indexed pages (backend, behind
+   existing models). `backend/app/services/page_chunking_service.py` reads real
+   `DocumentPage.extracted_text` for an indexed document and produces
+   `DocumentChunk` rows with page number, a simple section heading heuristic, and
+   keywords. It is exposed as an explicit route,
+   `POST /projects/{project_id}/documents/{document_id}/chunk-pages`, and covered
+   by `backend/tests/test_page_chunking.py`. It only chunks pages whose
+   `text_extraction_status` is `text_extracted` with non-empty text, never spans
+   pages, and is idempotent. The existing seeded chunk path is unchanged.
+
+   Provenance limitation carried into PR 2: the `DocumentChunk` table has no
+   provenance column, and PR 1 did not add one. Real-derived chunks are marked by
+   a `chunk_id` prefix (`rdc_`). Re-running deletes and replaces only chunks with
+   that prefix for the same document, so seeded chunks are never deleted. A real
+   provenance column remains the work of PR 2.
 
 2. PR 2: Mark chunk provenance. Add a source mode or origin field so seeded
    chunks and real-derived chunks are distinguishable in storage and in API

@@ -20,3 +20,19 @@ class ChunkRead(BaseModel):
     keywords: list[str]
     related_checklist_items: list[str]
     related_findings: list[str]
+
+
+class DocumentChunkingSummary(BaseModel):
+    """Summary returned when real-derived chunks are rebuilt for a document.
+
+    Reports counts and statuses only. It does not return chunk content here and
+    does not imply any final review outcome.
+    """
+
+    document_id: str
+    project_id: str
+    document_type: str
+    file_name: str
+    pages_chunked: int
+    chunk_count: int
+    removed_prior_chunk_count: int
