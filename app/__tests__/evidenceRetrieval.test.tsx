@@ -345,6 +345,74 @@ describe("Evidence search client", () => {
     expect(screen.getByText(/chunk id: rdc_/)).toBeInTheDocument();
   });
 
+  it("defaults the chunk retrieval mode to hybrid and can switch modes", async () => {
+    render(
+      <EvidenceSearchClient
+        projectId={projectId}
+        documents={[]}
+        documentTypes={[]}
+      />,
+    );
+    fireEvent.change(screen.getByPlaceholderText("detention basin outlet"), {
+      target: { value: "detention basin" },
+    });
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
+    await waitFor(() => expect(searchChunkEvidenceMock).toHaveBeenCalled());
+    let call = searchChunkEvidenceMock.mock.calls[0] as unknown as [
+      string,
+      { mode: string },
+    ];
+    expect(call[1].mode).toBe("hybrid");
+
+    // Switch the retrieval mode to semantic and search again.
+    fireEvent.change(screen.getByDisplayValue("Hybrid (keyword + semantic)"), {
+      target: { value: "semantic" },
+    });
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
+    await waitFor(() =>
+      expect(searchChunkEvidenceMock).toHaveBeenCalledTimes(2),
+    );
+    call = searchChunkEvidenceMock.mock.calls[1] as unknown as [
+      string,
+      { mode: string },
+    ];
+    expect(call[1].mode).toBe("semantic");
+  });
+
+  it("renders a semantic note for results without match terms", async () => {
+    searchChunkEvidenceMock.mockResolvedValueOnce({
+      ok: true,
+      backendReachable: true,
+      data: {
+        ...chunkSearchResponse.data,
+        results: [
+          {
+            ...chunkSearchResponse.data.results[0],
+            matchTerms: [],
+            rankingReason:
+              "Ranked by semantic similarity using chunk embedding.",
+          },
+        ],
+      },
+    });
+    render(
+      <EvidenceSearchClient
+        projectId={projectId}
+        documents={[]}
+        documentTypes={[]}
+      />,
+    );
+    fireEvent.change(screen.getByPlaceholderText("detention basin outlet"), {
+      target: { value: "retention pond" },
+    });
+    fireEvent.click(screen.getByText("Search real-derived chunk evidence"));
+    await waitFor(() =>
+      expect(
+        screen.getByText(/Semantic relevance \(no exact keyword terms\)/),
+      ).toBeInTheDocument(),
+    );
+  });
+
   it("can switch to indexed page text search", async () => {
     render(
       <EvidenceSearchClient
