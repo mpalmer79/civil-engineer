@@ -2,24 +2,28 @@ import Link from "next/link";
 
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import BackendStatusBanner from "@/components/BackendStatusBanner";
+import MarketingMedia from "@/components/MarketingMedia";
 import { BROOKSIDE_PROJECT_ID } from "@/lib/demoJourney";
+import { marketingMedia } from "@/lib/marketingMedia";
+import { projectMedia } from "@/lib/projectMedia";
+import { dashboardMedia } from "@/lib/dashboardMedia";
 import { projectMetrics } from "@/lib/api";
 import { findings } from "@/data/findings";
 import { checklist } from "@/data/checklist";
 import { hotspots } from "@/data/hotspots";
 
-// AEC pre-submittal QA homepage. The first screen sells the outcome: catch
-// review issues before a civil/site/stormwater package goes to a municipal
-// reviewer. The DXF-to-findings, evidence-traceability, and draft handoff flow
-// is the hero proof. Professional boundary language is preserved but moved
-// below the fold into a single credibility section. Every claim stays
+// Media-forward AEC pre-submittal QA homepage. The page leads with a large
+// product visual and a short outcome-first headline, then tells the product
+// story through four copy-light media sections, a compact fixture-backed proof
+// band, and a single professional boundary section below the fold. The AEC
+// positioning and the guided demo CTA are preserved. Every claim stays
 // review-support only and keeps a human reviewer responsible.
 
 const base = `/projects/${BROOKSIDE_PROJECT_ID}`;
 
-// Hero calls to action. The primary CTA opens the guided demo, a self-running
-// pre-submittal QA tour over the Brookside Meadows sample project. Secondary CTAs
-// reach the traceability and draft handoff surfaces directly.
+// Hero calls to action. The primary CTA opens the guided demo, a
+// self-running pre-submittal QA tour over the Brookside Meadows sample project.
+// Secondary CTAs reach the traceability and draft handoff surfaces directly.
 const heroCtas = [
   { href: "/guided-demo", label: "Run the sample review", primary: true },
   { href: `${base}/traceability`, label: "Explore traceability", primary: false },
@@ -41,51 +45,59 @@ const proofMetrics: { value: string | number; label: string }[] = [
   { value: siteFeatureCount, label: "Mapped site features" },
 ];
 
-// The four capabilities that matter to an AEC pre-submittal QA buyer. Each card
-// links to a real Brookside Meadows demo surface that already exists.
-const capabilityCards: { title: string; detail: string; href: string; cta: string }[] = [
+// The four capabilities that matter to an AEC pre-submittal QA buyer, told as
+// copy-light media story blocks. Each links to a real Brookside Meadows demo
+// surface that already exists, and reuses an existing civil-engineer asset.
+const capabilityStories: {
+  title: string;
+  copy: string;
+  href: string;
+  cta: string;
+  media: { src: string; alt: string };
+  label: string;
+}[] = [
   {
     title: "CAD and DXF intake",
-    detail:
-      "Organize DXF metadata from the plan set and surface review-support findings tied to source context.",
+    copy: "Turn plan metadata into review-support findings.",
     href: `${base}/cad`,
     cta: "Open CAD Intake",
+    media: projectMedia.documentsPreview,
+    label: "CAD intake media",
   },
   {
     title: "Plan and report consistency",
-    detail:
-      "Flag conflicts between the plan set and the stormwater report so they are caught before submittal, not in a review comment.",
+    copy: "Catch conflicts before they become review comments.",
     href: `${base}/plan-consistency`,
     cta: "Open consistency checks",
+    media: marketingMedia.workflow,
+    label: "Plan consistency media",
   },
   {
     title: "Evidence traceability",
-    detail:
-      "Every finding ties back to a specific page or sheet with source-backed traceability the reviewer can follow.",
+    copy: "Every issue stays tied to source context.",
     href: `${base}/traceability`,
     cta: "Open traceability",
+    media: marketingMedia.technicalFoundation,
+    label: "Traceability media",
   },
   {
     title: "Draft reviewer handoff package",
-    detail:
-      "Assemble a draft handoff package for the municipal reviewer. The human reviewer remains responsible for every item.",
+    copy: "Package findings into a draft reviewer handoff.",
     href: `${base}/review-packets`,
     cta: "View draft handoff",
+    media: dashboardMedia.hero,
+    label: "Reviewer handoff media",
   },
 ];
-
-// A small, real preview of review-support findings built from the seeded demo
-// fixtures, used in place of a generic hero placeholder image.
-const previewFindings = findings.slice(0, 3);
 
 export default function HomePage() {
   return (
     <div>
-      {/* Hero: outcome-first message on the left, a live findings preview built
-          from real demo data on the right. */}
-      <section className="relative overflow-hidden border-b border-slate-200 bg-white">
-        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
-          <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:items-center">
+      {/* Hero: short outcome-first message on the left, a large product visual
+          on the right. Boundary language stays out of the hero. */}
+      <section className="relative overflow-hidden border-b border-slate-200 bg-gradient-to-br from-water-50 via-white to-slate-50">
+        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+          <div className="grid gap-10 lg:grid-cols-[1.05fr_1.1fr] lg:items-center">
             <div>
               <span className="chip chip-brand">
                 Pre-submittal QA for civil and AEC teams
@@ -94,10 +106,8 @@ export default function HomePage() {
                 Catch stormwater review issues before submittal.
               </h1>
               <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600">
-                Civil Engineer AI helps civil, site, and stormwater teams run
-                internal pre-submittal QA. Upload review files, surface
-                review-support findings, link every issue to source evidence,
-                and prepare a draft reviewer handoff package.
+                Upload the package. Surface review-support findings. Trace every
+                issue back to source evidence before it goes out.
               </p>
               <p className="mt-3 max-w-xl text-base font-medium text-water-700">
                 Reduce avoidable resubmittal risk by reviewing the package
@@ -122,111 +132,123 @@ export default function HomePage() {
               </p>
             </div>
 
-            {/* Live product preview built from seeded demo findings. */}
-            <div className="surface-card overflow-hidden p-0 shadow-card">
-              <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-3">
-                <span className="text-sm font-semibold text-slate-900">
-                  Brookside Meadows: review-support findings
-                </span>
-                <span className="chip chip-neutral">Demo data</span>
-              </div>
-              <ul className="divide-y divide-slate-100">
-                {previewFindings.map((finding) => (
-                  <li key={finding.findingId} className="px-5 py-4">
-                    <div className="flex items-center gap-2">
-                      <span className="chip chip-neutral">{finding.category}</span>
-                      <span className="text-xs font-medium uppercase tracking-wide text-amber-700">
-                        Potential issue
-                      </span>
-                    </div>
-                    <p className="mt-2 text-sm font-semibold text-slate-900">
-                      {finding.title}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-600">
-                      Evidence: {finding.evidenceToFind}
-                    </p>
-                  </li>
-                ))}
-              </ul>
-              <div className="border-t border-slate-200 bg-slate-50 px-5 py-3">
-                <Link
-                  href={`${base}/findings`}
-                  className="text-sm font-semibold text-water-700 hover:text-water-800"
-                >
-                  See all {findingsCount} findings with source evidence →
-                </Link>
-              </div>
+            {/* Large product visual. Reuses the committed civil-engineer hero
+                asset, with a graceful fallback if the file is missing. */}
+            <div className="relative">
+              <MarketingMedia
+                src={marketingMedia.hero.src}
+                alt={marketingMedia.hero.alt}
+                variant="hero"
+                priority
+                label="Hero media"
+              />
+              <span className="absolute left-4 top-4 chip chip-neutral shadow-card">
+                Demo data
+              </span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Proof: fixture-backed metrics from the seeded demo, then the four
-          capabilities that matter to an AEC pre-submittal QA buyer. */}
+      {/* Compact, fixture-backed proof band. It supports the media without
+          dominating the page. */}
+      <section className="border-b border-slate-200 bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm font-medium text-slate-600">
+              Counts from the seeded Brookside Meadows sample project, not a real
+              submission.
+            </p>
+            <dl className="grid grid-cols-2 gap-4 sm:flex sm:flex-wrap sm:items-center sm:gap-8">
+              {proofMetrics.map((metric) => (
+                <div key={metric.label}>
+                  <dd className="text-2xl font-bold text-slate-900">
+                    {metric.value}
+                  </dd>
+                  <dt className="text-xs text-slate-500">{metric.label}</dt>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </div>
+      </section>
+
+      {/* Visual story sections: four media-forward capability blocks with
+          copy-light text. Image side alternates for visual rhythm. */}
       <section className="bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <div className="max-w-2xl">
-              <span className="chip chip-neutral">Sample project: Brookside Meadows</span>
-              <h2 className="section-title mt-3">See the review-support workflow working</h2>
-              <p className="section-description">
-                The numbers below count real records in the seeded Brookside
-                Meadows demo fixtures. They show the pre-submittal QA workflow on
-                sample data, not a real submission or an engineering outcome.
-              </p>
-            </div>
-            <Link href="/guided-demo" className="btn btn-primary shrink-0">
-              Run the sample review
-            </Link>
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <div className="max-w-2xl">
+            <span className="chip chip-neutral">Sample project: Brookside Meadows</span>
+            <h2 className="section-title mt-3">See the workflow, not a wall of text</h2>
+            <p className="section-description">
+              Four review-support capabilities, each running on seeded demo data
+              and linked to a real Brookside Meadows surface.
+            </p>
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            {proofMetrics.map((metric) => (
-              <div key={metric.label} className="surface-card p-5">
-                <p className="text-3xl font-bold text-slate-900">{metric.value}</p>
-                <p className="mt-1 text-sm text-slate-600">{metric.label}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-8 grid gap-4 sm:grid-cols-2">
-            {capabilityCards.map((card) => (
-              <div key={card.title} className="surface-card flex h-full flex-col p-6">
-                <h3 className="text-base font-semibold text-slate-900">
-                  {card.title}
-                </h3>
-                <p className="mt-2 flex-1 text-sm text-slate-600">{card.detail}</p>
-                <Link
-                  href={card.href}
-                  className="mt-4 text-sm font-semibold text-water-700 hover:text-water-800"
+          <div className="mt-10 flex flex-col gap-12">
+            {capabilityStories.map((story, index) => {
+              const imageFirst = index % 2 === 0;
+              return (
+                <div
+                  key={story.title}
+                  className="grid items-center gap-6 lg:grid-cols-2 lg:gap-10"
                 >
-                  {card.cta} →
-                </Link>
-              </div>
-            ))}
+                  <div className={imageFirst ? "lg:order-1" : "lg:order-2"}>
+                    <MarketingMedia
+                      src={story.media.src}
+                      alt={story.media.alt}
+                      variant="wide"
+                      label={story.label}
+                    />
+                  </div>
+                  <div className={imageFirst ? "lg:order-2" : "lg:order-1"}>
+                    <h3 className="text-2xl font-semibold tracking-tight text-slate-900">
+                      {story.title}
+                    </h3>
+                    <p className="mt-3 text-lg text-slate-600">{story.copy}</p>
+                    <Link
+                      href={story.href}
+                      className="mt-5 inline-flex text-sm font-semibold text-water-700 hover:text-water-800"
+                    >
+                      {story.cta} →
+                    </Link>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* Credibility: human reviewers stay in control. One clear boundary
-          section below the fold, reassuring after interest is created. */}
+      {/* Credibility: human reviewers stay in control. One concise, visually
+          designed boundary section below the fold. */}
       <section className="border-y border-slate-200 bg-slate-50">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr] lg:items-start">
+          <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+            <div>
+              <MarketingMedia
+                src={marketingMedia.humanReviewBoundary.src}
+                alt={marketingMedia.humanReviewBoundary.alt}
+                variant="wide"
+                label="Human review boundary media"
+              />
+            </div>
             <div>
               <h2 className="section-title">Human reviewers stay in control</h2>
               <p className="section-description">
-                Civil Engineer AI organizes evidence and flags potential issues
-                for review. Every item should be reviewed by a qualified
-                professional. It does not approve, certify, verify, validate, or
-                make final engineering decisions, and it keeps source context
-                visible so the reviewer can check the basis for each finding.
+                Civil Engineer AI organizes review-support evidence and flags
+                potential issues. Human professionals remain responsible for
+                every item. It does not approve, certify, verify, validate, or
+                make final engineering decisions.
               </p>
               <div className="mt-5">
+                <SafetyBoundaryBanner />
+              </div>
+              <div className="mt-4">
                 <BackendStatusBanner />
               </div>
             </div>
-            <SafetyBoundaryBanner />
           </div>
         </div>
       </section>

@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import HomePage from "@/app/page";
 import { BROOKSIDE_PROJECT_ID } from "@/lib/demoJourney";
+import { marketingMedia } from "@/lib/marketingMedia";
 
 // Cleanup is not globally configured, so reset the DOM between renders to avoid
 // duplicate matches when the full page is rendered in more than one test.
@@ -72,6 +73,38 @@ describe("HomePage hero proof and capabilities", () => {
     const { container } = render(HomePage());
     const text = (container.textContent ?? "").toLowerCase();
     expect(text).not.toContain("placeholder");
+  });
+});
+
+describe("HomePage media-forward presentation", () => {
+  it("renders media assets from the marketing manifests", () => {
+    render(HomePage());
+    // The page is image-led: every visual goes through the shared MarketingMedia
+    // slot, which renders a real <img> element with the manifest src.
+    const images = screen.getAllByTestId("marketing-media-image");
+    expect(images.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("leads the hero with a real image element, not placeholder text", () => {
+    render(HomePage());
+    const hero = screen
+      .getAllByTestId("marketing-media-image")
+      .find((img) => img.getAttribute("src") === marketingMedia.hero.src);
+    expect(hero).toBeDefined();
+    expect(hero?.getAttribute("alt")?.trim().length ?? 0).toBeGreaterThan(0);
+  });
+
+  it("gives every media image non-empty alt text", () => {
+    render(HomePage());
+    for (const img of screen.getAllByTestId("marketing-media-image")) {
+      expect((img.getAttribute("alt") ?? "").trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  it("does not render hero visual placeholder language", () => {
+    const { container } = render(HomePage());
+    const text = (container.textContent ?? "").toLowerCase();
+    expect(text).not.toContain("hero visual placeholder");
   });
 });
 
