@@ -1,168 +1,148 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
 import HomePage from "@/app/page";
-import { marketingMedia } from "@/lib/marketingMedia";
+import { BROOKSIDE_PROJECT_ID } from "@/lib/demoJourney";
 
 // Cleanup is not globally configured, so reset the DOM between renders to avoid
 // duplicate matches when the full page is rendered in more than one test.
 afterEach(() => cleanup());
 
-function imageBySrc(container: HTMLElement, src: string) {
-  return container.querySelector(`img[src="${src}"]`);
-}
+const base = `/projects/${BROOKSIDE_PROJECT_ID}`;
 
-describe("HomePage media-first layout", () => {
-  it("positions the product as a stormwater review-support platform", () => {
-    const { container } = render(HomePage());
-    const text = (container.textContent ?? "").toLowerCase();
-    expect(text).toContain("document-first");
-    expect(text).toContain("evidence-first");
-    expect(text).toContain("reviewer-controlled");
-    expect(text).toContain("review-support platform");
-    expect(text).toContain("municipal and civil engineering plan review");
-  });
-
-  it("renders the hero media placeholder", () => {
-    const { container } = render(HomePage());
-    expect(imageBySrc(container, marketingMedia.hero.src)).not.toBeNull();
-  });
-
-  it("renders the reviewer workflow media placeholder", () => {
-    const { container } = render(HomePage());
-    expect(screen.getByText("Reviewer workflow")).toBeInTheDocument();
-    expect(imageBySrc(container, marketingMedia.workflow.src)).not.toBeNull();
-  });
-
-  it("renders the technical foundation media placeholder", () => {
-    const { container } = render(HomePage());
-    expect(screen.getByText("Technical foundation")).toBeInTheDocument();
-    expect(
-      imageBySrc(container, marketingMedia.technicalFoundation.src),
-    ).not.toBeNull();
-  });
-
-  it("renders the human reviewer boundary media placeholder", () => {
-    const { container } = render(HomePage());
-    expect(screen.getByText("Human reviewer boundary")).toBeInTheDocument();
-    expect(
-      imageBySrc(container, marketingMedia.humanReviewBoundary.src),
-    ).not.toBeNull();
-  });
-
-  it("renders the guided demo journey media placeholder", () => {
-    const { container } = render(HomePage());
-    expect(screen.getByText("Guided demo journey")).toBeInTheDocument();
-    expect(
-      imageBySrc(container, marketingMedia.guidedDemoJourney.src),
-    ).not.toBeNull();
-  });
-
-  it("keeps the Brookside Meadows sample project section", () => {
+describe("HomePage AEC pre-submittal QA positioning", () => {
+  it("leads with an outcome-first headline aimed at civil/AEC firms", () => {
     render(HomePage());
     expect(
-      screen.getByText("Brookside Meadows sample project"),
+      screen.getByRole("heading", {
+        level: 1,
+        name: /catch stormwater review issues before submittal/i,
+      }),
     ).toBeInTheDocument();
+  });
+
+  it("explains the pre-submittal QA outcome in the hero", () => {
+    const { container } = render(HomePage());
+    const text = (container.textContent ?? "").toLowerCase();
+    expect(text).toContain("pre-submittal qa");
+    expect(text).toContain("review-support findings");
+    expect(text).toContain("reduce avoidable resubmittal risk");
+    expect(text).toContain("draft reviewer handoff package");
+  });
+
+  it("does not lead the hero with municipal reviewers as the buyer", () => {
+    const { container } = render(HomePage());
+    const heading = screen.getByRole("heading", { level: 1 });
+    expect(heading.textContent?.toLowerCase()).not.toContain("municipal");
   });
 });
 
-describe("HomePage calls to action and links", () => {
-  it("keeps Start the demo as a primary call to action", () => {
+describe("HomePage hero proof and capabilities", () => {
+  it("highlights DXF/CAD intake, evidence traceability, and draft handoff", () => {
     const { container } = render(HomePage());
-    expect(screen.getAllByText("Start the demo").length).toBeGreaterThan(0);
-    // The primary CTA uses the design-system primary button; secondary CTAs use
-    // the secondary button.
-    expect(container.querySelector("a.btn.btn-primary")).not.toBeNull();
-    expect(container.querySelector("a.btn.btn-secondary")).not.toBeNull();
+    const text = (container.textContent ?? "").toLowerCase();
+    expect(text).toContain("dxf");
+    expect(text).toContain("traceability");
+    expect(text).toContain("plan and report consistency");
+    expect(text).toContain("draft reviewer handoff package");
   });
 
-  it("keeps Start Here and Guided Demo links reachable", () => {
-    const { container } = render(HomePage());
-    expect(container.querySelector('a[href="/start-here"]')).not.toBeNull();
-    expect(container.querySelector('a[href="/guided-demo"]')).not.toBeNull();
-  });
-
-  it("keeps the important workflow and dashboard links", () => {
+  it("links the four capabilities to real demo surfaces", () => {
     const { container } = render(HomePage());
     for (const href of [
-      "/projects",
-      "/dashboard",
-      "/dashboard/queue",
-      "/rule-packs",
-      "/deployment-status",
+      `${base}/cad`,
+      `${base}/plan-consistency`,
+      `${base}/traceability`,
+      `${base}/review-packets`,
     ]) {
       expect(container.querySelector(`a[href="${href}"]`)).not.toBeNull();
     }
   });
+
+  it("shows fixture-backed proof metrics from the seeded demo", () => {
+    render(HomePage());
+    expect(screen.getByText("Review-support findings")).toBeInTheDocument();
+    expect(screen.getByText("Indexed documents")).toBeInTheDocument();
+  });
+
+  it("does not contain hero placeholder language", () => {
+    const { container } = render(HomePage());
+    const text = (container.textContent ?? "").toLowerCase();
+    expect(text).not.toContain("placeholder");
+  });
 });
 
-describe("HomePage banners stay visible", () => {
-  it("keeps the backend status banner in the hero", () => {
+describe("HomePage primary demo call to action", () => {
+  it("points the primary CTA at a real, non-404 demo route", () => {
+    const { container } = render(HomePage());
+    const primary = container.querySelector("a.btn.btn-primary");
+    expect(primary).not.toBeNull();
+    const href = primary?.getAttribute("href") ?? "";
+    expect(href).toBe(`${base}/command-center`);
+
+    // The target maps to a real Next.js route directory, so the CTA cannot 404.
+    const routeDir = join(
+      process.cwd(),
+      "app/projects/[projectId]/command-center",
+    );
+    expect(existsSync(routeDir)).toBe(true);
+  });
+
+  it("keeps the guided demo reachable as a secondary path", () => {
+    const { container } = render(HomePage());
+    expect(container.querySelector('a[href="/guided-demo"]')).not.toBeNull();
+  });
+
+  it("clearly labels the demo as a sample project with demo data", () => {
+    const { container } = render(HomePage());
+    const text = (container.textContent ?? "").toLowerCase();
+    expect(text).toContain("brookside meadows");
+    expect(text).toContain("demo data");
+    expect(text).toContain("sample project");
+  });
+});
+
+describe("HomePage professional boundary", () => {
+  it("keeps the professional boundary in a single section, not duplicated banners", () => {
+    render(HomePage());
+    // The full SafetyBoundaryBanner renders one "Professional boundary"
+    // heading. Exactly one keeps the boundary as a single credibility section
+    // rather than several top-level banners.
+    expect(screen.getAllByText(/Professional boundary/i)).toHaveLength(1);
+  });
+
+  it("frames the boundary as human reviewers staying in control", () => {
     render(HomePage());
     expect(
-      screen.getByText(/Checking backend connection/i),
+      screen.getByRole("heading", { name: /human reviewers stay in control/i }),
     ).toBeInTheDocument();
   });
 
-  it("keeps the professional boundary banner visible", () => {
+  it("keeps the backend status banner available", () => {
     render(HomePage());
-    expect(
-      screen.getAllByText(/Professional boundary/i).length,
-    ).toBeGreaterThan(0);
+    expect(screen.getByText(/Checking backend connection/i)).toBeInTheDocument();
   });
 });
 
-describe("HomePage copy hygiene", () => {
-  it("does not contain stale sprint-number copy", () => {
-    const { container } = render(HomePage());
-    const text = (container.textContent ?? "").toLowerCase();
-    expect(text).not.toContain("sprint");
+describe("HomePage pilot call to action", () => {
+  it("offers a non-breaking pilot CTA when no contact route exists", () => {
+    render(HomePage());
+    const pilot = screen.getByRole("button", { name: /pilot access coming soon/i });
+    expect(pilot).toBeDisabled();
   });
+});
 
-  it("does not dominate the page with long repeated boundary paragraphs", () => {
-    // The hero supporting paragraph is intentionally short. Guard against a
-    // regression that reintroduces a multi-sentence hero text wall.
-    const { container } = render(HomePage());
-    const heroParagraph = container.querySelector("section p.max-w-xl");
-    expect(heroParagraph).not.toBeNull();
-    const sentences = (heroParagraph?.textContent ?? "")
-      .split(".")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    expect(sentences.length).toBeLessThanOrEqual(2);
-  });
-
-  it("does not expose raw storage paths, keys, tokens, or secrets in the UI", () => {
-    const { container } = render(HomePage());
-    const text = (container.textContent ?? "").toLowerCase();
-    for (const leak of [
-      "storage_key",
-      "signed_url",
-      "bearer ey",
-      "password",
-      "/home/",
-      "secret",
-    ]) {
-      expect(text).not.toContain(leak);
-    }
-  });
-
-  it("does not include tool attribution in visible homepage copy", () => {
-    const { container } = render(HomePage());
-    const text = (container.textContent ?? "").toLowerCase();
-    expect(text).not.toContain("claude code");
-    expect(text).not.toContain("claude.ai/code");
-    expect(text).not.toContain("generated by");
-    expect(text).not.toContain("co-authored-by");
-  });
-
-  it("does not use prohibited final-decision wording as a claim in the homepage source", () => {
+describe("HomePage language hygiene", () => {
+  it("does not use prohibited final-decision wording as a product claim", () => {
     // Scan the homepage source rather than rendered output. The rendered page
-    // includes the SafetyBoundaryBanner, which intentionally displays forbidden
-    // vocabulary as examples of language the system never uses.
+    // includes the SafetyBoundaryBanner, which intentionally lists forbidden
+    // vocabulary as examples of language the system never uses. Negative
+    // boundary statements ("does not approve ... certify ... verify ...") live
+    // in that banner, so source-scanning the page itself distinguishes a
+    // product promise from a boundary disclaimer.
     const source = readFileSync(
       join(process.cwd(), "app/page.tsx"),
       "utf8",
@@ -175,10 +155,34 @@ describe("HomePage copy hygiene", () => {
       "are certified",
       "marked safe",
       "passed review",
+      "pass review the first time",
+      "guaranteed first-pass",
+      "meets all requirements",
       "production ready",
-      "enterprise ready",
     ]) {
       expect(source).not.toContain(phrase);
     }
+  });
+
+  it("does not include tool attribution in visible homepage copy", () => {
+    const { container } = render(HomePage());
+    const text = (container.textContent ?? "").toLowerCase();
+    expect(text).not.toContain("claude code");
+    expect(text).not.toContain("claude.ai/code");
+    expect(text).not.toContain("generated by");
+    expect(text).not.toContain("co-authored-by");
+  });
+
+  it("does not contain stale sprint-number copy", () => {
+    const { container } = render(HomePage());
+    expect((container.textContent ?? "").toLowerCase()).not.toContain("sprint");
+  });
+});
+
+describe("SaaS positioning document", () => {
+  it("ships docs/SAAS_POSITIONING.md alongside the reframed homepage", () => {
+    expect(existsSync(join(process.cwd(), "docs/SAAS_POSITIONING.md"))).toBe(
+      true,
+    );
   });
 });

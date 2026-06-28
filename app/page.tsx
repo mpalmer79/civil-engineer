@@ -1,330 +1,262 @@
 import Link from "next/link";
 
-import MarketingMedia from "@/components/MarketingMedia";
-import MetricCard from "@/components/MetricCard";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import BackendStatusBanner from "@/components/BackendStatusBanner";
-import MetricIcon, {
-  type MetricIconKey,
-} from "@/components/illustrations/MetricIcon";
-import { marketingMedia } from "@/lib/marketingMedia";
+import { BROOKSIDE_PROJECT_ID } from "@/lib/demoJourney";
 import { projectMetrics } from "@/lib/api";
+import { findings } from "@/data/findings";
+import { checklist } from "@/data/checklist";
+import { hotspots } from "@/data/hotspots";
 
-// Media-first homepage. The visitor reads a short value proposition, sees the
-// product visually, then scans compact media-led sections. Long documentation
-// paragraphs were compressed into short cards. Every section is review-support
-// only and keeps a human reviewer responsible.
+// AEC pre-submittal QA homepage. The first screen sells the outcome: catch
+// review issues before a civil/site/stormwater package goes to a municipal
+// reviewer. The DXF-to-findings, evidence-traceability, and draft handoff flow
+// is the hero proof. Professional boundary language is preserved but moved
+// below the fold into a single credibility section. Every claim stays
+// review-support only and keeps a human reviewer responsible.
 
-// Primary hero call to action leads with the guided demo. Secondary links stay
-// short and point at the real workflow surfaces.
+const base = `/projects/${BROOKSIDE_PROJECT_ID}`;
+
+// Hero calls to action. The primary CTA opens the Brookside Meadows command
+// center, the most complete single demo surface. Secondary CTAs reach the
+// traceability and draft handoff surfaces directly.
 const heroCtas = [
-  { href: "/start-here", label: "Start the demo" },
-  { href: "/projects", label: "Open Projects" },
-  { href: "/guided-demo", label: "See the Guided Demo" },
+  { href: `${base}/command-center`, label: "Try the Brookside Meadows demo", primary: true },
+  { href: `${base}/traceability`, label: "Explore traceability", primary: false },
+  { href: `${base}/review-packets`, label: "View sample handoff", primary: false },
 ];
 
-// Brookside Meadows fixture metrics, kept as a compact scannable strip.
-const metricCards: {
-  value: string | number;
-  label: string;
-  accent: "land" | "water" | "amber";
-  icon: MetricIconKey;
-}[] = [
-  { value: `${projectMetrics.acreage}`, label: "Site acres", accent: "land", icon: "site-acres" },
-  { value: projectMetrics.proposedLots, label: "Proposed lots", accent: "land", icon: "proposed-lots" },
-  { value: projectMetrics.disturbedAcres, label: "Disturbed acres", accent: "land", icon: "disturbed-acres" },
-  { value: projectMetrics.documents, label: "Documents", accent: "water", icon: "documents" },
-  { value: projectMetrics.checklistItems, label: "Checklist items", accent: "water", icon: "checklist" },
-  { value: projectMetrics.plantedIssues, label: "Planted review issues", accent: "amber", icon: "review-issues" },
+// Fixture-backed proof metrics, derived from the seeded Brookside Meadows demo
+// data. These are counts of real records in the demo fixtures, not invented
+// numbers and not claims about a real submission.
+const findingsCount = findings.length;
+const checklistCount = checklist.length;
+const siteFeatureCount = hotspots.length;
+const documentsCount = projectMetrics.documents;
+
+const proofMetrics: { value: string | number; label: string }[] = [
+  { value: findingsCount, label: "Review-support findings" },
+  { value: checklistCount, label: "Checklist items tracked" },
+  { value: documentsCount, label: "Indexed documents" },
+  { value: siteFeatureCount, label: "Mapped site features" },
 ];
 
-// Reviewer workflow, compressed to short cards instead of a long list. Each card
-// links to a real workflow surface.
-const workflowCards: { title: string; detail: string; href: string }[] = [
+// The four capabilities that matter to an AEC pre-submittal QA buyer. Each card
+// links to a real Brookside Meadows demo surface that already exists.
+const capabilityCards: { title: string; detail: string; href: string; cta: string }[] = [
   {
-    title: "Project and documents",
-    detail: "Create a project record and store submitted documents.",
-    href: "/projects",
+    title: "CAD and DXF intake",
+    detail:
+      "Organize DXF metadata from the plan set and surface review-support findings tied to source context.",
+    href: `${base}/cad`,
+    cta: "Open CAD Intake",
   },
   {
-    title: "Page-level evidence",
-    detail: "Index PDF pages and cite an exact page as evidence.",
-    href: "/projects",
+    title: "Plan and report consistency",
+    detail:
+      "Flag conflicts between the plan set and the stormwater report so they are caught before submittal, not in a review comment.",
+    href: `${base}/plan-consistency`,
+    cta: "Open consistency checks",
   },
   {
-    title: "Checklist and findings",
-    detail: "Apply a stormwater rule pack and track checklist evidence status.",
-    href: "/rule-packs",
+    title: "Evidence traceability",
+    detail:
+      "Every finding ties back to a specific page or sheet with source-backed traceability the reviewer can follow.",
+    href: `${base}/traceability`,
+    cta: "Open traceability",
   },
   {
-    title: "Applicant responses",
-    detail: "Record applicant responses in a matrix for reviewer review.",
-    href: "/projects",
-  },
-  {
-    title: "Response package",
-    detail: "Assemble a package and draft a comment letter as a record.",
-    href: "/projects",
-  },
-  {
-    title: "Dashboard and diagnostics",
-    detail: "See workload metrics, a reviewer queue, and deployment status.",
-    href: "/dashboard",
+    title: "Draft reviewer handoff package",
+    detail:
+      "Assemble a draft handoff package for the municipal reviewer. The human reviewer remains responsible for every item.",
+    href: `${base}/review-packets`,
+    cta: "View draft handoff",
   },
 ];
 
-// Technical foundation, as concise capability cards in place of an architecture
-// paragraph.
-const foundationCards: { title: string; detail: string }[] = [
-  {
-    title: "Frontend and backend",
-    detail: "Next.js frontend with a TypeScript client and a FastAPI review-support API.",
-  },
-  {
-    title: "Document storage",
-    detail: "Durable storage abstraction with PDF page indexing.",
-  },
-  {
-    title: "Evidence retrieval",
-    detail: "Deterministic, page-level evidence retrieval and citations.",
-  },
-  {
-    title: "Access control and audit",
-    detail: "Project access by organization and role, with audit attribution.",
-  },
-  {
-    title: "Operational dashboard",
-    detail: "Reviewer dashboard, reviewer queue, and workload metrics.",
-  },
-  {
-    title: "Diagnostics",
-    detail: "Deployment status and backend diagnostics, live AI calls disabled by default.",
-  },
-];
-
-// Important links kept reachable from the guided demo journey section. CAD
-// Intake parses real DXF files and stays reachable as a demo-specific route.
-const journeyLinks: { href: string; label: string }[] = [
-  { href: "/start-here", label: "Start Here" },
-  { href: "/guided-demo", label: "Guided Demo" },
-  { href: "/projects", label: "Projects" },
-  { href: "/dashboard", label: "Reviewer Dashboard" },
-  { href: "/dashboard/queue", label: "Reviewer Queue" },
-  { href: "/rule-packs", label: "Rule Packs" },
-  { href: "/cad-intake", label: "CAD Intake (DXF)" },
-  { href: "/deployment-status", label: "Deployment Status" },
-];
+// A small, real preview of review-support findings built from the seeded demo
+// fixtures, used in place of a generic hero placeholder image.
+const previewFindings = findings.slice(0, 3);
 
 export default function HomePage() {
   return (
     <div>
-      {/* Hero: concise text on the left, large hero media on the right. */}
+      {/* Hero: outcome-first message on the left, a live findings preview built
+          from real demo data on the right. */}
       <section className="relative overflow-hidden border-b border-slate-200 bg-white">
-        <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="grid gap-10 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+          <div className="grid gap-10 lg:grid-cols-[1.05fr_1fr] lg:items-center">
             <div>
               <span className="chip chip-brand">
-                Municipal stormwater review support
+                Pre-submittal QA for civil and AEC teams
               </span>
               <h1 className="mt-4 text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
-                Civil Engineer AI
+                Catch stormwater review issues before submittal.
               </h1>
-              <p className="mt-3 text-xl font-semibold text-water-700">
-                A document-first, evidence-first, reviewer-controlled stormwater
-                review-support platform
-              </p>
               <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600">
-                Built for municipal and civil engineering plan review. Reviewers
-                organize documents, cite page-level evidence, and track findings
-                from intake to a reviewer response package.
+                Civil Engineer AI helps civil, site, and stormwater teams run
+                internal pre-submittal QA. Upload review files, surface
+                review-support findings, link every issue to source evidence,
+                and prepare a draft reviewer handoff package.
+              </p>
+              <p className="mt-3 max-w-xl text-base font-medium text-water-700">
+                Reduce avoidable resubmittal risk by reviewing the package
+                before it goes out the door.
               </p>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                {heroCtas.map((cta, idx) => (
+              <div className="mt-7 flex flex-wrap gap-3">
+                {heroCtas.map((cta) => (
                   <Link
                     key={cta.href + cta.label}
                     href={cta.href}
-                    className={`btn ${idx === 0 ? "btn-primary" : "btn-secondary"}`}
+                    className={`btn ${cta.primary ? "btn-primary" : "btn-secondary"}`}
                   >
                     {cta.label}
                   </Link>
                 ))}
               </div>
 
-              <div className="mt-6">
-                <SafetyBoundaryBanner variant="compact" />
+              <p className="mt-4 text-sm text-slate-500">
+                Brookside Meadows is a sample project with seeded demo data. No
+                login is needed to explore the review-support workflow.
+              </p>
+            </div>
+
+            {/* Live product preview built from seeded demo findings. */}
+            <div className="surface-card overflow-hidden p-0 shadow-card">
+              <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-3">
+                <span className="text-sm font-semibold text-slate-900">
+                  Brookside Meadows: review-support findings
+                </span>
+                <span className="chip chip-neutral">Demo data</span>
               </div>
-              <div className="mt-3">
+              <ul className="divide-y divide-slate-100">
+                {previewFindings.map((finding) => (
+                  <li key={finding.findingId} className="px-5 py-4">
+                    <div className="flex items-center gap-2">
+                      <span className="chip chip-neutral">{finding.category}</span>
+                      <span className="text-xs font-medium uppercase tracking-wide text-amber-700">
+                        Potential issue
+                      </span>
+                    </div>
+                    <p className="mt-2 text-sm font-semibold text-slate-900">
+                      {finding.title}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-600">
+                      Evidence: {finding.evidenceToFind}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+              <div className="border-t border-slate-200 bg-slate-50 px-5 py-3">
+                <Link
+                  href={`${base}/findings`}
+                  className="text-sm font-semibold text-water-700 hover:text-water-800"
+                >
+                  See all {findingsCount} findings with source evidence →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Proof: fixture-backed metrics from the seeded demo, then the four
+          capabilities that matter to an AEC pre-submittal QA buyer. */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div className="max-w-2xl">
+              <span className="chip chip-neutral">Sample project: Brookside Meadows</span>
+              <h2 className="section-title mt-3">See the review-support workflow working</h2>
+              <p className="section-description">
+                The numbers below count real records in the seeded Brookside
+                Meadows demo fixtures. They show the pre-submittal QA workflow on
+                sample data, not a real submission or an engineering outcome.
+              </p>
+            </div>
+            <Link href={`${base}/command-center`} className="btn btn-primary shrink-0">
+              Run the sample review
+            </Link>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {proofMetrics.map((metric) => (
+              <div key={metric.label} className="surface-card p-5">
+                <p className="text-3xl font-bold text-slate-900">{metric.value}</p>
+                <p className="mt-1 text-sm text-slate-600">{metric.label}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-2">
+            {capabilityCards.map((card) => (
+              <div key={card.title} className="surface-card flex h-full flex-col p-6">
+                <h3 className="text-base font-semibold text-slate-900">
+                  {card.title}
+                </h3>
+                <p className="mt-2 flex-1 text-sm text-slate-600">{card.detail}</p>
+                <Link
+                  href={card.href}
+                  className="mt-4 text-sm font-semibold text-water-700 hover:text-water-800"
+                >
+                  {card.cta} →
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Credibility: human reviewers stay in control. One clear boundary
+          section below the fold, reassuring after interest is created. */}
+      <section className="border-y border-slate-200 bg-slate-50">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="grid gap-8 lg:grid-cols-[1fr_1.2fr] lg:items-start">
+            <div>
+              <h2 className="section-title">Human reviewers stay in control</h2>
+              <p className="section-description">
+                Civil Engineer AI organizes evidence and flags potential issues
+                for review. Every item should be reviewed by a qualified
+                professional. It does not approve, certify, verify, validate, or
+                make final engineering decisions, and it keeps source context
+                visible so the reviewer can check the basis for each finding.
+              </p>
+              <div className="mt-5">
                 <BackendStatusBanner />
               </div>
             </div>
-
-            <MarketingMedia
-              src={marketingMedia.hero.src}
-              alt={marketingMedia.hero.alt}
-              variant="hero"
-              priority
-              label="Hero visual placeholder"
-            />
+            <SafetyBoundaryBanner />
           </div>
         </div>
       </section>
 
-      {/* Brookside Meadows sample project */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="surface-card border-amber-200 bg-amber-50/40 p-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      {/* Pilot and demo path. The guided demo stays reachable, and the pilot
+          CTA is an honest placeholder until a contact route exists. */}
+      <section className="bg-white">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="surface-card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="max-w-2xl">
-              <span className="chip chip-neutral">Public guided demo</span>
-              <h2 className="section-title mt-3">
-                Brookside Meadows sample project
-              </h2>
+              <h2 className="section-title">Bring it to your own pre-submittal QA</h2>
               <p className="mt-2 text-slate-600">
-                A synthetic subdivision used to show the review-support workflow
-                with seeded review-support data. It is not a real submission and
-                does not represent a real engineering outcome.
+                Walk the full review-support workflow on the Brookside Meadows
+                sample project, or start a conversation about a design-partner
+                pilot for your firm.
               </p>
             </div>
-            <div className="flex flex-wrap gap-2 sm:shrink-0">
-              <Link href="/start-here" className="btn btn-primary btn-sm">
-                Start Here
+            <div className="flex flex-wrap gap-3 sm:shrink-0">
+              <Link href="/guided-demo" className="btn btn-secondary">
+                See the guided demo
               </Link>
-              <Link href="/guided-demo" className="btn btn-secondary btn-sm">
-                Open the guided demo
-              </Link>
-            </div>
-          </div>
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {metricCards.map((m) => (
-              <MetricCard
-                key={m.label}
-                value={m.value}
-                label={m.label}
-                accent={m.accent}
-                icon={<MetricIcon icon={m.icon} />}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Reviewer workflow */}
-      <section className="bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <h2 className="section-title">Reviewer workflow</h2>
-          <p className="section-description">
-            From document intake to a reviewer response package. Every step is
-            review-support only and keeps a human reviewer responsible.
-          </p>
-          <div className="mt-6 grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
-            <MarketingMedia
-              src={marketingMedia.workflow.src}
-              alt={marketingMedia.workflow.alt}
-              variant="wide"
-              label="Workflow visual placeholder"
-            />
-            <div className="grid gap-4 sm:grid-cols-2">
-              {workflowCards.map((card) => (
-                <Link
-                  key={card.title}
-                  href={card.href}
-                  className="interactive-card flex h-full flex-col p-5"
-                >
-                  <span className="text-sm font-semibold text-slate-900">
-                    {card.title}
-                  </span>
-                  <p className="mt-1 text-xs text-slate-600">{card.detail}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Technical foundation */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <h2 className="section-title">Technical foundation</h2>
-        <p className="section-description">
-          A controlled review workflow built on real structure, not a free-form
-          chatbot.
-        </p>
-        <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-          <div className="grid gap-4 sm:grid-cols-2">
-            {foundationCards.map((card) => (
-              <div key={card.title} className="surface-card p-5">
-                <h3 className="text-sm font-semibold text-slate-900">
-                  {card.title}
-                </h3>
-                <p className="mt-1 text-xs text-slate-600">{card.detail}</p>
-              </div>
-            ))}
-          </div>
-          <MarketingMedia
-            src={marketingMedia.technicalFoundation.src}
-            alt={marketingMedia.technicalFoundation.alt}
-            variant="wide"
-            label="Technical foundation placeholder"
-          />
-        </div>
-      </section>
-
-      {/* Human reviewer boundary */}
-      <section className="bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-center">
-            <MarketingMedia
-              src={marketingMedia.humanReviewBoundary.src}
-              alt={marketingMedia.humanReviewBoundary.alt}
-              variant="panel"
-              label="Human review placeholder"
-            />
-            <div>
-              <h2 className="section-title">Human reviewer boundary</h2>
-              <p className="section-description">
-                Civil Engineer AI assists review. The reviewer stays
-                responsible, and every finding needs reviewer confirmation.
-              </p>
-              <div className="mt-6">
-                <SafetyBoundaryBanner />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Guided demo journey */}
-      <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="surface-card p-6">
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center">
-            <MarketingMedia
-              src={marketingMedia.guidedDemoJourney.src}
-              alt={marketingMedia.guidedDemoJourney.alt}
-              variant="wide"
-              label="Guided demo placeholder"
-            />
-            <div>
-              <h2 className="section-title">Guided demo journey</h2>
-              <p className="section-description">
-                Start Here gives the fastest overview and a recommended demo path
-                through the Brookside Meadows sample project. The Guided Demo then
-                follows one concern end to end.
-              </p>
-              <div className="mt-5 flex flex-wrap gap-3">
-                <Link href="/guided-demo" className="btn btn-primary">
-                  See the Guided Demo
-                </Link>
-              </div>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {journeyLinks.map((link) => (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className="nav-link border border-slate-200 bg-white"
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
+              <button
+                type="button"
+                disabled
+                aria-disabled="true"
+                title="Pilot access is not open yet."
+                className="btn btn-primary cursor-not-allowed opacity-60"
+              >
+                Pilot access coming soon
+              </button>
             </div>
           </div>
         </div>
