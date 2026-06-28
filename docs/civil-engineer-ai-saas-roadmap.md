@@ -4,6 +4,19 @@ From portfolio piece to a product that can start sales conversations.
 
 ---
 
+## Implementation reality note
+
+For the canonical, code-checked statement of what is implemented today (real DXF
+parsing with ezdxf, PDF text-layer indexing with pypdf, and what is not: DWG,
+GIS, OCR, computer vision, vector search, live AI by default), see the
+"Implementation reality" section of `docs/SAAS_POSITIONING.md`. Where this
+roadmap describes the DXF-parse-to-findings flow as real, that is accurate. The
+sales framing in this document (for example "pass review the first time") is
+aspirational positioning language, not a product guarantee; public copy stays
+review-support only and makes no approval, certification, or pass-review promise.
+
+---
+
 ## The core diagnosis
 
 The codebase is strong. The positioning is not. Right now the homepage sells caution, not capability, and that is the entire reason the "wow" is missing.

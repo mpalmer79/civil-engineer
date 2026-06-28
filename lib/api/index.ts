@@ -34,6 +34,7 @@ export * from "./pdfEvidence";
 export * from "./evidenceRetrieval";
 export * from "./checklistReview";
 export * from "./traceability";
+export * from "./pilot";
 export {
   getReviewerDashboard,
   getReviewerQueue,

@@ -16,10 +16,14 @@ export type DemoAnalyticsEvent =
   | "demo_step_viewed"
   | "demo_completed"
   | "demo_cta_clicked"
-  | "pilot_cta_clicked";
+  | "pilot_cta_clicked"
+  | "pilot_form_started"
+  | "pilot_form_submitted"
+  | "pilot_form_error";
 
 // Only non-sensitive, demo-shape properties are ever passed (step index, step
-// id, CTA label, sample project id). No user data, no file content, no secrets.
+// id, CTA label, sample project id, source route, success/failure state). No
+// user data, no form field values, no file content, no secrets.
 export type DemoAnalyticsProps = Record<string, string | number | boolean>;
 
 export function trackDemoEvent(

@@ -229,8 +229,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Pilot and demo path. The guided demo stays reachable; the pilot CTA is
-          an honest disabled control until a contact route exists. */}
+      {/* Pilot and demo path. The guided demo stays reachable; the pilot CTA now
+          links to the public design-partner request route. */}
       <section className="bg-white">
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="surface-card flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
@@ -245,15 +245,9 @@ export default function HomePage() {
               <Link href="/guided-demo" className="btn btn-secondary">
                 See the guided demo
               </Link>
-              <button
-                type="button"
-                disabled
-                aria-disabled="true"
-                title="Pilot access is not open yet."
-                className="btn btn-primary cursor-not-allowed opacity-60"
-              >
-                Pilot access coming soon
-              </button>
+              <Link href="/pilot" className="btn btn-primary">
+                Start a pilot conversation
+              </Link>
             </div>
           </div>
         </div>

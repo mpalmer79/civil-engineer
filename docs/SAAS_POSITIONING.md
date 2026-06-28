@@ -35,12 +35,40 @@ reviewer remains responsible, every finding tied back to source context.
 
 ## What the product does today
 
-- CAD and DXF intake that organizes DXF metadata and surfaces review-support findings.
+- CAD and DXF intake that parses real DXF files with the ezdxf library and
+  organizes the extracted layer, entity, block, and text metadata into
+  review-support findings. Browser DXF uploads are accepted, validated, and
+  parsed the same way as the bundled sample file.
+- PDF text-layer indexing with the pypdf library, where extractable text exists.
+  Scanned pages without a text layer are recorded as having no extractable text.
 - Plan and report consistency checks that flag conflicts across the package.
 - Evidence traceability that ties each finding back to a specific page or sheet.
 - A workflow board for tracking review-support items.
 - A draft reviewer handoff package assembled from reviewer-selected records.
-- A guided demo over the Brookside Meadows sample project, using seeded demo data.
+- A guided demo over the Brookside Meadows sample project, using seeded demo data
+  plus CAD review findings produced by really parsing a bundled sample DXF file.
+
+## Implementation reality (current capability wording)
+
+This is the canonical, code-checked statement of what is and is not implemented.
+Use this wording in public copy so the roadmap and positioning do not drift apart.
+
+- Real DXF parsing: yes. The backend parses DXF files with ezdxf and extracts
+  layers, entities, blocks, text, and reference candidates. This is metadata
+  extraction, not geometry validation or compliance certification.
+- Real PDF indexing: yes, text-layer only. pypdf extracts embedded page text
+  where it exists. There is no OCR, so scanned-image pages are not read.
+- OCR: not currently included.
+- DWG parsing: not supported. Uploads are limited to the .dxf extension.
+- GIS integration and georeferencing: not supported. DXF bounds are treated as
+  local drawing coordinates, not georeferenced data.
+- Computer vision and vector search: not included.
+- Live AI calls: disabled by default. The default provider is a deterministic
+  mock; live calls require an explicit provider, an enable flag, and a key.
+- Brookside Meadows review findings and project records are seeded demo data and
+  are not presented as extracted from a real submission. The bundled sample DXF
+  is the exception that is actually parsed, and its CAD findings come from that
+  real parse.
 
 ## What the product does not claim
 
@@ -50,8 +78,10 @@ declare a project safe, promise passing review, or guarantee first-pass
 acceptance. The human reviewer remains responsible for every item, and source
 context stays visible so the reviewer can check the basis for each finding.
 
-Seeded demo data is labeled as seeded review-support demo data. It is not
-extracted from a real CAD, PDF, GIS, or plan file.
+Seeded demo data is labeled as seeded review-support demo data, and seeded
+records are not presented as extracted from a real submission. The bundled
+sample DXF file is the exception: it is really parsed with ezdxf, so the CAD
+intake surface shows findings produced from that file rather than from seed data.
 
 ## Demo flow
 
@@ -116,7 +146,10 @@ municipalities and do not pursue government procurement yet.
 ## Current limitations
 
 - Live AI calls are disabled by default.
-- No real PDF, DWG, DXF, or GIS parsing; no OCR, computer vision, or vector search.
-- No authentication lifecycle, billing, or production database provider in this phase.
-- Demo content is seeded review-support data, not a real submission.
+- DXF parsing (ezdxf) and PDF text-layer indexing (pypdf) are implemented; DWG
+  parsing, GIS integration, OCR, computer vision, and vector search are not.
+- No full authentication lifecycle (no team invitations or password reset),
+  billing, or production database provider in this phase.
+- Demo content is seeded review-support data, except the bundled sample DXF that
+  is really parsed; seeded records are not a real submission.
 - The product is review support only and does not make final engineering decisions.

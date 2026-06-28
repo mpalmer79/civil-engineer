@@ -2867,3 +2867,30 @@ class TraceabilityReviewAction(Base):
     )
     relationship_type: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+
+
+class PilotRequest(Base):
+    """A public design-partner / pilot request captured from the marketing site.
+
+    A pilot request is a public lead, not tenant-owned project data. It is never
+    attached to a project, organization, or user account, and it carries no
+    review-support state. Anyone can submit one without a login; listing stored
+    requests requires an authenticated user. No uploaded file content is stored;
+    the sample_package flag only records that the submitter said they have a
+    sample package to test.
+    """
+
+    __tablename__ = "pilot_requests"
+
+    pilot_request_id: Mapped[str] = mapped_column(String, primary_key=True)
+    full_name: Mapped[str] = mapped_column(String, nullable=False)
+    work_email: Mapped[str] = mapped_column(String, nullable=False)
+    firm_name: Mapped[str] = mapped_column(String, nullable=False)
+    role_title: Mapped[str] = mapped_column(String, nullable=False)
+    project_type: Mapped[str] = mapped_column(String, nullable=False)
+    primary_pain: Mapped[str] = mapped_column(Text, nullable=False)
+    interest_level: Mapped[str] = mapped_column(String, nullable=False)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    has_sample_package: Mapped[bool] = mapped_column(default=False)
+    source: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
