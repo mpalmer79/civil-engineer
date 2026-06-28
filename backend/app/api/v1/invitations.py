@@ -26,7 +26,12 @@ from app.schemas.invitation import (
     InvitationLookupResponse,
     InvitationResponse,
 )
-from app.services import access_control_service, invitation_service, mailer
+from app.services import (
+    access_control_service,
+    email_content,
+    invitation_service,
+    mailer,
+)
 from app.services.access_control_service import (
     get_current_user,
     get_optional_user,
@@ -58,16 +63,21 @@ def create_invitation(
         invited_by_user_id=admin.user_id,
     )
     db.commit()
+    settings = get_settings()
+    org = db.get(models.Organization, organization_id)
+    subject, email_body = email_content.invitation_email(
+        organization_name=org.organization_name if org else "a workspace",
+        role=record.role,
+        token=token,
+        settings=settings,
+    )
     delivery = mailer.send_email(
         to=record.email,
         category="team_invitation",
-        subject="You're invited to a Civil Engineer AI workspace",
-        body=(
-            "You have been invited to join a workspace. Use this token to "
-            f"accept the invitation. Token: {token}"
-        ),
+        subject=subject,
+        body=email_body,
+        settings=settings,
     )
-    settings = get_settings()
     return InvitationCreateResponse(
         invitation=InvitationResponse(
             **invitation_service.invitation_public_dict(record)

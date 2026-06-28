@@ -143,23 +143,46 @@ class Settings(BaseSettings):
     AUTH_INVITATION_EXPIRE_DAYS: int = 14
     AUTH_EXPOSE_DEV_TOKENS: bool = True
 
-    # Email provider. No real email is sent unless EMAIL_PROVIDER is set to a real
-    # provider in a future phase; the default "noop" mailer logs a redacted
-    # delivery record and sends nothing. EMAIL_FROM is the address a future
-    # provider would send from. No SMTP credential is read while the provider is
-    # "noop".
+    # Email provider (Production Phase 4D). The default "noop" mailer logs a
+    # redacted delivery record and sends nothing, which keeps local development
+    # and tests free of any email service. Set EMAIL_PROVIDER=smtp and the
+    # EMAIL_SMTP_* settings to deliver real email through an SMTP server. No SMTP
+    # credential is read while the provider is "noop", and no credential is ever
+    # logged. EMAIL_FROM is the envelope sender. APP_PUBLIC_BASE_URL is the public
+    # frontend origin used to build reset and invitation links in emails.
     EMAIL_PROVIDER: str = "noop"
     EMAIL_FROM: str = "no-reply@example.com"
+    EMAIL_SMTP_HOST: str = ""
+    EMAIL_SMTP_PORT: int = 587
+    EMAIL_SMTP_USERNAME: str = ""
+    EMAIL_SMTP_PASSWORD: str = ""
+    EMAIL_SMTP_USE_TLS: bool = True
+    APP_PUBLIC_BASE_URL: str = "http://localhost:3000"
 
-    # Billing and Stripe. Billing is deferred in this phase: the billing-readiness
-    # models, usage limits, and UI exist, but live Stripe checkout and webhooks
-    # are not wired. Billing is considered active only when STRIPE_SECRET_KEY is
-    # set (see billing_enabled). These are backend-only and are never exposed to
-    # the frontend. No real payment is processed while STRIPE_SECRET_KEY is unset.
+    # Billing and Stripe (Production Phase 4D). Minimal checkout for the
+    # professional plan and signature-verified webhooks are wired, but only become
+    # active when the Stripe settings are configured. Billing is considered
+    # active only when STRIPE_SECRET_KEY is set (see billing_enabled). Checkout is
+    # available only when the checkout settings are all set (see
+    # stripe_checkout_configured), and webhooks are verified only when
+    # STRIPE_WEBHOOK_SECRET is set. These are backend-only and are never exposed
+    # to the frontend. No real payment is processed while STRIPE_SECRET_KEY is
+    # unset. STRIPE_TEST_MODE is descriptive: keep it true unless live keys are
+    # configured.
     STRIPE_SECRET_KEY: str = ""
     STRIPE_WEBHOOK_SECRET: str = ""
     STRIPE_PRICE_PROFESSIONAL: str = ""
+    STRIPE_SUCCESS_URL: str = ""
+    STRIPE_CANCEL_URL: str = ""
     STRIPE_TEST_MODE: bool = True
+
+    # Usage enforcement (Production Phase 4D). Usage limits are advisory by
+    # default so local development, tests, and existing flows are never blocked.
+    # Set USAGE_ENFORCEMENT_ENABLED=true to hard-enforce the selected low-risk
+    # categories (project creation, document registration, review packet
+    # generation) for real organizations. The public Brookside demo and the demo
+    # organization are never enforced. See docs/BILLING_AND_USAGE.md.
+    USAGE_ENFORCEMENT_ENABLED: bool = False
 
     # AI provider configuration. The default is the deterministic mock provider
     # so the project runs and tests pass without any paid API key. Live calls
@@ -193,6 +216,58 @@ class Settings(BaseSettings):
         """
 
         return bool(self.STRIPE_SECRET_KEY.strip())
+
+    @property
+    def email_configured(self) -> bool:
+        """Return True when a real email provider is configured to send.
+
+        Only the SMTP provider is implemented. It requires a host; credentials
+        are optional for unauthenticated relays. The noop provider is never
+        considered configured to send.
+        """
+
+        provider = (self.EMAIL_PROVIDER or "noop").strip().lower()
+        if provider == "smtp":
+            return bool(self.EMAIL_SMTP_HOST.strip())
+        return False
+
+    @property
+    def stripe_checkout_configured(self) -> bool:
+        """Return True when Stripe checkout can be created.
+
+        Requires the secret key, the professional price id, and both redirect
+        URLs. When any is missing, checkout reports an honest unavailable state.
+        """
+
+        return all(
+            value.strip()
+            for value in (
+                self.STRIPE_SECRET_KEY,
+                self.STRIPE_PRICE_PROFESSIONAL,
+                self.STRIPE_SUCCESS_URL,
+                self.STRIPE_CANCEL_URL,
+            )
+        )
+
+    @property
+    def stripe_webhook_configured(self) -> bool:
+        """Return True when webhook signatures can be verified."""
+
+        return bool(self.STRIPE_SECRET_KEY.strip() and self.STRIPE_WEBHOOK_SECRET.strip())
+
+    @property
+    def billing_mode(self) -> str:
+        """Return the billing mode: inactive, test, or live. No secret leaks."""
+
+        if not self.billing_enabled:
+            return "inactive"
+        return "test" if self.STRIPE_TEST_MODE else "live"
+
+    @property
+    def public_base_url(self) -> str:
+        """Return the public frontend base URL without a trailing slash."""
+
+        return (self.APP_PUBLIC_BASE_URL or "http://localhost:3000").rstrip("/")
 
     @property
     def expose_dev_tokens(self) -> bool:

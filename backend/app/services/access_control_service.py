@@ -308,6 +308,21 @@ def org_admin_org_ids(db: Session, user_id: str) -> set[str]:
     }
 
 
+def primary_organization_id(db: Session, user_id: str) -> str | None:
+    """Return the user's primary organization id, or None when they have none.
+
+    Prefers an organization where the user is an org_admin (their own workspace),
+    then falls back to their first active membership. Used to attach a created
+    project to the creating user's organization so usage is organization-scoped.
+    """
+
+    memberships = list_user_memberships(db, user_id)
+    if not memberships:
+        return None
+    admin = next((m for m in memberships if m.role == "org_admin"), None)
+    return (admin or memberships[0]).organization_id
+
+
 # ---------------------------------------------------------------------------
 # Project access
 # ---------------------------------------------------------------------------

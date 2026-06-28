@@ -1343,12 +1343,15 @@ ALLOWED_PLAN_CODES: set[str] = {
 }
 
 # Organization subscription states. inactive is the default (no active paid
-# subscription); trialing and active describe a configured subscription; canceled
-# records a stopped subscription. These are billing-posture labels only.
+# subscription); trialing and active describe a configured subscription;
+# past_due records a configured subscription with a failed payment; canceled
+# records a stopped subscription. These are billing-posture labels only and never
+# describe a review outcome.
 ALLOWED_SUBSCRIPTION_STATUSES: set[str] = {
     "inactive",
     "trialing",
     "active",
+    "past_due",
     "canceled",
 }
 

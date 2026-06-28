@@ -276,6 +276,24 @@ def create_project(
     ):
         reject_prohibited_language(value, field=field)
 
+    # Attach the project to the creating user's organization when they belong to
+    # one, so the project and its usage are organization-scoped. Users with no
+    # organization keep organization_id=None and are not usage-enforced.
+    if organization_id is None and created_by_user_id:
+        from app.services import access_control_service
+
+        organization_id = access_control_service.primary_organization_id(
+            db, created_by_user_id
+        )
+
+    # Enforce the per-organization project limit before any mutation, when
+    # enforcement is enabled. A no-op for the demo org and in advisory mode.
+    from app.services import usage_service
+
+    usage_service.check_limit(
+        db, category="project_created", organization_id=organization_id
+    )
+
     ensure_demo_actor(db)
     now = _now()
     project_id = f"proj_user_{_short()}"
@@ -401,6 +419,16 @@ def register_document(
     if not (original_file_name or "").strip():
         raise IntakeError("original_file_name is required.", status_code=422)
     reject_prohibited_language(document_type, field="document_type")
+
+    # Enforce the per-organization document limit before any mutation, when
+    # enforcement is enabled. A no-op for the demo org and in advisory mode.
+    from app.services import usage_service
+
+    usage_service.check_limit(
+        db,
+        category="document_uploaded",
+        organization_id=project.organization_id,
+    )
     reject_prohibited_language(purpose, field="purpose")
 
     ensure_demo_actor(db)

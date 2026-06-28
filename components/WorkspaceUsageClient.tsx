@@ -71,8 +71,9 @@ export default function WorkspaceUsageClient() {
     <div className="space-y-6">
       <SectionCard title="Usage and limits">
         <p className="mb-4 text-sm text-slate-600">
-          Usage limits are advisory: usage is tracked and shown here, and actions
-          are not blocked. The public Brookside Meadows demo is never affected.
+          {usage?.enforcement === "enforced"
+            ? "Some usage limits are enforced: an over-limit action is blocked with a clear message. The public Brookside Meadows demo is never affected."
+            : "Usage limits are advisory: usage is tracked and shown here, and actions are not blocked. The public Brookside Meadows demo is never affected."}
         </p>
         {usage ? (
           <ul className="list-container">
@@ -85,7 +86,12 @@ export default function WorkspaceUsageClient() {
                   key={limit.key}
                   className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm"
                 >
-                  <span className="text-slate-800">{label}</span>
+                  <span className="text-slate-800">
+                    {label}
+                    {limit.enforced ? (
+                      <span className="chip chip-neutral ml-2">enforced</span>
+                    ) : null}
+                  </span>
                   <span className="flex items-center gap-3">
                     <span className="text-slate-600">
                       {limit.used} / {limitText}

@@ -34,12 +34,17 @@ Frontend:
   `AUTH_EXPOSE_DEV_TOKENS` - account-lifecycle token validity and dev-token
   exposure. `AUTH_EXPOSE_DEV_TOKENS` is forced off in production. See
   `docs/AUTH_LIFECYCLE.md`.
-- `EMAIL_PROVIDER`, `EMAIL_FROM` - email delivery. The default `noop` provider
-  sends nothing; a real provider must be wired before onboarding real users.
+- `EMAIL_PROVIDER`, `EMAIL_FROM`, `APP_PUBLIC_BASE_URL`, and the `EMAIL_SMTP_*`
+  settings - email delivery. The default `noop` provider sends nothing; set
+  `EMAIL_PROVIDER=smtp` and the SMTP settings to deliver real reset and
+  invitation emails. See `docs/EMAIL_DELIVERY.md`.
 - `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PROFESSIONAL`,
-  `STRIPE_TEST_MODE` - billing. Billing is deferred and inactive until a Stripe
-  key is set; none are required for local development or tests. See
-  `docs/BILLING_AND_USAGE.md`.
+  `STRIPE_SUCCESS_URL`, `STRIPE_CANCEL_URL`, `STRIPE_TEST_MODE` - billing.
+  Checkout and webhooks become active only when configured; billing is inactive
+  and collects no payment until a Stripe key is set, and none are required for
+  local development or tests. See `docs/STRIPE_BILLING.md`.
+- `USAGE_ENFORCEMENT_ENABLED` - hard-enforce selected usage limits (default
+  false; advisory). See `docs/BILLING_AND_USAGE.md`.
 - `STORAGE_PROVIDER`, `LOCAL_STORAGE_DIR`, and the `OBJECT_STORAGE_*` keys -
   document storage. Local storage is the default.
 - `CAD_UPLOAD_DIR`, `CAD_MAX_UPLOAD_BYTES`, `PROJECT_UPLOAD_DIR` - upload handling.
@@ -185,12 +190,15 @@ live external services.
   Postgres is required for production SaaS. Alembic migrations are in place.
   Postgres handling is verified at the URL/configuration level in the suite, with
   manual Postgres verification documented in `docs/PRODUCTION_DATABASE.md`.
-- Local accounts with password reset and team invitations; no email confirmation,
-  no SSO, and no real email is sent yet (a no-op mailer stands in). See
-  `docs/AUTH_LIFECYCLE.md`.
-- Billing foundation exists but is inactive: Stripe checkout and webhooks are
-  deferred and no payment is collected. Usage limits are advisory, not enforced.
-  See `docs/BILLING_AND_USAGE.md`.
+- Local accounts with password reset and team invitations; no email confirmation
+  and no SSO. Real email sends through the SMTP provider when configured; the
+  default noop provider sends nothing. See `docs/AUTH_LIFECYCLE.md` and
+  `docs/EMAIL_DELIVERY.md`.
+- Billing (Stripe checkout for the professional plan and signature-verified,
+  idempotent webhooks) is implemented but inactive until Stripe is configured; no
+  payment is collected until then. Usage limits are advisory by default and
+  enforceable for selected categories. See `docs/STRIPE_BILLING.md` and
+  `docs/BILLING_AND_USAGE.md`.
 - Live AI is disabled by default.
 - The anonymous demo-reviewer fallback must be turned off before hosting real
   tenant data.

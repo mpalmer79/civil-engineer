@@ -135,6 +135,9 @@ Future schema changes are added as new migrations on top of this one.
   `organization_invitations`, `organization_subscriptions`, `usage_events`). It
   adds tables only; it alters and drops nothing, so no existing pilot or project
   data is affected. See `docs/AUTH_LIFECYCLE.md` and `docs/BILLING_AND_USAGE.md`.
+- `0003_billing_events`: Production Phase 4D Stripe webhook idempotency table
+  (`billing_events`). It adds one table only and stores no Stripe secret,
+  signature, or raw payload. See `docs/STRIPE_BILLING.md`.
 
 Run `alembic upgrade head` to apply all migrations, and `alembic current` to
 confirm the database is at the latest revision.

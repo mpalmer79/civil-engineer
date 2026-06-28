@@ -9,27 +9,30 @@ A plan or subscription status is an account-posture label only. It never implies
 a review outcome, approval, certification, or compliance. A human reviewer
 remains responsible for every finding.
 
-## Stripe status: deferred
+## Stripe status: configured by environment
 
-Stripe is not active. The billing UI and API report an honest inactive state
-until a Stripe secret key is configured. No real payment is processed in this
-phase.
+Stripe checkout and webhooks are implemented (Production Phase 4D) and become
+active when configured. Until then the billing UI and API report an honest
+inactive state, and no real payment is processed. Full detail is in
+`docs/STRIPE_BILLING.md`.
 
 - `billing_enabled` is true only when `STRIPE_SECRET_KEY` is set
   (`backend/app/core/config.py`). It is false by default.
-- The checkout endpoint
-  (`POST /api/v1/organizations/{organization_id}/billing/checkout`) returns an
-  honest `available: false` response with no checkout URL, so the UI shows a
-  disabled state rather than a button that would error. Even when a Stripe key is
-  set, hosted checkout creation is intentionally deferred to a future phase.
-- Reserved, nullable Stripe mapping columns exist on
-  `organization_subscriptions` (`stripe_customer_id`, `stripe_subscription_id`)
-  for a future integration. They are unused and never hold a secret.
+- Checkout (`POST /api/v1/organizations/{organization_id}/billing/checkout`)
+  requires an organization admin, creates a Stripe Checkout session for the
+  professional plan when fully configured, and otherwise returns an honest
+  `available: false` response with no checkout URL.
+- The webhook endpoint (`POST /api/v1/billing/webhook`) verifies the Stripe
+  signature and processes subscription events idempotently, mapping Stripe
+  customer/subscription state onto `organization_subscriptions`.
+- The Stripe mapping columns on `organization_subscriptions`
+  (`stripe_customer_id`, `stripe_subscription_id`) hold the customer and
+  subscription ids; they never hold a secret key.
 
 The environment variables `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
-`STRIPE_PRICE_PROFESSIONAL`, and `STRIPE_TEST_MODE` are documented and read
-backend-only. They are never required for local development or tests, and no
-secret is exposed to the frontend.
+`STRIPE_PRICE_PROFESSIONAL`, `STRIPE_SUCCESS_URL`, `STRIPE_CANCEL_URL`, and
+`STRIPE_TEST_MODE` are read backend-only. None are required for local development
+or tests, and no secret is exposed to the frontend.
 
 ## Plans
 
@@ -86,53 +89,82 @@ seeded demo activity never counts against any plan or pollutes a usage summary.
 The remaining categories are available in the ledger and are wired incrementally;
 `record_usage` accepts any allowed category.
 
-## Limits: advisory, not enforced
+## Limits: advisory by default, enforceable for selected categories
 
-Usage limits are advisory in this phase. Usage is tracked and surfaced with
-warning states, but actions are not hard-blocked, so existing behavior and the
-public Brookside Meadows demo are never interrupted.
+Usage limits are advisory by default. Usage is tracked and surfaced with warning
+states, but actions are not hard-blocked, so local development, tests, existing
+flows, and the public Brookside Meadows demo are never interrupted.
+
+Enforcement (Production Phase 4D) is controlled by `USAGE_ENFORCEMENT_ENABLED`
+(default false). When enabled, the following categories are hard-enforced for
+real organizations:
+
+- `project_created`
+- `document_uploaded`
+- `review_packet_generated`
+
+These are single-mutation, organization-scoped, user-driven actions where a clean
+pre-check leaves no partial state. When an enforced action is at or over its plan
+limit, the API returns `402` with a `limit_exceeded` detail (category, limit,
+used, plan) before any mutation, so the action is fully blocked and nothing is
+written.
+
+The following stay advisory and are never blocked:
+
+- `ai_call_attempted` (no live AI), `pages_indexed` and `cad_parsed` (counted
+  inside internal and seed flows), `pilot_request_submitted` (public lead), and
+  any demo usage.
+
+Never enforced regardless of the flag:
+
+- The public Brookside demo and the seeded demo organization
+  (`org_internal_demo`). The demo is excluded so it can never be blocked by a
+  paid limit. The public pilot request remains public.
 
 `GET /api/v1/organizations/{organization_id}/usage` (organization member) returns
-a usage summary. Each metered limit reports `used`, `limit`, and a status:
-
-- `ok`: below 80 percent of the limit.
-- `approaching`: at or above 80 percent.
-- `over`: at or above the limit.
-
-A limit of `null` means the category is not metered for that plan (advisory
-unlimited). The summary always reports `enforcement: "advisory"`.
+a usage summary. Each metered limit reports `used`, `limit`, a status (`ok`
+below 80 percent, `approaching` at or above 80 percent, `over` at or above the
+limit), and an `enforced` flag. A limit of `null` means the category is not
+metered for that plan. The top-level `enforcement` is `enforced` when enforcement
+is enabled, else `advisory`.
 
 ## Frontend surfaces
 
-- `/workspace/billing`: current plan, honest inactive billing status, the plan
-  catalog, and a disabled checkout action.
-- `/workspace/usage`: advisory usage counters against plan limits with warning
-  states, and a note that limits do not block actions.
+- `/workspace/billing`: current plan, billing status and mode (inactive, test, or
+  live), the plan catalog, and a checkout CTA shown only when checkout is
+  available; otherwise an honest "Billing is not active in this environment"
+  disabled state. It states that billing is required only for production SaaS,
+  not the public demo.
+- `/workspace/usage`: usage counters against plan limits with warning states, an
+  `enforced` badge on enforced limits, and a note reflecting whether limits are
+  advisory or enforced.
 - `/workspace/settings`: links to the billing and usage pages.
 
 No surface claims an active subscription unless the backend reports one, and no
-"Subscribe" button errors: checkout is disabled while billing is inactive.
+"Subscribe" button errors: the CTA appears only when checkout is available.
 
 ## Migrations
 
 The `organization_subscriptions` and `usage_events` tables are created by the
-Alembic migration `0002_auth_billing_usage`. Apply it with `alembic upgrade
-head`. See `docs/PRODUCTION_DATABASE.md`.
+Alembic migration `0002_auth_billing_usage`. The `billing_events` webhook
+idempotency table is created by `0003_billing_events`. Apply them with
+`alembic upgrade head`. See `docs/PRODUCTION_DATABASE.md`.
 
 ## Tests
 
-Backend: `backend/tests/test_billing_usage.py` covers the plan catalog, the
-inactive billing status, membership-gated organization billing and usage, the
-deferred-checkout response, usage category validation, the demo-org exclusion,
-usage totals and limit status, and that no secret is exposed. Frontend:
-`app/__tests__/accountBillingTeam.test.tsx` covers the billing and usage clients,
-including the inactive state and the advisory note.
+Backend: `backend/tests/test_billing_usage.py` covers the plan catalog, billing
+status, membership-gated organization billing and usage, usage category
+validation, the demo-org exclusion, usage totals and limit status, and that no
+secret is exposed. `backend/tests/test_stripe_billing.py` covers checkout and
+webhooks (see `docs/STRIPE_BILLING.md`), and
+`backend/tests/test_usage_enforcement.py` covers advisory and enforced behavior.
+Frontend: `app/__tests__/accountBillingTeam.test.tsx` covers the billing and
+usage clients, including the unavailable state and the checkout CTA.
 
 ## Remaining work before paid production billing
 
-- Wire live Stripe checkout-session creation for a single plan.
-- Add a Stripe webhook endpoint with signature validation and idempotency, and
-  map subscription lifecycle events onto `organization_subscriptions`.
-- Decide which limits become enforced (hard) versus advisory, and add enforcement
-  without affecting the public demo.
-- Add a billing customer/event mapping if needed for reconciliation.
+- Configure live Stripe keys and verify an end-to-end checkout in test mode.
+- Add invoice and payment-failure handling (dunning) if needed, and a customer
+  portal link for self-serve plan changes.
+- Consider enforcing additional categories once their flows have dedicated
+  user-entry guards.

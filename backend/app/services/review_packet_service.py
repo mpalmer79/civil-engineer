@@ -512,8 +512,20 @@ def generate_review_packet(db: Session, project_id: str) -> models.ReviewPacket:
     event.
     """
 
-    if db.get(models.Project, project_id) is None:
+    project = db.get(models.Project, project_id)
+    if project is None:
         raise ReviewPacketError("Project not found.", status_code=404)
+
+    # Enforce the per-organization review packet limit before any mutation, when
+    # enforcement is enabled. A no-op for the demo org and in advisory mode, so
+    # the public Brookside demo and startup seeding are never blocked.
+    from app.services import usage_service
+
+    usage_service.check_limit(
+        db,
+        category="review_packet_generated",
+        organization_id=project.organization_id,
+    )
 
     _delete_existing(db, project_id)
 
@@ -560,6 +572,14 @@ def generate_review_packet(db: Session, project_id: str) -> models.ReviewPacket:
             "item_count": len(builder.items),
             "evidence_link_count": len(builder.links),
         },
+    )
+    # Record advisory usage for the generated packet (best-effort, skips the demo
+    # organization). Used by usage summaries and enforcement counting.
+    usage_service.record_usage_safe(
+        db,
+        category="review_packet_generated",
+        organization_id=project.organization_id,
+        project_id=project_id,
     )
     db.commit()
     db.refresh(packet)
