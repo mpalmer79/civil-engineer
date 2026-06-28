@@ -35,6 +35,16 @@ export type DocumentIndexingSummary = {
   summary: string;
 };
 
+export type DocumentChunkingSummary = {
+  documentId: string;
+  projectId: string;
+  documentType: string;
+  fileName: string;
+  pagesChunked: number;
+  chunkCount: number;
+  removedPriorChunkCount: number;
+};
+
 export type EvidenceCitation = {
   evidenceCitationId: string;
   projectId: string;
@@ -152,6 +162,25 @@ export async function indexPdfDocument(
       textExtractionStatus: raw.text_extraction_status as string,
       indexedAt: (raw.indexed_at as string) ?? null,
       summary: raw.summary as string,
+    }),
+  );
+}
+
+export async function buildDocumentChunks(
+  projectId: string,
+  documentId: string,
+): Promise<MutationResult<DocumentChunkingSummary>> {
+  return postJson<DocumentChunkingSummary>(
+    `/api/v1/projects/${projectId}/documents/${documentId}/chunk-pages`,
+    {},
+    (raw) => ({
+      documentId: raw.document_id as string,
+      projectId: raw.project_id as string,
+      documentType: raw.document_type as string,
+      fileName: raw.file_name as string,
+      pagesChunked: raw.pages_chunked as number,
+      chunkCount: raw.chunk_count as number,
+      removedPriorChunkCount: raw.removed_prior_chunk_count as number,
     }),
   );
 }

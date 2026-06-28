@@ -37,7 +37,7 @@ export default async function EvidenceSearchPage({
       <PageHeader
         eyebrow={project.projectName}
         title="Evidence search"
-        description="Search indexed PDF page text for this project. Retrieval is deterministic and local. There are no live AI calls. Every result is an evidence candidate that requires reviewer confirmation, not a conclusion."
+        description="Search real-derived chunk evidence or indexed page text for this project. Retrieval is deterministic and local. There are no live AI calls. Every result is a review-support candidate that requires reviewer confirmation, not a conclusion."
       />
 
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
@@ -59,7 +59,8 @@ export default async function EvidenceSearchPage({
         {!hasIndexedDocuments ? (
           <p className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
             No indexed page text is available yet. Upload and index a digital
-            PDF before searching evidence.
+            PDF, then build page chunks, before searching evidence. This is a
+            workflow state, not a finding about document content.
           </p>
         ) : null}
 

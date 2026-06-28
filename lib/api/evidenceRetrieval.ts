@@ -15,6 +15,7 @@ export type EvidenceSearchResult = {
   documentId: string;
   documentName: string;
   documentType: string | null;
+  chunkId: string | null;
   documentPageId: string | null;
   pageNumber: number | null;
   pageLabel: string | null;
@@ -112,6 +113,7 @@ function mapSearchResult(r: Record<string, unknown>): EvidenceSearchResult {
     documentId: r.document_id as string,
     documentName: r.document_name as string,
     documentType: (r.document_type as string) ?? null,
+    chunkId: (r.chunk_id as string) ?? null,
     documentPageId: (r.document_page_id as string) ?? null,
     pageNumber: (r.page_number as number) ?? null,
     pageLabel: (r.page_label as string) ?? null,
@@ -251,6 +253,30 @@ export async function searchProjectEvidence(
         page_max: filters.pageMax ?? null,
         checklist_item_id: filters.checklistItemId || null,
         finding_id: filters.findingId || null,
+      },
+      limit: input.limit ?? 10,
+    },
+    mapSearchResponse,
+  );
+}
+
+export async function searchProjectChunkEvidence(
+  projectId: string,
+  input: EvidenceSearchInput,
+): Promise<MutationResult<EvidenceSearchResponse>> {
+  // Keyword search over real-derived chunks (chunks built from indexed PDF page
+  // text). Distinct from the page-text search above and never returns seeded
+  // demo chunks. Results carry page-level citation context.
+  const filters = input.filters ?? {};
+  return postJson<EvidenceSearchResponse>(
+    `/api/v1/projects/${projectId}/evidence-retrieval/chunk-search`,
+    {
+      query_text: input.queryText,
+      filters: {
+        document_id: filters.documentId || null,
+        document_type: filters.documentType || null,
+        page_min: filters.pageMin ?? null,
+        page_max: filters.pageMax ?? null,
       },
       limit: input.limit ?? 10,
     },

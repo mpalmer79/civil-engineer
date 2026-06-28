@@ -5,6 +5,7 @@ import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
 import IndexPdfButton from "@/components/IndexPdfButton";
+import BuildChunksButton from "@/components/BuildChunksButton";
 import DocumentDownloadButton from "@/components/DocumentDownloadButton";
 import LinkDocumentToResubmittalRound from "@/components/LinkDocumentToResubmittalRound";
 import { getProjectDocument, listResubmittalRounds } from "@/lib/api";
@@ -127,6 +128,20 @@ export default async function DocumentDetailPage({
             disabled={!canIndex}
             disabledReason={disabledReason}
           />
+          <div className="mt-4 border-t border-slate-100 pt-4">
+            <p className="mb-2 text-sm text-slate-600">
+              Build real-derived chunk evidence from this document&rsquo;s
+              indexed page text. Chunks make indexed text searchable in evidence
+              search. This reads indexed page text only and does not change
+              indexing.
+            </p>
+            <BuildChunksButton
+              projectId={params.projectId}
+              documentId={doc.documentId}
+              disabled={!canIndex}
+              disabledReason="Building page chunks requires an uploaded, indexed PDF document with extractable text."
+            />
+          </div>
         </SectionCard>
 
         <SectionCard title="Document metadata">
