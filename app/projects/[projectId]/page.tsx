@@ -86,6 +86,29 @@ export default async function ProjectDetailPage({
         <ProjectWorkloadCard projectId={project.projectId} />
 
         <SectionCard
+          title="Analytical surfaces"
+          description="Review-support analytical screens that surface existing backend computation for this project. Each is review-support only and does not make engineering decisions."
+        >
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            <Link href={`${base}/command-center`} className="menu-item">
+              Command center
+            </Link>
+            <Link href={`${base}/plan-consistency`} className="menu-item">
+              Plan consistency
+            </Link>
+            <Link href={`${base}/cad`} className="menu-item">
+              CAD intake and metadata
+            </Link>
+            <Link href={`${base}/workflow-board`} className="menu-item">
+              Workflow board
+            </Link>
+            <Link href={`${base}/review-packets`} className="menu-item">
+              Review packets
+            </Link>
+          </div>
+        </SectionCard>
+
+        <SectionCard
           title="Project workflow"
           description="Reviewer-controlled workflow areas for this project record. Each opens a review-support screen where human review continues."
         >

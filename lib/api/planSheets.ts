@@ -303,12 +303,13 @@ export async function getSheetViewerContext(
 
 export async function getPlanConsistencyReviewActions(
   planFindingId?: string,
+  projectId: string = PROJECT_ID,
 ): Promise<PlanConsistencyReviewAction[]> {
   const query = planFindingId
     ? `?plan_finding_id=${encodeURIComponent(planFindingId)}`
     : "";
   const data = await safeFetch<ApiPlanReviewAction[]>(
-    `/api/v1/projects/${PROJECT_ID}/plan-consistency-review-actions${query}`,
+    `/api/v1/projects/${projectId}/plan-consistency-review-actions${query}`,
   );
   return data ? data.map(mapPlanReviewAction) : [];
 }
