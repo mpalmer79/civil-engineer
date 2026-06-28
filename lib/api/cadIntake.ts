@@ -542,16 +542,16 @@ function mapSummary(s: ApiSummary): CadParseSummary {
   };
 }
 
-export async function getCadFiles(): Promise<CadFileUpload[]> {
+export async function getCadFiles(projectId: string = PROJECT_ID): Promise<CadFileUpload[]> {
   const data = await safeFetch<ApiCadFile[]>(
-    `/api/v1/projects/${PROJECT_ID}/cad-files`,
+    `/api/v1/projects/${projectId}/cad-files`,
   );
   return data ? data.map(mapCadFile) : [];
 }
 
-export async function getCadParseRuns(): Promise<CadParseRun[]> {
+export async function getCadParseRuns(projectId: string = PROJECT_ID): Promise<CadParseRun[]> {
   const data = await safeFetch<ApiParseRun[]>(
-    `/api/v1/projects/${PROJECT_ID}/cad-parse-runs`,
+    `/api/v1/projects/${projectId}/cad-parse-runs`,
   );
   return data ? data.map(mapParseRun) : [];
 }
@@ -617,9 +617,9 @@ export async function getCadReferenceCandidates(
   return data ? data.map(mapCandidate) : [];
 }
 
-export async function getCadReviewFindings(): Promise<CadReviewFinding[]> {
+export async function getCadReviewFindings(projectId: string = PROJECT_ID): Promise<CadReviewFinding[]> {
   const data = await safeFetch<ApiFinding[]>(
-    `/api/v1/projects/${PROJECT_ID}/cad-review-findings`,
+    `/api/v1/projects/${projectId}/cad-review-findings`,
   );
   return data ? data.map(mapFinding) : [];
 }
@@ -651,6 +651,7 @@ export async function getCadFileReviewContext(
 export async function createCadFileRecord(
   sampleKey = "brookside_meadows",
   uploadedBy = "reviewer",
+  projectId: string = PROJECT_ID,
 ): Promise<{
   ok: boolean;
   backendReachable: boolean;
@@ -659,7 +660,7 @@ export async function createCadFileRecord(
 }> {
   try {
     const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${PROJECT_ID}/cad-files`,
+      `${API_BASE_URL}/api/v1/projects/${projectId}/cad-files`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -886,6 +887,7 @@ export async function getCadUploadLimits(): Promise<CadUploadLimits | null> {
 export async function uploadCadFile(
   file: File,
   uploadedBy = "reviewer",
+  projectId: string = PROJECT_ID,
 ): Promise<CadUploadResponse> {
   // Client-side extension guard before sending. The backend validation remains
   // authoritative; this only avoids an obviously wrong request.
@@ -903,7 +905,7 @@ export async function uploadCadFile(
     form.append("file", file);
     form.append("uploaded_by", uploadedBy);
     const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${PROJECT_ID}/cad-files/upload`,
+      `${API_BASE_URL}/api/v1/projects/${projectId}/cad-files/upload`,
       { method: "POST", body: form, cache: "no-store" },
     );
     if (!res.ok) {
@@ -983,7 +985,7 @@ export async function requestCadParse(cadFileId: string): Promise<{
   }
 }
 
-export async function getCadParseQueue(): Promise<CadParseQueueItem[]> {
+export async function getCadParseQueue(projectId: string = PROJECT_ID): Promise<CadParseQueueItem[]> {
   const data = await safeFetch<
     {
       cad_file_id: string;
@@ -1003,7 +1005,7 @@ export async function getCadParseQueue(): Promise<CadParseQueueItem[]> {
       parse_completed_at: string | null;
       requires_human_review: boolean;
     }[]
-  >(`/api/v1/projects/${PROJECT_ID}/cad-parse-queue`);
+  >(`/api/v1/projects/${projectId}/cad-parse-queue`);
   if (!data) return [];
   return data.map((r) => ({
     cadFileId: r.cad_file_id,
@@ -1025,7 +1027,7 @@ export async function getCadParseQueue(): Promise<CadParseQueueItem[]> {
   }));
 }
 
-export async function getCadIntakeDashboard(): Promise<CadIntakeDashboard | null> {
+export async function getCadIntakeDashboard(projectId: string = PROJECT_ID): Promise<CadIntakeDashboard | null> {
   const data = await safeFetch<{
     project_id: string;
     total_files: number;
@@ -1039,7 +1041,7 @@ export async function getCadIntakeDashboard(): Promise<CadIntakeDashboard | null
     validation_status_counts: Record<string, number>;
     parse_status_counts: Record<string, number>;
     limitations_note: string;
-  }>(`/api/v1/projects/${PROJECT_ID}/cad-intake/dashboard`);
+  }>(`/api/v1/projects/${projectId}/cad-intake/dashboard`);
   if (!data) return null;
   return {
     projectId: data.project_id,
@@ -1057,9 +1059,9 @@ export async function getCadIntakeDashboard(): Promise<CadIntakeDashboard | null
   };
 }
 
-export async function getUnpromotedCadFindings(): Promise<UnpromotedCadFinding[]> {
+export async function getUnpromotedCadFindings(projectId: string = PROJECT_ID): Promise<UnpromotedCadFinding[]> {
   const data = await safeFetch<ApiFinding[]>(
-    `/api/v1/projects/${PROJECT_ID}/cad-review-findings/unpromoted`,
+    `/api/v1/projects/${projectId}/cad-review-findings/unpromoted`,
   );
   return data ? data.map(mapFinding) : [];
 }
@@ -1119,10 +1121,11 @@ export async function promoteSelectedCadFindingsToWorkflow(
   cadReviewFindingIds: string[],
   reviewerName = "reviewer",
   reviewerNote?: string,
+  projectId: string = PROJECT_ID,
 ): Promise<CadSelectedPromotionResult> {
   try {
     const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${PROJECT_ID}/cad-review-findings/promote-selected`,
+      `${API_BASE_URL}/api/v1/projects/${projectId}/cad-review-findings/promote-selected`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1169,10 +1172,10 @@ export async function promoteSelectedCadFindingsToWorkflow(
   }
 }
 
-export async function createWorkflowItemsFromCadFindings(): Promise<CadWorkflowItemsResult> {
+export async function createWorkflowItemsFromCadFindings(projectId: string = PROJECT_ID): Promise<CadWorkflowItemsResult> {
   try {
     const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${PROJECT_ID}/workflow-items/from-cad-findings`,
+      `${API_BASE_URL}/api/v1/projects/${projectId}/workflow-items/from-cad-findings`,
       { method: "POST", cache: "no-store" },
     );
     if (!res.ok) {

@@ -25,8 +25,10 @@ type Tab = "sections" | "traceability" | "print";
 // reviewer action form, and the printable preview.
 export default function ReviewPacketBuilder({
   packetId,
+  projectId,
 }: {
   packetId?: string;
+  projectId?: string;
 }) {
   const [packet, setPacket] = useState<ReviewPacketDetail | null>(null);
   const [summary, setSummary] = useState<ReviewPacketSummary | null>(null);
@@ -55,19 +57,19 @@ export default function ReviewPacketBuilder({
       if (packetId) {
         await loadPacket(packetId);
       } else {
-        const packets = await getReviewPackets();
+        const packets = await getReviewPackets(projectId);
         if (packets.length > 0) {
           await loadPacket(packets[0].packetId);
         }
       }
       setLoaded(true);
     })();
-  }, [packetId, loadPacket]);
+  }, [packetId, loadPacket, projectId]);
 
   const handleGenerate = useCallback(async () => {
     setBusy(true);
     setMessage(null);
-    const result = await generateReviewPacket();
+    const result = await generateReviewPacket(projectId);
     if (result.ok && result.packet) {
       setPacket(result.packet);
       setSummary(await getReviewPacketSummary(result.packet.packetId));
@@ -80,7 +82,7 @@ export default function ReviewPacketBuilder({
       setMessage(result.error ?? "Could not generate the review packet.");
     }
     setBusy(false);
-  }, []);
+  }, [projectId]);
 
   const handleItemUpdated = useCallback(
     (updated: ReviewPacketItem) => {
@@ -118,8 +120,8 @@ export default function ReviewPacketBuilder({
         <ProfessionalLimitationsNotice />
         <div className="surface-card p-6">
           <p className="text-sm text-slate-600">
-            No review packet is loaded yet. Generate a Brookside Meadows
-            review-support packet draft to begin.
+            No review packet is loaded yet. Generate a review-support packet
+            draft for this project to begin.
           </p>
           <button
             type="button"

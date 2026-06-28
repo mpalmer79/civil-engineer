@@ -2,15 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
-import SectionCard from "@/components/SectionCard";
-import BoundaryNote from "@/components/BoundaryNote";
+import WorkflowBoardClient from "@/components/WorkflowBoardClient";
 import { getProjectDetail } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
-
-const WORKFLOW_BOUNDARY_NOTE =
-  "The workflow board tracks reviewer-controlled review-support work items. It " +
-  "does not approve plans or make engineering decisions.";
 
 export default async function ProjectWorkflowBoardPage({
   params,
@@ -28,10 +23,10 @@ export default async function ProjectWorkflowBoardPage({
       <PageHeader
         eyebrow={project.projectName}
         title="Workflow board"
-        description="This project workflow board surface is being prepared. It will surface existing reviewer workflow items as review-support work, not final decisions."
+        description="Reviewer-controlled review-support work items for this project, grouped by status with severity, section, assigned role, follow-ups, and ready-for-handoff tracking. Every status is a review-support status, not a final engineering decision."
       />
 
-      <div className="mx-auto max-w-4xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-wrap gap-2">
           <Link href={base} className="nav-link">
             Back to project
@@ -39,17 +34,15 @@ export default async function ProjectWorkflowBoardPage({
           <Link href={`${base}/command-center`} className="nav-link">
             Command center
           </Link>
+          <Link href={`${base}/cad`} className="nav-link">
+            CAD intake
+          </Link>
+          <Link href={`${base}/review-packets`} className="nav-link">
+            Review packets
+          </Link>
         </div>
 
-        <BoundaryNote note={WORKFLOW_BOUNDARY_NOTE} />
-
-        <SectionCard title="Surface being prepared">
-          <p className="text-sm text-slate-600">
-            The project-scoped workflow board is being prepared in a later Phase
-            3 pass. The command center already surfaces reviewer attention items
-            and next steps. No workflow data is shown here yet.
-          </p>
-        </SectionCard>
+        <WorkflowBoardClient projectId={project.projectId} />
       </div>
     </div>
   );

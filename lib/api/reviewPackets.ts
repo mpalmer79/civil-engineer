@@ -298,9 +298,11 @@ function mapPacketAction(a: ApiPacketAction): ReviewPacketReviewerAction {
   };
 }
 
-export async function getReviewPackets(): Promise<ReviewPacket[]> {
+export async function getReviewPackets(
+  projectId: string = PROJECT_ID,
+): Promise<ReviewPacket[]> {
   const data = await safeFetch<ApiReviewPacket[]>(
-    `/api/v1/projects/${PROJECT_ID}/review-packets`,
+    `/api/v1/projects/${projectId}/review-packets`,
   );
   return data ? data.map(mapReviewPacket) : [];
 }
@@ -432,7 +434,9 @@ export async function getReviewPacketSummary(
   };
 }
 
-export async function generateReviewPacket(): Promise<{
+export async function generateReviewPacket(
+  projectId: string = PROJECT_ID,
+): Promise<{
   ok: boolean;
   backendReachable: boolean;
   packet?: ReviewPacketDetail;
@@ -440,7 +444,7 @@ export async function generateReviewPacket(): Promise<{
 }> {
   try {
     const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${PROJECT_ID}/review-packets/generate`,
+      `${API_BASE_URL}/api/v1/projects/${projectId}/review-packets/generate`,
       { method: "POST", cache: "no-store" },
     );
     if (!res.ok) {
