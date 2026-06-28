@@ -345,6 +345,7 @@ export type SaveCandidateInput = {
   rankingScore?: number;
   rankingReason?: string | null;
   candidateOrigin?: string;
+  candidateStatus?: string;
   reviewerNote?: string | null;
 };
 
@@ -367,6 +368,7 @@ export async function saveEvidenceCandidate(
       ranking_score: input.rankingScore ?? 0,
       ranking_reason: input.rankingReason ?? null,
       candidate_origin: input.candidateOrigin || "manual_save",
+      candidate_status: input.candidateStatus ?? null,
       reviewer_note: input.reviewerNote ?? null,
     },
     mapCandidate,

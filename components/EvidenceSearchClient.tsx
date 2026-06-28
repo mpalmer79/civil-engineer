@@ -116,20 +116,20 @@ export default function EvidenceSearchClient({
       rankingScore: result.rankingScore,
       rankingReason: result.rankingReason,
       candidateOrigin: result.candidateOrigin ?? "manual_save",
+      candidateStatus: status,
     });
     if (!response.ok || !response.data) {
       setError(response.error ?? "Could not save the candidate.");
       return;
     }
-    // Honor the requested triage status when it differs from the saved default.
+    // The backend response is the source of truth for the saved status. The
+    // requested status is sent to the backend; the displayed status reflects
+    // only what the backend actually persisted.
     const candidate = response.data;
     setSaved((prev) => ({
       ...prev,
       [resultKey(result)]: {
-        status:
-          status === "needs_reviewer_triage"
-            ? "needs_reviewer_triage"
-            : candidate.candidateStatus,
+        status: candidate.candidateStatus,
         candidateId: candidate.evidenceCandidateId,
       },
     }));

@@ -70,6 +70,29 @@ const csvDoc = {
   textExtractionSummary: null,
 };
 
+const unindexedPdfDoc = {
+  ...userDoc,
+  documentId: "doc_user_3",
+  fileName: "doc_ghi.pdf",
+  originalFileName: "Unindexed.pdf",
+  processingStatus: "parsing_not_available",
+  pageCount: null,
+  indexedAt: null,
+  textExtractionStatus: null,
+  textExtractionSummary: null,
+};
+
+const noTextPdfDoc = {
+  ...userDoc,
+  documentId: "doc_user_4",
+  fileName: "doc_jkl.pdf",
+  originalFileName: "Scanned.pdf",
+  processingStatus: "indexed_without_text",
+  pageCount: 3,
+  textExtractionStatus: "no_extractable_text",
+  textExtractionSummary: "3 page(s) indexed: 0 with extractable text.",
+};
+
 const page = {
   documentPageId: "docpage_1",
   projectId: "proj_user_1",
@@ -166,9 +189,12 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDocument: vi.fn(async (_p: string, id: string) =>
-      id === "doc_user_2" ? csvDoc : userDoc,
-    ),
+    getProjectDocument: vi.fn(async (_p: string, id: string) => {
+      if (id === "doc_user_2") return csvDoc;
+      if (id === "doc_user_3") return unindexedPdfDoc;
+      if (id === "doc_user_4") return noTextPdfDoc;
+      return userDoc;
+    }),
     listProjectDocuments: vi.fn(async () => [userDoc, csvDoc]),
     listDocumentPages: vi.fn(async () => [page, noTextPage]),
     getDocumentPage: vi.fn(async (_p: string, _d: string, n: number) =>
@@ -242,6 +268,41 @@ describe("Document detail page", () => {
     );
     expect(screen.getByText(/not a PDF/i)).toBeInTheDocument();
     expect(screen.queryByText("Index PDF pages")).not.toBeInTheDocument();
+  });
+
+  it("enables build page chunks once text is extracted", async () => {
+    render(
+      await DocumentDetailPage({
+        params: { projectId, documentId: "doc_user_1" },
+      }),
+    );
+    expect(screen.getByText("Build page chunks")).toBeInTheDocument();
+  });
+
+  it("disables build page chunks before indexing and asks to index first", async () => {
+    render(
+      await DocumentDetailPage({
+        params: { projectId, documentId: "doc_user_3" },
+      }),
+    );
+    // The PDF can still be indexed, but chunks cannot be built yet.
+    expect(screen.getByText("Index PDF pages")).toBeInTheDocument();
+    expect(screen.queryByText("Build page chunks")).not.toBeInTheDocument();
+    expect(
+      screen.getByText(/Index the PDF pages first/i),
+    ).toBeInTheDocument();
+  });
+
+  it("disables build page chunks for no-text pages without implying absence", async () => {
+    render(
+      await DocumentDetailPage({
+        params: { projectId, documentId: "doc_user_4" },
+      }),
+    );
+    expect(screen.queryByText("Build page chunks")).not.toBeInTheDocument();
+    const message = screen.getByText(/Page chunks cannot be built from no-text pages/i);
+    expect(message).toBeInTheDocument();
+    expect(message.textContent ?? "").toMatch(/not a finding about document content/i);
   });
 });
 

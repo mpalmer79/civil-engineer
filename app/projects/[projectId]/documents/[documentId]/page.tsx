@@ -41,6 +41,23 @@ export default async function DocumentDetailPage({
         ? "PDF indexing requires a PDF document. This document is not a PDF."
         : undefined;
 
+  // Building page chunks requires that indexing already extracted text. The gate
+  // is intentionally stricter than the index gate: an uploaded, not-yet-indexed
+  // PDF cannot be chunked until it has indexed extractable text.
+  const isIndexedWithText = doc.textExtractionStatus === "text_extracted";
+  const canBuildChunks = canIndex && isIndexedWithText;
+  const buildChunksDisabledReason = !hasFile
+    ? "Building page chunks requires an uploaded PDF file. This document has no stored file."
+    : !doc.fileAvailable
+      ? "The file is not available in storage. Re-upload the file before building page chunks."
+      : !pdf
+        ? "Building page chunks requires a PDF document. This file type is not supported."
+        : doc.textExtractionStatus === "no_extractable_text"
+          ? "Page chunks cannot be built from no-text pages. This document was indexed but has no extractable text. This is a workflow state, not a finding about document content."
+          : !isIndexedWithText
+            ? "Index the PDF pages first. Page chunks require indexed extractable text from this document."
+            : undefined;
+
   const metadata: [string, string | number | null][] = [
     ["Document type", doc.documentType],
     ["Source", doc.sourceMode],
@@ -138,8 +155,8 @@ export default async function DocumentDetailPage({
             <BuildChunksButton
               projectId={params.projectId}
               documentId={doc.documentId}
-              disabled={!canIndex}
-              disabledReason="Building page chunks requires an uploaded, indexed PDF document with extractable text."
+              disabled={!canBuildChunks}
+              disabledReason={buildChunksDisabledReason}
             />
           </div>
         </SectionCard>
