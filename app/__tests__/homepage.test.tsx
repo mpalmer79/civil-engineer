@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import HomePage from "@/app/page";
 import { BROOKSIDE_PROJECT_ID } from "@/lib/demoJourney";
+import { marketingMedia } from "@/lib/marketingMedia";
 
 // Cleanup is not globally configured, so reset the DOM between renders to avoid
 // duplicate matches when the full page is rendered in more than one test.
@@ -71,6 +72,47 @@ describe("HomePage hero proof and capabilities", () => {
   it("does not contain hero placeholder language", () => {
     const { container } = render(HomePage());
     const text = (container.textContent ?? "").toLowerCase();
+    expect(text).not.toContain("placeholder");
+  });
+});
+
+describe("HomePage media-forward visuals", () => {
+  it("renders marketing media images from the media manifests", () => {
+    const { container } = render(HomePage());
+    const images = container.querySelectorAll(
+      'img[data-testid="marketing-media-image"]',
+    );
+    // Hero plus the four visual story sections plus the boundary visual.
+    expect(images.length).toBeGreaterThanOrEqual(5);
+    const srcs = Array.from(images).map((img) => img.getAttribute("src") ?? "");
+    expect(
+      srcs.every((src) => src.startsWith("/images/civil-engineer/")),
+    ).toBe(true);
+  });
+
+  it("leads the hero with a real product image, not placeholder text", () => {
+    const { container } = render(HomePage());
+    const hero = container.querySelector(
+      `img[src="${marketingMedia.hero.src}"]`,
+    );
+    expect(hero).not.toBeNull();
+    expect(hero?.getAttribute("alt") ?? "").not.toBe("");
+  });
+
+  it("gives every marketing media image non-empty alt text", () => {
+    const { container } = render(HomePage());
+    const images = container.querySelectorAll(
+      'img[data-testid="marketing-media-image"]',
+    );
+    for (const img of Array.from(images)) {
+      expect((img.getAttribute("alt") ?? "").length).toBeGreaterThan(0);
+    }
+  });
+
+  it("does not use hero visual placeholder language", () => {
+    const { container } = render(HomePage());
+    const text = (container.textContent ?? "").toLowerCase();
+    expect(text).not.toContain("hero visual placeholder");
     expect(text).not.toContain("placeholder");
   });
 });
