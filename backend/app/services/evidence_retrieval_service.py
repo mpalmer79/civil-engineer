@@ -500,6 +500,29 @@ def _record_retrieval_query(
     return query
 
 
+def _checklist_query_text(item: models.ChecklistItem) -> str:
+    """Build checklist query text from requirement and expected evidence, with a
+    soft boost from supporting document hints."""
+
+    parts = [item.requirement or "", item.expected_evidence or ""]
+    supporting = item.supporting_documents or []
+    if supporting:
+        parts.append(" ".join(str(doc) for doc in supporting))
+    return " ".join(part for part in parts if part).strip()
+
+
+def _finding_query_text(finding: models.Finding) -> str:
+    """Build finding query text from title, evidence to find, and why it
+    matters."""
+
+    parts = [
+        finding.title or "",
+        finding.evidence_to_find or "",
+        finding.reason_it_matters or "",
+    ]
+    return " ".join(part for part in parts if part).strip()
+
+
 def search_by_checklist_item(
     db: Session,
     project_id: str,
@@ -507,12 +530,17 @@ def search_by_checklist_item(
     *,
     actor_name: str = DEMO_ACTOR_NAME,
 ) -> dict:
-    """Search indexed evidence for a checklist item by its requirement text."""
+    """Search real-derived chunk evidence for a checklist item.
+
+    Uses hybrid chunk retrieval (the strongest path over real chunks). When no
+    searchable chunks exist, the response honestly reports that indexed chunk
+    evidence is not available yet, never a finding about document content.
+    """
 
     item = db.get(models.ChecklistItem, checklist_item_id)
     if item is None or item.project_id != project_id:
         raise RetrievalError("Checklist item not found.", status_code=404)
-    query_text = (item.requirement or item.expected_evidence or "").strip()
+    query_text = _checklist_query_text(item)
     if len(query_text) < MIN_RETRIEVAL_QUERY_LENGTH:
         raise RetrievalError(
             "The checklist item has no searchable requirement text.",
@@ -520,10 +548,13 @@ def search_by_checklist_item(
         )
     payload = {
         "query_text": query_text,
+        "mode": "hybrid",
         "query_type": "checklist_item",
         "filters": {"checklist_item_id": checklist_item_id},
     }
-    return search_project_evidence(db, project_id, payload, actor_name=actor_name)
+    return search_project_chunk_evidence(
+        db, project_id, payload, actor_name=actor_name
+    )
 
 
 def search_by_finding_context(
@@ -533,14 +564,16 @@ def search_by_finding_context(
     *,
     actor_name: str = DEMO_ACTOR_NAME,
 ) -> dict:
-    """Search indexed evidence for a finding by its title and evidence text."""
+    """Search real-derived chunk evidence for a finding's context.
+
+    Uses hybrid chunk retrieval. When no searchable chunks exist, the response
+    honestly reports that indexed chunk evidence is not available yet.
+    """
 
     finding = db.get(models.Finding, finding_id)
     if finding is None or finding.project_id != project_id:
         raise RetrievalError("Finding not found.", status_code=404)
-    query_text = (
-        finding.title or finding.evidence_to_find or ""
-    ).strip()
+    query_text = _finding_query_text(finding)
     if len(query_text) < MIN_RETRIEVAL_QUERY_LENGTH:
         raise RetrievalError(
             "The finding has no searchable title or evidence text.",
@@ -548,10 +581,13 @@ def search_by_finding_context(
         )
     payload = {
         "query_text": query_text,
+        "mode": "hybrid",
         "query_type": "finding_context",
         "filters": {"finding_id": finding_id},
     }
-    return search_project_evidence(db, project_id, payload, actor_name=actor_name)
+    return search_project_chunk_evidence(
+        db, project_id, payload, actor_name=actor_name
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -986,7 +1022,10 @@ def search_project_chunk_evidence(
             f"{', '.join(sorted(_CHUNK_MODE_QUERY_TYPE))}.",
             status_code=422,
         )
-    query_type = _CHUNK_MODE_QUERY_TYPE[mode]
+    # Scoped callers (checklist, finding) override the recorded query_type so the
+    # response still reads as checklist_item / finding_context while the
+    # mechanism underneath is chunk retrieval.
+    query_type = payload.get("query_type") or _CHUNK_MODE_QUERY_TYPE[mode]
 
     if len(query_text) < MIN_RETRIEVAL_QUERY_LENGTH:
         raise RetrievalError(

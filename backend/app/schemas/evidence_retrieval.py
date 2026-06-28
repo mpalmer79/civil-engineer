@@ -212,6 +212,30 @@ class ChunkEmbeddingBackfillResponse(BaseModel):
     failed: int
 
 
+class ChunkLinkSuggestion(BaseModel):
+    """A reviewer-support suggestion of checklist/finding links for one chunk.
+
+    Scores are relevance hints for the reviewer, not assertions that the evidence
+    satisfies a checklist item or finding.
+    """
+
+    chunk_id: str
+    page_number: int | None = None
+    checklist_item_ids: list[str] = []
+    finding_ids: list[str] = []
+    checklist_scores: dict[str, float] = {}
+    finding_scores: dict[str, float] = {}
+
+
+class ChunkLinkSuggestionResponse(BaseModel):
+    project_id: str
+    chunks_scanned: int
+    chunks_with_suggestions: int
+    checklist_links_added: int
+    finding_links_added: int
+    suggestions: list[ChunkLinkSuggestion] = []
+
+
 class RetrievalQueryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

@@ -28,6 +28,7 @@ from app.schemas.evidence_retrieval import (
     CandidateDismissRequest,
     ChunkEmbeddingBackfillResponse,
     ChunkEvidenceSearchRequest,
+    ChunkLinkSuggestionResponse,
     EvidenceCandidateCreate,
     EvidenceCandidateResponse,
     EvidenceCandidateUpdate,
@@ -37,6 +38,7 @@ from app.schemas.evidence_retrieval import (
     PromoteCandidateToDraftFindingResponse,
     RetrievalQueryResponse,
 )
+from app.services import chunk_autolink_service
 from app.services import chunk_embedding_service
 from app.services import evidence_retrieval_service as retrieval
 from app.services.evidence_retrieval_service import RetrievalError
@@ -132,6 +134,28 @@ def embed_chunks(
         db, project_id, actor_name=actor.display_name
     )
     return ChunkEmbeddingBackfillResponse.model_validate(result)
+
+
+@router.post(
+    "/projects/{project_id}/evidence-retrieval/suggest-links",
+    response_model=ChunkLinkSuggestionResponse,
+)
+def suggest_chunk_links(
+    project_id: str,
+    user: models.UserAccount | None = Depends(get_optional_user),
+    db: Session = Depends(get_db),
+) -> ChunkLinkSuggestionResponse:
+    """Suggest checklist and finding links for real-derived chunks.
+
+    Suggestions are reviewer-support only. They do not assert that evidence
+    satisfies a checklist item and never change a finding or its review status.
+    """
+
+    actor = require_project_reviewer(db, project_id, user)
+    result = chunk_autolink_service.suggest_links_for_project(
+        db, project_id, actor_name=actor.display_name
+    )
+    return ChunkLinkSuggestionResponse.model_validate(result)
 
 
 @router.post(
