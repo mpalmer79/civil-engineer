@@ -12,11 +12,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectEvidenceCitationsPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function ProjectEvidenceCitationsPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const [project, citations, findings, documents] = await Promise.all([
     getProjectDetail(params.projectId),
     listProjectEvidenceCitations(params.projectId),

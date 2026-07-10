@@ -3,11 +3,12 @@ import PageHeader from "@/components/PageHeader";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import CadIntakePage from "@/components/CadIntakePage";
 
-export default function CadIntakeDetailRoute({
-  params,
-}: {
-  params: { cadFileId: string };
-}) {
+export default async function CadIntakeDetailRoute(
+  props: {
+    params: Promise<{ cadFileId: string }>;
+  }
+) {
+  const params = await props.params;
   return (
     <div>
       <PageHeader

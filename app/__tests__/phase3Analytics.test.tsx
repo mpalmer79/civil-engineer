@@ -154,7 +154,7 @@ afterEach(() => cleanup());
 
 describe("Plan consistency page", () => {
   it("renders the page, summary counts, findings, action control, and boundary", async () => {
-    render(await PlanConsistencyPage({ params: { projectId } }));
+    render(await PlanConsistencyPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Plan consistency")).toBeInTheDocument();
     // Summary counts.
     expect(screen.getByText("Total sheets")).toBeInTheDocument();
@@ -181,7 +181,7 @@ describe("Plan consistency page", () => {
 
   it("introduces no banned final-decision wording", async () => {
     const { container } = render(
-      await PlanConsistencyPage({ params: { projectId } }),
+      await PlanConsistencyPage({ params: Promise.resolve({ projectId }) }),
     );
     const text = (container.textContent ?? "").toLowerCase();
     for (const word of BANNED) {
@@ -192,7 +192,7 @@ describe("Plan consistency page", () => {
 
 describe("Command center page", () => {
   it("renders the snapshot, counts, boundary, and reviewer controls", async () => {
-    render(await ProjectCommandCenterPage({ params: { projectId } }));
+    render(await ProjectCommandCenterPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Command center")).toBeInTheDocument();
     // ProjectDashboard loads asynchronously, then renders snapshot data.
     await waitFor(() =>
@@ -214,7 +214,7 @@ describe("Command center page", () => {
 describe("Project navigation to analytical surfaces", () => {
   it("links to all touched routes without 404 targets", async () => {
     const { container } = render(
-      await ProjectDetailPage({ params: { projectId } }),
+      await ProjectDetailPage({ params: Promise.resolve({ projectId }) }),
     );
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) =>
       a.getAttribute("href"),

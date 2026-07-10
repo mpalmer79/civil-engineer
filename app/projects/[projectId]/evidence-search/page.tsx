@@ -7,11 +7,12 @@ import { getProjectDetail, listProjectDocuments } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default async function EvidenceSearchPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function EvidenceSearchPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const [project, documents] = await Promise.all([
     getProjectDetail(params.projectId),
     listProjectDocuments(params.projectId),

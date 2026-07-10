@@ -212,7 +212,7 @@ describe("Workflow board filters", () => {
 
 describe("Plan sheet index page", () => {
   it("renders sheet metadata and links to detail", async () => {
-    render(await PlanSheetIndexPage({ params: { projectId } }));
+    render(await PlanSheetIndexPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Plan sheets")).toBeInTheDocument();
     expect(screen.getByText("Grading and drainage plan")).toBeInTheDocument();
     const link = screen.getByText("C-3").closest("a");
@@ -228,7 +228,7 @@ describe("Plan sheet index page", () => {
     (api.getPlanSheetSummary as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
       null,
     );
-    render(await PlanSheetIndexPage({ params: { projectId } }));
+    render(await PlanSheetIndexPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("No plan sheets available")).toBeInTheDocument();
   });
 });

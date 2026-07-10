@@ -13,11 +13,12 @@ export const dynamic = "force-dynamic";
 // each one. A response matrix organizes review-support items and tracks applicant
 // responses for reviewer review. It does not approve, certify, verify, resolve, or
 // close anything.
-export default async function ResponseMatrixLandingPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function ResponseMatrixLandingPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const [project, matrices] = await Promise.all([
     getProjectDetail(params.projectId),
     listResponseMatrices(params.projectId),

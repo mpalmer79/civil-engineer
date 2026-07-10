@@ -3,11 +3,12 @@ import PageHeader from "@/components/PageHeader";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import ReviewPacketBuilder from "@/components/ReviewPacketBuilder";
 
-export default function ReviewPacketDetailPage({
-  params,
-}: {
-  params: { packetId: string };
-}) {
+export default async function ReviewPacketDetailPage(
+  props: {
+    params: Promise<{ packetId: string }>;
+  }
+) {
+  const params = await props.params;
   return (
     <div>
       <PageHeader

@@ -89,7 +89,7 @@ const projectId = "proj_user_1";
 
 describe("Documents list page", () => {
   it("shows storage provider and file availability", async () => {
-    render(await ProjectDocumentsPage({ params: { projectId } }));
+    render(await ProjectDocumentsPage({ params: Promise.resolve({ projectId }) }));
     // Each document renders as a responsive card with labeled status chips.
     expect(screen.getAllByText("Storage").length).toBeGreaterThan(0);
     expect(screen.getAllByText("local").length).toBeGreaterThan(0);
@@ -102,7 +102,7 @@ describe("Document detail page", () => {
   it("shows the storage metadata card and a download button", async () => {
     render(
       await DocumentDetailPage({
-        params: { projectId, documentId: "doc_user_1" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_1" }),
       }),
     );
     expect(screen.getByText("Storage provider")).toBeInTheDocument();
@@ -117,7 +117,7 @@ describe("Document detail page", () => {
       .mockResolvedValueOnce({ ...baseDoc, fileAvailable: false });
     render(
       await DocumentDetailPage({
-        params: { projectId, documentId: "doc_user_1" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_1" }),
       }),
     );
     expect(
@@ -164,7 +164,7 @@ describe("Professional boundary in new Sprint 6 UI", () => {
   it("uses no prohibited final-decision wording", async () => {
     const { container } = render(
       await DocumentDetailPage({
-        params: { projectId, documentId: "doc_user_1" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_1" }),
       }),
     );
     const text = (container.textContent ?? "").toLowerCase();

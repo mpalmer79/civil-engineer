@@ -19,11 +19,12 @@ export const dynamic = "force-dynamic";
 // review-support items with their applicant response, reviewer follow-up, and
 // carry-forward status. Statuses are review-support labels only. Nothing here
 // approves, certifies, verifies, resolves, or closes anything.
-export default async function ResponseMatrixDetailPage({
-  params,
-}: {
-  params: { projectId: string; matrixId: string };
-}) {
+export default async function ResponseMatrixDetailPage(
+  props: {
+    params: Promise<{ projectId: string; matrixId: string }>;
+  }
+) {
+  const params = await props.params;
   const [matrix, items, packages] = await Promise.all([
     getResponseMatrix(params.projectId, params.matrixId),
     listResponseMatrixItems(params.projectId, params.matrixId),

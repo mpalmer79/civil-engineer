@@ -10,11 +10,12 @@ export const dynamic = "force-dynamic";
 // communication draft. It carries the fixed boundary statement and never exposes
 // raw paths, storage keys, signed URLs, or secrets. Nothing here approves,
 // resolves, or closes anything.
-export default async function CommentLetterPreviewPage({
-  params,
-}: {
-  params: { projectId: string; draftId: string };
-}) {
+export default async function CommentLetterPreviewPage(
+  props: {
+    params: Promise<{ projectId: string; draftId: string }>;
+  }
+) {
+  const params = await props.params;
   const preview = await previewCommentLetter(params.projectId, params.draftId);
   if (!preview) {
     notFound();

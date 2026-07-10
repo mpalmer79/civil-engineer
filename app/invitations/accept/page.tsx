@@ -7,11 +7,12 @@ export const metadata = {
   title: "Accept invitation",
 };
 
-export default function AcceptInvitationPage({
-  searchParams,
-}: {
-  searchParams: { token?: string };
-}) {
+export default async function AcceptInvitationPage(
+  props: {
+    searchParams: Promise<{ token?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   return (
     <div>
       <PageHeader

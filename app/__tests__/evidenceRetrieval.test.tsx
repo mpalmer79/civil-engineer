@@ -295,7 +295,7 @@ const projectId = "proj_user_1";
 
 describe("Evidence search page", () => {
   it("renders the search form and candidate-confirmation copy", async () => {
-    render(await EvidenceSearchPage({ params: { projectId } }));
+    render(await EvidenceSearchPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Evidence search")).toBeInTheDocument();
     expect(
       screen.getByText(/Evidence candidates require reviewer confirmation/i),
@@ -597,7 +597,7 @@ describe("Build page chunks button", () => {
 
 describe("Evidence candidate queue page", () => {
   it("renders saved candidates", async () => {
-    render(await EvidenceCandidateQueuePage({ params: { projectId } }));
+    render(await EvidenceCandidateQueuePage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Evidence candidate queue")).toBeInTheDocument();
     expect(screen.getByText("Plan Set.pdf page 2")).toBeInTheDocument();
     expect(screen.getByText("saved_for_review")).toBeInTheDocument();
@@ -608,7 +608,7 @@ describe("Evidence candidate detail page", () => {
   it("renders the candidate and the promote form", async () => {
     render(
       await EvidenceCandidateDetailPage({
-        params: { projectId, candidateId: "cand_1" },
+        params: Promise.resolve({ projectId, candidateId: "cand_1" }),
       }),
     );
     expect(
@@ -652,7 +652,7 @@ describe("Promote candidate form", () => {
 describe("Project overview links", () => {
   it("links to evidence search and the candidate queue", async () => {
     const { container } = render(
-      await ProjectDetailPage({ params: { projectId } }),
+      await ProjectDetailPage({ params: Promise.resolve({ projectId }) }),
     );
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) =>
       a.getAttribute("href"),
@@ -666,11 +666,11 @@ describe("Professional boundary in new Sprint 3 UI", () => {
   it("uses no prohibited final-decision wording", async () => {
     const { container: c1 } = render(
       await EvidenceCandidateDetailPage({
-        params: { projectId, candidateId: "cand_1" },
+        params: Promise.resolve({ projectId, candidateId: "cand_1" }),
       }),
     );
     const { container: c2 } = render(
-      await EvidenceCandidateQueuePage({ params: { projectId } }),
+      await EvidenceCandidateQueuePage({ params: Promise.resolve({ projectId }) }),
     );
     const text = (
       (c1.textContent ?? "") + (c2.textContent ?? "")

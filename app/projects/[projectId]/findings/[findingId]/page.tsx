@@ -16,11 +16,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function FindingDetailPage({
-  params,
-}: {
-  params: { projectId: string; findingId: string };
-}) {
+export default async function FindingDetailPage(
+  props: {
+    params: Promise<{ projectId: string; findingId: string }>;
+  }
+) {
+  const params = await props.params;
   const [finding, citations, candidates, matrices, packages] =
     await Promise.all([
       getProjectFinding(params.projectId, params.findingId),

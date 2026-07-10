@@ -3,11 +3,12 @@ import PageHeader from "@/components/PageHeader";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import { getResubmittalPackage } from "@/lib/api";
 
-export default async function ResubmittalDetailRoute({
-  params,
-}: {
-  params: { resubmittalPackageId: string };
-}) {
+export default async function ResubmittalDetailRoute(
+  props: {
+    params: Promise<{ resubmittalPackageId: string }>;
+  }
+) {
+  const params = await props.params;
   const pkg = await getResubmittalPackage(params.resubmittalPackageId);
 
   return (
@@ -17,7 +18,6 @@ export default async function ResubmittalDetailRoute({
         title={pkg ? pkg.packageName : "Resubmittal package"}
         description="A resubmittal package returned by the applicant or design engineer. Intake organizes review-support evidence and does not approve plans or certify compliance."
       />
-
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
         <Link
           href="/review-cycles"

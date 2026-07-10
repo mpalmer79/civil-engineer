@@ -10,11 +10,12 @@ import { getProjectDetail, getSheetViewerContext } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default async function PlanSheetDetailPage({
-  params,
-}: {
-  params: { projectId: string; sheetId: string };
-}) {
+export default async function PlanSheetDetailPage(
+  props: {
+    params: Promise<{ projectId: string; sheetId: string }>;
+  }
+) {
+  const params = await props.params;
   const project = await getProjectDetail(params.projectId);
   if (!project) {
     notFound();

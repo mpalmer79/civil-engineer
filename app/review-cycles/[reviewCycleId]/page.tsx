@@ -5,11 +5,12 @@ import ReviewCycleSummaryCard from "@/components/ReviewCycleSummaryCard";
 import NextCyclePreparationPanelReadOnly from "@/components/NextCyclePreparationReadOnly";
 import { getReviewCycle, getNextCyclePreparation } from "@/lib/api";
 
-export default async function ReviewCycleDetailRoute({
-  params,
-}: {
-  params: { reviewCycleId: string };
-}) {
+export default async function ReviewCycleDetailRoute(
+  props: {
+    params: Promise<{ reviewCycleId: string }>;
+  }
+) {
+  const params = await props.params;
   const [cycle, preparation] = await Promise.all([
     getReviewCycle(params.reviewCycleId),
     getNextCyclePreparation(params.reviewCycleId),

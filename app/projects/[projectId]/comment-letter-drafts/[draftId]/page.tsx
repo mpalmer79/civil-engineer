@@ -11,11 +11,12 @@ export const dynamic = "force-dynamic";
 // draft ready for reviewer handoff. The draft is a deterministic, reviewer-
 // editable communication artifact. It does not approve plans, certify compliance,
 // resolve an issue, or close an issue.
-export default async function CommentLetterDraftPage({
-  params,
-}: {
-  params: { projectId: string; draftId: string };
-}) {
+export default async function CommentLetterDraftPage(
+  props: {
+    params: Promise<{ projectId: string; draftId: string }>;
+  }
+) {
+  const params = await props.params;
   const draft = await getCommentLetterDraft(params.projectId, params.draftId);
   if (!draft) {
     notFound();

@@ -249,7 +249,7 @@ const projectId = "proj_1";
 describe("Response matrix landing page", () => {
   it("lists matrices and links to each one", async () => {
     const { container } = render(
-      await ResponseMatrixLandingPage({ params: { projectId } }),
+      await ResponseMatrixLandingPage({ params: Promise.resolve({ projectId }) }),
     );
     expect(screen.getByText("Brookside response matrix")).toBeInTheDocument();
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) =>
@@ -273,7 +273,7 @@ describe("Response matrix detail page", () => {
   it("renders the item table with status labels", async () => {
     render(
       await ResponseMatrixDetailPage({
-        params: { projectId, matrixId: "rm_1" },
+        params: Promise.resolve({ projectId, matrixId: "rm_1" }),
       }),
     );
     expect(screen.getByText("Detention and outlet control")).toBeInTheDocument();
@@ -287,7 +287,7 @@ describe("Response matrix item detail page", () => {
   it("renders the reviewer comment draft and the action panel", async () => {
     render(
       await ResponseMatrixItemDetailPage({
-        params: { projectId, itemId: "rmi_1" },
+        params: Promise.resolve({ projectId, itemId: "rmi_1" }),
       }),
     );
     expect(
@@ -321,7 +321,7 @@ describe("Matrix item actions", () => {
 describe("Resubmittal rounds page", () => {
   it("lists rounds and links to each round", async () => {
     const { container } = render(
-      await ResubmittalRoundsPage({ params: { projectId } }),
+      await ResubmittalRoundsPage({ params: Promise.resolve({ projectId }) }),
     );
     expect(screen.getByText(/First resubmittal/)).toBeInTheDocument();
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) =>
@@ -348,7 +348,7 @@ describe("Resubmittal round detail page", () => {
   it("renders linked documents and the status summary", async () => {
     render(
       await ResubmittalRoundDetailPage({
-        params: { projectId, roundId: "rr_1" },
+        params: Promise.resolve({ projectId, roundId: "rr_1" }),
       }),
     );
     expect(screen.getByText("Linked documents")).toBeInTheDocument();
@@ -412,7 +412,7 @@ describe("Link document to resubmittal round", () => {
 describe("Project overview Sprint 7 links", () => {
   it("links to the response matrix and resubmittal rounds", async () => {
     const { container } = render(
-      await ProjectDetailPage({ params: { projectId } }),
+      await ProjectDetailPage({ params: Promise.resolve({ projectId }) }),
     );
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) =>
       a.getAttribute("href"),
@@ -427,7 +427,7 @@ describe("Professional boundary in Sprint 7 UI", () => {
     const parts: string[] = [];
     parts.push(
       (
-        render(await ResponseMatrixLandingPage({ params: { projectId } }))
+        render(await ResponseMatrixLandingPage({ params: Promise.resolve({ projectId }) }))
           .container.textContent ?? ""
       ).toLowerCase(),
     );
@@ -435,14 +435,14 @@ describe("Professional boundary in Sprint 7 UI", () => {
       (
         render(
           await ResponseMatrixItemDetailPage({
-            params: { projectId, itemId: "rmi_1" },
+            params: Promise.resolve({ projectId, itemId: "rmi_1" }),
           }),
         ).container.textContent ?? ""
       ).toLowerCase(),
     );
     parts.push(
       (
-        render(await ResubmittalRoundsPage({ params: { projectId } })).container
+        render(await ResubmittalRoundsPage({ params: Promise.resolve({ projectId }) })).container
           .textContent ?? ""
       ).toLowerCase(),
     );

@@ -171,9 +171,7 @@ describe("Project access page", () => {
     const { default: ProjectAccessPage } = await import(
       "@/app/projects/[projectId]/access/page"
     );
-    const { container } = render(
-      <ProjectAccessPage params={{ projectId: "proj_1" }} />,
-    );
+    const { container } = render(await ProjectAccessPage({ params: Promise.resolve({ projectId: "proj_1" }) }));
     await waitFor(() =>
       expect(screen.getByText("Current access")).toBeInTheDocument(),
     );

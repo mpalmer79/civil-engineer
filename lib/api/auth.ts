@@ -256,14 +256,30 @@ export async function logoutUser(): Promise<void> {
   }
 }
 
+// Rendering optimization only: reflects the non-sensitive indicator cookie.
+// It is never authorization truth; validated session state comes from
+// getCurrentUser(), which calls the server-validated /api/session/status
+// endpoint. Any backend 401 clears the indicator via the BFF.
 export function isSignedIn(): boolean {
   return hasSessionIndicator();
 }
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
+  // Skip the request when no indicator cookie exists; a stale indicator is
+  // handled by the status endpoint, which validates and clears it.
   if (!hasSessionIndicator()) return null;
-  const data = await safeFetch<Record<string, unknown>>("/api/v1/auth/me");
-  return data ? mapUser(data) : null;
+  try {
+    const res = await fetch("/api/session/status", { cache: "no-store" });
+    if (!res.ok) return null;
+    const payload = (await res.json()) as {
+      authenticated?: boolean;
+      user?: Record<string, unknown> | null;
+    };
+    if (!payload.authenticated || !payload.user) return null;
+    return mapUser(payload.user);
+  } catch {
+    return null;
+  }
 }
 
 export async function listMyProjects(): Promise<UserProject[] | null> {

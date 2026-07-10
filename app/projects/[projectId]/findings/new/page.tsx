@@ -3,11 +3,12 @@ import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import ReviewerFindingForm from "@/components/ReviewerFindingForm";
 
-export default function NewFindingPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function NewFindingPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   return (
     <div>
       <PageHeader

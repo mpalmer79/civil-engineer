@@ -14,11 +14,12 @@ export const dynamic = "force-dynamic";
 // actions. Applicant responses are recorded for reviewer review, never as proof.
 // Carry-forward keeps the item under review across rounds. Nothing here approves,
 // certifies, verifies, resolves, or closes anything.
-export default async function ResponseMatrixItemDetailPage({
-  params,
-}: {
-  params: { projectId: string; itemId: string };
-}) {
+export default async function ResponseMatrixItemDetailPage(
+  props: {
+    params: Promise<{ projectId: string; itemId: string }>;
+  }
+) {
+  const params = await props.params;
   const [item, packages] = await Promise.all([
     getResponseMatrixItem(params.projectId, params.itemId),
     listResponsePackages(params.projectId),

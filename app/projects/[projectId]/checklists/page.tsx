@@ -12,11 +12,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectChecklistsPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function ProjectChecklistsPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const [project, checklists, rulePacks] = await Promise.all([
     getProjectDetail(params.projectId),
     listProjectChecklists(params.projectId),

@@ -20,11 +20,12 @@ const SHEETS_BOUNDARY_NOTE =
   "shows recorded sheet metadata only. It does not render drawings and does not " +
   "verify or validate any sheet.";
 
-export default async function PlanSheetIndexPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function PlanSheetIndexPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const project = await getProjectDetail(params.projectId);
   if (!project) {
     notFound();

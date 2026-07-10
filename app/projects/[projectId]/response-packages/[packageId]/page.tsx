@@ -16,11 +16,12 @@ export const dynamic = "force-dynamic";
 // items, controls to add records and run the package workflow. Package issuance
 // records a reviewer communication only. Nothing here approves, resolves, or
 // closes anything.
-export default async function ResponsePackageDetailPage({
-  params,
-}: {
-  params: { projectId: string; packageId: string };
-}) {
+export default async function ResponsePackageDetailPage(
+  props: {
+    params: Promise<{ projectId: string; packageId: string }>;
+  }
+) {
+  const params = await props.params;
   const [pkg, findings] = await Promise.all([
     getResponsePackageDetail(params.projectId, params.packageId),
     listProjectFindings(params.projectId),
@@ -48,7 +49,6 @@ export default async function ResponsePackageDetailPage({
         title={pkg.packageTitle}
         description="A reviewer-controlled communication artifact. Package issuance records a reviewer communication. It does not finalize a review outcome, resolve issues, or close issues."
       />
-
       <div className="mx-auto max-w-5xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
           <Link href={`${base}/response-packages`} className="nav-link">

@@ -16,11 +16,12 @@ export const dynamic = "force-dynamic";
 // the carried-forward items, and a review-support status summary. A resubmittal
 // round records an applicant submission for reviewer review. It does not finalize
 // a review outcome and does not resolve or close anything.
-export default async function ResubmittalRoundDetailPage({
-  params,
-}: {
-  params: { projectId: string; roundId: string };
-}) {
+export default async function ResubmittalRoundDetailPage(
+  props: {
+    params: Promise<{ projectId: string; roundId: string }>;
+  }
+) {
+  const params = await props.params;
   const [round, summary] = await Promise.all([
     getResubmittalRound(params.projectId, params.roundId),
     getResubmittalRoundSummary(params.projectId, params.roundId),

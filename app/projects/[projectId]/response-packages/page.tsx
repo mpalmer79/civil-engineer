@@ -15,11 +15,12 @@ export const dynamic = "force-dynamic";
 // each one. A response package assembles reviewer-selected records into a
 // controlled communication artifact. It does not approve a project, certify
 // compliance, resolve an issue, or close an issue.
-export default async function ResponsePackagesLandingPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function ResponsePackagesLandingPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const [project, packages] = await Promise.all([
     getProjectDetail(params.projectId),
     listResponsePackages(params.projectId),
@@ -36,7 +37,6 @@ export default async function ResponsePackagesLandingPage({
         title={`Response packages for ${project.projectName}`}
         description="Assemble reviewer-selected findings, checklist items, response matrix items, and citations into a controlled response package, then generate a deterministic comment letter draft. Package issuance records a reviewer communication. It does not finalize a review outcome, resolve issues, or close issues."
       />
-
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
           <Link href={base} className="nav-link">

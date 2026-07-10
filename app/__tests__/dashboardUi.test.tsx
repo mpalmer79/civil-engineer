@@ -312,9 +312,7 @@ describe("Organization dashboard page", () => {
     const { default: OrganizationDashboardPage } = await import(
       "@/app/organizations/[organizationId]/dashboard/page"
     );
-    const { container } = render(
-      <OrganizationDashboardPage params={{ organizationId: "org_1" }} />,
-    );
+    const { container } = render(await OrganizationDashboardPage({ params: Promise.resolve({ organizationId: "org_1" }) }));
     await waitFor(() =>
       expect(
         screen.getByText("Projects by review-support status"),
@@ -340,7 +338,7 @@ describe("Organization dashboard page", () => {
     const { default: OrganizationDashboardPage } = await import(
       "@/app/organizations/[organizationId]/dashboard/page"
     );
-    render(<OrganizationDashboardPage params={{ organizationId: "org_x" }} />);
+    render(await OrganizationDashboardPage({ params: Promise.resolve({ organizationId: "org_x" }) }));
     await waitFor(() =>
       expect(screen.getByText("Permission denied")).toBeInTheDocument(),
     );
@@ -352,9 +350,7 @@ describe("Project workload page", () => {
     const { default: ProjectWorkloadPage } = await import(
       "@/app/projects/[projectId]/workload/page"
     );
-    const { container } = render(
-      <ProjectWorkloadPage params={{ projectId: "proj_1" }} />,
-    );
+    const { container } = render(await ProjectWorkloadPage({ params: Promise.resolve({ projectId: "proj_1" }) }));
     await waitFor(() =>
       expect(screen.getByText("Workload metrics")).toBeInTheDocument(),
     );
@@ -375,7 +371,7 @@ describe("Project workload page", () => {
     const { default: ProjectWorkloadPage } = await import(
       "@/app/projects/[projectId]/workload/page"
     );
-    render(<ProjectWorkloadPage params={{ projectId: "proj_x" }} />);
+    render(await ProjectWorkloadPage({ params: Promise.resolve({ projectId: "proj_x" }) }));
     await waitFor(() =>
       expect(screen.getByText("Permission denied")).toBeInTheDocument(),
     );

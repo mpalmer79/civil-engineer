@@ -13,11 +13,12 @@ export const dynamic = "force-dynamic";
 // reviewer register a new round. Registering a round records an applicant
 // submission for reviewer review. It does not decide whether the resubmittal
 // satisfies engineering requirements and does not resolve or close anything.
-export default async function ResubmittalRoundsPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function ResubmittalRoundsPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const [project, rounds] = await Promise.all([
     getProjectDetail(params.projectId),
     listResubmittalRounds(params.projectId),

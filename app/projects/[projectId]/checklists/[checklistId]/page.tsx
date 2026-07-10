@@ -20,11 +20,12 @@ const EVIDENCE_STATUS_LABELS: Record<string, string> = {
   needs_reviewer_confirmation: "Needs reviewer confirmation",
 };
 
-export default async function ChecklistDetailPage({
-  params,
-}: {
-  params: { projectId: string; checklistId: string };
-}) {
+export default async function ChecklistDetailPage(
+  props: {
+    params: Promise<{ projectId: string; checklistId: string }>;
+  }
+) {
+  const params = await props.params;
   const [checklist, items] = await Promise.all([
     getProjectChecklist(params.projectId, params.checklistId),
     listProjectChecklistItems(params.projectId, params.checklistId),

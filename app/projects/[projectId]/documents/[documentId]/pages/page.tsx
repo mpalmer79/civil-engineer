@@ -8,11 +8,12 @@ import { listDocumentPages } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default async function DocumentPagesPage({
-  params,
-}: {
-  params: { projectId: string; documentId: string };
-}) {
+export default async function DocumentPagesPage(
+  props: {
+    params: Promise<{ projectId: string; documentId: string }>;
+  }
+) {
+  const params = await props.params;
   const pages = await listDocumentPages(params.projectId, params.documentId);
   const base = `/projects/${params.projectId}/documents/${params.documentId}`;
 

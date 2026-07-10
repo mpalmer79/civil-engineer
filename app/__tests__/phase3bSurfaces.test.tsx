@@ -193,7 +193,7 @@ afterEach(() => cleanup());
 
 describe("Project CAD page", () => {
   it("renders dashboard data, limitations note, and unpromoted promotion action", async () => {
-    render(await ProjectCadPage({ params: { projectId } }));
+    render(await ProjectCadPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("CAD intake and metadata")).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getByText("Uploaded CAD files")).toBeInTheDocument(),
@@ -210,7 +210,7 @@ describe("Project CAD page", () => {
   });
 
   it("introduces no banned wording", async () => {
-    const { container } = render(await ProjectCadPage({ params: { projectId } }));
+    const { container } = render(await ProjectCadPage({ params: Promise.resolve({ projectId }) }));
     await waitFor(() =>
       expect(screen.getByText("Uploaded CAD files")).toBeInTheDocument(),
     );
@@ -221,7 +221,7 @@ describe("Project CAD page", () => {
 
 describe("Project workflow board page", () => {
   it("renders the summary and grouped items", async () => {
-    render(await ProjectWorkflowBoardPage({ params: { projectId } }));
+    render(await ProjectWorkflowBoardPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Workflow board")).toBeInTheDocument();
     await waitFor(() =>
       expect(
@@ -233,7 +233,7 @@ describe("Project workflow board page", () => {
 
 describe("Project review packets page", () => {
   it("renders an honest empty state with a generate action", async () => {
-    render(await ProjectReviewPacketsPage({ params: { projectId } }));
+    render(await ProjectReviewPacketsPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Review packets")).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getByText("Generate review packet")).toBeInTheDocument(),
@@ -245,7 +245,7 @@ describe("Project plan sheet page", () => {
   it("renders real sheet metadata when available", async () => {
     render(
       await PlanSheetDetailPage({
-        params: { projectId, sheetId: "sheet_1" },
+        params: Promise.resolve({ projectId, sheetId: "sheet_1" }),
       }),
     );
     expect(screen.getByText("Sheet metadata")).toBeInTheDocument();
@@ -262,7 +262,7 @@ describe("Project plan sheet page", () => {
     );
     render(
       await PlanSheetDetailPage({
-        params: { projectId, sheetId: "missing" },
+        params: Promise.resolve({ projectId, sheetId: "missing" }),
       }),
     );
     expect(

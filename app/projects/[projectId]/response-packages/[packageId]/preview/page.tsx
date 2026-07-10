@@ -11,11 +11,12 @@ export const dynamic = "force-dynamic";
 // communication. It carries the fixed boundary statement and never exposes raw
 // file paths, storage keys, signed URLs, or secrets. Nothing here approves,
 // resolves, or closes anything.
-export default async function ResponsePackagePreviewPage({
-  params,
-}: {
-  params: { projectId: string; packageId: string };
-}) {
+export default async function ResponsePackagePreviewPage(
+  props: {
+    params: Promise<{ projectId: string; packageId: string }>;
+  }
+) {
+  const params = await props.params;
   const preview = await previewResponsePackage(
     params.projectId,
     params.packageId,
@@ -32,7 +33,6 @@ export default async function ResponsePackagePreviewPage({
         title={preview.packageTitle}
         description="A review-support preview of the reviewer communication. It does not finalize a review outcome, resolve issues, or close issues."
       />
-
       <div className="mx-auto max-w-4xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
           <Link

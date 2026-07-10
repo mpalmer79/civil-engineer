@@ -12,11 +12,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function EvidenceCandidateDetailPage({
-  params,
-}: {
-  params: { projectId: string; candidateId: string };
-}) {
+export default async function EvidenceCandidateDetailPage(
+  props: {
+    params: Promise<{ projectId: string; candidateId: string }>;
+  }
+) {
+  const params = await props.params;
   const [candidate, documents] = await Promise.all([
     getEvidenceCandidate(params.projectId, params.candidateId),
     listProjectDocuments(params.projectId),

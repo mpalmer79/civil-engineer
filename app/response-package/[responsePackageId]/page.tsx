@@ -3,11 +3,12 @@ import PageHeader from "@/components/PageHeader";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import ResponsePackageBuilder from "@/components/ResponsePackageBuilder";
 
-export default function ResponsePackageDetailPage({
-  params,
-}: {
-  params: { responsePackageId: string };
-}) {
+export default async function ResponsePackageDetailPage(
+  props: {
+    params: Promise<{ responsePackageId: string }>;
+  }
+) {
+  const params = await props.params;
   return (
     <div>
       <PageHeader

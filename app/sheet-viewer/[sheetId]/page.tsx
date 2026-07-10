@@ -3,11 +3,12 @@ import PageHeader from "@/components/PageHeader";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import PlanSheetViewer from "@/components/PlanSheetViewer";
 
-export default function SheetViewerDetailPage({
-  params,
-}: {
-  params: { sheetId: string };
-}) {
+export default async function SheetViewerDetailPage(
+  props: {
+    params: Promise<{ sheetId: string }>;
+  }
+) {
+  const params = await props.params;
   return (
     <div>
       <PageHeader

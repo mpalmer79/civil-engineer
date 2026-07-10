@@ -13,11 +13,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectFindingsPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function ProjectFindingsPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const [project, findings, citations] = await Promise.all([
     getProjectDetail(params.projectId),
     listProjectFindings(params.projectId),

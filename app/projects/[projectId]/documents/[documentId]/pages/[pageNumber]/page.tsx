@@ -8,11 +8,12 @@ import { getDocumentPage } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default async function DocumentPageDetail({
-  params,
-}: {
-  params: { projectId: string; documentId: string; pageNumber: string };
-}) {
+export default async function DocumentPageDetail(
+  props: {
+    params: Promise<{ projectId: string; documentId: string; pageNumber: string }>;
+  }
+) {
+  const params = await props.params;
   const pageNumber = Number(params.pageNumber);
   const page = await getDocumentPage(
     params.projectId,

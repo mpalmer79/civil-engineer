@@ -5,11 +5,12 @@ import RevisionComparisonSummaryCard from "@/components/RevisionComparisonSummar
 import RevisionChangeTable from "@/components/RevisionChangeTable";
 import { getRevisionComparison, getRevisionChanges } from "@/lib/api";
 
-export default async function RevisionComparisonDetailRoute({
-  params,
-}: {
-  params: { comparisonRunId: string };
-}) {
+export default async function RevisionComparisonDetailRoute(
+  props: {
+    params: Promise<{ comparisonRunId: string }>;
+  }
+) {
+  const params = await props.params;
   const [run, changes] = await Promise.all([
     getRevisionComparison(params.comparisonRunId),
     getRevisionChanges(params.comparisonRunId),

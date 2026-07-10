@@ -241,7 +241,7 @@ const projectId = "proj_user_1";
 
 describe("Project documents list", () => {
   it("shows processing status and page count", async () => {
-    render(await ProjectDocumentsPage({ params: { projectId } }));
+    render(await ProjectDocumentsPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("indexed_with_text")).toBeInTheDocument();
     // Each document card carries a labeled "Text extraction" status chip.
     expect(screen.getAllByText("Text extraction").length).toBeGreaterThan(0);
@@ -253,7 +253,7 @@ describe("Document detail page", () => {
   it("renders the index action for a PDF with a stored file", async () => {
     render(
       await DocumentDetailPage({
-        params: { projectId, documentId: "doc_user_1" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_1" }),
       }),
     );
     expect(screen.getByText("Index PDF pages")).toBeInTheDocument();
@@ -263,7 +263,7 @@ describe("Document detail page", () => {
   it("disables indexing for a non-PDF document", async () => {
     render(
       await DocumentDetailPage({
-        params: { projectId, documentId: "doc_user_2" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_2" }),
       }),
     );
     expect(screen.getByText(/not a PDF/i)).toBeInTheDocument();
@@ -273,7 +273,7 @@ describe("Document detail page", () => {
   it("enables build page chunks once text is extracted", async () => {
     render(
       await DocumentDetailPage({
-        params: { projectId, documentId: "doc_user_1" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_1" }),
       }),
     );
     expect(screen.getByText("Build page chunks")).toBeInTheDocument();
@@ -282,7 +282,7 @@ describe("Document detail page", () => {
   it("disables build page chunks before indexing and asks to index first", async () => {
     render(
       await DocumentDetailPage({
-        params: { projectId, documentId: "doc_user_3" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_3" }),
       }),
     );
     // The PDF can still be indexed, but chunks cannot be built yet.
@@ -296,7 +296,7 @@ describe("Document detail page", () => {
   it("disables build page chunks for no-text pages without implying absence", async () => {
     render(
       await DocumentDetailPage({
-        params: { projectId, documentId: "doc_user_4" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_4" }),
       }),
     );
     expect(screen.queryByText("Build page chunks")).not.toBeInTheDocument();
@@ -310,7 +310,7 @@ describe("Document pages index", () => {
   it("renders page rows", async () => {
     render(
       await DocumentPagesPage({
-        params: { projectId, documentId: "doc_user_1" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_1" }),
       }),
     );
     expect(screen.getAllByText("text_extracted").length).toBeGreaterThan(0);
@@ -323,7 +323,7 @@ describe("Document page detail", () => {
   it("renders extracted text preview", async () => {
     render(
       await DocumentPageDetail({
-        params: { projectId, documentId: "doc_user_1", pageNumber: "1" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_1", pageNumber: "1" }),
       }),
     );
     expect(screen.getByText("Outlet detail on page one")).toBeInTheDocument();
@@ -333,7 +333,7 @@ describe("Document page detail", () => {
   it("renders a no-text message for a scanned page", async () => {
     render(
       await DocumentPageDetail({
-        params: { projectId, documentId: "doc_user_1", pageNumber: "2" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_1", pageNumber: "2" }),
       }),
     );
     expect(screen.getByText(/No extractable text on this page/i)).toBeInTheDocument();
@@ -368,7 +368,7 @@ describe("Finding detail page", () => {
   it("shows the evidence citation section", async () => {
     render(
       await FindingDetailPage({
-        params: { projectId, findingId: "find_user_1" },
+        params: Promise.resolve({ projectId, findingId: "find_user_1" }),
       }),
     );
     expect(screen.getByText("Evidence citations")).toBeInTheDocument();
@@ -378,7 +378,7 @@ describe("Finding detail page", () => {
 
 describe("Project evidence citations page", () => {
   it("renders the citations table", async () => {
-    render(await ProjectEvidenceCitationsPage({ params: { projectId } }));
+    render(await ProjectEvidenceCitationsPage({ params: Promise.resolve({ projectId }) }));
     expect(
       screen.getByText("Detention basin outlet detail missing"),
     ).toBeInTheDocument();
@@ -390,12 +390,12 @@ describe("Professional boundary in new Sprint 2 UI", () => {
   it("uses no prohibited final-decision wording", async () => {
     const { container: c1 } = render(
       await DocumentPageDetail({
-        params: { projectId, documentId: "doc_user_1", pageNumber: "1" },
+        params: Promise.resolve({ projectId, documentId: "doc_user_1", pageNumber: "1" }),
       }),
     );
     const { container: c2 } = render(
       await FindingDetailPage({
-        params: { projectId, findingId: "find_user_1" },
+        params: Promise.resolve({ projectId, findingId: "find_user_1" }),
       }),
     );
     const { container: c3 } = render(

@@ -137,11 +137,12 @@ function FindingCardItem({
   );
 }
 
-export default async function PlanConsistencyPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function PlanConsistencyPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const project = await getProjectDetail(params.projectId);
   if (!project) {
     notFound();

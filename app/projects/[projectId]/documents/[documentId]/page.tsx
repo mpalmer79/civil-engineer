@@ -17,11 +17,12 @@ function isPdf(name: string | null, contentType: string | null): boolean {
   return (contentType ?? "").toLowerCase() === "application/pdf";
 }
 
-export default async function DocumentDetailPage({
-  params,
-}: {
-  params: { projectId: string; documentId: string };
-}) {
+export default async function DocumentDetailPage(
+  props: {
+    params: Promise<{ projectId: string; documentId: string }>;
+  }
+) {
+  const params = await props.params;
   const [doc, rounds] = await Promise.all([
     getProjectDocument(params.projectId, params.documentId),
     listResubmittalRounds(params.projectId),

@@ -41,7 +41,7 @@ describe("EmptyState", () => {
       <EmptyState
         title="No accessible projects yet"
         description="Create a project or open the demo."
-        action={<a href="/projects/new">Create a project record</a>}
+        action={<button type="button">Create a project record</button>}
       />,
     );
     expect(screen.getByText("No accessible projects yet")).toBeInTheDocument();
@@ -49,7 +49,7 @@ describe("EmptyState", () => {
       screen.getByText("Create a project or open the demo."),
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: "Create a project record" }),
+      screen.getByRole("button", { name: "Create a project record" }),
     ).toBeInTheDocument();
     expect(container.querySelector(".empty-state")).not.toBeNull();
   });

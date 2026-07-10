@@ -8,11 +8,12 @@ import { getRulePack } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default async function RulePackDetailPage({
-  params,
-}: {
-  params: { rulePackId: string };
-}) {
+export default async function RulePackDetailPage(
+  props: {
+    params: Promise<{ rulePackId: string }>;
+  }
+) {
+  const params = await props.params;
   const pack = await getRulePack(params.rulePackId);
   if (!pack) {
     notFound();

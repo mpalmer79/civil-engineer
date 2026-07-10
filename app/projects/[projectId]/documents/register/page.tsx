@@ -3,11 +3,12 @@ import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import DocumentRegisterForm from "@/components/DocumentRegisterForm";
 
-export default function RegisterDocumentPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function RegisterDocumentPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   return (
     <div>
       <PageHeader

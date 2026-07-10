@@ -7,11 +7,12 @@ import { getProjectDetail } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectReviewPacketsPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function ProjectReviewPacketsPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const project = await getProjectDetail(params.projectId);
   if (!project) {
     notFound();

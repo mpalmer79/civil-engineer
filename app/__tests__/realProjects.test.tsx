@@ -148,7 +148,7 @@ import ProjectFindingsPage from "@/app/projects/[projectId]/findings/page";
 import NewFindingPage from "@/app/projects/[projectId]/findings/new/page";
 import ProjectAuditEventsPage from "@/app/projects/[projectId]/audit-events/page";
 
-const params = { projectId: "proj_user_abc123" };
+const params = Promise.resolve({ projectId: "proj_user_abc123" });
 
 describe("Projects list page", () => {
   it("renders demo and user-created project rows with source badges", async () => {
@@ -196,7 +196,7 @@ describe("Project documents page", () => {
 
 describe("Document registration page", () => {
   it("renders the document registration form", async () => {
-    render(RegisterDocumentPage({ params }));
+    render(await RegisterDocumentPage({ params }));
     expect(screen.getByText("Register metadata")).toBeInTheDocument();
     // "Register document" is both the page title and the form submit button.
     expect(screen.getAllByText("Register document").length).toBeGreaterThan(0);
@@ -215,7 +215,7 @@ describe("Reviewer findings page", () => {
 
 describe("New finding page", () => {
   it("renders the reviewer finding form", async () => {
-    render(NewFindingPage({ params }));
+    render(await NewFindingPage({ params }));
     expect(
       screen.getByText("Create review-support finding"),
     ).toBeInTheDocument();
@@ -239,8 +239,8 @@ describe("Audit events page", () => {
 describe("Professional boundary in new UI", () => {
   it("uses no prohibited final-decision wording", async () => {
     const { container: c1 } = render(await ProjectDetailPage({ params }));
-    const { container: c2 } = render(NewFindingPage({ params }));
-    const { container: c3 } = render(RegisterDocumentPage({ params }));
+    const { container: c2 } = render(await NewFindingPage({ params }));
+    const { container: c3 } = render(await RegisterDocumentPage({ params }));
     const text = (
       (c1.textContent ?? "") +
       (c2.textContent ?? "") +

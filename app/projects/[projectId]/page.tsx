@@ -14,11 +14,12 @@ import { getProjectDetail } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectDetailPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function ProjectDetailPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const project = await getProjectDetail(params.projectId);
   if (!project) {
     notFound();

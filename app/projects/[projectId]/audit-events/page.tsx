@@ -17,11 +17,12 @@ function metadataSummary(metadata: Record<string, unknown>): string {
   return entries.map(([k, v]) => `${k}: ${String(v)}`).join(", ");
 }
 
-export default async function ProjectAuditEventsPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
+export default async function ProjectAuditEventsPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
   const [project, events] = await Promise.all([
     getProjectDetail(params.projectId),
     listProjectAuditEvents(params.projectId),
