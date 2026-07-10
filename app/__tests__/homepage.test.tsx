@@ -138,6 +138,13 @@ describe("HomeDashboard human review boundary", () => {
     );
     expect(statements.length).toBeGreaterThanOrEqual(1);
   });
+
+  it("offers a compact reviewer inspection path near the CTAs", () => {
+    render(<HomeDashboard />);
+    expect(
+      screen.getByText(/review path: start with the guided demo/i),
+    ).toBeInTheDocument();
+  });
 });
 
 describe("HomeDashboard semantic structure", () => {
