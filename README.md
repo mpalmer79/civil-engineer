@@ -4,6 +4,40 @@ Civil Engineer AI is a document-first, evidence-first, reviewer-controlled storm
 
 It does not approve plans, certify compliance, verify CAD, validate design, declare safety, resolve issues, close issues, or replace a licensed Professional Engineer.
 
+## Recruiter Review Path
+
+A five-minute path for recruiters, hiring managers, and technical evaluators:
+
+1. Start on the homepage (`/`). The hero shows the Brookside Meadows demo project with a short description, proof chips, and calls to action before the operational dashboard.
+2. Review the Brookside Meadows project context under the hero image: a synthetic 47-lot residential subdivision used to demonstrate stormwater review support.
+3. Open the Guided Demo (`/guided-demo`) to walk the reviewer journey step by step.
+4. Open the Reviewer Queue (`/dashboard/queue`) to see workload triage and pending reviewer actions.
+5. Open a project (`/projects/proj_brookside_meadows`) or a review packet (`/review-packet`) to see the evidence detail.
+6. Look for three things throughout: the evidence-first workflow where every finding links to source citations, applicant response tracking across resubmittal rounds, and the human review boundary where the reviewer makes every decision.
+
+## What This Project Demonstrates
+
+- Next.js App Router frontend with TypeScript and Tailwind CSS
+- Civil engineering domain modeling for stormwater plan review
+- Stormwater review workflow simulation across multiple review rounds
+- Evidence-first document review with page-level citations
+- Applicant response package flow and resubmittal tracking
+- Reviewer-controlled handoff packages
+- Seeded synthetic data clearly labeled as review-support demo data
+- Human-in-the-loop AI boundary enforced in code and copy
+
+## Synthetic Demo Data
+
+Brookside Meadows and the other demo projects shown on the dashboard are synthetic demo data created for portfolio demonstration. The Town of Hartwell is not a real municipality, the submissions are not real submissions, and this is not a live engineering approval system. Seeded records are labeled as seeded review-support data and were not extracted from real CAD, PDF, GIS, or plan files.
+
+## Known Limitations
+
+- Demo data is synthetic and seeded for demonstration.
+- AI review support is illustrative; live AI calls are disabled by default and the demo runs deterministically.
+- Engineering decisions remain human controlled at every step.
+- This is not a licensed engineering review system and does not replace a licensed Professional Engineer.
+- Some workflows are mocked or seeded depending on the module; the production foundation sections below describe what is backed by the real backend.
+
 ## Pilot release status
 
 Civil Engineer AI is a pilot-ready prototype for early design-partner
