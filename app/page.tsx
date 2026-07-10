@@ -271,6 +271,11 @@ export default function HomeDashboard() {
               </div>
 
               <p className="mt-3 text-xs text-slate-500">
+                Review path: start with the guided demo, open the reviewer queue, inspect
+                evidence, then review the handoff package.
+              </p>
+
+              <p className="mt-1 text-xs text-slate-500">
                 AI provides review support. You make the decisions. Every review is human.
               </p>
             </div>

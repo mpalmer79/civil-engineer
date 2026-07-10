@@ -15,6 +15,23 @@ A five-minute path for recruiters, hiring managers, and technical evaluators:
 5. Open a project (`/projects/proj_brookside_meadows`) or a review packet (`/review-packet`) to see the evidence detail.
 6. Look for three things throughout: the evidence-first workflow where every finding links to source citations, applicant response tracking across resubmittal rounds, and the human review boundary where the reviewer makes every decision.
 
+The project can be reviewed on the live demo linked below or locally with the steps in [Local development](#local-development).
+
+## Visual Walkthrough
+
+![Animated walkthrough of the Civil Engineer AI demo screens](public/images/civil-engineer/recruiter-walkthrough.gif)
+
+The walkthrough loops through nine actual app screens: the homepage hero, the Brookside Meadows context, the guided demo, the projects workspace, documents, findings, the response package, the review packet, and the human review queue. The frame list and regeneration steps live in [docs/recruiter-walkthrough-storyboard.md](docs/recruiter-walkthrough-storyboard.md).
+
+## Technical Review Links
+
+- [Recruiter Walkthrough](docs/recruiter-walkthrough.md): the five-minute route sequence and the fifteen-minute code inspection points.
+- [Architecture Overview](docs/architecture-overview.md): the current-state system diagram with technical review notes. The original design brief is [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+- [Real vs Mocked](docs/real-vs-mocked.md): a capability-by-capability map of what is implemented, seeded, simulated, or out of scope, with evidence paths.
+- [Synthetic Demo Data](docs/synthetic-demo-data.md): what Brookside Meadows represents and where the seeded data lives.
+- [Technical Decisions](docs/technical-decisions.md): the reasoning behind the recruiter-first homepage, the boundary, and the data strategy.
+- [Test Summary](docs/test-summary.md): what the frontend and backend suites protect and how to run them.
+
 ## What This Project Demonstrates
 
 - Next.js App Router frontend with TypeScript and Tailwind CSS
