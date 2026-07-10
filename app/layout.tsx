@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
+import CivilEngineerAIGuide from "@/components/CivilEngineerAIGuide";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -23,6 +24,7 @@ export default function RootLayout({
         <SiteNav />
         <main className="flex-1">{children}</main>
         <SiteFooter />
+        <CivilEngineerAIGuide />
       </body>
     </html>
   );
