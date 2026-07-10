@@ -25,8 +25,8 @@ const workloadTotal = 54;
 const recentActivity = [
   { title: "Document set uploaded", meta: "Brookside Meadows", time: "2h ago", href: "/documents" },
   { title: "Response submitted by applicant", meta: "Pinecrest Commercial", time: "4h ago", href: "/response-package" },
-  { title: "Finding updated", meta: "Riverside Office Park", time: "5h ago", href: "/findings" },
-  { title: "Package ready for handoff", meta: "Meadowbrook Phase 2", time: "1d ago", href: "/review-packet" },
+  { title: "DXF metadata parsed in CAD Intake", meta: "Brookside Meadows", time: "5h ago", href: "/cad-intake" },
+  { title: "Package ready for handoff", meta: "Meadowbrook", time: "1d ago", href: "/review-packet" },
 ];
 
 const priorityAlerts = [
@@ -43,6 +43,25 @@ const sidebar = [
   { label: "Organizations", href: "/organizations", icon: "users" },
   { label: "Guided Demo", href: "/guided-demo", icon: "play" },
 ];
+
+const heroImage = {
+  src: "/images/civil-engineer/brookside-project-thumbnail.webp",
+  alt: "Brookside Meadows residential subdivision aerial view",
+} as const;
+
+const heroCtas = [
+  { label: "Start Guided Demo", href: "/guided-demo", primary: true },
+  { label: "Open Review Queue", href: "/dashboard/queue", primary: false },
+  { label: "View Projects", href: "/projects", primary: false },
+] as const;
+
+const proofChips = [
+  "Stormwater review workflow",
+  "PDF evidence citations",
+  "DXF and plan review support",
+  "Applicant response tracking",
+  "Human reviewer handoff",
+] as const;
 
 function Donut({
   active,
@@ -190,12 +209,15 @@ export default function HomeDashboard() {
         </Link>
       </aside>
 
-      <main className="flex-1">
-        <section className="px-4 pb-4 pt-4 sm:px-6 lg:px-8">
+      <div className="flex-1">
+        <section aria-labelledby="home-hero-heading" className="px-4 pb-4 pt-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-6xl">
             <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <h1 className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
+                <h1
+                  id="home-hero-heading"
+                  className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl"
+                >
                   Reviewer Command Center
                 </h1>
                 <p className="mt-1 text-sm text-slate-600">
@@ -212,22 +234,66 @@ export default function HomeDashboard() {
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
               <div className="relative aspect-[16/9] w-full">
                 <Image
-                  src="/images/civil-engineer/brookside-project-thumbnail.webp"
-                  alt="Brookside Meadows residential subdivision aerial view"
+                  src={heroImage.src}
+                  alt={heroImage.alt}
                   fill
                   priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) calc(100vw - 320px), 1152px"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) calc(100vw - 320px), 1024px"
                   className="object-cover object-center"
                 />
               </div>
             </div>
+
+            <div className="mx-auto mt-4 max-w-3xl text-center">
+              <p className="text-sm leading-relaxed text-slate-600">
+                Brookside Meadows is a synthetic 47-lot residential subdivision used to
+                demonstrate stormwater review support, evidence tracking, applicant response
+                management, and reviewer-controlled handoff packages.
+              </p>
+
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                {heroCtas.map((cta) => (
+                  <Link
+                    key={cta.href}
+                    href={cta.href}
+                    className={
+                      cta.primary
+                        ? "rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                        : "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                    }
+                  >
+                    {cta.label}
+                  </Link>
+                ))}
+              </div>
+
+              <p className="mt-3 text-xs text-slate-500">
+                AI provides review support. You make the decisions. Every review is human.
+              </p>
+            </div>
           </div>
         </section>
 
-        <div className="grid grid-cols-1 gap-6 px-4 pb-6 sm:px-6 lg:px-8 xl:grid-cols-[1fr_300px]">
+        <section aria-label="What this project demonstrates" className="px-4 pb-4 sm:px-6 lg:px-8">
+          <ul className="mx-auto flex max-w-6xl flex-wrap justify-center gap-2">
+            {proofChips.map((chip) => (
+              <li
+                key={chip}
+                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm"
+              >
+                {chip}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section
+          aria-label="Operational dashboard"
+          className="grid grid-cols-1 gap-6 px-4 pb-6 sm:px-6 lg:px-8 xl:grid-cols-[1fr_300px]"
+        >
           <div className="space-y-6">
             <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
               {kpis.map((k) => (
@@ -385,8 +451,8 @@ export default function HomeDashboard() {
               </p>
             </div>
           </aside>
-        </div>
-      </main>
+        </section>
+      </div>
     </div>
   );
 }

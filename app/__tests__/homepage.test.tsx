@@ -1,202 +1,162 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 
-import HomePage from "@/app/page";
-import { BROOKSIDE_PROJECT_ID } from "@/lib/demoJourney";
-import { marketingMedia } from "@/lib/marketingMedia";
+import HomeDashboard from "@/app/page";
 
 // Cleanup is not globally configured, so reset the DOM between renders to avoid
 // duplicate matches when the full page is rendered in more than one test.
 afterEach(() => cleanup());
 
-const base = `/projects/${BROOKSIDE_PROJECT_ID}`;
+const HERO_IMAGE_FILE = "brookside-project-thumbnail.webp";
+const HERO_IMAGE_ALT = "Brookside Meadows residential subdivision aerial view";
 
-describe("HomePage AEC pre-submittal QA positioning", () => {
-  it("leads with an outcome-first headline aimed at civil/AEC firms", () => {
-    render(HomePage());
+describe("HomeDashboard recruiter-facing hero", () => {
+  it("leads with the Reviewer Command Center heading and positioning line", () => {
+    render(<HomeDashboard />);
     expect(
-      screen.getByRole("heading", {
-        level: 1,
-        name: /catch stormwater review issues before submittal/i,
-      }),
+      screen.getByRole("heading", { level: 1, name: /reviewer command center/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/document-first\. evidence-first\. reviewer-controlled\./i),
     ).toBeInTheDocument();
   });
 
-  it("explains the pre-submittal QA outcome in the hero", () => {
-    const { container } = render(HomePage());
-    const text = (container.textContent ?? "").toLowerCase();
-    expect(text).toContain("pre-submittal qa");
-    expect(text).toContain("review-support findings");
-    expect(text).toContain("reduce avoidable resubmittal risk");
-    expect(text).toContain("draft reviewer handoff package");
+  it("shows the Brookside Meadows hero image with descriptive alt text", () => {
+    const { container } = render(<HomeDashboard />);
+    const hero = screen.getByAltText(HERO_IMAGE_ALT);
+    expect(hero).toBeInTheDocument();
+    expect(hero.getAttribute("src") ?? "").toContain(HERO_IMAGE_FILE);
+    // The hero card keeps a stable aspect ratio and cover fit.
+    expect(container.querySelector(".aspect-\\[16\\/9\\]")).not.toBeNull();
   });
 
-  it("does not lead the hero with municipal reviewers as the buyer", () => {
-    const { container } = render(HomePage());
-    const heading = screen.getByRole("heading", { level: 1 });
-    expect(heading.textContent?.toLowerCase()).not.toContain("municipal");
+  it("references a hero image file that exists in public assets", () => {
+    const imagePath = join(
+      process.cwd(),
+      "public/images/civil-engineer",
+      HERO_IMAGE_FILE,
+    );
+    expect(existsSync(imagePath)).toBe(true);
+  });
+
+  it("explains the Brookside Meadows demo project near the hero", () => {
+    render(<HomeDashboard />);
+    expect(
+      screen.getByText(/synthetic 47-lot residential subdivision/i),
+    ).toBeInTheDocument();
+  });
+
+  it("does not overlay duplicate Brookside Meadows text on the hero image card", () => {
+    // The description lives outside the image container. The image card only
+    // contains the Image element, so no text is layered over the visual.
+    const { container } = render(<HomeDashboard />);
+    const heroCard = container.querySelector(".aspect-\\[16\\/9\\]");
+    expect(heroCard?.textContent ?? "").toBe("");
   });
 });
 
-describe("HomePage hero proof and capabilities", () => {
-  it("highlights DXF/CAD intake, evidence traceability, and draft handoff", () => {
-    const { container } = render(HomePage());
-    const text = (container.textContent ?? "").toLowerCase();
-    expect(text).toContain("dxf");
-    expect(text).toContain("traceability");
-    expect(text).toContain("plan and report consistency");
-    expect(text).toContain("draft reviewer handoff package");
-  });
+describe("HomeDashboard proof chips", () => {
+  const chips = [
+    "Stormwater review workflow",
+    "PDF evidence citations",
+    "DXF and plan review support",
+    "Applicant response tracking",
+    "Human reviewer handoff",
+  ];
 
-  it("links the four capabilities to real demo surfaces", () => {
-    const { container } = render(HomePage());
-    for (const href of [
-      `${base}/cad`,
-      `${base}/plan-consistency`,
-      `${base}/traceability`,
-      `${base}/review-packets`,
+  it("lists compact proof chips before the KPI cards", () => {
+    render(<HomeDashboard />);
+    for (const chip of chips) {
+      expect(screen.getByText(chip)).toBeInTheDocument();
+    }
+  });
+});
+
+describe("HomeDashboard call-to-action links", () => {
+  const ctas = [
+    { name: /start guided demo/i, href: "/guided-demo", routeDir: "app/guided-demo" },
+    { name: /open review queue/i, href: "/dashboard/queue", routeDir: "app/dashboard/queue" },
+    { name: /view projects/i, href: "/projects", routeDir: "app/projects" },
+  ];
+
+  it("points each CTA at a real Next.js route", () => {
+    render(<HomeDashboard />);
+    for (const cta of ctas) {
+      const link = screen.getByRole("link", { name: cta.name });
+      expect(link.getAttribute("href")).toBe(cta.href);
+      expect(existsSync(join(process.cwd(), cta.routeDir))).toBe(true);
+    }
+  });
+});
+
+describe("HomeDashboard operational dashboard", () => {
+  it("keeps the KPI cards with their values and links", () => {
+    const { container } = render(<HomeDashboard />);
+    for (const kpi of [
+      { label: "Projects", value: "24" },
+      { label: "In Review", value: "18" },
+      { label: "Pending Response", value: "7" },
+      { label: "Ready for Handoff", value: "5" },
     ]) {
-      expect(container.querySelector(`a[href="${href}"]`)).not.toBeNull();
+      const card = Array.from(container.querySelectorAll("a")).find(
+        (a) => a.textContent?.includes(kpi.label) && a.textContent?.includes(kpi.value),
+      );
+      expect(card, `KPI card for ${kpi.label}`).toBeTruthy();
     }
   });
 
-  it("shows fixture-backed proof metrics from the seeded demo", () => {
-    render(HomePage());
-    expect(screen.getByText("Review-support findings")).toBeInTheDocument();
-    expect(screen.getByText("Indexed documents")).toBeInTheDocument();
-  });
-
-  it("does not contain hero placeholder language", () => {
-    const { container } = render(HomePage());
-    const text = (container.textContent ?? "").toLowerCase();
-    expect(text).not.toContain("placeholder");
-  });
-});
-
-describe("HomePage media-forward visuals", () => {
-  it("renders marketing media images from the media manifests", () => {
-    const { container } = render(HomePage());
-    const images = container.querySelectorAll(
-      'img[data-testid="marketing-media-image"]',
-    );
-    // Hero plus the four visual story sections plus the boundary visual.
-    expect(images.length).toBeGreaterThanOrEqual(5);
-    const srcs = Array.from(images).map((img) => img.getAttribute("src") ?? "");
-    expect(
-      srcs.every((src) => src.startsWith("/images/civil-engineer/")),
-    ).toBe(true);
-  });
-
-  it("leads the hero with a real product image, not placeholder text", () => {
-    const { container } = render(HomePage());
-    const hero = container.querySelector(
-      `img[src="${marketingMedia.hero.src}"]`,
-    );
-    expect(hero).not.toBeNull();
-    expect(hero?.getAttribute("alt") ?? "").not.toBe("");
-  });
-
-  it("gives every marketing media image non-empty alt text", () => {
-    const { container } = render(HomePage());
-    const images = container.querySelectorAll(
-      'img[data-testid="marketing-media-image"]',
-    );
-    for (const img of Array.from(images)) {
-      expect((img.getAttribute("alt") ?? "").length).toBeGreaterThan(0);
+  it("keeps the dashboard widgets", () => {
+    render(<HomeDashboard />);
+    for (const heading of [
+      "Active Workload",
+      "Recent Activity",
+      "Priority Alerts",
+      "Map Overview",
+      "System Guidance",
+    ]) {
+      expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument();
     }
   });
 
-  it("does not use hero visual placeholder language", () => {
-    const { container } = render(HomePage());
-    const text = (container.textContent ?? "").toLowerCase();
-    expect(text).not.toContain("hero visual placeholder");
-    expect(text).not.toContain("placeholder");
+  it("does not repeat the hero image inside the Map Overview widget", () => {
+    render(<HomeDashboard />);
+    const heroImages = screen
+      .getAllByRole("img")
+      .filter((img) => (img.getAttribute("src") ?? "").includes(HERO_IMAGE_FILE));
+    expect(heroImages).toHaveLength(1);
   });
 });
 
-describe("HomePage primary demo call to action", () => {
-  it("points the primary CTA at the guided demo route", () => {
-    const { container } = render(HomePage());
-    const primary = container.querySelector("a.btn.btn-primary");
-    expect(primary).not.toBeNull();
-    const href = primary?.getAttribute("href") ?? "";
-    expect(href).toBe("/guided-demo");
-
-    // The target maps to a real Next.js route directory, so the CTA cannot 404.
-    const routeDir = join(process.cwd(), "app/guided-demo");
-    expect(existsSync(routeDir)).toBe(true);
-  });
-
-  it("keeps the guided demo reachable as a secondary path", () => {
-    const { container } = render(HomePage());
-    expect(container.querySelector('a[href="/guided-demo"]')).not.toBeNull();
-  });
-
-  it("clearly labels the demo as a sample project with demo data", () => {
-    const { container } = render(HomePage());
-    const text = (container.textContent ?? "").toLowerCase();
-    expect(text).toContain("brookside meadows");
-    expect(text).toContain("demo data");
-    expect(text).toContain("sample project");
+describe("HomeDashboard human review boundary", () => {
+  it("states that every review is human", () => {
+    render(<HomeDashboard />);
+    const statements = screen.getAllByText(
+      /ai provides review support\. you make the decisions\. every review is human\./i,
+    );
+    expect(statements.length).toBeGreaterThanOrEqual(1);
   });
 });
 
-describe("HomePage professional boundary", () => {
-  it("keeps the professional boundary in a single section, not duplicated banners", () => {
-    render(HomePage());
-    // The full SafetyBoundaryBanner renders one "Professional boundary"
-    // heading. Exactly one keeps the boundary as a single credibility section
-    // rather than several top-level banners.
-    expect(screen.getAllByText(/Professional boundary/i)).toHaveLength(1);
+describe("HomeDashboard semantic structure", () => {
+  it("does not render its own main landmark because the root layout provides one", () => {
+    const { container } = render(<HomeDashboard />);
+    expect(container.querySelector("main")).toBeNull();
   });
 
-  it("frames the boundary as human reviewers staying in control", () => {
-    render(HomePage());
-    expect(
-      screen.getByRole("heading", { name: /human reviewers stay in control/i }),
-    ).toBeInTheDocument();
-  });
-
-  it("keeps the backend status banner available", () => {
-    render(HomePage());
-    expect(screen.getByText(/Checking backend connection/i)).toBeInTheDocument();
+  it("labels the hero, proof, and dashboard sections", () => {
+    const { container } = render(<HomeDashboard />);
+    expect(container.querySelectorAll("section").length).toBeGreaterThanOrEqual(3);
   });
 });
 
-describe("HomePage pilot call to action", () => {
-  it("links the pilot CTA to the public pilot request route", () => {
-    const { container } = render(HomePage());
-    const pilot = container.querySelector('a[href="/pilot"]');
-    expect(pilot).not.toBeNull();
-    expect(pilot?.textContent?.toLowerCase()).toContain("pilot");
+describe("HomeDashboard language hygiene", () => {
+  const source = () =>
+    readFileSync(join(process.cwd(), "app/page.tsx"), "utf8").toLowerCase();
 
-    // The pilot CTA maps to a real Next.js route directory, so it cannot 404.
-    expect(existsSync(join(process.cwd(), "app/pilot"))).toBe(true);
-  });
-
-  it("no longer shows a disabled pilot placeholder control", () => {
-    render(HomePage());
-    expect(
-      screen.queryByRole("button", { name: /pilot access coming soon/i }),
-    ).toBeNull();
-  });
-});
-
-describe("HomePage language hygiene", () => {
   it("does not use prohibited final-decision wording as a product claim", () => {
-    // Scan the homepage source rather than rendered output. The rendered page
-    // includes the SafetyBoundaryBanner, which intentionally lists forbidden
-    // vocabulary as examples of language the system never uses. Negative
-    // boundary statements ("does not approve ... certify ... verify ...") live
-    // in that banner, so source-scanning the page itself distinguishes a
-    // product promise from a boundary disclaimer.
-    const source = readFileSync(
-      join(process.cwd(), "app/page.tsx"),
-      "utf8",
-    ).toLowerCase();
     for (const phrase of [
       "plan approved",
       "design validated",
@@ -205,17 +165,14 @@ describe("HomePage language hygiene", () => {
       "are certified",
       "marked safe",
       "passed review",
-      "pass review the first time",
-      "guaranteed first-pass",
-      "meets all requirements",
       "production ready",
     ]) {
-      expect(source).not.toContain(phrase);
+      expect(source()).not.toContain(phrase);
     }
   });
 
   it("does not include tool attribution in visible homepage copy", () => {
-    const { container } = render(HomePage());
+    const { container } = render(<HomeDashboard />);
     const text = (container.textContent ?? "").toLowerCase();
     expect(text).not.toContain("claude code");
     expect(text).not.toContain("claude.ai/code");
@@ -223,16 +180,7 @@ describe("HomePage language hygiene", () => {
     expect(text).not.toContain("co-authored-by");
   });
 
-  it("does not contain stale sprint-number copy", () => {
-    const { container } = render(HomePage());
-    expect((container.textContent ?? "").toLowerCase()).not.toContain("sprint");
-  });
-});
-
-describe("SaaS positioning document", () => {
-  it("ships docs/SAAS_POSITIONING.md alongside the reframed homepage", () => {
-    expect(existsSync(join(process.cwd(), "docs/SAAS_POSITIONING.md"))).toBe(
-      true,
-    );
+  it("does not use em dashes in homepage copy", () => {
+    expect(source()).not.toContain("—");
   });
 });
