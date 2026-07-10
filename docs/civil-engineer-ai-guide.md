@@ -16,10 +16,16 @@ The guide is a single React component, `components/CivilEngineerAIGuide.tsx`, wi
 ## Supported categories
 
 - Project Overview
+- For Civil Engineers
 - Brookside Meadows Demo
 - Review Workflow
 - Evidence & Documents
+- Technical Implementation
 - Developer & Source Code
+
+## Conversation behavior
+
+The panel keeps a conversation thread. Each question the visitor sends stays visible as a message, the matching answer appears beneath it, exchanges accumulate instead of replacing each other, and the thread scrolls to the newest answer automatically. A clear conversation control resets the thread. Typed questions are scored against every topic's keyword list, with multi-word phrases weighted higher, and the best-scoring topic answers; the safety scope check always runs first.
 
 ## Suggested questions
 

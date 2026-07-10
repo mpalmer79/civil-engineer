@@ -66,13 +66,15 @@ describe("CivilEngineerAIGuide launcher and panel", () => {
 });
 
 describe("CivilEngineerAIGuide categories and suggested questions", () => {
-  it("renders the five category chips", () => {
+  it("renders the category chips", () => {
     openGuide();
     for (const chip of [
       "Project Overview",
+      "For Civil Engineers",
       "Brookside Meadows Demo",
       "Review Workflow",
       "Evidence & Documents",
+      "Technical Implementation",
       "Developer & Source Code",
     ]) {
       expect(screen.getByRole("button", { name: chip })).toBeInTheDocument();
@@ -143,11 +145,92 @@ describe("CivilEngineerAIGuide typed input", () => {
     expect(screen.getByText(/developed by michael palmer/i)).toBeInTheDocument();
   });
 
+  it("echoes the asked question in the conversation thread", () => {
+    openGuide();
+    ask("Where can I find the GitHub repository?");
+    expect(
+      screen.getByText("Where can I find the GitHub repository?"),
+    ).toBeInTheDocument();
+  });
+
+  it("accumulates multiple exchanges instead of replacing the answer", () => {
+    openGuide();
+    ask("How does the Brookside Meadows demo work?");
+    ask("What is the review workflow process?");
+    expect(
+      screen.getByText(/synthetic 47-lot residential subdivision/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/begins with project intake/i),
+    ).toBeInTheDocument();
+  });
+
+  it("clears the conversation with the clear button", () => {
+    openGuide();
+    ask("How does the Brookside Meadows demo work?");
+    fireEvent.click(screen.getByRole("button", { name: /clear conversation/i }));
+    expect(
+      screen.queryByText(/synthetic 47-lot residential subdivision/i),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("button", { name: /clear conversation/i }),
+    ).toBeNull();
+  });
+
   it("falls back for unrelated questions", () => {
     openGuide();
     ask("What is the best pizza in town?");
     expect(
       screen.getByText(/i do not have enough project-specific information/i),
+    ).toBeInTheDocument();
+  });
+
+  it("answers the real-world value question with the overview, not the fallback", () => {
+    openGuide();
+    ask("How does this help solve real world challenges?");
+    expect(
+      screen.getByText(/plan review is evidence work/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/i do not have enough project-specific information/i),
+    ).toBeNull();
+  });
+
+  it("answers the civil engineer value question with the reviewer answer, not the fallback", () => {
+    openGuide();
+    ask("How can this help me as a civil engineer?");
+    expect(
+      screen.getByText(/the value is organization and traceability/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/i do not have enough project-specific information/i),
+    ).toBeNull();
+  });
+
+  it("answers technical stack questions with the implementation answer", () => {
+    openGuide();
+    ask("What is the technical stack behind this?");
+    expect(
+      screen.getByText(/next\.js app router with typescript/i),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the user's question visible alongside the answer after sending", () => {
+    openGuide();
+    ask("How can this help me as a civil engineer?");
+    expect(
+      screen.getByText("How can this help me as a civil engineer?"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(/the value is organization and traceability/i),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps the scoped safety response for real-use questions despite value keywords", () => {
+    openGuide();
+    ask("Can I use this for my real world project?");
+    expect(
+      screen.getByText(/cannot provide engineering, permitting, legal, or code-compliance advice/i),
     ).toBeInTheDocument();
   });
 
