@@ -1,4 +1,4 @@
-import { API_BASE_URL, safeFetch } from "./client";
+import { API_BASE_URL, safeFetch, authHeaders} from "./client";
 
 // Phase 4A/4B: read-only project-wide traceability plus reviewer review actions.
 // Data is backend-canonical and review-support only. It organizes existing links
@@ -301,7 +301,7 @@ export async function recordTraceabilityReviewAction(
       `${API_BASE_URL}/api/v1/projects/${projectId}/traceability/${traceabilityRowKey}/review-actions`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           action_type: input.actionType,
           reviewer_note: input.reviewerNote ?? null,

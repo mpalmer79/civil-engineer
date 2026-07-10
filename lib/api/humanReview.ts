@@ -1,4 +1,4 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch } from "./client";
+import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
 import { mapDraft, type AiDraftFinding } from "./aiReview";
 
 // Phase 5: human review queue and review actions.
@@ -135,7 +135,7 @@ export async function submitReviewAction(
       `${API_BASE_URL}/api/v1/draft-findings/${draftFindingId}/review-actions`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(payload),
         cache: "no-store",
       },

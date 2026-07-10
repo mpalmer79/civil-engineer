@@ -1,4 +1,4 @@
-import { PROJECT_ID, safeFetch } from "./client";
+import { PROJECT_ID, apiFetch, type DemoSourced } from "./client";
 import { findings as staticFindings, type Finding } from "@/data/findings";
 
 type ApiFinding = {
@@ -16,12 +16,16 @@ type ApiFinding = {
   related_documents: string[];
 };
 
-export async function getFindings(): Promise<Finding[]> {
-  const data = await safeFetch<ApiFinding[]>(
+export async function getFindings(): Promise<DemoSourced<Finding[]>> {
+  const result = await apiFetch<ApiFinding[]>(
     `/api/v1/projects/${PROJECT_ID}/findings`,
   );
-  if (!data) return staticFindings;
-  return data.map((f) => ({
+  // Explicit public-demo policy: when the demo backend is unreachable this
+  // surface renders the repository fixture snapshot and says so. Authenticated
+  // surfaces never do this; see docs/adr/0002-data-source-boundaries.md.
+  if (!result.ok) return { data: staticFindings, source: "demo_fixture" };
+  const data = result.data;
+  return { source: "backend_seeded", data: data.map((f) => ({
     findingId: f.finding_id,
     plantedIssue: f.planted_issue,
     title: f.title,
@@ -35,5 +39,5 @@ export async function getFindings(): Promise<Finding[]> {
     // Phase 1 uses "pending" for an unactioned finding; the backend expresses
     // the same state as "requires_human_review".
     humanReviewState: "pending",
-  }));
+  })) };
 }

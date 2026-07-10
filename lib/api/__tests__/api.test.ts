@@ -37,8 +37,9 @@ describe("API mapping", () => {
 
     const result = await getDocuments();
 
-    expect(result).toHaveLength(1);
-    expect(result[0]).toEqual({
+    expect(result.source).toBe("backend_seeded");
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0]).toEqual({
       documentId: "doc_test",
       fileName: "test.pdf",
       documentType: "report",
@@ -73,14 +74,15 @@ describe("API mapping", () => {
   });
 });
 
-describe("Fallback path", () => {
-  it("returns static seed data when the backend is unreachable", async () => {
+describe("Explicit demo data source", () => {
+  it("labels the fixture snapshot when the demo backend is unreachable", async () => {
     mockFetchUnreachable();
 
     const result = await getDocuments();
 
-    expect(result).toEqual(staticDocuments);
-    expect(result.length).toBeGreaterThan(0);
+    expect(result.source).toBe("demo_fixture");
+    expect(result.data).toEqual(staticDocuments);
+    expect(result.data.length).toBeGreaterThan(0);
   });
 
   it("returns mapped backend data when the backend responds", async () => {
@@ -98,9 +100,9 @@ describe("Fallback path", () => {
 
     const result = await getDocuments();
 
-    expect(result).toHaveLength(1);
-    expect(result[0].documentId).toBe("doc_backend");
-    expect(result).not.toEqual(staticDocuments);
+    expect(result.source).toBe("backend_seeded");
+    expect(result.data).toHaveLength(1);
+    expect(result.data[0].documentId).toBe("doc_backend");
   });
 
   it("returns null for a packet summary when the backend is unreachable", async () => {

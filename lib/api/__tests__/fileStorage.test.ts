@@ -1,10 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  clearAuthToken,
   getDocumentStorageStatus,
   getStorageHealth,
-  setAuthToken,
 } from "@/lib/api";
 
 function mockFetchOnce(payload: unknown, ok = true, status = 200) {
@@ -15,18 +13,12 @@ function mockFetchOnce(payload: unknown, ok = true, status = 200) {
   } as Response);
 }
 
-beforeEach(() => {
-  clearAuthToken();
-});
-
 afterEach(() => {
   vi.restoreAllMocks();
-  clearAuthToken();
 });
 
 describe("getDocumentStorageStatus", () => {
-  it("maps the snake_case storage status and attaches the auth header", async () => {
-    setAuthToken("tok_storage");
+  it("maps the snake_case storage status without building a browser auth header", async () => {
     mockFetchOnce({
       document_id: "doc_1",
       project_id: "proj_1",
@@ -47,7 +39,7 @@ describe("getDocumentStorageStatus", () => {
       (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock
         .calls[0][1] as RequestInit
     ).headers as Record<string, string>;
-    expect(headers.Authorization).toBe("Bearer tok_storage");
+    expect(headers.Authorization).toBeUndefined();
   });
 
   it("returns null when the backend is unreachable", async () => {
@@ -71,8 +63,7 @@ describe("getStorageHealth", () => {
 });
 
 describe("downloadDocument", () => {
-  it("sends the auth header and reports a backend error", async () => {
-    setAuthToken("tok_dl");
+  it("reports a backend error without building a browser auth header", async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 404,
@@ -86,6 +77,6 @@ describe("downloadDocument", () => {
       (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock
         .calls[0][1] as RequestInit
     ).headers as Record<string, string>;
-    expect(headers.Authorization).toBe("Bearer tok_dl");
+    expect(headers.Authorization).toBeUndefined();
   });
 });

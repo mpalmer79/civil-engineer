@@ -27,8 +27,8 @@ export default function AccountNav() {
     };
   }, []);
 
-  const handleLogout = () => {
-    logoutUser();
+  const handleLogout = async () => {
+    await logoutUser();
     setUser(null);
     router.push("/login");
     router.refresh();

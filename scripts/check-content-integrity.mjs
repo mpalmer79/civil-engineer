@@ -13,7 +13,12 @@
 import { execSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 
-const EXCLUDED_FILES = new Set(["CLAUDE.md"]);
+// CLAUDE.md intentionally documents the forbidden strings as examples, and
+// this script necessarily contains its own detection patterns.
+const EXCLUDED_FILES = new Set([
+  "CLAUDE.md",
+  "scripts/check-content-integrity.mjs",
+]);
 const EXCLUDED_PREFIXES = ["public/", "package-lock.json"];
 
 const TEXT_EXTENSIONS = new Set([

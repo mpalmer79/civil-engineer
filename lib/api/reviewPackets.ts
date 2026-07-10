@@ -1,4 +1,4 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch } from "./client";
+import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
 
 // Phase 8: review packet builder and evidence traceability.
 //
@@ -480,7 +480,7 @@ export async function generateReviewPacket(
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/projects/${projectId}/review-packets/generate`,
-      { method: "POST", cache: "no-store" },
+      { method: "POST", headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) {
       return {
@@ -514,7 +514,7 @@ export async function createReviewPacketReviewerAction(
       `${API_BASE_URL}/api/v1/review-packets/${packetId}/items/${itemId}/review-actions`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           action_type: input.actionType,
           reviewer_note: input.reviewerNote,
@@ -567,7 +567,7 @@ export async function updateReviewPacketItemStatus(
       `${API_BASE_URL}/api/v1/review-packets/${packetId}/items/${itemId}/status`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           new_status: newStatus,
           reviewer_note: reviewerNote,

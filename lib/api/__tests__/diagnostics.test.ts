@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { setAuthToken, clearAuthToken } from "@/lib/api/client";
+
 import {
   getReadiness,
   getEnvironmentDiagnostics,
@@ -48,13 +48,8 @@ function environmentPayload() {
   };
 }
 
-beforeEach(() => {
-  clearAuthToken();
-});
-
 afterEach(() => {
   vi.restoreAllMocks();
-  clearAuthToken();
 });
 
 describe("diagnostics API client", () => {
@@ -73,8 +68,7 @@ describe("diagnostics API client", () => {
     expect(fetchMock.mock.calls[0][0]).toContain("/api/v1/readiness");
   });
 
-  it("sends the Authorization header on protected environment diagnostics", async () => {
-    setAuthToken("tok-abc");
+  it("reads protected environment diagnostics through the proxy without a browser token", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -87,7 +81,7 @@ describe("diagnostics API client", () => {
     expect(result?.items[0].publicHint).toBe("1.0.0");
     const init = fetchMock.mock.calls[0][1] as RequestInit;
     const headers = init.headers as Record<string, string>;
-    expect(headers.Authorization).toBe("Bearer tok-abc");
+    expect(headers.Authorization).toBeUndefined();
     expect(fetchMock.mock.calls[0][0]).toContain(
       "/api/v1/diagnostics/environment",
     );

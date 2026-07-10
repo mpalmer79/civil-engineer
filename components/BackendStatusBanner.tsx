@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { API_BASE_URL, PROJECT_ID } from "@/lib/api";
+import { BACKEND_ORIGIN } from "@/lib/api/client";
 
 // The frontend reads the backend origin from NEXT_PUBLIC_API_BASE_URL. When the
 // variable is not set, API_BASE_URL falls back to the local default, so an
@@ -12,7 +13,7 @@ const ENV_VAR_SET = Boolean(process.env.NEXT_PUBLIC_API_BASE_URL);
 // NEXT_PUBLIC_API_BASE_URL must be the backend origin only; the API modules
 // append /api/v1 themselves, so a base URL that includes it double-prefixes and
 // breaks every call. This is detectable from the value without a network call.
-const URL_INCLUDES_PREFIX = /\/api(\/v1)?\/?$/.test(API_BASE_URL.trim());
+const URL_INCLUDES_PREFIX = /\/api(\/v1)?\/?$/.test(BACKEND_ORIGIN.trim());
 
 type Status =
   | "checking"

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { API_BASE_URL, getProject } from "@/lib/api";
+import { API_BASE_URL, BACKEND_ORIGIN, getProject } from "@/lib/api";
 
 function read(relativePath: string): string {
   return readFileSync(resolve(process.cwd(), relativePath), "utf8");
@@ -147,11 +147,12 @@ describe("API client path construction", () => {
 });
 
 describe("API base URL environment behavior", () => {
-  it("defaults to the local backend when the env var is not set", () => {
-    // NEXT_PUBLIC_API_BASE_URL is not set in the test environment, so the
-    // client falls back to the local backend rather than a hard-coded deploy
-    // URL.
-    expect(API_BASE_URL).toBe("http://localhost:8000");
+  it("uses the same-origin proxy in the browser and the backend origin default on the server", () => {
+    // Tests run in jsdom (a browser context), where all API calls go through
+    // the same-origin proxy so the HttpOnly session cookie can authenticate
+    // them. The server-side origin falls back to the local backend.
+    expect(API_BASE_URL).toBe("/api/backend");
+    expect(BACKEND_ORIGIN).toBe("http://localhost:8000");
   });
 
   it("the client reads the base URL from NEXT_PUBLIC_API_BASE_URL", () => {

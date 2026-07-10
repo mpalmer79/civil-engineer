@@ -1,4 +1,4 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch } from "./client";
+import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
 
 // Phase 10: external review response package.
 //
@@ -484,7 +484,7 @@ export async function generateResponsePackage(): Promise<{
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/projects/${PROJECT_ID}/response-packages/generate`,
-      { method: "POST", cache: "no-store" },
+      { method: "POST", headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) {
       let detail = `Request failed (${res.status}).`;
@@ -520,7 +520,7 @@ async function mutate(
   try {
     const res = await fetch(`${API_BASE_URL}${path}`, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body),
       cache: "no-store",
     });

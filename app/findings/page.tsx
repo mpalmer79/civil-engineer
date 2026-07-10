@@ -1,3 +1,4 @@
+import DataSourceNotice from "@/components/DataSourceNotice";
 import PageHeader from "@/components/PageHeader";
 import FindingCard from "@/components/FindingCard";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
@@ -5,7 +6,8 @@ import MetricCard from "@/components/MetricCard";
 import { getFindings, getEvidenceByFinding } from "@/lib/api";
 
 export default async function FindingsPage() {
-  const findings = await getFindings();
+  const findingsResult = await getFindings();
+  const findings = findingsResult.data;
   const evidenceByFinding = await getEvidenceByFinding(
     findings.map((f) => f.findingId),
   );
@@ -21,6 +23,7 @@ export default async function FindingsPage() {
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+        <DataSourceNotice source={findingsResult.source} />
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
           <MetricCard value={findings.length} label="Expected findings" accent="water" />
           <MetricCard value={high} label="High risk" accent="red" />
