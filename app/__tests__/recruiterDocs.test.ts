@@ -26,6 +26,7 @@ const RECRUITER_DOCS = [
   "docs/synthetic-demo-data.md",
   "docs/technical-decisions.md",
   "docs/test-summary.md",
+  "docs/civil-engineer-ai-guide.md",
 ];
 
 describe("Recruiter documentation exists", () => {

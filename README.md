@@ -32,6 +32,10 @@ The walkthrough loops through nine actual app screens: the homepage hero, the Br
 - [Technical Decisions](docs/technical-decisions.md): the reasoning behind the recruiter-first homepage, the boundary, and the data strategy.
 - [Test Summary](docs/test-summary.md): what the frontend and backend suites protect and how to run them.
 
+## Civil Engineer AI Guide
+
+The app includes a closed-scope project guide, opened from a floating button in the lower right corner of every page. It helps visitors understand the Brookside Meadows demo, the review workflow, the evidence-first process, and the developer background. Answers come from static, pre-written project content selected by simple keyword matching. The guide does not call OpenAI, Anthropic, or any outside LLM API, and it does not provide engineering, legal, permitting, or construction advice. Details live in [docs/civil-engineer-ai-guide.md](docs/civil-engineer-ai-guide.md).
+
 ## What This Project Demonstrates
 
 - Next.js App Router frontend with TypeScript and Tailwind CSS
