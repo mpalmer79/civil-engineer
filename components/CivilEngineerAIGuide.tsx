@@ -29,7 +29,7 @@ const TOPICS: Topic[] = [
     id: "developer",
     chip: "Developer & Source Code",
     question: "I would like to know more about the developer of this project.",
-    keywords: ["developer", "michael", "palmer", "linkedin", "github", "source", "repo", "repository", "author", "built this"],
+    keywords: ["developer", "michael", "palmer", "linkedin", "github", "source", "repo", "repository", "author", "built this", "who made", "who built", "contact", "hire", "resume"],
     paragraphs: [
       "This project was developed by Michael Palmer as part of a software engineering portfolio focused on civil engineering review workflows, evidence-first systems, and human-in-the-loop AI support.",
       "Michael is a Computer Science student with professional experience across automotive technology, implementation, workflow design, and applied AI solutions. This project demonstrates his ability to model a real-world review process, build a polished Next.js interface, structure synthetic demo data, and communicate technical boundaries clearly.",
@@ -37,10 +37,36 @@ const TOPICS: Topic[] = [
     links: DEVELOPER_LINKS,
   },
   {
+    id: "civil-engineers",
+    chip: "For Civil Engineers",
+    keywords: ["civil engineer", "help me", "as an engineer", "engineer", "reviewer", "municipal", "town engineer", "plan review", "review time", "workload", "day to day", "save time"],
+    paragraphs: [
+      "For a practicing reviewer, the value is organization and traceability. The demo shows how a submission becomes structured records: documents are indexed to the page level, findings link back to their evidence, checklist items track review status, applicant responses are recorded across resubmittal rounds, and the handoff package assembles the full picture for the decision maker.",
+      "It is review support, not review automation. Nothing here sizes a basin, checks a code section, or approves anything. The goal is to reduce the clerical burden of tracking evidence and communication so the engineer's time goes to judgment.",
+    ],
+    links: [
+      { href: "/guided-demo", label: "Start Guided Demo" },
+      { href: "/findings", label: "Findings" },
+      { href: "/review-packet", label: "Review Packet" },
+    ],
+  },
+  {
+    id: "technical",
+    chip: "Technical Implementation",
+    keywords: ["technical", "stack", "nextjs", "next js", "react", "fastapi", "backend", "frontend", "architecture", "built with", "implementation", "typescript", "tailwind", "database", "test", "code quality"],
+    paragraphs: [
+      "The frontend is Next.js App Router with TypeScript and Tailwind, using a typed API client that falls back to seeded demo data when the backend is unreachable. The FastAPI backend implements real project records, PDF page indexing, deterministic evidence retrieval, checklist review, applicant response tracking, response packages, local authentication with per-project access control, and an audit trail. DXF metadata parsing uses the ezdxf library.",
+      "There are no live AI calls. The demo runs deterministically, and both the frontend and backend ship test suites that run in CI, including content contracts that guard the professional boundary wording.",
+    ],
+    links: [
+      { href: "https://github.com/mpalmer79/civil-engineer", label: "Project Repository" },
+    ],
+  },
+  {
     id: "brookside",
     chip: "Brookside Meadows Demo",
     question: "How does the Brookside Meadows demo work?",
-    keywords: ["brookside", "meadows", "hartwell", "subdivision", "demo", "synthetic", "47", "sample project", "fixture"],
+    keywords: ["brookside", "meadows", "hartwell", "subdivision", "demo", "synthetic", "47", "sample project", "fixture", "sample", "example"],
     paragraphs: [
       "Brookside Meadows is a synthetic 47-lot residential subdivision used to demonstrate the app's workflow. It gives reviewers a realistic project context for document intake, stormwater evidence review, applicant response tracking, and review packet preparation.",
     ],
@@ -52,7 +78,7 @@ const TOPICS: Topic[] = [
   {
     id: "workflow",
     chip: "Review Workflow",
-    keywords: ["workflow", "queue", "response", "handoff", "review packet", "process", "resubmittal", "intake"],
+    keywords: ["workflow", "queue", "response", "handoff", "review packet", "process", "resubmittal", "intake", "steps", "how it works", "how does it work"],
     paragraphs: [
       "The workflow begins with project intake, moves through reviewer queue management, document and evidence review, applicant response tracking, and ends with a reviewer-controlled handoff package.",
     ],
@@ -79,9 +105,10 @@ const TOPICS: Topic[] = [
     id: "overview",
     chip: "Project Overview",
     question: "What does Civil Engineer AI help reviewers do?",
-    keywords: ["overview", "project", "what is this", "purpose", "help reviewers", "about", "portfolio", "stormwater"],
+    keywords: ["overview", "project", "what is this", "purpose", "help reviewers", "about", "portfolio", "stormwater", "real world", "real-world", "solve", "challenge", "value", "matters", "problem", "why", "useful", "benefit"],
     paragraphs: [
       "Civil Engineer AI is a portfolio project that demonstrates a stormwater review support workflow. It helps organize project documents, reviewer findings, applicant responses, and handoff packages while keeping final review decisions under human control.",
+      "The real-world challenge it models is that plan review is evidence work. Reviewers spend their time finding what was submitted, comparing it against requirements, tracking what is missing or conflicting, and communicating it back to applicants across multiple rounds. The workflows in this demo give that work structure and traceability, while a licensed engineer keeps decision authority.",
     ],
     links: [
       { href: "/guided-demo", label: "Start Guided Demo" },
@@ -91,9 +118,9 @@ const TOPICS: Topic[] = [
   },
 ];
 
-// Chips render in reading order; matching uses the array order above so the
-// developer and demo topics win ties over the broader overview keywords.
-const CHIP_ORDER = ["overview", "brookside", "workflow", "evidence", "developer"];
+// Chips render in reading order; keyword matching scores every topic and ties
+// resolve by the array order above, so specific topics win over broad ones.
+const CHIP_ORDER = ["overview", "civil-engineers", "brookside", "workflow", "evidence", "technical", "developer"];
 
 const SUGGESTED_QUESTION_IDS = ["overview", "brookside", "developer"];
 
@@ -112,6 +139,8 @@ const SAFETY_STEMS = [
   "certif",
   "construction advice",
   "build this",
+  "use this for",
+  "use this on",
 ];
 
 const SAFETY_RESPONSE =
@@ -131,28 +160,53 @@ type Answer =
   | { kind: "safety" }
   | { kind: "fallback" };
 
+// Lowercase and reduce punctuation to spaces so "Next.js?" matches "next js".
+function normalize(raw: string): string {
+  return raw
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+// Score every topic instead of taking the first keyword hit. Multi-word
+// phrases are stronger signals than single words, and the highest total wins,
+// so "how can this help me as a civil engineer" lands on the reviewer-value
+// answer rather than whichever topic happens to match first.
 function matchAnswer(raw: string): Answer {
-  const text = raw.toLowerCase();
+  const text = normalize(raw);
 
   if (SAFETY_STEMS.some((stem) => text.includes(stem))) {
     return { kind: "safety" };
   }
 
+  let best: Topic | null = null;
+  let bestScore = 0;
+
   for (const topic of TOPICS) {
-    if (topic.keywords.some((keyword) => text.includes(keyword))) {
-      return { kind: "topic", topic };
+    let score = 0;
+    for (const keyword of topic.keywords) {
+      if (text.includes(keyword)) {
+        score += keyword.includes(" ") ? 2 : 1;
+      }
+    }
+    if (score > bestScore) {
+      best = topic;
+      bestScore = score;
     }
   }
 
-  return { kind: "fallback" };
+  return best ? { kind: "topic", topic: best } : { kind: "fallback" };
 }
+
+type Message = { role: "user"; text: string } | { role: "guide"; answer: Answer };
 
 export default function CivilEngineerAIGuide() {
   const [open, setOpen] = useState(false);
-  const [answer, setAnswer] = useState<Answer | null>(null);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [question, setQuestion] = useState("");
   const launcherRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
+  const bodyRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -170,21 +224,37 @@ export default function CivilEngineerAIGuide() {
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open]);
 
+  // Keep the newest exchange in view. Without this, answers render below the
+  // panel's scroll fold and asking a question looks like it did nothing.
+  useEffect(() => {
+    const body = bodyRef.current;
+    if (body) body.scrollTop = body.scrollHeight;
+  }, [messages, open]);
+
   const close = () => {
     setOpen(false);
     launcherRef.current?.focus();
   };
 
-  const showTopic = (id: string) => {
+  const showTopic = (id: string, asked?: string) => {
     const topic = TOPICS.find((t) => t.id === id);
-    if (topic) setAnswer({ kind: "topic", topic });
+    if (!topic) return;
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", text: asked ?? topic.chip },
+      { role: "guide", answer: { kind: "topic", topic } },
+    ]);
   };
 
   const submitQuestion = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmed = question.trim();
     if (!trimmed) return;
-    setAnswer(matchAnswer(trimmed));
+    setMessages((prev) => [
+      ...prev,
+      { role: "user", text: trimmed },
+      { role: "guide", answer: matchAnswer(trimmed) },
+    ]);
     setQuestion("");
   };
 
@@ -256,7 +326,7 @@ export default function CivilEngineerAIGuide() {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-3">
+          <div ref={bodyRef} className="flex-1 overflow-y-auto px-4 py-3">
             <p className="text-xs leading-relaxed text-slate-600">{INTRO}</p>
 
             <p className="mt-2 text-[11px] text-slate-400">{BOUNDARY_LINE}</p>
@@ -279,7 +349,7 @@ export default function CivilEngineerAIGuide() {
                 <button
                   key={topic.id}
                   type="button"
-                  onClick={() => showTopic(topic.id)}
+                  onClick={() => showTopic(topic.id, topic.question)}
                   className="block w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-left text-xs text-slate-700 transition hover:border-blue-300 hover:bg-blue-50"
                 >
                   {topic.question}
@@ -287,57 +357,71 @@ export default function CivilEngineerAIGuide() {
               ))}
             </div>
 
-            <div aria-live="polite">
-              {answer && (
-                <div className="mt-3 rounded-lg border border-blue-100 bg-blue-50/60 px-3 py-2.5">
-                  {answer.kind === "topic" ? (
-                    <>
-                      {answer.topic.paragraphs.map((p) => (
-                        <p key={p.slice(0, 24)} className="mb-2 text-xs leading-relaxed text-slate-700 last:mb-0">
-                          {p}
-                        </p>
-                      ))}
-
-                      {answer.topic.links && (
-                        <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-                          {answer.topic.links.map((link) => (
-                            <li key={link.href}>
-                              {link.href.startsWith("/") ? (
-                                <Link
-                                  href={link.href}
-                                  className="text-xs font-medium text-blue-700 hover:underline"
-                                >
-                                  {link.label}
-                                </Link>
-                              ) : (
-                                <a
-                                  href={link.href}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-xs font-medium text-blue-700 hover:underline"
-                                >
-                                  {link.label}
-                                </a>
-                              )}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </>
-                  ) : (
-                    <p className="text-xs leading-relaxed text-slate-700">
-                      {answer.kind === "safety" ? SAFETY_RESPONSE : FALLBACK_RESPONSE}
-                    </p>
-                  )}
-
-                  <button
-                    type="button"
-                    onClick={() => setAnswer(null)}
-                    className="mt-2 text-[11px] font-medium text-slate-500 hover:text-slate-700 hover:underline"
+            <div aria-live="polite" className="space-y-2">
+              {messages.map((message, index) =>
+                message.role === "user" ? (
+                  <p
+                    key={index}
+                    className="ml-8 mt-3 rounded-lg rounded-br-sm bg-slate-100 px-3 py-2 text-xs leading-relaxed text-slate-700"
                   >
-                    Clear answer
-                  </button>
-                </div>
+                    {message.text}
+                  </p>
+                ) : (
+                  <div
+                    key={index}
+                    className="mr-4 rounded-lg rounded-bl-sm border border-blue-100 bg-blue-50/60 px-3 py-2.5"
+                  >
+                    {message.answer.kind === "topic" ? (
+                      <>
+                        {message.answer.topic.paragraphs.map((p) => (
+                          <p key={p.slice(0, 24)} className="mb-2 text-xs leading-relaxed text-slate-700 last:mb-0">
+                            {p}
+                          </p>
+                        ))}
+
+                        {message.answer.topic.links && (
+                          <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+                            {message.answer.topic.links.map((link) => (
+                              <li key={link.href}>
+                                {link.href.startsWith("/") ? (
+                                  <Link
+                                    href={link.href}
+                                    className="text-xs font-medium text-blue-700 hover:underline"
+                                  >
+                                    {link.label}
+                                  </Link>
+                                ) : (
+                                  <a
+                                    href={link.href}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-xs font-medium text-blue-700 hover:underline"
+                                  >
+                                    {link.label}
+                                  </a>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-xs leading-relaxed text-slate-700">
+                        {message.answer.kind === "safety" ? SAFETY_RESPONSE : FALLBACK_RESPONSE}
+                      </p>
+                    )}
+                  </div>
+                ),
+              )}
+
+              {messages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setMessages([])}
+                  className="mt-1 text-[11px] font-medium text-slate-500 hover:text-slate-700 hover:underline"
+                >
+                  Clear conversation
+                </button>
               )}
             </div>
           </div>
