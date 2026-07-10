@@ -1,5 +1,9 @@
 # Phase 8: Review Packet Builder and Evidence Traceability Report
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 Phase 8 adds a reviewer-facing Review Packet Builder. It assembles documents,
 checklist items, findings, plan sheets, CAD-aware metadata, sheet hotspots, plan
 consistency findings, human review actions, and audit evidence into a structured

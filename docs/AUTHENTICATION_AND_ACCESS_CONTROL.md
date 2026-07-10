@@ -75,12 +75,17 @@ project_admin access.
 
 ## Frontend guarded states
 
-The frontend stores the access token client-side and attaches it as a Bearer
-Authorization header. Signed-out users see a sign-in prompt for real project
-records and a clear path to the public demo. A `PermissionDeniedCard` shows calm,
-review-support messaging when access is missing. Server components run
-unauthenticated and therefore show public demo data; authenticated views fetch
-client-side. Production should move toward hardened session handling or SSO.
+The browser never holds the access token. Authenticated browser requests go
+through the same-origin backend-for-frontend proxy (`/api/backend`), which
+attaches the token from an HttpOnly session cookie server-side. Sign in,
+registration, and sign out use the `/api/session` endpoints, which set and
+clear the cookie with HttpOnly, Secure in production, and SameSite=Lax, and
+enforce a CSRF gate on every mutation (see
+`docs/adr/0003-secure-session-architecture.md`). Signed-out users see a
+sign-in prompt for real project records and a clear path to the public demo. A
+`PermissionDeniedCard` shows calm, review-support messaging when access is
+missing. Server components run unauthenticated and therefore show public demo
+data; authenticated views fetch client-side through the proxy.
 
 ## Demo-mode behavior
 

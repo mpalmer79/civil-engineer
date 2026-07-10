@@ -1,5 +1,9 @@
 # Production Foundations Sprint 9: Reviewer Dashboard, Workload Management, and Operational Metrics
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 ## What Sprint 9 adds
 
 Sprint 9 adds the first cross-project operational view to Civil Engineer AI.

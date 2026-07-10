@@ -1,5 +1,9 @@
 # Phase 3: Document Evidence and Retrieval Foundation
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 **Product:** Civil Engineer AI: Stormwater Review Assistant
 **Phase:** 3, Document Evidence and Retrieval Foundation
 

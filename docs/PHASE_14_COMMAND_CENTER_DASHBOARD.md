@@ -1,5 +1,9 @@
 # Phase 14: Reviewer Command Center and Project Health Dashboard Report
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 Phase 14 unifies Civil Engineer AI into one reviewer command center. The Project
 Dashboard aggregates the review-support data from every prior phase into a single
 operational view: a command center snapshot, project health metrics, reviewer

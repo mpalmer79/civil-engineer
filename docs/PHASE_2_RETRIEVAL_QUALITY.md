@@ -1,5 +1,9 @@
 # Phase 2 Retrieval Quality Report
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 Measured over a small labeled query set against real-derived chunk evidence. Scores are relevance measurements for comparing retrieval modes, not statements about document content.
 
 | Mode | Recall@5 | Precision@5 | MRR |

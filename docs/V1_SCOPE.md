@@ -1,5 +1,9 @@
 # V1 Scope, Civil Engineer AI
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 **Product:** Civil Engineer AI: Stormwater Review Assistant
 **V1 thesis:** One complete, end-to-end **Stormwater Review Assistant for
 Brookside Meadows**, narrow enough to finish, deep enough to prove the

@@ -1,5 +1,9 @@
 # Phase 9: Reviewer Workflow Board and Issue Resolution Tracking Report
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 Phase 9 adds a reviewer-facing workflow board. It promotes the review packet
 items that require human review into an operational board where a reviewer can
 triage each item, request follow-up or more information, record reviewer notes,

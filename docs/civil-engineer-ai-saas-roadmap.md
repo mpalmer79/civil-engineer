@@ -1,5 +1,9 @@
 # Civil Engineer AI: SaaS Transition Roadmap
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 From portfolio piece to a product that can start sales conversations.
 
 ---

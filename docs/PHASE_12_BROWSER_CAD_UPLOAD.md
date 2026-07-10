@@ -1,5 +1,9 @@
 # Phase 12: Browser CAD Upload and Parse Review Queue Report
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 Phase 12 makes the Phase 11 DXF parsing feature usable from the browser. A
 reviewer can upload a real DXF file, see validation results, request a parse,
 inspect parse status and parse failures, view a CAD intake dashboard and parse

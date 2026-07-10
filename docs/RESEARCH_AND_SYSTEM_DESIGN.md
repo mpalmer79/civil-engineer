@@ -1,5 +1,9 @@
 # Civil Engineer AI: Stormwater Review Assistant
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 > **Naming note.** The product name is **Civil Engineer AI** and the canonical
 > demo fixture is **Brookside Meadows** (see `BROOKSIDE_MEADOWS_PROJECT_STORY.md`).
 > Examples in this brief use the Brookside Meadows fixture.

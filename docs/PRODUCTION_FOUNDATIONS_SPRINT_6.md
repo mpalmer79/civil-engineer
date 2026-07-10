@@ -1,5 +1,9 @@
 # Production Foundations Sprint 6: Durable Object Storage and Deployment-Ready File Persistence
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 This sprint replaces local-only uploaded file persistence with a storage
 provider abstraction that supports both local development storage and
 deployment-ready durable object storage.

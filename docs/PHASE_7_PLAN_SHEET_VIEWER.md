@@ -1,5 +1,9 @@
 # Phase 7: Plan Sheet Viewer and Sheet Hotspot Review
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 Phase 7 adds a reviewer-facing plan sheet viewer on top of the Phase 6 plan
 sheet and CAD-aware foundation. A reviewer can open a Brookside Meadows plan
 sheet, see seeded visual hotspot annotations over a synthetic sheet preview,

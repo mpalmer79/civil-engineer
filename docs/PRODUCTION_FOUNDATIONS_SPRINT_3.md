@@ -1,5 +1,9 @@
 # Production Foundations Sprint 3: Evidence Retrieval and Reviewer Draft Finding Queue
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 This sprint adds a deterministic, local evidence retrieval layer over the Sprint
 2 indexed PDF page text, plus a reviewer-controlled queue of evidence candidates
 that a human reviewer can promote into draft review-support findings.

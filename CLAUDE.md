@@ -97,25 +97,34 @@ Before completing any task, search changed files, documentation, commit messages
 
 ## Development Scope Rules
 
-Keep live AI calls disabled by default.
+Keep live AI calls disabled by default. The deterministic mock provider is the default; any live provider must be explicitly configured, evidence-bounded, and human-reviewed.
+
+The following are implemented and may be maintained and extended:
+
+* PDF text-layer indexing through pypdf
+* DXF metadata parsing through ezdxf
+* Local authentication, organizations, and per-project access control
+* HttpOnly cookie sessions through the Next.js backend-for-frontend proxy
+* Object storage abstraction (local and S3-compatible)
+* Railway deployment configuration and CI gates
+* Stripe billing scaffolding (test mode)
 
 Do not add any of the following unless explicitly requested in a future phase:
 
-* Real PDF parsing
 * DWG parsing
-* DXF parsing
 * Autodesk integration
 * GIS integration
 * OCR
 * Computer vision
-* Vector search
-* Authentication
-* Deployment setup
-* External paid APIs
+* Vector search against external services
+* Enterprise single sign-on
+* New external paid APIs
 
 Seeded data is acceptable when clearly labeled as seeded review-support data.
 
 Do not claim that seeded data was extracted from real CAD, PDF, GIS, or plan files.
+
+Never store an authentication credential in browser-readable storage, and never let an authenticated request silently fall back to seeded data. See docs/adr/0002-data-source-boundaries.md and docs/adr/0003-secure-session-architecture.md.
 
 ## Writing Style Rules
 

@@ -1,5 +1,9 @@
 # Phase 0: Foundational Civil Engineering and Product Blueprint
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 **Product:** Civil Engineer AI: Stormwater Review Assistant
 **Repository:** `civil-engineer`
 **Phase:** 0, Foundation (documentation and blueprint only; no application code)

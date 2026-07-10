@@ -1,5 +1,9 @@
 # Phase 11: Real CAD File Intake and DXF Parsing Foundation Report
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 Phase 11 adds real CAD file intake for DXF files. It parses a real DXF file with
 the ezdxf library, extracts review-support metadata, connects that metadata to
 the existing plan sheet and review workflows, and raises review-support findings
