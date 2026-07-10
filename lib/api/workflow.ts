@@ -1,4 +1,4 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch } from "./client";
+import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
 
 // Phase 9: reviewer workflow board and issue resolution tracking.
 //
@@ -360,7 +360,7 @@ export async function generateWorkflowBoard(
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/projects/${projectId}/workflow-board/generate`,
-      { method: "POST", cache: "no-store" },
+      { method: "POST", headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) {
       return {
@@ -393,7 +393,7 @@ async function postMutation(
   try {
     const res = await fetch(`${API_BASE_URL}${path}`, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body),
       cache: "no-store",
     });

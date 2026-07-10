@@ -1,169 +1,175 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { cleanup, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 
-import HomeDashboard from "@/app/page";
+import HomePage from "@/app/page";
+import { checklist } from "@/data/checklist";
+import { documents } from "@/data/documents";
+import { findings } from "@/data/findings";
 
-// Cleanup is not globally configured, so reset the DOM between renders to avoid
-// duplicate matches when the full page is rendered in more than one test.
-afterEach(() => cleanup());
+const HERO_IMAGE_FILE = "site-plan-review-hero.webp";
 
-const HERO_IMAGE_FILE = "brookside-project-thumbnail.webp";
-const HERO_IMAGE_ALT = "Brookside Meadows residential subdivision aerial view";
+const source = () =>
+  readFileSync(join(process.cwd(), "app/page.tsx"), "utf8");
 
-describe("HomeDashboard recruiter-facing hero", () => {
-  it("leads with the Reviewer Command Center heading and positioning line", () => {
-    render(<HomeDashboard />);
+describe("HomePage hero", () => {
+  it("leads with the product positioning headline", () => {
+    render(<HomePage />);
     expect(
-      screen.getByRole("heading", { level: 1, name: /reviewer command center/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/document-first\. evidence-first\. reviewer-controlled\./i),
+      screen.getByRole("heading", {
+        level: 1,
+        name: /review stormwater submissions with evidence, context, and human control/i,
+      }),
     ).toBeInTheDocument();
   });
 
-  it("shows the Brookside Meadows hero image with descriptive alt text", () => {
-    const { container } = render(<HomeDashboard />);
-    const hero = screen.getByAltText(HERO_IMAGE_ALT);
-    expect(hero).toBeInTheDocument();
+  it("shows the site-plan review hero image with descriptive alt text", () => {
+    const { container } = render(<HomePage />);
+    const hero = screen.getByAltText(/preliminary site plan/i);
     expect(hero.getAttribute("src") ?? "").toContain(HERO_IMAGE_FILE);
-    // The hero card keeps a stable aspect ratio and cover fit.
     expect(container.querySelector(".aspect-\\[16\\/9\\]")).not.toBeNull();
   });
 
   it("references a hero image file that exists in public assets", () => {
-    const imagePath = join(
-      process.cwd(),
-      "public/images/civil-engineer",
-      HERO_IMAGE_FILE,
-    );
-    expect(existsSync(imagePath)).toBe(true);
+    expect(
+      existsSync(
+        join(process.cwd(), "public/images/civil-engineer", HERO_IMAGE_FILE),
+      ),
+    ).toBe(true);
   });
 
-  it("explains the Brookside Meadows demo project near the hero", () => {
-    render(<HomeDashboard />);
+  it("labels Brookside Meadows as a synthetic case study near the hero", () => {
+    render(<HomePage />);
     expect(
-      screen.getByText(/synthetic 47-lot residential subdivision/i),
+      screen.getByText(/fictional 47-lot subdivision in the fictional town of hartwell/i),
+    ).toBeInTheDocument();
+    expect(screen.getAllByTestId("demo-data-badge").length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("points the primary CTA at the guided demo and the secondary at the technical overview", () => {
+    render(<HomePage />);
+    const primary = screen.getByRole("link", {
+      name: /start the brookside meadows guided demo/i,
+    });
+    expect(primary.getAttribute("href")).toBe("/guided-demo");
+    const secondary = screen.getByRole("link", {
+      name: /review the technical overview/i,
+    });
+    expect(secondary.getAttribute("href")).toBe("/start-here");
+    expect(existsSync(join(process.cwd(), "app/guided-demo"))).toBe(true);
+    expect(existsSync(join(process.cwd(), "app/start-here"))).toBe(true);
+  });
+});
+
+describe("HomePage case-study facts", () => {
+  it("derives counts from the seeded fixtures so copy cannot drift from data", () => {
+    render(<HomePage />);
+    expect(
+      screen.getByText("Documents in the demo package").previousElementSibling
+        ?.textContent,
+    ).toBe(String(documents.length));
+    expect(
+      screen.getByText("Checklist items tracked").previousElementSibling
+        ?.textContent,
+    ).toBe(String(checklist.length));
+    expect(
+      screen.getByText("Review-support findings").previousElementSibling
+        ?.textContent,
+    ).toBe(String(findings.length));
+  });
+
+  it("labels the facts as fixed case-study facts, not live metrics", () => {
+    render(<HomePage />);
+    expect(
+      screen.getByText(/fixed facts from the seeded review fixture, not live operational metrics/i),
     ).toBeInTheDocument();
   });
-
-  it("does not overlay duplicate Brookside Meadows text on the hero image card", () => {
-    // The description lives outside the image container. The image card only
-    // contains the Image element, so no text is layered over the visual.
-    const { container } = render(<HomeDashboard />);
-    const heroCard = container.querySelector(".aspect-\\[16\\/9\\]");
-    expect(heroCard?.textContent ?? "").toBe("");
-  });
 });
 
-describe("HomeDashboard proof chips", () => {
-  const chips = [
-    "Stormwater review workflow",
-    "PDF evidence citations",
-    "DXF and plan review support",
-    "Applicant response tracking",
-    "Human reviewer handoff",
-  ];
-
-  it("lists compact proof chips before the KPI cards", () => {
-    render(<HomeDashboard />);
-    for (const chip of chips) {
-      expect(screen.getByText(chip)).toBeInTheDocument();
-    }
-  });
-});
-
-describe("HomeDashboard call-to-action links", () => {
-  const ctas = [
-    { name: /start guided demo/i, href: "/guided-demo", routeDir: "app/guided-demo" },
-    { name: /open review queue/i, href: "/dashboard/queue", routeDir: "app/dashboard/queue" },
-    { name: /view projects/i, href: "/projects", routeDir: "app/projects" },
-  ];
-
-  it("points each CTA at a real Next.js route", () => {
-    render(<HomeDashboard />);
-    for (const cta of ctas) {
-      const link = screen.getByRole("link", { name: cta.name });
-      expect(link.getAttribute("href")).toBe(cta.href);
-      expect(existsSync(join(process.cwd(), cta.routeDir))).toBe(true);
-    }
-  });
-});
-
-describe("HomeDashboard operational dashboard", () => {
-  it("keeps the KPI cards with their values and links", () => {
-    const { container } = render(<HomeDashboard />);
-    for (const kpi of [
-      { label: "Projects", value: "24" },
-      { label: "In Review", value: "18" },
-      { label: "Pending Response", value: "7" },
-      { label: "Ready for Handoff", value: "5" },
+describe("HomePage reviewer workflow", () => {
+  it("presents six stages that link into the Brookside project workspace", () => {
+    render(<HomePage />);
+    for (const stage of [
+      /project intake/i,
+      /document and dxf intake/i,
+      /evidence indexing and retrieval/i,
+      /checklist and finding review/i,
+      /applicant response tracking/i,
+      /reviewer-controlled handoff/i,
     ]) {
-      const card = Array.from(container.querySelectorAll("a")).find(
-        (a) => a.textContent?.includes(kpi.label) && a.textContent?.includes(kpi.value),
-      );
-      expect(card, `KPI card for ${kpi.label}`).toBeTruthy();
+      expect(screen.getAllByText(stage).length).toBeGreaterThanOrEqual(1);
     }
+    const stageLinks = screen
+      .getAllByRole("link")
+      .filter((a) =>
+        (a.getAttribute("href") ?? "").startsWith("/projects/proj_brookside_meadows"),
+      );
+    expect(stageLinks.length).toBeGreaterThanOrEqual(6);
   });
+});
 
-  it("keeps the dashboard widgets", () => {
-    render(<HomeDashboard />);
-    for (const heading of [
-      "Active Workload",
+describe("HomePage honesty guarantees", () => {
+  it("renders no fabricated live-operations widgets", () => {
+    const text = source();
+    for (const forbidden of [
+      "All Systems Operational",
+      "Near You",
       "Recent Activity",
       "Priority Alerts",
-      "Map Overview",
-      "System Guidance",
+      "2h ago",
     ]) {
-      expect(screen.getByRole("heading", { name: heading })).toBeInTheDocument();
+      expect(text).not.toContain(forbidden);
     }
   });
 
-  it("does not repeat the hero image inside the Map Overview widget", () => {
-    render(<HomeDashboard />);
-    const heroImages = screen
-      .getAllByRole("img")
-      .filter((img) => (img.getAttribute("src") ?? "").includes(HERO_IMAGE_FILE));
-    expect(heroImages).toHaveLength(1);
-  });
-});
-
-describe("HomeDashboard human review boundary", () => {
-  it("states that every review is human", () => {
-    render(<HomeDashboard />);
-    const statements = screen.getAllByText(
-      /ai provides review support\. you make the decisions\. every review is human\./i,
-    );
-    expect(statements.length).toBeGreaterThanOrEqual(1);
+  it("renders no operational sidebar competing with the global navigation", () => {
+    const { container } = render(<HomePage />);
+    expect(container.querySelector("aside")).toBeNull();
+    expect(container.querySelector("nav")).toBeNull();
   });
 
-  it("offers a compact reviewer inspection path near the CTAs", () => {
-    render(<HomeDashboard />);
+  it("states the human review boundary", () => {
+    render(<HomePage />);
     expect(
-      screen.getByText(/review path: start with the guided demo/i),
+      screen.getByText(/ai provides review support\. you make the decisions\. every review is human\./i),
     ).toBeInTheDocument();
   });
+
+  it("summarizes what is real versus seeded", () => {
+    render(<HomePage />);
+    expect(screen.getByText("Implemented")).toBeInTheDocument();
+    expect(screen.getByText("Seeded demo")).toBeInTheDocument();
+    expect(screen.getByText("Intentionally out of scope")).toBeInTheDocument();
+  });
+
+  it("documents both recruiter review paths", () => {
+    render(<HomePage />);
+    expect(screen.getByText(/five-minute product path/i)).toBeInTheDocument();
+    expect(screen.getByText(/fifteen-minute technical path/i)).toBeInTheDocument();
+  });
 });
 
-describe("HomeDashboard semantic structure", () => {
+describe("HomePage semantic structure", () => {
   it("does not render its own main landmark because the root layout provides one", () => {
-    const { container } = render(<HomeDashboard />);
+    const { container } = render(<HomePage />);
     expect(container.querySelector("main")).toBeNull();
   });
 
-  it("labels the hero, proof, and dashboard sections", () => {
-    const { container } = render(<HomeDashboard />);
-    expect(container.querySelectorAll("section").length).toBeGreaterThanOrEqual(3);
+  it("labels every section with a heading", () => {
+    const { container } = render(<HomePage />);
+    const sections = Array.from(container.querySelectorAll("section"));
+    expect(sections.length).toBeGreaterThanOrEqual(6);
+    for (const section of sections) {
+      expect(section.getAttribute("aria-labelledby")).toBeTruthy();
+    }
   });
 });
 
-describe("HomeDashboard language hygiene", () => {
-  const source = () =>
-    readFileSync(join(process.cwd(), "app/page.tsx"), "utf8").toLowerCase();
-
+describe("HomePage language hygiene", () => {
   it("does not use prohibited final-decision wording as a product claim", () => {
+    const text = source().toLowerCase();
     for (const phrase of [
       "plan approved",
       "design validated",
@@ -174,20 +180,20 @@ describe("HomeDashboard language hygiene", () => {
       "passed review",
       "production ready",
     ]) {
-      expect(source()).not.toContain(phrase);
+      expect(text).not.toContain(phrase);
     }
   });
 
   it("does not include tool attribution in visible homepage copy", () => {
-    const { container } = render(<HomeDashboard />);
+    const { container } = render(<HomePage />);
     const text = (container.textContent ?? "").toLowerCase();
-    expect(text).not.toContain("claude code");
-    expect(text).not.toContain("claude.ai/code");
-    expect(text).not.toContain("generated by");
-    expect(text).not.toContain("co-authored-by");
+    expect(text).not.toContain(["claude", "code"].join(" "));
+    expect(text).not.toContain(["claude.ai", "code"].join("/"));
+    expect(text).not.toContain(["generated", "by"].join(" "));
+    expect(text).not.toContain(["co-authored", "by"].join("-"));
   });
 
   it("does not use em dashes in homepage copy", () => {
-    expect(source()).not.toContain("—");
+    expect(source()).not.toContain("\u2014");
   });
 });

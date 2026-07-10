@@ -1,4 +1,4 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch } from "./client";
+import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
 
 // Phase 13: multi-round resubmittal, revision comparison, and applicant response
 // cycle. Data is backend-canonical. The frontend does not simulate review cycle
@@ -263,8 +263,9 @@ async function postJson<T>(
   try {
     const res = await fetch(`${API_BASE_URL}${path}`, {
       method: "POST",
-      headers:
+      headers: authHeaders(
         body === undefined ? undefined : { "Content-Type": "application/json" },
+      ),
       body: body === undefined ? undefined : JSON.stringify(body),
       cache: "no-store",
     });
@@ -295,7 +296,7 @@ async function patchJson<T>(
   try {
     const res = await fetch(`${API_BASE_URL}${path}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(body),
       cache: "no-store",
     });

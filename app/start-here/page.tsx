@@ -25,6 +25,30 @@ export const dynamic = "force-dynamic";
 // certifies compliance, or replaces a licensed Professional Engineer.
 const base = `/projects/${BROOKSIDE_PROJECT_ID}`;
 
+// The older, unscoped Brookside demo module routes. They moved out of the
+// primary navigation so the public experience stays focused; this index keeps
+// them one click away for technical evaluators.
+const demoModuleIndex = [
+  { href: "/project-dashboard", label: "Project Dashboard" },
+  { href: "/project", label: "Project" },
+  { href: "/documents", label: "Documents" },
+  { href: "/checklist", label: "Checklist" },
+  { href: "/findings", label: "Findings" },
+  { href: "/plan-sheets", label: "Plan Sheets" },
+  { href: "/cad-intake", label: "CAD Intake" },
+  { href: "/cad-review", label: "CAD Review" },
+  { href: "/sheet-viewer", label: "Sheet Viewer" },
+  { href: "/review-packet", label: "Review Packet" },
+  { href: "/workflow-board", label: "Workflow Board" },
+  { href: "/response-package", label: "Response Package" },
+  { href: "/review-cycles", label: "Review Cycles" },
+  { href: "/ai-review", label: "AI Review" },
+  { href: "/human-review", label: "Human Review" },
+  { href: "/audit", label: "Audit" },
+  { href: "/evaluation", label: "Evaluation" },
+  { href: "/deployment-status", label: "Deployment Status" },
+];
+
 const secondaryCtas = [
   { href: base, label: "Open Brookside Meadows" },
   { href: "/dashboard", label: "View Reviewer Dashboard" },
@@ -283,6 +307,27 @@ export default function StartHerePage() {
               </Link>
             ))}
           </div>
+        </section>
+
+        {/* Demo module index. These are the older, unscoped Brookside demo
+            routes. They stay reachable here for technical evaluators instead
+            of occupying the primary navigation. */}
+        <section className="surface-card p-4 sm:p-6">
+          <h2 className="section-title">Demo module index</h2>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+            Every Brookside Meadows demo module, for evaluators who want to
+            inspect a specific surface directly. These modules render seeded
+            demo data and are labeled as such.
+          </p>
+          <ul className="mt-4 flex flex-wrap gap-2">
+            {demoModuleIndex.map((mod) => (
+              <li key={mod.href}>
+                <Link href={mod.href} className="chip chip-neutral hover:bg-slate-100">
+                  {mod.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <SafetyBoundaryBanner />

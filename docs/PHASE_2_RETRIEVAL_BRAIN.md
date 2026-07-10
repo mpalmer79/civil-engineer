@@ -1,5 +1,9 @@
 # Phase 2: Retrieval Brain
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 This document describes the implemented retrieval behavior for real-derived chunk
 evidence. It reflects what the code does today. The system provides
 review-support evidence candidates only. It does not make engineering decisions

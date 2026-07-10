@@ -1,3 +1,4 @@
+import DataSourceNotice from "@/components/DataSourceNotice";
 import PageHeader from "@/components/PageHeader";
 import ChecklistTable from "@/components/ChecklistTable";
 import SectionCard from "@/components/SectionCard";
@@ -14,10 +15,11 @@ const statusSummary: { status: ChecklistStatus; label: string }[] = [
 ];
 
 export default async function ChecklistPage() {
-  const [checklist, evidenceByItem] = await Promise.all([
+  const [checklistResult, evidenceByItem] = await Promise.all([
     getChecklist(),
     getChunksByChecklistItem(),
   ]);
+  const checklist = checklistResult.data;
   const counts = (status: ChecklistStatus) =>
     checklist.filter((c) => c.expectedStatus === status).length;
 
@@ -30,6 +32,7 @@ export default async function ChecklistPage() {
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+        <DataSourceNotice source={checklistResult.source} />
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {statusSummary.map((s) => (
             <MetricCard

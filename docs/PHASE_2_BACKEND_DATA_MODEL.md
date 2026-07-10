@@ -1,5 +1,9 @@
 # Phase 2: Backend and Data Model Foundation
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 **Product:** Civil Engineer AI: Stormwater Review Assistant
 **Phase:** 2, Backend and Data Model Foundation
 

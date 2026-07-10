@@ -1,5 +1,9 @@
 # Production Foundations Sprint 1: Real Project Intake and Persistent Review Records
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 This sprint adds the first real-world foundation layer on top of the seeded
 Brookside Meadows demo. A reviewer can create a real project record, register or
 upload documents, create reviewer-owned review-support findings, attach basic

@@ -277,6 +277,6 @@ describe("CivilEngineerAIGuide scope and language hygiene", () => {
   });
 
   it("contains no em dashes in guide copy", () => {
-    expect(source()).not.toContain("—");
+    expect(source()).not.toContain("\u2014");
   });
 });

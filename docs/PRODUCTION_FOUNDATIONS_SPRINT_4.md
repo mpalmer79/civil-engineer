@@ -1,5 +1,9 @@
 # Production Foundations Sprint 4: Checklist-Driven Evidence Review and Rule Pack Foundation
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 This sprint adds the first reusable, versioned checklist-review foundation for
 real projects. A reviewer can apply a starter stormwater rule pack to a project
 as a working checklist, search indexed evidence against each checklist

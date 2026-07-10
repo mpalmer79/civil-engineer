@@ -1,5 +1,9 @@
 # Production Foundations Sprint 10: Production Deployment Hardening, Environment Validation, and Observability
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 ## What Sprint 10 adds
 
 Sprint 10 adds the first deployment readiness and observability layer to Civil

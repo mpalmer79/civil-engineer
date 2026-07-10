@@ -1,5 +1,9 @@
 # Production Foundations Sprint 7: Applicant Response Matrix and Resubmittal Collaboration Workflow
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 This sprint adds a reviewer-controlled applicant response matrix and a
 resubmittal collaboration workflow on top of the real project, document,
 citation, checklist, access-control, and storage foundations from Sprints 1

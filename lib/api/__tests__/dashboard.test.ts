@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { setAuthToken, clearAuthToken } from "@/lib/api/client";
+import { CSRF_HEADER } from "@/lib/api/client";
 import {
   getReviewerDashboard,
   getReviewerQueue,
@@ -59,18 +59,12 @@ function reviewerPayload() {
   };
 }
 
-beforeEach(() => {
-  clearAuthToken();
-});
-
 afterEach(() => {
   vi.restoreAllMocks();
-  clearAuthToken();
 });
 
 describe("dashboard API client", () => {
-  it("sends the Authorization header on protected routes", async () => {
-    setAuthToken("tok-123");
+  it("routes protected reads through the same-origin proxy without a browser token", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -82,7 +76,9 @@ describe("dashboard API client", () => {
     expect(result.ok).toBe(true);
     const init = fetchMock.mock.calls[0][1] as RequestInit;
     const headers = init.headers as Record<string, string>;
-    expect(headers.Authorization).toBe("Bearer tok-123");
+    // No Authorization header is built in browser code; the proxy attaches it
+    // from the HttpOnly session cookie.
+    expect(headers.Authorization).toBeUndefined();
     // The client appends the /api/v1 path itself.
     expect(fetchMock.mock.calls[0][0]).toContain("/api/v1/dashboard/reviewer");
   });
@@ -122,8 +118,7 @@ describe("dashboard API client", () => {
     expect(result.backendReachable).toBe(false);
   });
 
-  it("sends priority updates with snake_case body", async () => {
-    setAuthToken("tok-9");
+  it("sends priority updates with snake_case body and the CSRF header", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -137,6 +132,7 @@ describe("dashboard API client", () => {
     expect(JSON.parse(init.body as string)).toMatchObject({
       review_priority: "elevated",
     });
+    expect((init.headers as Record<string, string>)[CSRF_HEADER]).toBe("1");
   });
 
   it("maps a project workload summary payload", async () => {

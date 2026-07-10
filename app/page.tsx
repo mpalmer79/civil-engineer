@@ -1,463 +1,348 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
-import type { ReactNode } from "react";
 
-const kpis = [
-  { label: "Projects", sub: "Accessible", value: 24, href: "/projects", tint: "blue", icon: "doc" },
-  { label: "In Review", sub: "Active", value: 18, href: "/dashboard/queue", tint: "green", icon: "check" },
-  { label: "Pending Response", sub: "Applicant", value: 7, href: "/response-package", tint: "amber", icon: "clock" },
-  { label: "Ready for Handoff", sub: "Packages", value: 5, href: "/review-packet", tint: "violet", icon: "users" },
-] as const;
+import DemoDataBadge from "@/components/DemoDataBadge";
+import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
+import { checklist } from "@/data/checklist";
+import { documents } from "@/data/documents";
+import { findings } from "@/data/findings";
+import { BROOKSIDE_PROJECT_ID, fiveMinutePath, technicalPath } from "@/lib/demoJourney";
 
-const workload = [
-  { label: "Document Review", value: 24, pct: 44, color: "#2563eb", href: "/documents" },
-  { label: "Evidence Review", value: 12, pct: 22, color: "#16a34a", href: "/findings" },
-  { label: "Applicant Response", value: 7, pct: 13, color: "#f59e0b", href: "/response-package" },
-  { label: "Package Handoff", value: 5, pct: 9, color: "#a855f7", href: "/review-packet" },
-  { label: "Other", value: 6, pct: 12, color: "#94a3b8", href: "/workflow-board" },
-];
+// Recruiter-first product entry. This page explains what Civil Engineer AI is,
+// who it supports, and how to evaluate it. It intentionally shows no
+// operational widgets: every number below is a case-study fact counted from
+// the seeded Brookside Meadows fixture and labeled as such. Live operational
+// data lives behind sign-in on /dashboard, and deployment health lives on
+// /deployment-status where it is derived from real diagnostics.
 
-const workloadTotal = 54;
-
-const recentActivity = [
-  { title: "Document set uploaded", meta: "Brookside Meadows", time: "2h ago", href: "/documents" },
-  { title: "Response submitted by applicant", meta: "Pinecrest Commercial", time: "4h ago", href: "/response-package" },
-  { title: "DXF metadata parsed in CAD Intake", meta: "Brookside Meadows", time: "5h ago", href: "/cad-intake" },
-  { title: "Package ready for handoff", meta: "Meadowbrook", time: "1d ago", href: "/review-packet" },
-];
-
-const priorityAlerts = [
-  { kind: "overdue", title: "Response overdue", meta: "Pinecrest Commercial", time: "2 days", href: "/dashboard/queue" },
-  { kind: "warning", title: "Evidence expiring soon", meta: "Riverside Office Park", time: "5 days", href: "/findings" },
-  { kind: "info", title: "Reviewer capacity high", meta: "Multiple projects", time: "5h ago", href: "/dashboard" },
-];
-
-const sidebar = [
-  { label: "Dashboard", href: "/", icon: "grid" },
-  { label: "Projects", href: "/projects", icon: "doc" },
-  { label: "Reviewer Queue", href: "/dashboard/queue", icon: "list" },
-  { label: "Rule Packs", href: "/rule-packs", icon: "layers" },
-  { label: "Organizations", href: "/organizations", icon: "users" },
-  { label: "Guided Demo", href: "/guided-demo", icon: "play" },
-];
+const base = `/projects/${BROOKSIDE_PROJECT_ID}`;
 
 const heroImage = {
-  src: "/images/civil-engineer/brookside-project-thumbnail.webp",
-  alt: "Brookside Meadows residential subdivision aerial view",
+  src: "/images/civil-engineer/site-plan-review-hero.webp",
+  alt: "Illustrative preliminary site plan for the synthetic Brookside Meadows case study, showing proposed roads, lots, a stormwater basin, and review evidence callouts",
 } as const;
 
-const heroCtas = [
-  { label: "Start Guided Demo", href: "/guided-demo", primary: true },
-  { label: "Open Review Queue", href: "/dashboard/queue", primary: false },
-  { label: "View Projects", href: "/projects", primary: false },
+// Case-study facts, counted directly from the seeded fixture so the homepage
+// can never drift from the data it describes. The ten planted review issues
+// are documented in docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md (I-1 through I-10).
+const caseStudyFacts = [
+  { value: "47", label: "Lots in the synthetic subdivision" },
+  { value: String(documents.length), label: "Documents in the demo package" },
+  { value: "10", label: "Intentionally planted review issues" },
+  { value: String(checklist.length), label: "Checklist items tracked" },
+  { value: String(findings.length), label: "Review-support findings" },
 ] as const;
 
-const proofChips = [
-  "Stormwater review workflow",
-  "PDF evidence citations",
-  "DXF and plan review support",
-  "Applicant response tracking",
-  "Human reviewer handoff",
+const workflowStages = [
+  {
+    stage: 1,
+    title: "Project intake",
+    detail:
+      "Register the project and its submission package so every later action has a stable record to attach to.",
+    href: base,
+  },
+  {
+    stage: 2,
+    title: "Document and DXF intake",
+    detail:
+      "Store submitted documents, index digital PDF pages, and parse DXF metadata deterministically through CAD Intake.",
+    href: `${base}/documents`,
+  },
+  {
+    stage: 3,
+    title: "Evidence indexing and retrieval",
+    detail:
+      "Search indexed page text so each concern can point at the exact page and excerpt that supports it.",
+    href: `${base}/evidence-search`,
+  },
+  {
+    stage: 4,
+    title: "Checklist and finding review",
+    detail:
+      "Work a stormwater checklist with evidence status per item; findings stay review-support only.",
+    href: `${base}/checklists`,
+  },
+  {
+    stage: 5,
+    title: "Applicant response tracking",
+    detail:
+      "Track applicant responses and resubmittal rounds against the findings that prompted them.",
+    href: `${base}/response-matrix`,
+  },
+  {
+    stage: 6,
+    title: "Reviewer-controlled handoff",
+    detail:
+      "Assemble a response package for reviewer handoff, with revision history and audit attribution.",
+    href: `${base}/response-packages`,
+  },
 ] as const;
 
-function Donut({
-  active,
-  setActive,
-}: {
-  active: number | null;
-  setActive: (i: number | null) => void;
-}) {
-  const R = 70;
-  const STROKE = 26;
-  const C = 2 * Math.PI * R;
-  let offset = 0;
+const realVsSeeded = [
+  {
+    title: "Implemented",
+    detail:
+      "FastAPI backend with authentication, per-project access control, document storage, PDF page indexing, DXF metadata parsing, evidence retrieval, and audit events.",
+  },
+  {
+    title: "Seeded demo",
+    detail:
+      "Brookside Meadows is a synthetic case study. Its documents, findings, and responses are fixtures, clearly labeled, and never presented as a real municipal submission.",
+  },
+  {
+    title: "Intentionally out of scope",
+    detail:
+      "No live AI calls by default, no OCR, no DWG parsing, no GIS, and no approval, certification, or compliance determination of any kind.",
+  },
+] as const;
 
+export default function HomePage() {
   return (
-    <svg viewBox="0 0 180 180" className="h-44 w-44">
-      <g transform="rotate(-90 90 90)">
-        {workload.map((s, i) => {
-          const len = (s.pct / 100) * C;
-          const dash = `${len} ${C - len}`;
+    <div className="bg-white text-slate-900">
+      {/* Hero */}
+      <section
+        aria-labelledby="home-hero-heading"
+        className="border-b border-slate-100 bg-gradient-to-b from-slate-50 to-white"
+      >
+        <div className="mx-auto max-w-6xl px-4 pb-12 pt-12 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-xs font-semibold uppercase tracking-wider text-water-700">
+              Stormwater review support
+            </p>
+            <h1
+              id="home-hero-heading"
+              className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl"
+            >
+              Review stormwater submissions with evidence, context, and human
+              control.
+            </h1>
+            <p className="mt-4 text-base leading-relaxed text-slate-600">
+              Civil Engineer AI organizes project documents, plan references,
+              review findings, applicant responses, and revision history for
+              municipal stormwater reviewers. It supports the review; a
+              licensed engineer makes every decision.
+            </p>
 
-          const el = (
-            <circle
-              key={s.label}
-              cx="90"
-              cy="90"
-              r={R}
-              fill="none"
-              stroke={s.color}
-              strokeWidth={active === i ? STROKE + 6 : STROKE}
-              strokeDasharray={dash}
-              strokeDashoffset={-offset}
-              className="cursor-pointer transition-all duration-200"
-              style={{ opacity: active === null || active === i ? 1 : 0.35 }}
-              onMouseEnter={() => setActive(i)}
-              onMouseLeave={() => setActive(null)}
-            />
-          );
-
-          offset += len;
-          return el;
-        })}
-      </g>
-
-      <text x="90" y="84" textAnchor="middle" className="fill-slate-900 text-2xl font-bold">
-        {active === null ? workloadTotal : workload[active].value}
-      </text>
-
-      <text x="90" y="104" textAnchor="middle" className="fill-slate-500 text-[11px]">
-        {active === null ? "Total Items" : workload[active].label}
-      </text>
-    </svg>
-  );
-}
-
-function Icon({
-  name,
-  className = "h-5 w-5",
-}: {
-  name: string;
-  className?: string;
-}) {
-  const paths: Record<string, ReactNode> = {
-    grid: <path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" />,
-    doc: <path d="M6 2h9l5 5v15H6zM15 2v5h5" />,
-    list: <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />,
-    layers: <path d="M12 2 2 7l10 5 10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />,
-    users: <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 0 .01M23 21v-2a4 4 0 0 0-3-3.87" />,
-    play: <circle cx="12" cy="12" r="9" />,
-    check: <path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />,
-    clock: (
-      <>
-        <circle cx="12" cy="12" r="9" />
-        <path d="M12 7v5l3 2" />
-      </>
-    ),
-  };
-
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      {paths[name] ?? paths.doc}
-    </svg>
-  );
-}
-
-const tints: Record<string, string> = {
-  blue: "bg-blue-50 text-blue-600",
-  green: "bg-green-50 text-green-600",
-  amber: "bg-amber-50 text-amber-600",
-  violet: "bg-violet-50 text-violet-600",
-};
-
-export default function HomeDashboard() {
-  const [active, setActive] = useState<number | null>(null);
-
-  return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-900">
-      <aside className="hidden w-60 shrink-0 flex-col justify-between bg-slate-900 px-4 py-5 text-slate-200 lg:flex">
-        <div>
-          <div className="mb-8 flex items-center gap-3 px-2">
-            <div className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-teal-400 to-blue-600 text-sm font-bold text-white">
-              CE
-            </div>
-
-            <div>
-              <div className="text-sm font-semibold text-white">Civil Engineer AI</div>
-              <div className="text-[11px] text-slate-400">Stormwater Review Assistant</div>
-            </div>
-          </div>
-
-          <nav className="space-y-1">
-            {sidebar.map((s, i) => (
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <Link
-                key={s.href}
-                href={s.href}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition ${
-                  i === 0
-                    ? "bg-white/10 font-medium text-white"
-                    : "text-slate-300 hover:bg-white/5 hover:text-white"
-                }`}
+                href="/guided-demo"
+                className="rounded-lg bg-water-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-water-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-water-600"
               >
-                <Icon name={s.icon} className="h-[18px] w-[18px]" />
-                {s.label}
+                Start the Brookside Meadows Guided Demo
               </Link>
-            ))}
-          </nav>
-        </div>
-
-        <Link href="/workspace" className="flex items-center gap-3 rounded-lg bg-white/5 px-3 py-2.5 hover:bg-white/10">
-          <div className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-teal-400 to-blue-600 text-xs font-bold text-white">
-            CE
-          </div>
-
-          <div className="text-left text-xs">
-            <div className="font-medium text-white">Civil Engineer</div>
-            <div className="text-slate-400">Reviewer</div>
-          </div>
-        </Link>
-      </aside>
-
-      <div className="flex-1">
-        <section aria-labelledby="home-hero-heading" className="px-4 pb-4 pt-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-6xl">
-            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <h1
-                  id="home-hero-heading"
-                  className="text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl"
-                >
-                  Reviewer Command Center
-                </h1>
-                <p className="mt-1 text-sm text-slate-600">
-                  Document-first. Evidence-first. Reviewer-controlled.
-                </p>
-              </div>
-
-              <div className="w-fit rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-2">
-                <div className="flex items-center gap-2 text-xs font-medium text-emerald-800">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  System Status
-                </div>
-                <div className="text-[11px] text-emerald-700">All Systems Operational</div>
-              </div>
+              <Link
+                href="/start-here"
+                className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-water-600"
+              >
+                Review the Technical Overview
+              </Link>
             </div>
+          </div>
 
-            <div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <figure className="mx-auto mt-10 max-w-4xl">
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card-lg">
               <div className="relative aspect-[16/9] w-full">
                 <Image
                   src={heroImage.src}
                   alt={heroImage.alt}
                   fill
                   priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1280px) calc(100vw - 320px), 1024px"
+                  sizes="(max-width: 768px) 100vw, 896px"
                   className="object-cover object-center"
                 />
               </div>
             </div>
+            <figcaption className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
+              <DemoDataBadge label="Synthetic case study" />
+              <span>
+                Brookside Meadows is a fictional 47-lot subdivision in the
+                fictional Town of Hartwell. It is not a real project or a real
+                approval.
+              </span>
+            </figcaption>
+          </figure>
+        </div>
+      </section>
 
-            <div className="mx-auto mt-4 max-w-3xl text-center">
-              <p className="text-sm leading-relaxed text-slate-600">
-                Brookside Meadows is a synthetic 47-lot residential subdivision used to
-                demonstrate stormwater review support, evidence tracking, applicant response
-                management, and reviewer-controlled handoff packages.
-              </p>
-
-              <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-                {heroCtas.map((cta) => (
-                  <Link
-                    key={cta.href}
-                    href={cta.href}
-                    className={
-                      cta.primary
-                        ? "rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                        : "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-                    }
-                  >
-                    {cta.label}
-                  </Link>
-                ))}
-              </div>
-
-              <p className="mt-3 text-xs text-slate-500">
-                Review path: start with the guided demo, open the reviewer queue, inspect
-                evidence, then review the handoff package.
-              </p>
-
-              <p className="mt-1 text-xs text-slate-500">
-                AI provides review support. You make the decisions. Every review is human.
+      {/* Case-study proof points */}
+      <section aria-labelledby="case-study-heading" className="border-b border-slate-100">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-end">
+            <div>
+              <h2 id="case-study-heading" className="text-xl font-semibold text-slate-950">
+                The Brookside Meadows case study
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Fixed facts from the seeded review fixture, not live operational
+                metrics.
               </p>
             </div>
+            <DemoDataBadge />
           </div>
-        </section>
 
-        <section aria-label="What this project demonstrates" className="px-4 pb-4 sm:px-6 lg:px-8">
-          <ul className="mx-auto flex max-w-6xl flex-wrap justify-center gap-2">
-            {proofChips.map((chip) => (
-              <li
-                key={chip}
-                className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 shadow-sm"
+          <dl className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+            {caseStudyFacts.map((fact) => (
+              <div
+                key={fact.label}
+                className="rounded-xl border border-slate-200 bg-white p-4 shadow-card"
               >
-                {chip}
+                <dd className="text-2xl font-bold text-slate-950">{fact.value}</dd>
+                <dt className="mt-1 text-xs text-slate-500">{fact.label}</dt>
+              </div>
+            ))}
+          </dl>
+
+          <p className="mt-4 text-xs text-slate-500">
+            The ten planted issues (a design storm discrepancy, missing
+            infiltration testing, a basin naming conflict, a missing revised
+            sheet, and others) are documented in the project story and traced
+            through every module, so the same concern is inspectable end to
+            end.
+          </p>
+        </div>
+      </section>
+
+      {/* Six-stage reviewer workflow */}
+      <section aria-labelledby="workflow-heading" className="border-b border-slate-100 bg-slate-50">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <h2 id="workflow-heading" className="text-xl font-semibold text-slate-950">
+            One reviewer journey, six stages
+          </h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Each stage links into the seeded Brookside Meadows workspace so you
+            can inspect the full module behind it.
+          </p>
+
+          <ol className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {workflowStages.map((s) => (
+              <li key={s.stage}>
+                <Link
+                  href={s.href}
+                  className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-card transition hover:border-water-300 hover:shadow-card-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-water-600"
+                >
+                  <span className="text-xs font-semibold uppercase tracking-wide text-water-700">
+                    Stage {s.stage}
+                  </span>
+                  <span className="mt-1 text-sm font-semibold text-slate-900">
+                    {s.title}
+                  </span>
+                  <span className="mt-2 text-xs leading-relaxed text-slate-600">
+                    {s.detail}
+                  </span>
+                </Link>
               </li>
             ))}
-          </ul>
-        </section>
+          </ol>
+        </div>
+      </section>
 
-        <section
-          aria-label="Operational dashboard"
-          className="grid grid-cols-1 gap-6 px-4 pb-6 sm:px-6 lg:px-8 xl:grid-cols-[1fr_300px]"
-        >
-          <div className="space-y-6">
-            <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-              {kpis.map((k) => (
-                <Link
-                  key={k.label}
-                  href={k.href}
-                  className="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
-                >
-                  <div className={`mb-3 grid h-10 w-10 place-items-center rounded-lg ${tints[k.tint]}`}>
-                    <Icon name={k.icon} />
-                  </div>
+      {/* Human review boundary */}
+      <section aria-labelledby="boundary-heading" className="border-b border-slate-100">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <h2 id="boundary-heading" className="text-xl font-semibold text-slate-950">
+            The human review boundary
+          </h2>
+          <p className="mt-1 max-w-3xl text-sm text-slate-600">
+            AI provides review support. You make the decisions. Every review is
+            human. The system organizes evidence and drafts review-support
+            findings; it never approves a plan, certifies compliance, or
+            replaces a licensed Professional Engineer.
+          </p>
+          <div className="mt-5">
+            <SafetyBoundaryBanner />
+          </div>
+        </div>
+      </section>
 
-                  <div className="text-3xl font-bold">{k.value}</div>
-                  <div className="text-sm font-medium text-slate-700">{k.label}</div>
-                  <div className="text-xs text-slate-400">{k.sub}</div>
-                </Link>
-              ))}
+      {/* Real versus seeded */}
+      <section aria-labelledby="real-vs-seeded-heading" className="border-b border-slate-100 bg-slate-50">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <h2 id="real-vs-seeded-heading" className="text-xl font-semibold text-slate-950">
+            What is real and what is seeded
+          </h2>
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {realVsSeeded.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-xl border border-slate-200 bg-white p-5 shadow-card"
+              >
+                <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
+                <p className="mt-2 text-xs leading-relaxed text-slate-600">{item.detail}</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-4 text-xs text-slate-500">
+            The full real-versus-seeded matrix lives in the repository at
+            docs/real-vs-mocked.md, and the technical overview page summarizes
+            the architecture behind it.
+          </p>
+        </div>
+      </section>
+
+      {/* Recruiter review paths */}
+      <section aria-labelledby="review-paths-heading" className="border-b border-slate-100">
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+          <h2 id="review-paths-heading" className="text-xl font-semibold text-slate-950">
+            Two ways to evaluate this project
+          </h2>
+
+          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-card">
+              <h3 className="text-sm font-semibold text-slate-900">
+                Five-minute product path
+              </h3>
+              <ol className="mt-3 space-y-2">
+                {fiveMinutePath.map((step) => (
+                  <li key={step.href} className="text-xs text-slate-600">
+                    <Link
+                      href={step.href}
+                      className="font-medium text-water-700 hover:underline"
+                    >
+                      {step.label}
+                    </Link>
+                    <span className="ml-1">{step.note}</span>
+                  </li>
+                ))}
+              </ol>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 className="mb-3 text-sm font-semibold">Active Workload</h2>
-
-                <div className="flex items-center justify-center">
-                  <Donut active={active} setActive={setActive} />
-                </div>
-
-                <ul className="mt-4 space-y-2">
-                  {workload.map((s, i) => (
-                    <li key={s.label}>
-                      <Link
-                        href={s.href}
-                        onMouseEnter={() => setActive(i)}
-                        onMouseLeave={() => setActive(null)}
-                        className="flex items-center justify-between rounded-md px-2 py-1 text-xs hover:bg-slate-50"
-                      >
-                        <span className="flex items-center gap-2">
-                          <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
-                          {s.label}
-                        </span>
-
-                        <span className="text-slate-500">
-                          {s.value} ({s.pct}%)
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 className="mb-3 text-sm font-semibold">Recent Activity</h2>
-
-                <ul className="space-y-1">
-                  {recentActivity.map((a) => (
-                    <li key={a.title + a.meta}>
-                      <Link href={a.href} className="flex items-start gap-3 rounded-md px-2 py-2 hover:bg-slate-50">
-                        <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-md bg-slate-100 text-slate-500">
-                          <Icon name="doc" className="h-3.5 w-3.5" />
-                        </span>
-
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-xs font-medium text-slate-800">{a.title}</span>
-                          <span className="block text-[11px] text-slate-400">{a.meta}</span>
-                        </span>
-
-                        <span className="whitespace-nowrap text-[11px] text-slate-400">{a.time}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/audit" className="mt-2 block px-2 text-xs font-medium text-blue-600 hover:underline">
-                  View all activity →
-                </Link>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-                <h2 className="mb-3 text-sm font-semibold">Priority Alerts</h2>
-
-                <ul className="space-y-1">
-                  {priorityAlerts.map((a) => (
-                    <li key={a.title}>
-                      <Link href={a.href} className="flex items-start gap-3 rounded-md px-2 py-2 hover:bg-slate-50">
-                        <span
-                          className={`mt-0.5 text-sm ${
-                            a.kind === "overdue"
-                              ? "text-red-500"
-                              : a.kind === "warning"
-                                ? "text-amber-500"
-                                : "text-blue-500"
-                          }`}
-                        >
-                          {a.kind === "overdue" ? "▮" : a.kind === "warning" ? "⚠" : "◉"}
-                        </span>
-
-                        <span className="min-w-0 flex-1">
-                          <span className="block text-xs font-medium text-slate-800">{a.title}</span>
-                          <span className="block text-[11px] text-slate-400">{a.meta}</span>
-                        </span>
-
-                        <span className="whitespace-nowrap text-[11px] text-slate-400">{a.time}</span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href="/dashboard/queue" className="mt-2 block px-2 text-xs font-medium text-blue-600 hover:underline">
-                  View all alerts →
-                </Link>
-              </div>
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-card">
+              <h3 className="text-sm font-semibold text-slate-900">
+                Fifteen-minute technical path
+              </h3>
+              <ul className="mt-3 list-disc space-y-2 pl-4">
+                {technicalPath.map((topic) => (
+                  <li key={topic} className="text-xs text-slate-600">
+                    {topic}
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
+        </div>
+      </section>
 
-          <aside className="space-y-6">
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <h2 className="mb-3 text-sm font-semibold">Map Overview</h2>
-
-              <Link href="/sheet-viewer" className="block overflow-hidden rounded-lg">
-                <div className="relative h-36 w-full">
-                  <Image
-                    src="/images/civil-engineer/dashboard-hero-command-center.webp"
-                    alt="Project map overview"
-                    fill
-                    sizes="300px"
-                    className="object-cover"
-                    style={{ objectPosition: "82% 40%" }}
-                  />
-                </div>
-              </Link>
-
-              <div className="mt-4 flex gap-8">
-                <div>
-                  <div className="text-xl font-bold">12</div>
-                  <div className="text-[11px] text-slate-400">On Map</div>
-                </div>
-
-                <div>
-                  <div className="text-xl font-bold">3</div>
-                  <div className="text-[11px] text-slate-400">Near You</div>
-                </div>
-              </div>
-
-              <div className="mt-1 text-[11px] text-slate-400">Active Projects by Location</div>
-            </div>
-
-            <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
-              <div className="mb-2 flex items-center gap-2">
-                <span className="text-green-600">⚖</span>
-                <h2 className="text-sm font-semibold">System Guidance</h2>
-              </div>
-
-              <p className="text-xs leading-relaxed text-slate-500">
-                AI provides review support. You make the decisions. Every review is human.
-              </p>
-            </div>
-          </aside>
-        </section>
-      </div>
+      {/* Final CTA */}
+      <section aria-labelledby="final-cta-heading" className="bg-slate-900">
+        <div className="mx-auto max-w-6xl px-4 py-12 text-center sm:px-6 lg:px-8">
+          <h2 id="final-cta-heading" className="text-xl font-semibold text-white">
+            See one concern traced from document to handoff
+          </h2>
+          <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-300">
+            The guided demo walks the Brookside Meadows review in about five
+            minutes: intake, evidence, checklist, applicant response, and
+            reviewer-controlled handoff.
+          </p>
+          <div className="mt-6">
+            <Link
+              href="/guided-demo"
+              className="inline-block rounded-lg bg-water-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-water-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            >
+              Start the Guided Demo
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

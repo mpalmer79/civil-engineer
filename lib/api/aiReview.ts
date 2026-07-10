@@ -1,4 +1,4 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch } from "./client";
+import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
 
 // Phase 4: AI Review Assistant.
 //
@@ -146,7 +146,7 @@ export async function startAiReviewRun(): Promise<AiReviewRun | null> {
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/projects/${PROJECT_ID}/ai-review-runs`,
-      { method: "POST", cache: "no-store" },
+      { method: "POST", headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) return null;
     return mapRun((await res.json()) as ApiRun);

@@ -229,7 +229,8 @@ Plan review is evidence work. Reviewers spend time finding what was submitted, c
 - **Backend**: FastAPI with a versioned review-support API and SQLAlchemy models.
 - **Database**: SQLite for local development and tests; Postgres required for production SaaS. The provider is selected from `DATABASE_URL` and the schema is managed with Alembic migrations. See `docs/PRODUCTION_DATABASE.md`.
 - **DXF parsing**: Python DXF metadata parsing with the ezdxf library (a lightweight, pure-Python library). DXF is the only supported file type.
-- **API client**: a typed TypeScript client that reads the backend base URL from an environment variable and falls back to seeded data when the backend is unavailable.
+- **API client**: a typed TypeScript client with an explicit result model. Authenticated requests go through a same-origin backend-for-frontend proxy that attaches the session token from an HttpOnly cookie server-side; failures surface as explicit unauthenticated, forbidden, missing, validation, server, or offline states. Public Brookside demo surfaces disclose their data source (backend seed or fixture snapshot) with a visible notice.
+- **Sessions and CSRF**: no credential is readable by browser JavaScript. Sign-in sets an HttpOnly, SameSite=Lax cookie (Secure in production), and every mutating request passes a same-origin and custom-header CSRF gate. See `docs/adr/0003-secure-session-architecture.md`.
 - **Deployment**: the backend and frontend deploy as two separate services in one Railway project.
 - **Testing**: a backend pytest suite with a coverage gate and a frontend typecheck, lint, and vitest suite.
 
@@ -305,7 +306,7 @@ Upload storage note: uploaded DXF files are stored on the backend service file s
 ## Testing summary
 
 - Backend: a pytest suite with a coverage gate covering the API, the review-support services, DXF parsing, the safety vocabulary boundary, and configuration behavior.
-- Frontend: a TypeScript typecheck, an ESLint lint pass, a vitest unit suite for the API client and components, and a production build.
+- Frontend: a TypeScript typecheck, an ESLint lint pass, a vitest unit suite for the API client, session and CSRF layer, and components, a content integrity gate (attribution and em dash scan), and a production build. All of these run in CI, including the build; `npm run check` runs the same gates locally and `npm run verify` adds the production build.
 
 ## Future production work
 
@@ -313,10 +314,14 @@ This is a real-world foundation, not a full production release. The production f
 
 ## Portfolio note
 
-This project demonstrates a full-stack, domain-grounded application: a typed FastAPI backend with a clear service layer and a safety vocabulary that enforces professional boundaries, real DXF metadata parsing, a multi-round review workflow with evidence traceability and an audit trail, a Next.js frontend with a typed API client and graceful backend-unavailable fallback, and a clean two-service Railway deployment plan. It is built to read like a real plan review desk tool while staying explicit that it organizes review-support evidence and does not approve, certify, or validate engineering work.
+This project demonstrates a full-stack, domain-grounded application: a typed FastAPI backend with a clear service layer and a safety vocabulary that enforces professional boundaries, real DXF metadata parsing, a multi-round review workflow with evidence traceability and an audit trail, a Next.js frontend with a typed API client, secure cookie sessions behind a backend-for-frontend proxy, explicit labeled data-source boundaries, and a clean two-service Railway deployment plan. It is built to read like a real plan review desk tool while staying explicit that it organizes review-support evidence and does not approve, certify, or validate engineering work.
 
 ## Documentation
 
+- [`docs/README.md`](docs/README.md): the documentation index, separating current-state documents from archived phase records.
+- [`docs/ROUTE_ARCHITECTURE.md`](docs/ROUTE_ARCHITECTURE.md): every route, classified by audience and status.
+- [`docs/adr/`](docs/adr/): architecture decision records (routes and shells, data-source boundaries, session security, type generation, backend decomposition).
+- [`docs/100_SCORE_TRANSFORMATION.md`](docs/100_SCORE_TRANSFORMATION.md): the verified baseline, defect register, and validation evidence for the staff-level transformation.
 - [`docs/PRODUCT_OVERVIEW.md`](docs/PRODUCT_OVERVIEW.md): the product by workflow and capability.
 - [`docs/RAILWAY_DEPLOYMENT_GUIDE.md`](docs/RAILWAY_DEPLOYMENT_GUIDE.md): the Railway two-service deployment guide.
 - [`docs/LIVE_SITE_VERIFICATION.md`](docs/LIVE_SITE_VERIFICATION.md): the post-deploy live-site verification checklist.

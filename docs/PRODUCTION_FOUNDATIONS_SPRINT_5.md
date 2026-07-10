@@ -1,5 +1,9 @@
 # Production Foundations Sprint 5: Real Authentication, Reviewer Roles, and Project Access Control
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 This sprint adds the first real authentication and access-control foundation.
 Real users can sign in, belong to organizations, hold reviewer or admin roles,
 and access only the projects they are permitted to view or act on, with real

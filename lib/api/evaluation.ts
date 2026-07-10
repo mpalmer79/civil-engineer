@@ -1,4 +1,9 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch } from "./client";
+import {
+  API_BASE_URL,
+  PROJECT_ID,
+  apiFetch,
+  safeFetch,
+  type DemoDataSource, authHeaders} from "./client";
 import {
   evaluationCases as staticEvaluationCases,
   evaluationSummary as staticEvaluationSummary,
@@ -47,14 +52,21 @@ function mapEvaluationCase(c: ApiEvaluationCase): EvaluationCase {
 export type EvaluationData = {
   cases: EvaluationCase[];
   summary: typeof staticEvaluationSummary;
+  source: DemoDataSource;
 };
 
 export async function getEvaluationData(): Promise<EvaluationData> {
-  const data = await safeFetch<ApiEvaluationCase[]>("/api/v1/evaluation-cases");
-  if (!data) {
-    return { cases: staticEvaluationCases, summary: staticEvaluationSummary };
+  const result = await apiFetch<ApiEvaluationCase[]>("/api/v1/evaluation-cases");
+  // Explicit public-demo policy: when the demo backend is unreachable this
+  // surface renders the repository fixture snapshot and says so.
+  if (!result.ok) {
+    return {
+      cases: staticEvaluationCases,
+      summary: staticEvaluationSummary,
+      source: "demo_fixture",
+    };
   }
-  const cases = data.map(mapEvaluationCase);
+  const cases = result.data.map(mapEvaluationCase);
   const summary = {
     totalCases: cases.length,
     casesPassed: cases.filter((c) => c.passed).length,
@@ -72,7 +84,7 @@ export async function getEvaluationData(): Promise<EvaluationData> {
     ),
     humanReviewRequired: cases.reduce((n, c) => n + c.humanReviewRequired, 0),
   };
-  return { cases, summary };
+  return { cases, summary, source: "backend_seeded" };
 }
 
 // Phase 5: evaluation scoring.
@@ -191,7 +203,7 @@ export async function runEvaluation(
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/ai-review-runs/${reviewRunId}/evaluate`,
-      { method: "POST", cache: "no-store" },
+      { method: "POST", headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) {
       let detail = `Request failed (${res.status}).`;

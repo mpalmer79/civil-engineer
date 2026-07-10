@@ -1,4 +1,4 @@
-import { PROJECT_ID, safeFetch } from "./client";
+import { PROJECT_ID, apiFetch, type DemoSourced } from "./client";
 import { brookside, type BrooksideProject } from "@/data/brookside";
 
 // Backend payload shapes (snake_case), kept local to the mapping layer.
@@ -26,10 +26,16 @@ type ApiProject = {
   known_constraints: string[];
 };
 
-export async function getProject(): Promise<BrooksideProject> {
-  const data = await safeFetch<ApiProject>(`/api/v1/projects/${PROJECT_ID}`);
-  if (!data) return brookside;
+export async function getProject(): Promise<DemoSourced<BrooksideProject>> {
+  const result = await apiFetch<ApiProject>(`/api/v1/projects/${PROJECT_ID}`);
+  // Explicit public-demo policy: when the demo backend is unreachable this
+  // surface renders the repository fixture snapshot and says so. Authenticated
+  // surfaces never do this; see docs/adr/0002-data-source-boundaries.md.
+  if (!result.ok) return { data: brookside, source: "demo_fixture" };
+  const data = result.data;
   return {
+    source: "backend_seeded",
+    data: {
     projectId: data.project_id,
     projectName: data.project_name,
     projectType: data.project_type,
@@ -47,5 +53,6 @@ export async function getProject(): Promise<BrooksideProject> {
     siteConditions: data.site_conditions,
     proposedImprovements: data.proposed_improvements,
     knownConstraints: data.known_constraints,
+    },
   };
 }

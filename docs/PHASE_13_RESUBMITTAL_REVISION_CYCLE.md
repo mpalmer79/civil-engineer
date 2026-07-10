@@ -1,5 +1,9 @@
 # Phase 13: Resubmittal Intake, Revision Comparison, and Applicant Response Cycle Report
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 Phase 13 turns Civil Engineer AI into a multi-round review-support system. A
 reviewer can create or load a review cycle for Brookside Meadows, record a
 resubmittal package, link uploaded DXF files and applicant response notes,

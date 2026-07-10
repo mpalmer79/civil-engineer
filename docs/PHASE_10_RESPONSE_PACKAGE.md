@@ -1,5 +1,9 @@
 # Phase 10: External Review Response Package Report
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 Phase 10 adds an external review response package. It turns the Phase 9
 ready-for-handoff workflow items into a structured draft external response a
 human reviewer can prepare for an applicant, design engineer, municipal

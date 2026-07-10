@@ -1,5 +1,9 @@
 # Phase 1: Real PDF Indexing Implementation Map (Findings Only)
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 This document is a findings-only audit of the existing PDF indexing, document
 upload and storage, page records, and evidence retrieval readiness in the
 civil-engineer repository. It changes no application behavior. Its purpose is

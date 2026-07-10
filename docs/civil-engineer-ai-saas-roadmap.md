@@ -1,5 +1,9 @@
 # Civil Engineer AI: SaaS Transition Roadmap
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 From portfolio piece to a product that can start sales conversations.
 
 ---
@@ -59,7 +63,7 @@ No new features. Rewrite what the product says about itself. This is the highest
 - Collapse the two safety banners into one.
 - Cut the feature-list homepage. Eight workflow cards plus six foundation cards plus six metric cards is a documentation index, not a sales page. Pick the three capabilities that matter to an AEC buyer (DXF intake and findings, evidence traceability, resubmittal comparison) and let everything else live one click deeper.
 
-Deliverable for this phase: a rewritten `app/page.tsx` and a one-page positioning statement. This is a single focused Claude Code session.
+Deliverable for this phase: a rewritten `app/page.tsx` and a one-page positioning statement. This is a single focused working session.
 
 ---
 

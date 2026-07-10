@@ -23,7 +23,7 @@ Civil Engineer AI is designed around the following goals:
 4. Use retrieval-augmented generation to answer review questions from source documents.
 5. Apply a structured stormwater review checklist.
 6. Flag missing, unclear, or conflicting information.
-7. Route AI-generated findings to a human reviewer.
+7. Route AI-drafted findings to a human reviewer.
 8. Preserve a full audit trail of system actions.
 9. Evaluate the system using expected findings and reviewer feedback.
 
@@ -550,7 +550,7 @@ The Human Review Queue ensures that AI findings are reviewed by a person before 
 
 Responsibilities:
 
-- Display AI-generated findings
+- Display AI-drafted findings
 - Show source references
 - Show confidence levels
 - Show risk levels
@@ -812,7 +812,7 @@ Important fields:
 
 ## 6.7 findings
 
-Stores AI-generated review findings.
+Stores AI-drafted review findings.
 
 Important fields:
 

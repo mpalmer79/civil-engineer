@@ -1,5 +1,9 @@
 # Phase 6: Plan Sheet and CAD-Aware Review Foundation
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 Phase 6 begins the transition from document-only review into plan sheet and
 CAD-aware review support. It adds the first plan sheet intelligence layer for
 Civil Engineer AI without attempting full CAD parsing.

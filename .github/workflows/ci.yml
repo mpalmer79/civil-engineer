@@ -6,7 +6,7 @@ on:
 
 jobs:
   backend:
-    name: Backend (pytest + coverage)
+    name: Backend (pytest + coverage + migrations)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -26,9 +26,21 @@ jobs:
         # at the time of writing (see PR description). Raise the floor as
         # coverage grows; never lower it to make a build pass.
         run: pytest --cov=app --cov-report=term-missing --cov-fail-under=90
+      - name: Validate migrations have a single head
+        run: |
+          python - <<'EOF'
+          from alembic.config import Config
+          from alembic.script import ScriptDirectory
+
+          heads = ScriptDirectory.from_config(Config("alembic.ini")).get_heads()
+          assert len(heads) == 1, f"Expected exactly one Alembic head, found: {heads}"
+          print(f"Single migration head confirmed: {heads[0]}")
+          EOF
+      - name: Application import check
+        run: python -c "from app.main import app; print('FastAPI app imports cleanly')"
 
   frontend:
-    name: Frontend (typecheck + lint + test)
+    name: Frontend (typecheck + lint + test + build)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -42,9 +54,11 @@ jobs:
         run: npm run typecheck
       - name: Lint
         run: npm run lint
+      - name: Content integrity (attribution and em dash gate)
+        run: npm run check:content
       - name: Test
         run: npm test
-      # Note: we intentionally do not run "next build" in CI. The production
-      # build fetches Google Fonts at build time, which fails in a sandboxed CI
-      # runner without outbound network access. Typecheck, lint, and unit tests
-      # cover the frontend here; the build is validated locally before release.
+      - name: Production build
+        # The build has no network dependency (the app uses a system font
+        # stack, not next/font/google), so it runs in a sandboxed CI runner.
+        run: npm run build

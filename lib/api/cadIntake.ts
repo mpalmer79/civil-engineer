@@ -1,4 +1,4 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch } from "./client";
+import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
 
 // Phase 11: real CAD (DXF) intake and parsing.
 //
@@ -663,7 +663,7 @@ export async function createCadFileRecord(
       `${API_BASE_URL}/api/v1/projects/${projectId}/cad-files`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({ sample_key: sampleKey, uploaded_by: uploadedBy }),
         cache: "no-store",
       },
@@ -702,7 +702,7 @@ export async function parseCadFile(cadFileId: string): Promise<{
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/cad-files/${cadFileId}/parse`,
-      { method: "POST", cache: "no-store" },
+      { method: "POST", headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) {
       let detail = `Request failed (${res.status}).`;
@@ -734,7 +734,7 @@ export async function compareCadReferencesToPlanSheets(
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/cad-parse-runs/${parseRunId}/compare-plan-sheets`,
-      { method: "POST", cache: "no-store" },
+      { method: "POST", headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) return null;
     const data = (await res.json()) as {
@@ -906,7 +906,7 @@ export async function uploadCadFile(
     form.append("uploaded_by", uploadedBy);
     const res = await fetch(
       `${API_BASE_URL}/api/v1/projects/${projectId}/cad-files/upload`,
-      { method: "POST", body: form, cache: "no-store" },
+      { method: "POST", headers: authHeaders(), body: form, cache: "no-store" },
     );
     if (!res.ok) {
       let detail = `Request failed (${res.status}).`;
@@ -958,7 +958,7 @@ export async function requestCadParse(cadFileId: string): Promise<{
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/cad-files/${cadFileId}/request-parse`,
-      { method: "POST", cache: "no-store" },
+      { method: "POST", headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) {
       let detail = `Request failed (${res.status}).`;
@@ -1076,7 +1076,7 @@ export async function promoteCadFindingToWorkflow(
       `${API_BASE_URL}/api/v1/cad-review-findings/${cadReviewFindingId}/promote-to-workflow`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           reviewer_name: reviewerName,
           reviewer_note: reviewerNote ?? null,
@@ -1128,7 +1128,7 @@ export async function promoteSelectedCadFindingsToWorkflow(
       `${API_BASE_URL}/api/v1/projects/${projectId}/cad-review-findings/promote-selected`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           cad_review_finding_ids: cadReviewFindingIds,
           reviewer_name: reviewerName,
@@ -1176,7 +1176,7 @@ export async function createWorkflowItemsFromCadFindings(projectId: string = PRO
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/projects/${projectId}/workflow-items/from-cad-findings`,
-      { method: "POST", cache: "no-store" },
+      { method: "POST", headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) {
       return {

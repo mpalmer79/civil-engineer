@@ -309,7 +309,7 @@ export async function deleteEvidenceCitation(
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/projects/${projectId}/findings/${findingId}/citations/${citationId}`,
-      { method: "DELETE", cache: "no-store" },
+      { method: "DELETE", headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) {
       return { ok: false, backendReachable: true, error: `Delete failed (${res.status}).` };

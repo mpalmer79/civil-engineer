@@ -1,5 +1,9 @@
 # Design-Partner Outreach
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 Practical, concise templates for starting design-partner conversations. Keep the
 language review-support only: never promise approval, certification, validation,
 verification, guaranteed compliance, safety, passing review, or first-pass

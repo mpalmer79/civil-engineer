@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DataSourceNotice from "@/components/DataSourceNotice";
 import PageHeader from "@/components/PageHeader";
 import ProjectSummaryCard from "@/components/ProjectSummaryCard";
 import MetricCard from "@/components/MetricCard";
@@ -14,15 +15,26 @@ import {
 } from "@/lib/api";
 
 export default async function ProjectPage() {
-  const [brookside, documents, checklist, findings, auditEvents, evaluation] =
-    await Promise.all([
-      getProject(),
-      getDocuments(),
-      getChecklist(),
-      getFindings(),
-      getAuditEvents(),
-      getEvaluationData(),
-    ]);
+  const [
+    projectResult,
+    documentsResult,
+    checklistResult,
+    findingsResult,
+    auditEventsResult,
+    evaluation,
+  ] = await Promise.all([
+    getProject(),
+    getDocuments(),
+    getChecklist(),
+    getFindings(),
+    getAuditEvents(),
+    getEvaluationData(),
+  ]);
+  const brookside = projectResult.data;
+  const documents = documentsResult.data;
+  const checklist = checklistResult.data;
+  const findings = findingsResult.data;
+  const auditEvents = auditEventsResult.data;
   const evaluationCases = evaluation.cases;
 
   const dashboardCards = [
@@ -79,6 +91,7 @@ export default async function ProjectPage() {
       />
 
       <div className="mx-auto max-w-7xl space-y-10 px-4 py-10 sm:px-6 lg:px-8">
+        <DataSourceNotice source={projectResult.source} />
         {/* Dashboard cards */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
           {dashboardCards.map((card) => (

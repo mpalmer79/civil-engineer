@@ -1,5 +1,9 @@
 # Homepage Hotspot Plan
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 **Product:** Civil Engineer AI: Stormwater Review Assistant
 **Asset:** `public/development.png`
 **Status:** Phase 1 (static overlay) with a defined path to a fully interactive

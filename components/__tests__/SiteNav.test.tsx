@@ -1,78 +1,97 @@
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-// AccountNav (rendered inside SiteNav) reads the current user and uses the
-// router. Keep it offline and signed out for these tests.
+// AccountNav and SiteNav read the current user and use the router. Keep them
+// offline for these tests and control the session per test.
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
 
+const getCurrentUser = vi.fn(async (): Promise<unknown> => null);
+
 vi.mock("@/lib/api", () => ({
-  getCurrentUser: vi.fn(async () => null),
+  getCurrentUser: () => getCurrentUser(),
   logoutUser: vi.fn(),
 }));
 
 import SiteNav from "@/components/SiteNav";
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  getCurrentUser.mockReset();
+  getCurrentUser.mockResolvedValue(null);
+});
 
-describe("SiteNav primary navigation", () => {
-  it("includes the primary product links", () => {
+describe("SiteNav public navigation", () => {
+  it("shows only public product destinations when signed out", async () => {
     render(<SiteNav />);
-    for (const label of [
-      "Projects",
-      "Rule Packs",
-      "Organizations",
-      "Guided Demo",
-    ]) {
+    for (const label of ["Product", "Guided Demo", "Technical Overview", "Pilot"]) {
       expect(screen.getAllByText(label).length).toBeGreaterThan(0);
     }
+    await waitFor(() =>
+      expect(screen.getAllByText("Sign in").length).toBeGreaterThan(0),
+    );
+    // Operational workspace destinations stay hidden until sign-in.
+    expect(screen.queryByText("Reviewer Queue")).toBeNull();
+    expect(screen.queryByText("Organizations")).toBeNull();
+    // The old flat demo modules menu no longer dominates the first impression.
+    expect(screen.queryByText("Demo modules")).toBeNull();
   });
 
   it("renders the account/login control", async () => {
     render(<SiteNav />);
-    // AccountNav resolves to a Sign in link when signed out.
     await waitFor(() =>
       expect(screen.getAllByText("Sign in").length).toBeGreaterThan(0),
     );
-  });
-
-  it("keeps the older Brookside Meadows demo routes discoverable via the demo menu", () => {
-    render(<SiteNav />);
-    // The grouped demo modules disclosure exposes the older routes.
-    expect(screen.getAllByText("Demo modules").length).toBeGreaterThan(0);
-    for (const label of [
-      "Project Dashboard",
-      "CAD Intake",
-      "Workflow Board",
-      "Audit",
-      "Evaluation",
-    ]) {
-      expect(screen.getAllByText(label).length).toBeGreaterThan(0);
-    }
   });
 
   it("exposes a mobile menu rather than hiding all navigation", () => {
     render(<SiteNav />);
     expect(screen.getAllByText("Menu").length).toBeGreaterThan(0);
   });
+});
 
-  it("surfaces the Sprint 9 reviewer dashboard and queue in the primary nav", () => {
+describe("SiteNav signed-in workspace navigation", () => {
+  it("reveals the reviewer workspace destinations after sign-in", async () => {
+    getCurrentUser.mockResolvedValue({
+      userId: "user_test",
+      email: "reviewer@example.com",
+      displayName: "Test Reviewer",
+      isActive: true,
+      isDemoUser: false,
+      createdAt: null,
+      lastLoginAt: null,
+    });
     render(<SiteNav />);
-    expect(screen.getAllByText("Dashboard").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("Reviewer Queue").length).toBeGreaterThan(0);
+    await waitFor(() =>
+      expect(screen.getAllByText("Workspace").length).toBeGreaterThan(0),
+    );
+    for (const label of [
+      "Projects",
+      "Dashboard",
+      "Reviewer Queue",
+      "Organizations",
+      "Rule Packs",
+    ]) {
+      expect(screen.getAllByText(label).length).toBeGreaterThan(0);
+    }
   });
 
-  it("keeps Deployment Status discoverable in the demo modules menu", () => {
-    render(<SiteNav />);
-    expect(screen.getAllByText("Deployment Status").length).toBeGreaterThan(0);
-  });
-
-  it("exposes disclosure controls that are keyboard focusable", () => {
+  it("exposes disclosure controls that are keyboard focusable when signed in", async () => {
+    getCurrentUser.mockResolvedValue({
+      userId: "user_test",
+      email: "reviewer@example.com",
+      displayName: "Test Reviewer",
+      isActive: true,
+      isDemoUser: false,
+      createdAt: null,
+      lastLoginAt: null,
+    });
     const { container } = render(<SiteNav />);
-    // Native summary elements are keyboard focusable disclosure controls and
-    // carry the design-system focus ring from globals.css.
-    const summaries = container.querySelectorAll("summary");
-    expect(summaries.length).toBeGreaterThan(0);
+    await waitFor(() => {
+      // Native summary elements are keyboard focusable disclosure controls and
+      // carry the design-system focus ring from globals.css.
+      expect(container.querySelectorAll("summary").length).toBeGreaterThan(0);
+    });
   });
 });

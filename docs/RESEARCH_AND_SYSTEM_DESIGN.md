@@ -1,5 +1,9 @@
 # Civil Engineer AI: Stormwater Review Assistant
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 > **Naming note.** The product name is **Civil Engineer AI** and the canonical
 > demo fixture is **Brookside Meadows** (see `BROOKSIDE_MEADOWS_PROJECT_STORY.md`).
 > Examples in this brief use the Brookside Meadows fixture.
@@ -235,7 +239,7 @@ These extracted values should be treated as candidates until reviewed.
 
 ### 6.4 Human-in-the-Loop Review
 
-Every AI-generated finding should be routed to a human review queue. The reviewer should be able to:
+Every AI-drafted finding should be routed to a human review queue. The reviewer should be able to:
 
 - Accept the finding
 - Edit the finding

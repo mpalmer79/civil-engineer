@@ -1,5 +1,9 @@
 # Production Foundations Sprint 2: PDF Page Indexing and Evidence Citations
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 This sprint adds the first document-understanding layer for uploaded PDF files.
 It indexes a real uploaded PDF into page-level review records, extracts embedded
 text where the PDF carries a text layer, and lets a human reviewer cite an exact

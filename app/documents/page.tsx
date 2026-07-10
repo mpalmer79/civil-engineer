@@ -1,3 +1,4 @@
+import DataSourceNotice from "@/components/DataSourceNotice";
 import PageHeader from "@/components/PageHeader";
 import DocumentTable from "@/components/DocumentTable";
 import MetricCard from "@/components/MetricCard";
@@ -15,10 +16,11 @@ const statusOrder: { status: DocumentStatus; label: string }[] = [
 ];
 
 export default async function DocumentsPage() {
-  const [documents, chunksByDocument] = await Promise.all([
+  const [documentsResult, chunksByDocument] = await Promise.all([
     getDocuments(),
     getChunksByDocument(),
   ]);
+  const documents = documentsResult.data;
   const counts = (status: DocumentStatus) =>
     documents.filter((d) => d.status === status).length;
   const documentsWithChunks = documents.filter(
@@ -34,6 +36,7 @@ export default async function DocumentsPage() {
       />
 
       <div className="mx-auto max-w-7xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
+        <DataSourceNotice source={documentsResult.source} />
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {statusOrder.map((s) => (
             <MetricCard

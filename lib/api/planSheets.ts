@@ -1,4 +1,4 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch } from "./client";
+import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
 import {
   mapCadMetadata,
   mapPlanConsistencyFinding,
@@ -329,7 +329,7 @@ export async function createPlanConsistencyReviewAction(
       `${API_BASE_URL}/api/v1/plan-consistency-findings/${planFindingId}/review-actions`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify({
           action: input.action,
           reviewer_name: input.reviewerName,

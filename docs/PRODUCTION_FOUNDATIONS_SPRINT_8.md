@@ -1,5 +1,9 @@
 # Production Foundations Sprint 8: Reviewer Response Package Issuance and Comment Letter Workflow
 
+> Historical record. This document describes a completed build phase and is
+> not current implementation guidance. See docs/README.md for the current
+> documentation index.
+
 This sprint adds the first controlled reviewer output workflow on top of the
 project, document, citation, checklist, access-control, storage, response matrix,
 and resubmittal foundations from Sprints 1 through 7.

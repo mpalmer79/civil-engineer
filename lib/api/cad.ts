@@ -1,4 +1,4 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch } from "./client";
+import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
 
 // Phase 6: CAD-aware metadata, plan references, and plan consistency findings.
 //
@@ -263,7 +263,7 @@ export async function runPlanConsistencyCheck(
   try {
     const res = await fetch(
       `${API_BASE_URL}/api/v1/projects/${projectId}/plan-consistency-check`,
-      { method: "POST", cache: "no-store" },
+      { method: "POST", headers: authHeaders(), cache: "no-store" },
     );
     if (!res.ok) {
       let detail = `Request failed (${res.status}).`;

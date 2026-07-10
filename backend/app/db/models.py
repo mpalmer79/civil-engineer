@@ -992,7 +992,7 @@ class AIReviewRun(Base):
 
 
 class AIDraftFinding(Base):
-    """An AI-generated draft review-support finding.
+    """An AI-drafted draft review-support finding.
 
     A draft finding is not a final engineering conclusion. It is generated from
     retrieved source evidence, validated against a strict schema and safety

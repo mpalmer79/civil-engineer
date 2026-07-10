@@ -1,11 +1,12 @@
 export {
   API_BASE_URL,
+  BACKEND_ORIGIN,
   PROJECT_ID,
-  getAuthToken,
-  setAuthToken,
-  clearAuthToken,
   authHeaders,
+  hasSessionIndicator,
+  apiFetch,
 } from "./client";
+export type { ApiResult, ApiSuccess, ApiFailure, ApiFailureKind } from "./client";
 export * from "./auth";
 export * from "./diagnostics";
 export * from "./fileStorage";

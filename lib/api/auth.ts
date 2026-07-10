@@ -1,20 +1,15 @@
 import {
   API_BASE_URL,
   authHeaders,
-  clearAuthToken,
-  getAuthToken,
+  hasSessionIndicator,
   safeFetch,
-  setAuthToken,
 } from "./client";
 
-// Production Foundations Sprint 5 local authentication and access control client.
-// Tokens are stored client-side and attached as a Bearer Authorization header.
-// The token is never placed in a URL and never logged. Access control protects
-// review records; it does not approve plans, certify compliance, or make any
-// final engineering decision.
-//
-// NEXT_PUBLIC_API_BASE_URL is the backend origin only (no /api/v1 path); this
-// client appends the /api/v1 paths itself.
+// Authentication and access control client. The session lives in an HttpOnly
+// cookie managed by the same-origin /api/session endpoints; browser JavaScript
+// never sees the backend access token. Access control protects review records;
+// it does not approve plans, certify compliance, or make any final engineering
+// decision.
 
 export type CurrentUser = {
   userId: string;
@@ -177,19 +172,55 @@ export type RegisterInput = {
   organizationType?: string;
 };
 
-type AuthTokenResult = { token: string; user: CurrentUser };
+type SessionResult = { user: CurrentUser };
 
-function mapTokenResponse(raw: Record<string, unknown>): AuthTokenResult {
-  const token = raw.access_token as string;
-  setAuthToken(token);
-  return { token, user: mapUser(raw.user as Record<string, unknown>) };
+// Session endpoints live on the Next.js origin (not the backend origin) so
+// they can set and clear the HttpOnly session cookie.
+function mapSessionResponse(raw: Record<string, unknown>): SessionResult {
+  return { user: mapUser(raw.user as Record<string, unknown>) };
+}
+
+async function sessionPost<T>(
+  path: string,
+  body: unknown,
+  mapper: (raw: Record<string, unknown>) => T,
+): Promise<MutationResult<T>> {
+  try {
+    const res = await fetch(path, {
+      method: "POST",
+      headers: authHeaders({ "Content-Type": "application/json" }),
+      body: JSON.stringify(body),
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      let detail = `Request failed (${res.status}).`;
+      try {
+        const parsed = (await res.json()) as { detail?: string };
+        if (parsed.detail) detail = parsed.detail;
+      } catch {
+        // Keep the generic message.
+      }
+      return { ok: false, backendReachable: res.status !== 502, error: detail };
+    }
+    return {
+      ok: true,
+      backendReachable: true,
+      data: mapper((await res.json()) as Record<string, unknown>),
+    };
+  } catch {
+    return {
+      ok: false,
+      backendReachable: false,
+      error: "Backend unavailable. Start the API to sign in.",
+    };
+  }
 }
 
 export async function registerUser(
   input: RegisterInput,
-): Promise<MutationResult<AuthTokenResult>> {
-  return authPost<AuthTokenResult>(
-    "/api/v1/auth/register",
+): Promise<MutationResult<SessionResult>> {
+  return sessionPost<SessionResult>(
+    "/api/session/register",
     {
       email: input.email,
       display_name: input.displayName,
@@ -197,44 +228,53 @@ export async function registerUser(
       organization_name: input.organizationName || null,
       organization_type: input.organizationType || null,
     },
-    mapTokenResponse,
+    mapSessionResponse,
   );
 }
 
 export async function loginUser(
   email: string,
   password: string,
-): Promise<MutationResult<AuthTokenResult>> {
-  return authPost<AuthTokenResult>(
-    "/api/v1/auth/login",
+): Promise<MutationResult<SessionResult>> {
+  return sessionPost<SessionResult>(
+    "/api/session/login",
     { email, password },
-    mapTokenResponse,
+    mapSessionResponse,
   );
 }
 
-export function logoutUser(): void {
-  clearAuthToken();
+export async function logoutUser(): Promise<void> {
+  try {
+    await fetch("/api/session/logout", {
+      method: "POST",
+      headers: authHeaders(),
+      cache: "no-store",
+    });
+  } catch {
+    // The indicator cookie may remain if the request failed; the next
+    // authenticated call will still fail explicitly with 401.
+  }
 }
 
 export function isSignedIn(): boolean {
-  return getAuthToken() !== null;
+  return hasSessionIndicator();
 }
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
-  if (!getAuthToken()) return null;
+  if (!hasSessionIndicator()) return null;
   const data = await safeFetch<Record<string, unknown>>("/api/v1/auth/me");
   return data ? mapUser(data) : null;
 }
 
 export async function listMyProjects(): Promise<UserProject[] | null> {
-  if (!getAuthToken()) return null;
+  if (!hasSessionIndicator()) return null;
   const data = await safeFetch<Record<string, unknown>[]>("/api/v1/me/projects");
   if (!data) return null;
   return data.map(mapUserProject);
 }
 
 export async function listMyOrganizations(): Promise<Organization[] | null> {
-  if (!getAuthToken()) return null;
+  if (!hasSessionIndicator()) return null;
   const data = await safeFetch<Record<string, unknown>[]>(
     "/api/v1/me/organizations",
   );
