@@ -55,6 +55,6 @@ describe("SiteFooter professional badges", () => {
       join(process.cwd(), "components/SiteFooter.tsx"),
       "utf8",
     );
-    expect(source).not.toContain("—");
+    expect(source).not.toContain("\u2014");
   });
 });

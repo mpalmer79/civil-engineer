@@ -39,7 +39,18 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "ui-sans-serif", "system-ui", "sans-serif"],
+        // System font stack. The production build must not fetch fonts from
+        // the network, so the app relies on high-quality platform UI fonts.
+        sans: [
+          "ui-sans-serif",
+          "system-ui",
+          "-apple-system",
+          "'Segoe UI'",
+          "Roboto",
+          "'Helvetica Neue'",
+          "Arial",
+          "sans-serif",
+        ],
       },
       boxShadow: {
         // A restrained three-step elevation scale. Cards stay flat by default;

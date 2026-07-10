@@ -130,7 +130,7 @@ neighborhood development project:
 11. Neighborhood development timeline tracking
 12. Municipal comment-response tracking
 13. Human review and audit logging *(cross-cutting from day one)*
-14. Evaluation of AI-generated findings *(cross-cutting from day one)*
+14. Evaluation of AI-drafted findings *(cross-cutting from day one)*
 
 The reusable backbone that makes this expansion cheap:
 
@@ -236,7 +236,7 @@ decisions are reserved for the human and can never be made final by the AI:
 - Whether a finding is valid, how it should be worded, and whether it is sent
   to the applicant.
 
-Concretely, every AI-generated finding lands in a **human review queue** in a
+Concretely, every AI-drafted finding lands in a **human review queue** in a
 `requires_human_review` (or `pending`) state. The reviewer may **accept, edit,
 reject, escalate, mark unclear, or request more information**. Both the AI
 output and the human decision are recorded in the audit log.

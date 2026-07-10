@@ -92,7 +92,7 @@ V1 is successful if a reviewer can complete this loop on Brookside Meadows:
 1. **Open** the Brookside Meadows project dashboard.
 2. **View** the submitted documents in the document library.
 3. **Run or inspect** a stormwater checklist review.
-4. **See** AI-generated findings tied to checklist items.
+4. **See** AI-drafted findings tied to checklist items.
 5. **Inspect** the source evidence (document, page, excerpt) behind each
    finding.
 6. **Accept, edit, reject, or escalate** each finding.

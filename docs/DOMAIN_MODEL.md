@@ -28,7 +28,7 @@ API models (see `ARCHITECTURE.md` Section 6 for the table-level view).
 | `ChecklistItem` | A reusable review requirement (the structure of the review). |
 | `ProjectChecklistItem` | The status of a checklist item for a specific project. |
 | `ReviewRun` | One execution of the AI-assisted review pipeline. |
-| `ReviewFinding` | An AI-generated, source-cited review-support finding. |
+| `ReviewFinding` | An AI-drafted, source-cited review-support finding. |
 | `FindingSource` | A link from a finding to the chunk/page that supports it. |
 | `RiskFlag` | A reviewer-facing risk classification derived from findings. |
 | `HumanReviewAction` | A human decision on a finding (accept/edit/reject/etc.). |
@@ -341,7 +341,7 @@ referenced by `EvaluationResult`.
 
 ### 2.11 ReviewFinding
 
-**Purpose.** The core output: an AI-generated, source-cited, review-support
+**Purpose.** The core output: an AI-drafted, source-cited, review-support
 finding tied to a checklist item. Always draft until a human acts on it.
 
 **Key fields**

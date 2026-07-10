@@ -24,7 +24,7 @@ FindingType = Literal[
 
 
 class AIDraftFindingOutput(BaseModel):
-    """Strict schema for a single AI-generated draft finding."""
+    """Strict schema for a single AI-drafted draft finding."""
 
     checklist_item_id: str
     finding_type: FindingType

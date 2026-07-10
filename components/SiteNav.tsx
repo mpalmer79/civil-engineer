@@ -1,48 +1,51 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import AccountNav from "@/components/AccountNav";
 import MobileNav from "@/components/MobileNav";
+import { getCurrentUser } from "@/lib/api";
 
-// Primary product navigation, ordered so the current review-support workflows
-// are visible first. The Sprint 9 reviewer dashboard and reviewer queue lead the
-// operational workflow alongside Projects. The Account/Login control renders
-// separately through AccountNav.
-const primaryLinks = [
-  { href: "/", label: "Home" },
-  { href: "/workspace", label: "Workspace" },
+// Global navigation with progressive disclosure. Visitors see the public
+// product destinations only. Operational workspace destinations (projects,
+// dashboard, queue, organizations) appear after sign-in, so the public
+// experience is not dominated by authenticated modules. The older Brookside
+// demo module routes remain reachable from the Technical Overview page and the
+// Guided Demo rather than from the primary navigation.
+const publicLinks = [
+  { href: "/", label: "Product" },
+  { href: "/guided-demo", label: "Guided Demo" },
+  { href: "/start-here", label: "Technical Overview" },
+  { href: "/pilot", label: "Pilot" },
+];
+
+const workspaceLinks = [
   { href: "/projects", label: "Projects" },
   { href: "/dashboard", label: "Dashboard" },
   { href: "/dashboard/queue", label: "Reviewer Queue" },
-  { href: "/rule-packs", label: "Rule Packs" },
+  { href: "/workspace", label: "Workspace" },
   { href: "/organizations", label: "Organizations" },
-  { href: "/guided-demo", label: "Guided Demo" },
-];
-
-// Older Brookside Meadows demo modules. These remain fully available; they are
-// grouped here so they do not dominate the primary navigation. They stay easy to
-// reach from the Demo modules menu and from the Guided Demo.
-const demoModuleLinks = [
-  { href: "/project-dashboard", label: "Project Dashboard" },
-  { href: "/project", label: "Project" },
-  { href: "/documents", label: "Documents" },
-  { href: "/checklist", label: "Checklist" },
-  { href: "/findings", label: "Findings" },
-  { href: "/plan-sheets", label: "Plan Sheets" },
-  { href: "/cad-intake", label: "CAD Intake" },
-  { href: "/cad-review", label: "CAD Review" },
-  { href: "/sheet-viewer", label: "Sheet Viewer" },
-  { href: "/review-packet", label: "Review Packet" },
-  { href: "/workflow-board", label: "Workflow Board" },
-  { href: "/response-package", label: "Response Package" },
-  { href: "/review-cycles", label: "Review Cycles" },
-  { href: "/ai-review", label: "AI Review" },
-  { href: "/human-review", label: "Human Review" },
-  { href: "/audit", label: "Audit" },
-  { href: "/evaluation", label: "Evaluation" },
-  { href: "/deployment-status", label: "Deployment Status" },
+  { href: "/rule-packs", label: "Rule Packs" },
 ];
 
 export default function SiteNav() {
+  const [signedIn, setSignedIn] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getCurrentUser().then((user) => {
+      if (active) setSignedIn(user !== null);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const mobileLinks = signedIn
+    ? [...publicLinks, ...workspaceLinks]
+    : publicLinks;
+
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/90 backdrop-blur">
       <nav
@@ -68,33 +71,33 @@ export default function SiteNav() {
 
         {/* Desktop navigation */}
         <div className="hidden items-center gap-0.5 lg:flex">
-          {primaryLinks.map((link) => (
+          {publicLinks.map((link) => (
             <Link key={link.href} href={link.href} className="nav-link">
               {link.label}
             </Link>
           ))}
 
-          {/* Demo modules disclosure. Native details/summary keeps the grouped
-              demo routes discoverable and accessible without client JavaScript. */}
-          <details className="group relative">
-            <summary className="nav-link flex cursor-pointer list-none items-center gap-1">
-              Demo modules
-              <span
-                aria-hidden="true"
-                className="text-[10px] text-slate-400 transition-transform group-open:rotate-180"
-              >
-                ▾
-              </span>
-            </summary>
-            <div className="menu-panel">
-              <p className="menu-label">Brookside Meadows demo</p>
-              {demoModuleLinks.map((link) => (
-                <Link key={link.href} href={link.href} className="menu-item">
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </details>
+          {signedIn ? (
+            <details className="group relative">
+              <summary className="nav-link flex cursor-pointer list-none items-center gap-1">
+                Workspace
+                <span
+                  aria-hidden="true"
+                  className="text-[10px] text-slate-400 transition-transform group-open:rotate-180"
+                >
+                  ▾
+                </span>
+              </summary>
+              <div className="menu-panel">
+                <p className="menu-label">Reviewer workspace</p>
+                {workspaceLinks.map((link) => (
+                  <Link key={link.href} href={link.href} className="menu-item">
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            </details>
+          ) : null}
 
           <span aria-hidden="true" className="mx-1 h-5 w-px bg-slate-200" />
           <AccountNav />
@@ -105,10 +108,7 @@ export default function SiteNav() {
             still exposing the full navigation on small screens. */}
         <div className="flex items-center gap-2 lg:hidden">
           <AccountNav />
-          <MobileNav
-            primaryLinks={primaryLinks}
-            demoModuleLinks={demoModuleLinks}
-          />
+          <MobileNav primaryLinks={mobileLinks} />
         </div>
       </nav>
     </header>

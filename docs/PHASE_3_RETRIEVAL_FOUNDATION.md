@@ -12,7 +12,7 @@ submitted documents.
 Civil Engineer AI is a review-support and evidence-organization system. It does
 not approve plans, certify compliance, stamp drawings, replace a licensed
 Professional Engineer, or make final safety determinations. Phase 3 does not add
-live AI-generated findings, embeddings, or a vector store. Retrieval is keyword
+live AI-drafted findings, embeddings, or a vector store. Retrieval is keyword
 and metadata based.
 
 ## What Phase 3 adds
@@ -156,7 +156,7 @@ Phase 3 deliberately keeps retrieval simple and explainable. Keyword and
 metadata ranking is enough to demonstrate evidence-first review on the seeded
 fixture, it is easy to test deterministically, and it avoids introducing model
 calls or a vector store before the review workflow needs them. Embeddings,
-semantic retrieval, and live AI-generated findings are deferred so the evidence
+semantic retrieval, and live AI-drafted findings are deferred so the evidence
 model and the safety boundaries can be proven first.
 
 ## How Phase 3 prepares for Phase 4
@@ -192,5 +192,5 @@ model and the safety boundaries can be proven first.
 - Live AI review generation that cites retrieved evidence and returns structured,
   validated findings.
 - Prohibited-wording and schema validation on AI output before it is stored.
-- Human review required for every AI-generated finding.
+- Human review required for every AI-drafted finding.
 - Optionally, an embedding based ranker behind the existing retrieval interface.

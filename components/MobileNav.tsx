@@ -10,13 +10,9 @@ export type NavLink = {
 
 type MobileNavProps = {
   primaryLinks: NavLink[];
-  demoModuleLinks: NavLink[];
 };
 
-export default function MobileNav({
-  primaryLinks,
-  demoModuleLinks,
-}: MobileNavProps) {
+export default function MobileNav({ primaryLinks }: MobileNavProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDetailsElement | null>(null);
 
@@ -78,19 +74,6 @@ export default function MobileNav({
             href={link.href}
             onClick={closeMenu}
             className="menu-item font-medium text-slate-700"
-          >
-            {link.label}
-          </Link>
-        ))}
-        <p className="menu-label mt-2 border-t border-slate-100 pt-3">
-          Demo modules
-        </p>
-        {demoModuleLinks.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            onClick={closeMenu}
-            className="menu-item"
           >
             {link.label}
           </Link>

@@ -235,7 +235,7 @@ These extracted values should be treated as candidates until reviewed.
 
 ### 6.4 Human-in-the-Loop Review
 
-Every AI-generated finding should be routed to a human review queue. The reviewer should be able to:
+Every AI-drafted finding should be routed to a human review queue. The reviewer should be able to:
 
 - Accept the finding
 - Edit the finding

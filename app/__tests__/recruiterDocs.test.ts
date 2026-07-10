@@ -85,7 +85,7 @@ describe("Recruiter docs language hygiene", () => {
 
   it("contains no em dashes", () => {
     for (const doc of RECRUITER_DOCS) {
-      expect(read(doc), doc).not.toContain("—");
+      expect(read(doc), doc).not.toContain("\u2014");
     }
   });
 
