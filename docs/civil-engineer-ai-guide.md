@@ -1,50 +1,114 @@
 # Civil Engineer AI Guide
 
-The Civil Engineer AI Guide is a closed-scope, rule-based project guide mounted on every page from a floating launcher in the lower right corner. It exists so a recruiter or technical reviewer can get oriented without leaving the page they are on. It is not a general-purpose AI assistant, and it never generates open-ended text.
+The guide is a deterministic local project expert mounted on the site. It
+answers questions about this repository: the product, the Brookside Meadows
+demo, the architecture, security, testing, what is real versus seeded, and
+where things live in the code.
 
-## Purpose
+## What it is
 
-- Explain what the project is and what it demonstrates.
-- Point visitors at the right routes: guided demo, reviewer queue, documents, findings, response package, review packet, and audit trail.
-- Answer questions about the developer with the developer profile links.
-- Keep every response inside the project's professional boundary.
+- A deterministic local retrieval system over an allowlisted knowledge
+  catalog (lib/guide/knowledge.ts) plus generated repository facts
+  (lib/guide/generated/repo-facts.json).
+- Private to the browser: questions are never sent anywhere, there is no
+  telemetry, no logging of question text, no outside inference API, no model
+  download, and no embedding service.
+- Extractive and template-based: answers are composed from curated entries
+  and always identify their repository sources.
 
-## How it works
+## What it is not
 
-The guide is a single React component, `components/CivilEngineerAIGuide.tsx`, with local state only. Every answer is static, pre-written copy stored in the component. The typed input matches the question text against a fixed keyword list and selects one of those static answers. There are no calls to OpenAI, Anthropic, or any outside LLM or API, no API keys, and no environment variables. Nothing the visitor types leaves the browser.
+- Not a language model and not a general-purpose chatbot.
+- It does not read the live repository at runtime; its knowledge is a build
+  snapshot recorded with the generating commit.
+- It has no access to tenant data and cannot perform engineering analysis or
+  give engineering advice.
 
-## Supported categories
+## Architecture
 
-- Project Overview
-- For Civil Engineers
-- Brookside Meadows Demo
-- Review Workflow
-- Evidence & Documents
-- Technical Implementation
-- Developer & Source Code
+| Concern | Location |
+| --- | --- |
+| Presentation, interaction, accessibility | components/CivilEngineerAIGuide.tsx |
+| Types | lib/guide/types.ts |
+| Normalization (tokens, stemming, synonyms, typo tolerance) | lib/guide/normalize.ts |
+| Safety classification | lib/guide/safety.ts |
+| Retrieval and ranking | lib/guide/search.ts |
+| Answer composition and follow-ups | lib/guide/answerComposer.ts |
+| Route awareness | lib/guide/routeContext.ts |
+| Curated knowledge catalog | lib/guide/knowledge.ts |
+| Generated repository facts | lib/guide/generated/repo-facts.json |
+| Source link building (commit-pinned) | lib/guide/sourceLinks.ts |
+| Facts generator | scripts/generate-guide-knowledge.mjs |
+| Freshness gate | scripts/check-guide-knowledge.mjs |
+| Evaluation corpus (100+ questions) | lib/guide/evaluation/corpus.ts |
+| Evaluation suite | lib/guide/__tests__/evaluation.test.ts |
 
-## Conversation behavior
+The retrieval engine is lazy-loaded when the panel first opens, keeping the
+knowledge catalog out of the initial page bundle.
 
-The panel keeps a conversation thread. Each question the visitor sends stays visible as a message, the matching answer appears beneath it, exchanges accumulate instead of replacing each other, and the thread scrolls to the newest answer automatically. A clear conversation control resets the thread. Typed questions are scored against every topic's keyword list, with multi-word phrases weighted higher, and the best-scoring topic answers; the safety scope check always runs first.
+## Search ranking
 
-## Suggested questions
+Token-aware scoring, not substring matching: queries are tokenized, stopwords
+dropped, synonyms expanded, and lightly stemmed. Each knowledge entry is
+indexed with field weights (title and key phrases highest), an
+inverse-document-frequency weight per token with term-frequency saturation,
+and exact-phrase boosts. Tokens of five or more characters tolerate one edit
+for typos. The current route boosts contextually tagged entries, and the
+conversation's previous answers boost related entries. Substring collisions
+such as "author" matching "authorization" cannot occur.
 
-1. What does Civil Engineer AI help reviewers do?
-2. How does the Brookside Meadows demo work?
-3. I would like to know more about the developer of this project.
+## Confidence behavior
 
-## Scope limitations and fallback behavior
+- High: strong score with a clear margin; the guide answers directly with
+  sources.
+- Medium: the guide labels the closest matching topic and answers cautiously.
+- Low: the guide states that it could not locate enough public project
+  information, offers two or three likely topics, and never fabricates a
+  repository path. No numeric confidence percentages are shown.
 
-The guide only answers from its pre-written project content. Questions it cannot match return a fallback that names what the guide can help with and states that it does not have enough project-specific information to answer.
+## Safety classification
 
-Questions that ask for real engineering decisions receive a stronger scoped response instead: the guide cannot provide engineering, permitting, legal, or code-compliance advice, and final engineering decisions remain under qualified human review. This covers questions like whether a subdivision can move forward, detention basin sizing, code questions, use on a real project, or whether the AI replaces a civil engineer.
+Safety runs before answering and classifies intent rather than blocking
+nouns. Requests for an engineering decision (adequacy, sizing, code
+compliance, permitting outcome, safety determination, approval, construction
+advice) are refused with the professional-boundary response. Repository
+questions that merely name basins, permits, or compliance (where a feature is
+implemented, what tests enforce the wording boundary, what the demo
+represents) are answered. The critical decision set in the evaluation corpus
+must classify at 100 percent.
 
-## Developer links included
+## Page awareness and follow-ups
 
-- LinkedIn: http://linkedin.com/in/mpalmer1234
-- GitHub: https://www.github.com/mpalmer79
-- Project Repository: https://www.github.com/mpalmer79/civil-engineer
+The guide knows the current route: questions such as "what am I looking at"
+answer from the route map with the page's purpose, workflow stage, data
+source (public demo versus authenticated), and next steps. Short follow-ups
+("how does that work", "where is it implemented", "is that real or seeded",
+"what tests cover it") resolve against the previous answer. Context lives in
+component state only; nothing persists across sessions or devices.
 
-## Tests
+## Freshness gate
 
-`components/__tests__/CivilEngineerAIGuide.test.tsx` covers the launcher, panel accessibility, category chips, the exact suggested questions, the developer answer and links, route links resolving to real route directories, keyword matching, the fallback, the safety-scoped response, and source hygiene (no external API calls, no banned capability claims, no em dashes).
+npm run check:guide (also in CI) fails when a referenced repository path no
+longer exists, a route link no longer resolves, the generated facts are stale
+against package.json and the route tree, or a retired claim reappears (for
+example the old statement that the frontend falls back to seeded data when
+the backend is unreachable, which the application removed). The generated
+index records the generating commit; the guide presents its knowledge as a
+build snapshot, never a live feed.
+
+## Evaluation
+
+The corpus in lib/guide/evaluation/corpus.ts holds 100+ cases: exact
+questions, paraphrases, short and long forms, typos, acronyms, negation,
+multi-topic questions, unknown questions, route-context questions, follow-ups,
+and adversarial safety wording. CI enforces: at least 95 percent correct
+top-topic retrieval, 100 percent correct classification on the critical
+engineering-decision set, no unsupported repository-path citations, and
+low-confidence behavior on unknown questions.
+
+## Known limitations
+
+- Knowledge is curated: topics outside the catalog get an honest
+  low-confidence response rather than an answer.
+- Follow-up resolution uses the most recent answer only.
+- The knowledge snapshot updates at build time, not continuously.

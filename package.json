@@ -17,6 +17,8 @@
     "check:content": "node scripts/check-content-integrity.mjs",
     "generate:api": "node scripts/generate-api-types.mjs",
     "check:contracts": "node scripts/generate-api-types.mjs --check",
+    "generate:guide": "node scripts/generate-guide-knowledge.mjs",
+    "check:guide": "node scripts/check-guide-knowledge.mjs",
     "check": "npm run typecheck && npm run lint && npm run check:content && npm run test",
     "verify": "npm run check && npm run build",
     "verify:live": "node scripts/verify-live-site.mjs",

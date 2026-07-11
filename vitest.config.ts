@@ -19,5 +19,25 @@ export default defineConfig({
     setupFiles: ["./vitest.setup.ts"],
     include: ["**/*.test.{ts,tsx}"],
     exclude: ["node_modules", ".next", "backend"],
+    coverage: {
+      provider: "v8",
+      include: ["app/**", "components/**", "lib/**"],
+      exclude: [
+        "**/*.test.*",
+        "lib/api/generated/**",
+        "lib/guide/generated/**",
+        "app/api/session/register/route.ts",
+      ],
+      // Ratchet floors at the measured baseline so coverage can only rise.
+      // The documented targets (70 statements/lines, 65 branches, 60
+      // functions) are tracked in docs/100_SCORE_TRANSFORMATION.md and not
+      // yet met; raise these floors as coverage grows, never lower them.
+      thresholds: {
+        statements: 55,
+        branches: 60,
+        functions: 48,
+        lines: 55,
+      },
+    },
   },
 });
