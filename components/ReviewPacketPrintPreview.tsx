@@ -29,7 +29,8 @@ export default function ReviewPacketPrintPreview({
 
   useEffect(() => {
     (async () => {
-      setData(await getReviewPacketPrintView(packetId));
+      const dataResult = await getReviewPacketPrintView(packetId);
+      setData(dataResult.ok ? dataResult.data : null);
       setLoaded(true);
     })();
   }, [packetId]);

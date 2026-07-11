@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import SectionCard from "@/components/SectionCard";
 import MetricCard from "@/components/MetricCard";
 import EmptyState from "@/components/EmptyState";
@@ -11,17 +12,33 @@ import { getProjectDetail, getProjectTraceability } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectTraceabilityPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
-  const project = await getProjectDetail(params.projectId);
-  if (!project) {
-    notFound();
+export default async function ProjectTraceabilityPage(
+  props: {
+    params: Promise<{ projectId: string }>;
   }
+) {
+  const params = await props.params;
+  const projectResult = await getProjectDetail(params.projectId);
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
+  }
+  const project = projectResult.data;
   const base = `/projects/${project.projectId}`;
-  const traceability = await getProjectTraceability(project.projectId);
+  const traceabilityResult = await getProjectTraceability(project.projectId);
+  if (!traceabilityResult.ok) {
+    if (traceabilityResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={traceabilityResult} />
+      </div>
+    );
+  }
+  const traceability = traceabilityResult.data;
 
   return (
     <div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -13,19 +14,28 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectFindingsPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
-  const [project, findings, citations] = await Promise.all([
+export default async function ProjectFindingsPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [projectResult, findingsResult, citationsResult] = await Promise.all([
     getProjectDetail(params.projectId),
     listProjectFindings(params.projectId),
     listProjectEvidenceCitations(params.projectId),
   ]);
-  if (!project) {
-    notFound();
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
+  const findings = findingsResult.ok ? findingsResult.data : null;
+  const citations = citationsResult.ok ? citationsResult.data : null;
   const base = `/projects/${project.projectId}`;
   const citationCount = (findingId: string) =>
     (citations ?? []).filter((c) => c.findingId === findingId).length;

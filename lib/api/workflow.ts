@@ -1,10 +1,16 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
+import {
+  API_BASE_URL,
+  PROJECT_ID,
+  apiGetMapped,
+  authHeaders,
+  type ApiResult,
+} from "./client";
 
 // Phase 9: reviewer workflow board and issue resolution tracking.
 //
 // Phase 9 data is backend-canonical. The frontend does not simulate workflow
-// data. Read calls return null or empty results when the backend is
-// unavailable, and the mutating calls return a clear backend-required result.
+// data. Read calls return a typed ApiResult that preserves the failure status
+// and category, and the mutating calls return a clear backend-required result.
 
 export type WorkflowEvidenceLink = {
   evidenceLinkId: string;
@@ -254,7 +260,7 @@ export async function getWorkflowItems(
     sourceType?: string;
   },
   projectId: string = PROJECT_ID,
-): Promise<WorkflowItem[]> {
+): Promise<ApiResult<WorkflowItem[]>> {
   const params = new URLSearchParams();
   if (filters?.status) params.set("status", filters.status);
   if (filters?.severity) params.set("severity", filters.severity);
@@ -262,58 +268,60 @@ export async function getWorkflowItems(
   if (filters?.assignedRole) params.set("assigned_role", filters.assignedRole);
   if (filters?.sourceType) params.set("source_type", filters.sourceType);
   const query = params.toString();
-  const data = await safeFetch<ApiWorkflowItem[]>(
+  return apiGetMapped<ApiWorkflowItem[], WorkflowItem[]>(
     `/api/v1/projects/${projectId}/workflow-board${query ? `?${query}` : ""}`,
+    (data) => data.map(mapItem),
   );
-  return data ? data.map(mapItem) : [];
 }
 
 export async function getWorkflowItem(
   workflowItemId: string,
-): Promise<WorkflowItemDetail | null> {
-  const data = await safeFetch<ApiWorkflowItemDetail>(
+): Promise<ApiResult<WorkflowItemDetail>> {
+  return apiGetMapped<ApiWorkflowItemDetail, WorkflowItemDetail>(
     `/api/v1/workflow-items/${workflowItemId}`,
+    mapItemDetail,
   );
-  return data ? mapItemDetail(data) : null;
 }
 
 export async function getWorkflowItemHistory(
   workflowItemId: string,
-): Promise<WorkflowItemHistory | null> {
-  const data = await safeFetch<{
-    workflow_item_id: string;
-    project_id: string;
-    actions: ApiWorkflowAction[];
-    follow_ups: ApiFollowUp[];
-    note: string;
-  }>(`/api/v1/workflow-items/${workflowItemId}/history`);
-  if (!data) return null;
-  return {
+): Promise<ApiResult<WorkflowItemHistory>> {
+  return apiGetMapped<
+    {
+      workflow_item_id: string;
+      project_id: string;
+      actions: ApiWorkflowAction[];
+      follow_ups: ApiFollowUp[];
+      note: string;
+    },
+    WorkflowItemHistory
+  >(`/api/v1/workflow-items/${workflowItemId}/history`, (data) => ({
     workflowItemId: data.workflow_item_id,
     projectId: data.project_id,
     actions: (data.actions ?? []).map(mapAction),
     followUps: (data.follow_ups ?? []).map(mapFollowUp),
     note: data.note,
-  };
+  }));
 }
 
 export async function getWorkflowBoardSummary(
   projectId: string = PROJECT_ID,
-): Promise<WorkflowBoardSummary | null> {
-  const data = await safeFetch<{
-    project_id: string;
-    total_items: number;
-    items_by_status: Record<string, number>;
-    items_by_severity: Record<string, number>;
-    items_by_section_type: Record<string, number>;
-    items_by_assigned_role: Record<string, number>;
-    items_requiring_human_review: number;
-    open_follow_up_count: number;
-    ready_for_handoff_count: number;
-    note: string;
-  }>(`/api/v1/projects/${projectId}/workflow-board/summary`);
-  if (!data) return null;
-  return {
+): Promise<ApiResult<WorkflowBoardSummary>> {
+  return apiGetMapped<
+    {
+      project_id: string;
+      total_items: number;
+      items_by_status: Record<string, number>;
+      items_by_severity: Record<string, number>;
+      items_by_section_type: Record<string, number>;
+      items_by_assigned_role: Record<string, number>;
+      items_requiring_human_review: number;
+      open_follow_up_count: number;
+      ready_for_handoff_count: number;
+      note: string;
+    },
+    WorkflowBoardSummary
+  >(`/api/v1/projects/${projectId}/workflow-board/summary`, (data) => ({
     projectId: data.project_id,
     totalItems: data.total_items,
     itemsByStatus: data.items_by_status,
@@ -324,29 +332,30 @@ export async function getWorkflowBoardSummary(
     openFollowUpCount: data.open_follow_up_count,
     readyForHandoffCount: data.ready_for_handoff_count,
     note: data.note,
-  };
+  }));
 }
 
 export async function getReadyForHandoffSummary(
   projectId: string = PROJECT_ID,
-): Promise<ReadyForHandoffSummary | null> {
-  const data = await safeFetch<{
-    project_id: string;
-    total_items: number;
-    ready_count: number;
-    outstanding_follow_up_count: number;
-    items: ApiWorkflowItem[];
-    note: string;
-  }>(`/api/v1/projects/${projectId}/workflow-board/ready-for-handoff`);
-  if (!data) return null;
-  return {
+): Promise<ApiResult<ReadyForHandoffSummary>> {
+  return apiGetMapped<
+    {
+      project_id: string;
+      total_items: number;
+      ready_count: number;
+      outstanding_follow_up_count: number;
+      items: ApiWorkflowItem[];
+      note: string;
+    },
+    ReadyForHandoffSummary
+  >(`/api/v1/projects/${projectId}/workflow-board/ready-for-handoff`, (data) => ({
     projectId: data.project_id,
     totalItems: data.total_items,
     readyCount: data.ready_count,
     outstandingFollowUpCount: data.outstanding_follow_up_count,
     items: (data.items ?? []).map(mapItem),
     note: data.note,
-  };
+  }));
 }
 
 export async function generateWorkflowBoard(

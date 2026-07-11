@@ -1,9 +1,18 @@
-import { API_BASE_URL, authHeaders, safeFetch } from "./client";
+import {
+  API_BASE_URL,
+  apiGetMapped,
+  authHeaders,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Production Foundations Sprint 3: deterministic, local evidence retrieval over
 // indexed PDF page text, plus a reviewer-controlled draft finding queue. This
-// data is backend-canonical. Read calls return null when the backend is
-// unavailable; mutating calls return a clear { ok, error } result.
+// data is backend-canonical. Read calls return a typed ApiResult that preserves
+// the failure category and status; mutating calls return a clear { ok, error }
+// result. Mappers assert required identifiers so an invalid payload surfaces
+// as an explicit invalid_response failure instead of propagating undefined
+// fields into evidence UI.
 //
 // Retrieval is deterministic and local. There are no live AI calls. Search
 // results are candidates that require reviewer confirmation, never conclusions.
@@ -110,8 +119,8 @@ type MutationResult<T> = {
 
 function mapSearchResult(r: Record<string, unknown>): EvidenceSearchResult {
   return {
-    documentId: r.document_id as string,
-    documentName: r.document_name as string,
+    documentId: requireString(r.document_id, "document_id"),
+    documentName: requireString(r.document_name, "document_name"),
     documentType: (r.document_type as string) ?? null,
     chunkId: (r.chunk_id as string) ?? null,
     documentPageId: (r.document_page_id as string) ?? null,
@@ -131,9 +140,9 @@ function mapSearchResponse(
   raw: Record<string, unknown>,
 ): EvidenceSearchResponse {
   return {
-    projectId: raw.project_id as string,
-    queryText: raw.query_text as string,
-    queryType: raw.query_type as string,
+    projectId: requireString(raw.project_id, "project_id"),
+    queryText: requireString(raw.query_text, "query_text"),
+    queryType: requireString(raw.query_type, "query_type"),
     retrievalQueryId: (raw.retrieval_query_id as string) ?? null,
     resultCount: (raw.result_count as number) ?? 0,
     results: ((raw.results as Record<string, unknown>[]) ?? []).map(
@@ -145,21 +154,24 @@ function mapSearchResponse(
 
 function mapCandidate(c: Record<string, unknown>): EvidenceCandidate {
   return {
-    evidenceCandidateId: c.evidence_candidate_id as string,
-    projectId: c.project_id as string,
+    evidenceCandidateId: requireString(
+      c.evidence_candidate_id,
+      "evidence_candidate_id",
+    ),
+    projectId: requireString(c.project_id, "project_id"),
     retrievalQueryId: (c.retrieval_query_id as string) ?? null,
-    documentId: c.document_id as string,
+    documentId: requireString(c.document_id, "document_id"),
     documentPageId: (c.document_page_id as string) ?? null,
     pageNumber: (c.page_number as number) ?? null,
     findingId: (c.finding_id as string) ?? null,
     checklistItemId: (c.checklist_item_id as string) ?? null,
-    candidateTitle: c.candidate_title as string,
+    candidateTitle: requireString(c.candidate_title, "candidate_title"),
     candidateExcerpt: (c.candidate_excerpt as string) ?? null,
     matchTerms: (c.match_terms as string[]) ?? [],
     rankingScore: (c.ranking_score as number) ?? 0,
     rankingReason: (c.ranking_reason as string) ?? null,
-    candidateStatus: c.candidate_status as string,
-    candidateOrigin: c.candidate_origin as string,
+    candidateStatus: requireString(c.candidate_status, "candidate_status"),
+    candidateOrigin: requireString(c.candidate_origin, "candidate_origin"),
     reviewerNote: (c.reviewer_note as string) ?? null,
     createdByName: (c.created_by_name as string) ?? null,
     createdAt: (c.created_at as string) ?? null,
@@ -171,9 +183,9 @@ function mapCandidate(c: Record<string, unknown>): EvidenceCandidate {
 
 function mapRetrievalQuery(q: Record<string, unknown>): RetrievalQuery {
   return {
-    retrievalQueryId: q.retrieval_query_id as string,
-    projectId: q.project_id as string,
-    queryText: q.query_text as string,
+    retrievalQueryId: requireString(q.retrieval_query_id, "retrieval_query_id"),
+    projectId: requireString(q.project_id, "project_id"),
+    queryText: requireString(q.query_text, "query_text"),
     queryType: (q.query_type as string) ?? null,
     filters: (q.filters as Record<string, unknown>) ?? {},
     resultCount: (q.result_count as number) ?? 0,
@@ -206,11 +218,18 @@ async function postJson<T>(
       }
       return { ok: false, backendReachable: true, error: detail };
     }
-    return {
-      ok: true,
-      backendReachable: true,
-      data: mapper((await res.json()) as Record<string, unknown>),
-    };
+    const raw = (await res.json()) as Record<string, unknown>;
+    // Map outside the transport failure path so an invalid payload reports an
+    // honest shape error instead of a false "backend unavailable" message.
+    try {
+      return { ok: true, backendReachable: true, data: mapper(raw) };
+    } catch {
+      return {
+        ok: false,
+        backendReachable: true,
+        error: "The backend returned an unexpected payload shape.",
+      };
+    }
   } catch {
     return {
       ok: false,
@@ -311,27 +330,26 @@ export async function searchFindingEvidence(
 export async function listProjectEvidenceCandidates(
   projectId: string,
   filters?: { candidateStatus?: string; findingId?: string },
-): Promise<EvidenceCandidate[] | null> {
+): Promise<ApiResult<EvidenceCandidate[]>> {
   const params = new URLSearchParams();
   if (filters?.candidateStatus)
     params.set("candidate_status", filters.candidateStatus);
   if (filters?.findingId) params.set("finding_id", filters.findingId);
   const query = params.toString() ? `?${params.toString()}` : "";
-  const data = await safeFetch<Record<string, unknown>[]>(
+  return apiGetMapped<Record<string, unknown>[], EvidenceCandidate[]>(
     `/api/v1/projects/${projectId}/evidence-candidates${query}`,
+    (data) => data.map(mapCandidate),
   );
-  if (!data) return null;
-  return data.map(mapCandidate);
 }
 
 export async function getEvidenceCandidate(
   projectId: string,
   candidateId: string,
-): Promise<EvidenceCandidate | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<EvidenceCandidate>> {
+  return apiGetMapped<Record<string, unknown>, EvidenceCandidate>(
     `/api/v1/projects/${projectId}/evidence-candidates/${candidateId}`,
+    mapCandidate,
   );
-  return data ? mapCandidate(data) : null;
 }
 
 export type SaveCandidateInput = {
@@ -503,10 +521,9 @@ function mapPromoteCitation(
 
 export async function listRetrievalQueries(
   projectId: string,
-): Promise<RetrievalQuery[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<RetrievalQuery[]>> {
+  return apiGetMapped<Record<string, unknown>[], RetrievalQuery[]>(
     `/api/v1/projects/${projectId}/retrieval-queries`,
+    (data) => data.map(mapRetrievalQuery),
   );
-  if (!data) return null;
-  return data.map(mapRetrievalQuery);
 }

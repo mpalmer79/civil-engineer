@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import EmptyState from "@/components/EmptyState";
 import StatusChip from "@/components/StatusChip";
 import { listRulePacks } from "@/lib/api";
@@ -8,7 +9,15 @@ import { listRulePacks } from "@/lib/api";
 export const dynamic = "force-dynamic";
 
 export default async function RulePacksPage() {
-  const rulePacks = await listRulePacks();
+  const rulePacksResult = await listRulePacks();
+  if (!rulePacksResult.ok) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={rulePacksResult} />
+      </div>
+    );
+  }
+  const rulePacks = rulePacksResult.data;
 
   return (
     <div>

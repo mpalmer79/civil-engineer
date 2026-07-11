@@ -37,11 +37,11 @@ export default function WorkspaceUsageClient() {
     const authed = isSignedIn();
     setSignedIn(authed);
     if (!authed) return;
-    listMyOrganizations().then((o) => setOrgs(o));
+    listMyOrganizations().then((o) => setOrgs(o.ok ? o.data : null));
   }, []);
 
   useEffect(() => {
-    if (orgId) getOrganizationUsage(orgId).then((u) => setUsage(u));
+    if (orgId) getOrganizationUsage(orgId).then((u) => setUsage(u.ok ? u.data : null));
   }, [orgId]);
 
   if (signedIn === false) {

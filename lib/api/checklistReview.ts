@@ -1,4 +1,6 @@
-import { API_BASE_URL, authHeaders, safeFetch } from "./client";
+import { API_BASE_URL, authHeaders, apiFetch,
+  type ApiResult,
+} from "./client";
 import type { EvidenceSearchResponse } from "./evidenceRetrieval";
 
 // Production Foundations Sprint 4: checklist-driven evidence review and rule
@@ -234,29 +236,33 @@ async function postJson<T>(
   }
 }
 
-export async function listRulePacks(): Promise<RulePack[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>("/api/v1/rule-packs");
-  if (!data) return null;
-  return data.map(mapRulePack);
+export async function listRulePacks(): Promise<ApiResult<RulePack[]>> {
+  const result = await apiFetch<Record<string, unknown>[]>("/api/v1/rule-packs");
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: data.map(mapRulePack) };
 }
 
 export async function getRulePack(
   rulePackId: string,
-): Promise<RulePack | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<RulePack>> {
+  const result = await apiFetch<Record<string, unknown>>(
     `/api/v1/rule-packs/${rulePackId}`,
   );
-  return data ? mapRulePack(data) : null;
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: mapRulePack(data) };
 }
 
 export async function listProjectChecklists(
   projectId: string,
-): Promise<ProjectChecklist[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<ProjectChecklist[]>> {
+  const result = await apiFetch<Record<string, unknown>[]>(
     `/api/v1/projects/${projectId}/checklists`,
   );
-  if (!data) return null;
-  return data.map(mapChecklist);
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: data.map(mapChecklist) };
 }
 
 export async function createProjectChecklistFromRulePack(
@@ -273,22 +279,25 @@ export async function createProjectChecklistFromRulePack(
 export async function getProjectChecklist(
   projectId: string,
   checklistId: string,
-): Promise<ProjectChecklist | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<ProjectChecklist>> {
+  const result = await apiFetch<Record<string, unknown>>(
     `/api/v1/projects/${projectId}/checklists/${checklistId}`,
   );
-  return data ? mapChecklist(data) : null;
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: mapChecklist(data) };
 }
 
 export async function listProjectChecklistItems(
   projectId: string,
   checklistId: string,
-): Promise<ProjectChecklistItem[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<ProjectChecklistItem[]>> {
+  const result = await apiFetch<Record<string, unknown>[]>(
     `/api/v1/projects/${projectId}/checklists/${checklistId}/items`,
   );
-  if (!data) return null;
-  return data.map(mapChecklistItem);
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: data.map(mapChecklistItem) };
 }
 
 export async function updateProjectChecklistItem(

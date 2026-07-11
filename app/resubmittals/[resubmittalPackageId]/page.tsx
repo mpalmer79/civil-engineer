@@ -1,23 +1,47 @@
 import Link from "next/link";
 import PageHeader from "@/components/PageHeader";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { getResubmittalPackage } from "@/lib/api";
 
-export default async function ResubmittalDetailRoute({
-  params,
-}: {
-  params: { resubmittalPackageId: string };
-}) {
-  const pkg = await getResubmittalPackage(params.resubmittalPackageId);
+export default async function ResubmittalDetailRoute(
+  props: {
+    params: Promise<{ resubmittalPackageId: string }>;
+  }
+) {
+  const params = await props.params;
+  const result = await getResubmittalPackage(params.resubmittalPackageId);
+
+  if (!result.ok) {
+    return (
+      <div>
+        <PageHeader
+          eyebrow="Resubmittal detail"
+          title="Resubmittal package"
+          description="A resubmittal package returned by the applicant or design engineer. Intake organizes review-support evidence and does not approve plans or certify compliance."
+        />
+        <div className="mx-auto max-w-5xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
+          <Link
+            href="/review-cycles"
+            className="inline-block text-sm font-semibold text-water-700 hover:text-water-600"
+          >
+            Back to review cycles
+          </Link>
+          <RequestFailureCard failure={result} />
+          <SafetyBoundaryBanner />
+        </div>
+      </div>
+    );
+  }
+  const pkg = result.data;
 
   return (
     <div>
       <PageHeader
         eyebrow="Resubmittal detail"
-        title={pkg ? pkg.packageName : "Resubmittal package"}
+        title={pkg.packageName}
         description="A resubmittal package returned by the applicant or design engineer. Intake organizes review-support evidence and does not approve plans or certify compliance."
       />
-
       <div className="mx-auto max-w-5xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
         <Link
           href="/review-cycles"
@@ -26,13 +50,7 @@ export default async function ResubmittalDetailRoute({
           Back to review cycles
         </Link>
 
-        {!pkg ? (
-          <div className="surface-card p-6 text-sm text-slate-500">
-            Resubmittal package not found, or the backend is not reachable.
-          </div>
-        ) : (
-          <>
-            <div className="surface-card p-6">
+        <div className="surface-card p-6">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <h3 className="text-lg font-semibold text-slate-900">
                   {pkg.packageName}
@@ -105,8 +123,6 @@ export default async function ResubmittalDetailRoute({
                 </p>
               )}
             </div>
-          </>
-        )}
 
         <SafetyBoundaryBanner />
       </div>

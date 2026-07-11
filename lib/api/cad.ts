@@ -1,11 +1,20 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
+import {
+  API_BASE_URL,
+  PROJECT_ID,
+  apiGetMapped,
+  authHeaders,
+  requireArray,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Phase 6: CAD-aware metadata, plan references, and plan consistency findings.
 //
 // Phase 6 data is backend-canonical. The frontend does not duplicate the plan
-// set or CAD metadata. When the backend is unavailable these functions return
-// empty results (or a backend-required result for the check mutation) and the
-// UI shows a status note rather than stale or simulated data.
+// set or CAD metadata. Read calls return a typed ApiResult so callers can
+// render explicit failure states (sign-in required, forbidden, missing,
+// unavailable) instead of stale or simulated data. The check mutation keeps
+// its backend-required result shape.
 
 export type CadMetadata = {
   cadMetadataId: string;
@@ -135,8 +144,8 @@ type ApiPlanConsistencySummary = {
 
 export function mapCadMetadata(c: ApiCadMetadata): CadMetadata {
   return {
-    cadMetadataId: c.cad_metadata_id,
-    projectId: c.project_id,
+    cadMetadataId: requireString(c.cad_metadata_id, "cad_metadata_id"),
+    projectId: requireString(c.project_id, "project_id"),
     sheetId: c.sheet_id,
     sourceType: c.source_type,
     entityType: c.entity_type,
@@ -152,8 +161,8 @@ export function mapCadMetadata(c: ApiCadMetadata): CadMetadata {
 
 export function mapPlanReference(r: ApiPlanReference): PlanReference {
   return {
-    planReferenceId: r.plan_reference_id,
-    projectId: r.project_id,
+    planReferenceId: requireString(r.plan_reference_id, "plan_reference_id"),
+    projectId: requireString(r.project_id, "project_id"),
     sourceType: r.source_type,
     sourceId: r.source_id,
     targetType: r.target_type,
@@ -169,10 +178,10 @@ export function mapPlanConsistencyFinding(
   f: ApiPlanConsistencyFinding,
 ): PlanConsistencyFinding {
   return {
-    planFindingId: f.plan_finding_id,
-    projectId: f.project_id,
+    planFindingId: requireString(f.plan_finding_id, "plan_finding_id"),
+    projectId: requireString(f.project_id, "project_id"),
     findingType: f.finding_type,
-    title: f.title,
+    title: requireString(f.title, "title"),
     summary: f.summary,
     riskLevel: f.risk_level,
     status: f.status,
@@ -188,7 +197,7 @@ function mapPlanConsistencySummary(
   s: ApiPlanConsistencySummary,
 ): PlanConsistencySummary {
   return {
-    projectId: s.project_id,
+    projectId: requireString(s.project_id, "project_id"),
     totalSheets: s.total_sheets,
     missingSheetCount: s.missing_sheet_count,
     cadMetadataRecords: s.cad_metadata_records,
@@ -206,55 +215,72 @@ function mapPlanConsistencySummary(
 
 export async function getCadMetadata(
   entityType?: string,
-): Promise<CadMetadata[]> {
+): Promise<ApiResult<CadMetadata[]>> {
   const query = entityType
     ? `?entity_type=${encodeURIComponent(entityType)}`
     : "";
-  const data = await safeFetch<ApiCadMetadata[]>(
+  return apiGetMapped<ApiCadMetadata[], CadMetadata[]>(
     `/api/v1/projects/${PROJECT_ID}/cad-metadata${query}`,
+    (data) =>
+      requireArray(data, "cad_metadata").map((m) =>
+        mapCadMetadata(m as ApiCadMetadata),
+      ),
   );
-  return data ? data.map(mapCadMetadata) : [];
 }
 
 export async function getCadMetadataBySheet(
   sheetId: string,
-): Promise<CadMetadata[]> {
-  const data = await safeFetch<ApiCadMetadata[]>(
+): Promise<ApiResult<CadMetadata[]>> {
+  return apiGetMapped<ApiCadMetadata[], CadMetadata[]>(
     `/api/v1/plan-sheets/${sheetId}/cad-metadata`,
+    (data) =>
+      requireArray(data, "cad_metadata").map((m) =>
+        mapCadMetadata(m as ApiCadMetadata),
+      ),
   );
-  return data ? data.map(mapCadMetadata) : [];
 }
 
-export async function getPlanReferences(): Promise<PlanReference[]> {
-  const data = await safeFetch<ApiPlanReference[]>(
+export async function getPlanReferences(): Promise<ApiResult<PlanReference[]>> {
+  return apiGetMapped<ApiPlanReference[], PlanReference[]>(
     `/api/v1/projects/${PROJECT_ID}/plan-references`,
+    (data) =>
+      requireArray(data, "plan_references").map((r) =>
+        mapPlanReference(r as ApiPlanReference),
+      ),
   );
-  return data ? data.map(mapPlanReference) : [];
 }
 
-export async function getPlanInconsistencies(): Promise<PlanReference[]> {
-  const data = await safeFetch<ApiPlanReference[]>(
+export async function getPlanInconsistencies(): Promise<
+  ApiResult<PlanReference[]>
+> {
+  return apiGetMapped<ApiPlanReference[], PlanReference[]>(
     `/api/v1/projects/${PROJECT_ID}/plan-references/inconsistencies`,
+    (data) =>
+      requireArray(data, "plan_references").map((r) =>
+        mapPlanReference(r as ApiPlanReference),
+      ),
   );
-  return data ? data.map(mapPlanReference) : [];
 }
 
 export async function getPlanConsistencyFindings(
   projectId: string = PROJECT_ID,
-): Promise<PlanConsistencyFinding[]> {
-  const data = await safeFetch<ApiPlanConsistencyFinding[]>(
+): Promise<ApiResult<PlanConsistencyFinding[]>> {
+  return apiGetMapped<ApiPlanConsistencyFinding[], PlanConsistencyFinding[]>(
     `/api/v1/projects/${projectId}/plan-consistency-findings`,
+    (data) =>
+      requireArray(data, "plan_consistency_findings").map((f) =>
+        mapPlanConsistencyFinding(f as ApiPlanConsistencyFinding),
+      ),
   );
-  return data ? data.map(mapPlanConsistencyFinding) : [];
 }
 
 export async function getPlanConsistencySummary(
   projectId: string = PROJECT_ID,
-): Promise<PlanConsistencySummary | null> {
-  const data = await safeFetch<ApiPlanConsistencySummary>(
+): Promise<ApiResult<PlanConsistencySummary>> {
+  return apiGetMapped<ApiPlanConsistencySummary, PlanConsistencySummary>(
     `/api/v1/projects/${projectId}/plan-consistency-summary`,
+    mapPlanConsistencySummary,
   );
-  return data ? mapPlanConsistencySummary(data) : null;
 }
 
 export async function runPlanConsistencyCheck(

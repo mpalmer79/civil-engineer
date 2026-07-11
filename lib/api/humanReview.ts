@@ -1,4 +1,7 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
+import { API_BASE_URL, PROJECT_ID, authHeaders,
+  apiFetch,
+  type ApiResult,
+} from "./client";
 import { mapDraft, type AiDraftFinding } from "./aiReview";
 
 // Phase 5: human review queue and review actions.
@@ -93,27 +96,33 @@ function mapReviewAction(a: ApiReviewAction): HumanReviewAction {
   };
 }
 
-export async function getHumanReviewQueue(): Promise<AiDraftFinding[]> {
-  const data = await safeFetch<ApiDraft[]>(
+export async function getHumanReviewQueue(): Promise<ApiResult<AiDraftFinding[]>> {
+  const result = await apiFetch<ApiDraft[]>(
     `/api/v1/projects/${PROJECT_ID}/human-review-queue`,
   );
-  return data ? data.map(mapDraft) : [];
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: data.map(mapDraft) };
 }
 
 export async function getDraftReviewActions(
   draftFindingId: string,
-): Promise<HumanReviewAction[]> {
-  const data = await safeFetch<ApiReviewAction[]>(
+): Promise<ApiResult<HumanReviewAction[]>> {
+  const result = await apiFetch<ApiReviewAction[]>(
     `/api/v1/draft-findings/${draftFindingId}/review-actions`,
   );
-  return data ? data.map(mapReviewAction) : [];
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: data.map(mapReviewAction) };
 }
 
-export async function getProjectReviewActions(): Promise<HumanReviewAction[]> {
-  const data = await safeFetch<ApiReviewAction[]>(
+export async function getProjectReviewActions(): Promise<ApiResult<HumanReviewAction[]>> {
+  const result = await apiFetch<ApiReviewAction[]>(
     `/api/v1/projects/${PROJECT_ID}/review-actions`,
   );
-  return data ? data.map(mapReviewAction) : [];
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: data.map(mapReviewAction) };
 }
 
 export async function submitReviewAction(

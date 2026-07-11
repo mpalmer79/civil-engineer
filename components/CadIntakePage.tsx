@@ -1,5 +1,7 @@
 "use client";
 
+import RequestFailureCard from "@/components/RequestFailureCard";
+import type { ApiFailure } from "@/lib/api/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   createCadFileRecord,
@@ -93,49 +95,57 @@ export default function CadIntakePage({
   const [reviewerNote, setReviewerNote] = useState("");
   const [parseBusyId, setParseBusyId] = useState<string | null>(null);
   const [promoteBusyId, setPromoteBusyId] = useState<string | null>(null);
+  const [failure, setFailure] = useState<ApiFailure | null>(null);
   const [promoteBusy, setPromoteBusy] = useState(false);
   const [promoteMessage, setPromoteMessage] = useState<string | null>(null);
 
   const loadForFile = useCallback(async (cadFileId: string) => {
-    const ctx = await getCadFileReviewContext(cadFileId);
+    const ctxResult = await getCadFileReviewContext(cadFileId);
+    if (!ctxResult.ok) setFailure(ctxResult);
+    const ctx = ctxResult.ok ? ctxResult.data : null;
     setContext(ctx);
     setSummary(ctx?.summary ?? null);
     setLayers(ctx?.layers ?? []);
     setCandidates(ctx?.referenceCandidates ?? []);
     const runId = ctx?.parseRun?.parseRunId;
     if (runId) {
-      const [textData, blockData] = await Promise.all([
+      const [textResult, blockResult] = await Promise.all([
         getCadText(runId),
         getCadBlocks(runId),
       ]);
-      setTexts(textData);
-      setBlocks(blockData);
+      setTexts(textResult.ok ? textResult.data : []);
+      setBlocks(blockResult.ok ? blockResult.data : []);
     } else {
       setTexts([]);
       setBlocks([]);
     }
-    setFindings(await getCadReviewFindings(projectId));
+    const findingsResult = await getCadReviewFindings(projectId);
+    setFindings(findingsResult.ok ? findingsResult.data : []);
   }, [projectId]);
 
   const refreshIntake = useCallback(async () => {
-    const [d, q, u] = await Promise.all([
+    const [dResult, qResult, uResult] = await Promise.all([
       getCadIntakeDashboard(projectId),
       getCadParseQueue(projectId),
       getUnpromotedCadFindings(projectId),
     ]);
-    setDashboard(d);
-    setQueue(q);
-    setUnpromoted(u);
+    setDashboard(dResult.ok ? dResult.data : null);
+    setQueue(qResult.ok ? qResult.data : []);
+    setUnpromoted(uResult.ok ? uResult.data : []);
+    const intakeFailure = [dResult, qResult, uResult].find((r) => !r.ok);
+    if (intakeFailure && !intakeFailure.ok) setFailure(intakeFailure);
   }, [projectId]);
 
   useEffect(() => {
     (async () => {
-      const [cadFiles, uploadLimits] = await Promise.all([
+      const [cadFilesResult, uploadLimitsResult] = await Promise.all([
         getCadFiles(projectId),
         getCadUploadLimits(),
       ]);
+      if (!cadFilesResult.ok) setFailure(cadFilesResult);
+      const cadFiles = cadFilesResult.ok ? cadFilesResult.data : [];
       setFiles(cadFiles);
-      setLimits(uploadLimits);
+      setLimits(uploadLimitsResult.ok ? uploadLimitsResult.data : null);
       const initial =
         initialCadFileId ?? (cadFiles.length > 0 ? cadFiles[0].cadFileId : null);
       setSelectedFileId(initial);
@@ -155,20 +165,20 @@ export default function CadIntakePage({
 
   const refreshSummary = useCallback(async () => {
     if (context?.parseRun?.parseRunId) {
-      const [s, f] = await Promise.all([
+      const [sResult, fResult] = await Promise.all([
         getCadParseSummary(context.parseRun.parseRunId),
         getCadReviewFindings(projectId),
       ]);
-      setSummary(s);
-      setFindings(f);
+      setSummary(sResult.ok ? sResult.data : null);
+      setFindings(fResult.ok ? fResult.data : []);
     }
     await refreshIntake();
   }, [context, refreshIntake, projectId]);
 
   const handleUploaded = useCallback(
     async (cadFileId: string) => {
-      const cadFiles = await getCadFiles(projectId);
-      setFiles(cadFiles);
+      const cadFilesResult = await getCadFiles(projectId);
+      setFiles(cadFilesResult.ok ? cadFilesResult.data : []);
       setSelectedFileId(cadFileId);
       await loadForFile(cadFileId);
       await refreshIntake();
@@ -187,8 +197,8 @@ export default function CadIntakePage({
         setMessage(
           `Parse ${result.run?.status?.replace(/_/g, " ") ?? "requested"} for the DXF file.`,
         );
-        const cadFiles = await getCadFiles(projectId);
-        setFiles(cadFiles);
+        const cadFilesResult = await getCadFiles(projectId);
+        setFiles(cadFilesResult.ok ? cadFilesResult.data : []);
         if (cadFileId === selectedFileId) await loadForFile(cadFileId);
       }
       await refreshIntake();
@@ -212,8 +222,8 @@ export default function CadIntakePage({
       setBusy(false);
       return;
     }
-    const cadFiles = await getCadFiles(projectId);
-    setFiles(cadFiles);
+    const cadFilesResult = await getCadFiles(projectId);
+    setFiles(cadFilesResult.ok ? cadFilesResult.data : []);
     setSelectedFileId(created.cadFile.cadFileId);
     await loadForFile(created.cadFile.cadFileId);
     await refreshIntake();
@@ -318,6 +328,7 @@ export default function CadIntakePage({
   return (
     <div className="space-y-6">
       <CadLimitationsNotice />
+      {failure ? <RequestFailureCard failure={failure} /> : null}
 
       {/* Phase 12 intake: upload, dashboard, parse queue, and promotion. */}
       <CadUploadLimitsNotice limits={limits} />

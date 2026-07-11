@@ -1,3 +1,4 @@
+import { unwrap } from "./testHelpers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -43,7 +44,7 @@ describe("response package API mapping", () => {
       },
     ]);
 
-    const packages = await getResponsePackages();
+    const packages = unwrap(await getResponsePackages());
     expect(packages).toHaveLength(1);
     expect(packages[0].responsePackageId).toBe("resp_1");
     expect(packages[0].audienceType).toBe("design_engineer");
@@ -122,7 +123,7 @@ describe("response package API mapping", () => {
       ],
     });
 
-    const detail = await getResponsePackage("resp_1");
+    const detail = unwrap(await getResponsePackage("resp_1"));
     expect(detail).not.toBeNull();
     expect(detail?.sections[0].items[0].workflowItemId).toBe("wfi_1");
     expect(detail?.sections[0].items[0].evidenceLinks[0].label).toBe("C-3.0");
@@ -150,7 +151,7 @@ describe("response package API mapping", () => {
   it("reports the backend unreachable on a network failure", async () => {
     mockFetchUnreachable();
     const packages = await getResponsePackages();
-    expect(packages).toEqual([]);
+    expect(packages.ok).toBe(false);
 
     const result = await generateResponsePackage();
     expect(result.ok).toBe(false);

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { previewCommentLetter } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -10,15 +11,22 @@ export const dynamic = "force-dynamic";
 // communication draft. It carries the fixed boundary statement and never exposes
 // raw paths, storage keys, signed URLs, or secrets. Nothing here approves,
 // resolves, or closes anything.
-export default async function CommentLetterPreviewPage({
-  params,
-}: {
-  params: { projectId: string; draftId: string };
-}) {
-  const preview = await previewCommentLetter(params.projectId, params.draftId);
-  if (!preview) {
-    notFound();
+export default async function CommentLetterPreviewPage(
+  props: {
+    params: Promise<{ projectId: string; draftId: string }>;
   }
+) {
+  const params = await props.params;
+  const previewResult = await previewCommentLetter(params.projectId, params.draftId);
+  if (!previewResult.ok) {
+    if (previewResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={previewResult} />
+      </div>
+    );
+  }
+  const preview = previewResult.data;
   const base = `/projects/${params.projectId}`;
 
   return (

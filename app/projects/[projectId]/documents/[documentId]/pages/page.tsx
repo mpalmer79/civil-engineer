@@ -1,19 +1,20 @@
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
-import SectionCard from "@/components/SectionCard";
 import StatusChip from "@/components/StatusChip";
 import EmptyState from "@/components/EmptyState";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { listDocumentPages } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default async function DocumentPagesPage({
-  params,
-}: {
-  params: { projectId: string; documentId: string };
-}) {
-  const pages = await listDocumentPages(params.projectId, params.documentId);
+export default async function DocumentPagesPage(
+  props: {
+    params: Promise<{ projectId: string; documentId: string }>;
+  }
+) {
+  const params = await props.params;
+  const pagesResult = await listDocumentPages(params.projectId, params.documentId);
   const base = `/projects/${params.projectId}/documents/${params.documentId}`;
 
   return (
@@ -29,21 +30,16 @@ export default async function DocumentPagesPage({
           Back to document
         </Link>
 
-        {pages === null ? (
-          <SectionCard title="Backend required">
-            <p className="text-sm text-slate-600">
-              Page records are served by the backend. Start the API to view
-              indexed pages.
-            </p>
-          </SectionCard>
-        ) : pages.length === 0 ? (
+        {!pagesResult.ok ? (
+          <RequestFailureCard failure={pagesResult} />
+        ) : pagesResult.data.length === 0 ? (
           <EmptyState
             title="No pages indexed yet"
             description="This document has not been indexed yet. Index the PDF from the document detail page to create page records."
           />
         ) : (
           <ul className="list-container">
-            {pages.map((p) => (
+            {pagesResult.data.map((p) => (
               <li
                 key={p.documentPageId}
                 className="flex flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"

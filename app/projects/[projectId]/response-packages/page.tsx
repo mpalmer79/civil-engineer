@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -15,18 +16,26 @@ export const dynamic = "force-dynamic";
 // each one. A response package assembles reviewer-selected records into a
 // controlled communication artifact. It does not approve a project, certify
 // compliance, resolve an issue, or close an issue.
-export default async function ResponsePackagesLandingPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
-  const [project, packages] = await Promise.all([
+export default async function ResponsePackagesLandingPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [projectResult, packagesResult] = await Promise.all([
     getProjectDetail(params.projectId),
     listResponsePackages(params.projectId),
   ]);
-  if (!project) {
-    notFound();
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
+  const packages = packagesResult.ok ? packagesResult.data : null;
   const base = `/projects/${params.projectId}`;
 
   return (
@@ -36,7 +45,6 @@ export default async function ResponsePackagesLandingPage({
         title={`Response packages for ${project.projectName}`}
         description="Assemble reviewer-selected findings, checklist items, response matrix items, and citations into a controlled response package, then generate a deterministic comment letter draft. Package issuance records a reviewer communication. It does not finalize a review outcome, resolve issues, or close issues."
       />
-
       <div className="mx-auto max-w-6xl space-y-8 px-4 py-10 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
           <Link href={base} className="nav-link">

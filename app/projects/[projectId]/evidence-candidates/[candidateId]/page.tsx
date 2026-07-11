@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -12,18 +13,26 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function EvidenceCandidateDetailPage({
-  params,
-}: {
-  params: { projectId: string; candidateId: string };
-}) {
-  const [candidate, documents] = await Promise.all([
+export default async function EvidenceCandidateDetailPage(
+  props: {
+    params: Promise<{ projectId: string; candidateId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [candidateResult, documentsResult] = await Promise.all([
     getEvidenceCandidate(params.projectId, params.candidateId),
     listProjectDocuments(params.projectId),
   ]);
-  if (!candidate) {
-    notFound();
+  if (!candidateResult.ok) {
+    if (candidateResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={candidateResult} />
+      </div>
+    );
   }
+  const candidate = candidateResult.data;
+  const documents = documentsResult.ok ? documentsResult.data : null;
   const base = `/projects/${params.projectId}`;
   const document = documents?.find(
     (d) => d.documentId === candidate.documentId,

@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import {
   cleanup,
   fireEvent,
@@ -225,12 +226,12 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDetail: vi.fn(async () => project),
-    listRulePacks: vi.fn(async () => [rulePack]),
-    getRulePack: vi.fn(async () => rulePack),
-    listProjectChecklists: vi.fn(async () => [checklist]),
-    getProjectChecklist: vi.fn(async () => checklist),
-    listProjectChecklistItems: vi.fn(async () => [checklistItem]),
+    getProjectDetail: vi.fn(async () => ok(project)),
+    listRulePacks: vi.fn(async () => ok([rulePack])),
+    getRulePack: vi.fn(async () => ok(rulePack)),
+    listProjectChecklists: vi.fn(async () => ok([checklist])),
+    getProjectChecklist: vi.fn(async () => ok(checklist)),
+    listProjectChecklistItems: vi.fn(async () => ok([checklistItem])),
     createProjectChecklistFromRulePack: createChecklistMock,
     updateProjectChecklistItem: updateItemMock,
     searchChecklistItemEvidence: searchMock,
@@ -265,7 +266,7 @@ describe("Rule packs page", () => {
 describe("Rule pack detail page", () => {
   it("renders item categories and codes", async () => {
     render(
-      await RulePackDetailPage({ params: { rulePackId: "rulepack_starter" } }),
+      await RulePackDetailPage({ params: Promise.resolve({ rulePackId: "rulepack_starter" }) }),
     );
     expect(screen.getByText("Detention and outlet control")).toBeInTheDocument();
     expect(screen.getByText(/DO-01/)).toBeInTheDocument();
@@ -277,7 +278,7 @@ describe("Rule pack detail page", () => {
 
 describe("Project checklists page", () => {
   it("renders existing checklists and the create panel", async () => {
-    render(await ProjectChecklistsPage({ params: { projectId } }));
+    render(await ProjectChecklistsPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Project checklists")).toBeInTheDocument();
     expect(
       screen.getByText("Create checklist from a rule pack"),
@@ -313,7 +314,7 @@ describe("Create checklist from rule pack", () => {
 describe("Checklist detail page", () => {
   it("groups checklist items by category", async () => {
     render(
-      await ChecklistDetailPage({ params: { projectId, checklistId } }),
+      await ChecklistDetailPage({ params: Promise.resolve({ projectId, checklistId }) }),
     );
     expect(screen.getByText("Detention and outlet control")).toBeInTheDocument();
     expect(screen.getByText(/DO-01/)).toBeInTheDocument();
@@ -325,7 +326,7 @@ describe("Checklist item detail page", () => {
   it("renders requirement, expected evidence, statuses, and search panel", async () => {
     render(
       await ChecklistItemDetailPage({
-        params: { projectId, checklistId, itemId: "pcli_1" },
+        params: Promise.resolve({ projectId, checklistId, itemId: "pcli_1" }),
       }),
     );
     expect(
@@ -373,7 +374,7 @@ describe("Checklist item review panel", () => {
 describe("Project overview links", () => {
   it("links to project checklists and rule packs", async () => {
     const { container } = render(
-      await ProjectDetailPage({ params: { projectId } }),
+      await ProjectDetailPage({ params: Promise.resolve({ projectId }) }),
     );
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) =>
       a.getAttribute("href"),
@@ -387,7 +388,7 @@ describe("Professional boundary in new Sprint 4 UI", () => {
   it("uses no prohibited final-decision wording", async () => {
     const { container: c1 } = render(await RulePacksPage());
     const { container: c2 } = render(
-      await ChecklistDetailPage({ params: { projectId, checklistId } }),
+      await ChecklistDetailPage({ params: Promise.resolve({ projectId, checklistId }) }),
     );
     const { container: c3 } = render(
       <ChecklistItemReviewPanel projectId={projectId} item={checklistItem} />,

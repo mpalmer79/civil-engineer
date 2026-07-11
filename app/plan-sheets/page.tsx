@@ -1,4 +1,5 @@
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import MetricCard from "@/components/MetricCard";
 import SectionCard from "@/components/SectionCard";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
@@ -14,10 +15,19 @@ const CORE_REVIEW_DISCIPLINES = new Set([
 ]);
 
 export default async function PlanSheetsPage() {
-  const [sheets, summary] = await Promise.all([
+  const [sheetsResult, summaryResult] = await Promise.all([
     getPlanSheets(),
     getPlanSheetSummary(),
   ]);
+  if (!sheetsResult.ok) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={sheetsResult} />
+      </div>
+    );
+  }
+  const sheets = sheetsResult.data;
+  const summary = summaryResult.ok ? summaryResult.data : null;
 
   if (sheets.length === 0) {
     return (

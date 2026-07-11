@@ -22,7 +22,7 @@ export default function OrganizationsPage() {
     setSignedIn(isSignedIn());
     listMyOrganizations().then((o) => {
       if (!active) return;
-      setOrgs(o);
+      setOrgs(o.ok ? o.data : null);
       setLoaded(true);
     });
     return () => {

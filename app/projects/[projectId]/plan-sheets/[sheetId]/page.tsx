@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import SectionCard from "@/components/SectionCard";
 import BoundaryNote from "@/components/BoundaryNote";
 import EmptyState from "@/components/EmptyState";
@@ -10,17 +11,33 @@ import { getProjectDetail, getSheetViewerContext } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default async function PlanSheetDetailPage({
-  params,
-}: {
-  params: { projectId: string; sheetId: string };
-}) {
-  const project = await getProjectDetail(params.projectId);
-  if (!project) {
-    notFound();
+export default async function PlanSheetDetailPage(
+  props: {
+    params: Promise<{ projectId: string; sheetId: string }>;
   }
+) {
+  const params = await props.params;
+  const projectResult = await getProjectDetail(params.projectId);
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
+  }
+  const project = projectResult.data;
   const base = `/projects/${project.projectId}`;
-  const context = await getSheetViewerContext(params.sheetId);
+  const contextResult = await getSheetViewerContext(params.sheetId);
+  if (!contextResult.ok) {
+    if (contextResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={contextResult} />
+      </div>
+    );
+  }
+  const context = contextResult.data;
 
   return (
     <div>

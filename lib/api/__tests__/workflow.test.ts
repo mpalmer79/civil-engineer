@@ -1,3 +1,4 @@
+import { unwrap } from "./testHelpers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -48,7 +49,7 @@ describe("workflow API mapping", () => {
       },
     ]);
 
-    const items = await getWorkflowItems();
+    const items = unwrap(await getWorkflowItems());
 
     expect(items).toHaveLength(1);
     expect(items[0].workflowItemId).toBe("wfi_1");
@@ -118,7 +119,7 @@ describe("workflow API mapping", () => {
       ],
     });
 
-    const detail = await getWorkflowItem("wfi_1");
+    const detail = unwrap(await getWorkflowItem("wfi_1"));
 
     expect(detail).not.toBeNull();
     expect(detail?.evidenceLinks).toHaveLength(1);
@@ -137,7 +138,7 @@ describe("workflow API mapping", () => {
       note: "Ready for handoff is not an approval.",
     });
 
-    const summary = await getReadyForHandoffSummary();
+    const summary = unwrap(await getReadyForHandoffSummary());
 
     expect(summary?.readyCount).toBe(2);
     expect(summary?.outstandingFollowUpCount).toBe(1);
@@ -158,7 +159,8 @@ describe("workflow API mapping", () => {
     mockFetchUnreachable();
 
     const items = await getWorkflowItems();
-    expect(items).toEqual([]);
+    expect(items.ok).toBe(false);
+    if (!items.ok) expect(items.kind).toBe("network");
 
     const result = await updateWorkflowItemStatus("wfi_1", "needs_triage");
     expect(result.ok).toBe(false);

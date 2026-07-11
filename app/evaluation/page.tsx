@@ -1,4 +1,5 @@
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import EvaluationSummary from "@/components/EvaluationSummary";
 import EvaluationScoringClient from "@/components/EvaluationScoringClient";
 import SectionCard from "@/components/SectionCard";
@@ -7,7 +8,15 @@ import { getEvaluationData, getPlanConsistencySummary } from "@/lib/api";
 
 export default async function EvaluationPage() {
   const { cases, summary } = await getEvaluationData();
-  const planSummary = await getPlanConsistencySummary();
+  const planSummaryResult = await getPlanConsistencySummary();
+  if (!planSummaryResult.ok) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={planSummaryResult} />
+      </div>
+    );
+  }
+  const planSummary = planSummaryResult.data;
   return (
     <div>
       <PageHeader

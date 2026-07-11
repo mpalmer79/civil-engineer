@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -12,19 +13,28 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function ProjectChecklistsPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
-  const [project, checklists, rulePacks] = await Promise.all([
+export default async function ProjectChecklistsPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [projectResult, checklistsResult, rulePacksResult] = await Promise.all([
     getProjectDetail(params.projectId),
     listProjectChecklists(params.projectId),
     listRulePacks(),
   ]);
-  if (!project) {
-    notFound();
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
+  const checklists = checklistsResult.ok ? checklistsResult.data : null;
+  const rulePacks = rulePacksResult.ok ? rulePacksResult.data : null;
   const base = `/projects/${project.projectId}`;
 
   return (

@@ -1,9 +1,16 @@
-import { API_BASE_URL, safeFetch, authHeaders} from "./client";
+import {
+  API_BASE_URL,
+  apiGetMapped,
+  authHeaders,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Phase 4A/4B: read-only project-wide traceability plus reviewer review actions.
 // Data is backend-canonical and review-support only. It organizes existing links
 // and records reviewer review actions; it does not determine that a requirement is
-// satisfied. Read calls return null when the backend is unavailable.
+// satisfied. Read calls return a typed ApiResult that preserves the failure
+// category and status instead of collapsing every failure into null.
 
 export type ProjectTraceabilitySourceLink = {
   type: string;
@@ -175,8 +182,13 @@ function mapLatestAction(
 
 function mapRow(r: Json): ProjectTraceabilityRow {
   return {
-    traceabilityRowId: r.traceability_row_id as string,
-    traceabilityRowKey: r.traceability_row_key as string,
+    // The row id and key identify the link a reviewer acts on; assert them so
+    // an invalid payload fails loudly instead of producing unactionable rows.
+    traceabilityRowId: requireString(r.traceability_row_id, "traceability_row_id"),
+    traceabilityRowKey: requireString(
+      r.traceability_row_key,
+      "traceability_row_key",
+    ),
     checklistItemId: (r.checklist_item_id as string) ?? null,
     checklistTitle: (r.checklist_title as string) ?? null,
     checklistRequirement: (r.checklist_requirement as string) ?? null,
@@ -262,33 +274,31 @@ function mapReviewAction(a: Json): ProjectTraceabilityReviewAction {
 
 export async function getProjectTraceability(
   projectId: string,
-): Promise<ProjectTraceability | null> {
-  const data = await safeFetch<Json>(
+): Promise<ApiResult<ProjectTraceability>> {
+  return apiGetMapped<Json, ProjectTraceability>(
     `/api/v1/projects/${projectId}/traceability`,
+    (data) => ({
+      projectId: data.project_id as string,
+      generatedAt: data.generated_at as string,
+      limitationsNote: (data.limitations_note as string) ?? "",
+      hasIndexedInformation: Boolean(data.has_indexed_information),
+      summary: mapSummary((data.summary as Json) ?? {}),
+      handoffReadiness: mapHandoffReadiness(
+        (data.handoff_readiness as Json) ?? {},
+      ),
+      rows: ((data.rows as Json[]) ?? []).map(mapRow),
+    }),
   );
-  if (!data) return null;
-  return {
-    projectId: data.project_id as string,
-    generatedAt: data.generated_at as string,
-    limitationsNote: (data.limitations_note as string) ?? "",
-    hasIndexedInformation: Boolean(data.has_indexed_information),
-    summary: mapSummary((data.summary as Json) ?? {}),
-    handoffReadiness: mapHandoffReadiness(
-      (data.handoff_readiness as Json) ?? {},
-    ),
-    rows: ((data.rows as Json[]) ?? []).map(mapRow),
-  };
 }
 
 export async function getTraceabilityReviewActions(
   projectId: string,
   traceabilityRowKey: string,
-): Promise<ProjectTraceabilityReviewAction[]> {
-  const data = await safeFetch<Json>(
+): Promise<ApiResult<ProjectTraceabilityReviewAction[]>> {
+  return apiGetMapped<Json, ProjectTraceabilityReviewAction[]>(
     `/api/v1/projects/${projectId}/traceability/${traceabilityRowKey}/review-actions`,
+    (data) => ((data.actions as Json[]) ?? []).map(mapReviewAction),
   );
-  if (!data) return [];
-  return ((data.actions as Json[]) ?? []).map(mapReviewAction);
 }
 
 export async function recordTraceabilityReviewAction(

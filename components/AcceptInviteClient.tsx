@@ -32,7 +32,7 @@ export default function AcceptInviteClient({ token }: { token: string }) {
       return;
     }
     lookupInvitation(token).then((l) => {
-      setLookup(l);
+      setLookup(l.ok ? l.data : null);
       setLoaded(true);
     });
   }, [token]);

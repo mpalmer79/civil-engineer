@@ -47,30 +47,35 @@ export default function AiReviewClient() {
   const [backendUp, setBackendUp] = useState(true);
 
   const loadChunks = useCallback(async () => {
-    const list = await getProjectChunks();
+    const listResult = await getProjectChunks();
     const map: Record<string, ChunkItem> = {};
-    for (const c of list) map[c.chunkId] = c;
+    if (listResult.ok) {
+      for (const c of listResult.data) map[c.chunkId] = c;
+    }
     setChunks(map);
   }, []);
 
   const loadReviewActions = useCallback(async () => {
-    const acts = await getProjectReviewActions();
+    const actsResult = await getProjectReviewActions();
     const grouped: Record<string, HumanReviewAction[]> = {};
-    for (const a of acts) (grouped[a.draftFindingId] ??= []).push(a);
+    if (actsResult.ok) {
+      for (const a of actsResult.data) (grouped[a.draftFindingId] ??= []).push(a);
+    }
     setReviewActions(grouped);
   }, []);
 
   useEffect(() => {
     (async () => {
-      const m = await getProviderMode();
-      setMode(m);
-      setBackendUp(m !== null);
+      const modeResult = await getProviderMode();
+      setMode(modeResult.ok ? modeResult.data : null);
+      setBackendUp(modeResult.ok);
       await loadChunks();
       await loadReviewActions();
-      const runs = await getAiReviewRuns();
-      if (runs.length > 0) {
-        setRun(runs[0]);
-        setDrafts(await getRunDraftFindings(runs[0].reviewRunId));
+      const runsResult = await getAiReviewRuns();
+      if (runsResult.ok && runsResult.data.length > 0) {
+        setRun(runsResult.data[0]);
+        const draftsResult = await getRunDraftFindings(runsResult.data[0].reviewRunId);
+        setDrafts(draftsResult.ok ? draftsResult.data : []);
       }
     })();
   }, [loadChunks, loadReviewActions]);
@@ -81,7 +86,8 @@ export default function AiReviewClient() {
     if (newRun) {
       setBackendUp(true);
       setRun(newRun);
-      setDrafts(await getRunDraftFindings(newRun.reviewRunId));
+      const draftsResult = await getRunDraftFindings(newRun.reviewRunId);
+      setDrafts(draftsResult.ok ? draftsResult.data : []);
       await loadReviewActions();
     } else {
       setBackendUp(false);

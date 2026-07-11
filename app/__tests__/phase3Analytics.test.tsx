@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -135,12 +136,12 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDetail: vi.fn(async () => project),
-    getPlanConsistencySummary: vi.fn(async () => planSummary),
-    getPlanConsistencyFindings: vi.fn(async () => [planFinding]),
-    getPlanConsistencyReviewActions: vi.fn(async () => []),
-    getProjectCommandCenter: vi.fn(async () => ccPayload),
-    getProjectHealthSummary: vi.fn(async () => healthSummary),
+    getProjectDetail: vi.fn(async () => ok(project)),
+    getPlanConsistencySummary: vi.fn(async () => ok(planSummary)),
+    getPlanConsistencyFindings: vi.fn(async () => ok([planFinding])),
+    getPlanConsistencyReviewActions: vi.fn(async () => ok([])),
+    getProjectCommandCenter: vi.fn(async () => ok(ccPayload)),
+    getProjectHealthSummary: vi.fn(async () => ok(healthSummary)),
   };
 });
 
@@ -154,7 +155,7 @@ afterEach(() => cleanup());
 
 describe("Plan consistency page", () => {
   it("renders the page, summary counts, findings, action control, and boundary", async () => {
-    render(await PlanConsistencyPage({ params: { projectId } }));
+    render(await PlanConsistencyPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Plan consistency")).toBeInTheDocument();
     // Summary counts.
     expect(screen.getByText("Total sheets")).toBeInTheDocument();
@@ -181,7 +182,7 @@ describe("Plan consistency page", () => {
 
   it("introduces no banned final-decision wording", async () => {
     const { container } = render(
-      await PlanConsistencyPage({ params: { projectId } }),
+      await PlanConsistencyPage({ params: Promise.resolve({ projectId }) }),
     );
     const text = (container.textContent ?? "").toLowerCase();
     for (const word of BANNED) {
@@ -192,7 +193,7 @@ describe("Plan consistency page", () => {
 
 describe("Command center page", () => {
   it("renders the snapshot, counts, boundary, and reviewer controls", async () => {
-    render(await ProjectCommandCenterPage({ params: { projectId } }));
+    render(await ProjectCommandCenterPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Command center")).toBeInTheDocument();
     // ProjectDashboard loads asynchronously, then renders snapshot data.
     await waitFor(() =>
@@ -214,7 +215,7 @@ describe("Command center page", () => {
 describe("Project navigation to analytical surfaces", () => {
   it("links to all touched routes without 404 targets", async () => {
     const { container } = render(
-      await ProjectDetailPage({ params: { projectId } }),
+      await ProjectDetailPage({ params: Promise.resolve({ projectId }) }),
     );
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) =>
       a.getAttribute("href"),

@@ -3,11 +3,12 @@ import PageHeader from "@/components/PageHeader";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import WorkflowBoardClient from "@/components/WorkflowBoardClient";
 
-export default function WorkflowItemDetailPage({
-  params,
-}: {
-  params: { workflowItemId: string };
-}) {
+export default async function WorkflowItemDetailPage(
+  props: {
+    params: Promise<{ workflowItemId: string }>;
+  }
+) {
+  const params = await props.params;
   return (
     <div>
       <PageHeader

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -16,18 +17,26 @@ export const dynamic = "force-dynamic";
 // the carried-forward items, and a review-support status summary. A resubmittal
 // round records an applicant submission for reviewer review. It does not finalize
 // a review outcome and does not resolve or close anything.
-export default async function ResubmittalRoundDetailPage({
-  params,
-}: {
-  params: { projectId: string; roundId: string };
-}) {
-  const [round, summary] = await Promise.all([
+export default async function ResubmittalRoundDetailPage(
+  props: {
+    params: Promise<{ projectId: string; roundId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [roundResult, summaryResult] = await Promise.all([
     getResubmittalRound(params.projectId, params.roundId),
     getResubmittalRoundSummary(params.projectId, params.roundId),
   ]);
-  if (!round) {
-    notFound();
+  if (!roundResult.ok) {
+    if (roundResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={roundResult} />
+      </div>
+    );
   }
+  const round = roundResult.data;
+  const summary = summaryResult.ok ? summaryResult.data : null;
   const base = `/projects/${params.projectId}`;
 
   const metadata: [string, string | null][] = [

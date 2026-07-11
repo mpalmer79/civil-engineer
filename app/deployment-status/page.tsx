@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ApiFailure } from "@/lib/api/client";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import Link from "next/link";
 
 import BackendStatusBanner from "@/components/BackendStatusBanner";
@@ -60,14 +62,17 @@ export default function DeploymentStatusPage() {
   const [readiness, setReadiness] = useState<Readiness | null>(null);
   const [storage, setStorage] = useState<StorageDiagnostics | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [failure, setFailure] = useState<ApiFailure | null>(null);
 
   useEffect(() => {
     let active = true;
     Promise.all([getReadiness(), getStorageDiagnostics()]).then(
       ([r, s]) => {
         if (!active) return;
-        setReadiness(r);
-        setStorage(s);
+        setReadiness(r.ok ? r.data : null);
+        setStorage(s.ok ? s.data : null);
+        const firstFailure = [r, s].find((res) => !res.ok);
+        setFailure(firstFailure && !firstFailure.ok ? firstFailure : null);
         setLoaded(true);
       },
     );
@@ -84,6 +89,7 @@ export default function DeploymentStatusPage() {
         description="Safe operational status for the live deployment. These are configuration and connectivity indicators only. They do not approve plans, certify compliance, validate design, or make any engineering decision."
       />
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+        {failure ? <RequestFailureCard failure={failure} /> : null}
         <BackendStatusBanner />
 
         <div className="mt-6 space-y-6">

@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import {
   cleanup,
   fireEvent,
@@ -255,13 +256,13 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDetail: vi.fn(async () => project),
-    listResponsePackages: vi.fn(async () => [pkg]),
-    getResponsePackageDetail: vi.fn(async () => pkg),
-    listProjectFindings: vi.fn(async () => [finding]),
-    previewResponsePackage: vi.fn(async () => preview),
-    getCommentLetterDraft: vi.fn(async () => draft),
-    previewCommentLetter: vi.fn(async () => letterPreview),
+    getProjectDetail: vi.fn(async () => ok(project)),
+    listResponsePackages: vi.fn(async () => ok([pkg])),
+    getResponsePackageDetail: vi.fn(async () => ok(pkg)),
+    listProjectFindings: vi.fn(async () => ok([finding])),
+    previewResponsePackage: vi.fn(async () => ok(preview)),
+    getCommentLetterDraft: vi.fn(async () => ok(draft)),
+    previewCommentLetter: vi.fn(async () => ok(letterPreview)),
     createResponsePackage: createPackageMock,
     addFindingsToPackage: addFindingsMock,
     issueResponsePackage: issueMock,
@@ -289,7 +290,7 @@ const projectId = "proj_1";
 describe("Response packages landing page", () => {
   it("lists packages and links to each one", async () => {
     const { container } = render(
-      await ResponsePackagesLandingPage({ params: { projectId } }),
+      await ResponsePackagesLandingPage({ params: Promise.resolve({ projectId }) }),
     );
     expect(screen.getByText("Initial review comments")).toBeInTheDocument();
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) =>
@@ -317,7 +318,7 @@ describe("Response package detail page", () => {
   it("renders selected items and add panel", async () => {
     render(
       await ResponsePackageDetailPage({
-        params: { projectId, packageId: "rpkg_1" },
+        params: Promise.resolve({ projectId, packageId: "rpkg_1" }),
       }),
     );
     expect(
@@ -331,7 +332,7 @@ describe("Response package preview page", () => {
   it("renders the boundary statement and comment items", async () => {
     render(
       await ResponsePackagePreviewPage({
-        params: { projectId, packageId: "rpkg_1" },
+        params: Promise.resolve({ projectId, packageId: "rpkg_1" }),
       }),
     );
     expect(screen.getByText(/does not approve plans/i)).toBeInTheDocument();
@@ -396,7 +397,7 @@ describe("Comment letter draft page and editor", () => {
   it("renders editable sections", async () => {
     render(
       await CommentLetterDraftPage({
-        params: { projectId, draftId: "cldraft_1" },
+        params: Promise.resolve({ projectId, draftId: "cldraft_1" }),
       }),
     );
     expect(screen.getByText("Edit comment letter draft")).toBeInTheDocument();
@@ -415,7 +416,7 @@ describe("Comment letter preview page", () => {
   it("renders the boundary statement and sections", async () => {
     render(
       await CommentLetterPreviewPage({
-        params: { projectId, draftId: "cldraft_1" },
+        params: Promise.resolve({ projectId, draftId: "cldraft_1" }),
       }),
     );
     expect(screen.getByText(/does not approve plans/i)).toBeInTheDocument();
@@ -426,7 +427,7 @@ describe("Comment letter preview page", () => {
 describe("Project overview Sprint 8 link", () => {
   it("links to response packages", async () => {
     const { container } = render(
-      await ProjectDetailPage({ params: { projectId } }),
+      await ProjectDetailPage({ params: Promise.resolve({ projectId }) }),
     );
     const hrefs = Array.from(container.querySelectorAll("a")).map((a) =>
       a.getAttribute("href"),
@@ -440,7 +441,7 @@ describe("Professional boundary in Sprint 8 UI", () => {
     const parts: string[] = [];
     parts.push(
       (
-        render(await ResponsePackagesLandingPage({ params: { projectId } }))
+        render(await ResponsePackagesLandingPage({ params: Promise.resolve({ projectId }) }))
           .container.textContent ?? ""
       ).toLowerCase(),
     );
@@ -448,7 +449,7 @@ describe("Professional boundary in Sprint 8 UI", () => {
       (
         render(
           await ResponsePackageDetailPage({
-            params: { projectId, packageId: "rpkg_1" },
+            params: Promise.resolve({ projectId, packageId: "rpkg_1" }),
           }),
         ).container.textContent ?? ""
       ).toLowerCase(),
@@ -457,7 +458,7 @@ describe("Professional boundary in Sprint 8 UI", () => {
       (
         render(
           await ResponsePackagePreviewPage({
-            params: { projectId, packageId: "rpkg_1" },
+            params: Promise.resolve({ projectId, packageId: "rpkg_1" }),
           }),
         ).container.textContent ?? ""
       ).toLowerCase(),
@@ -466,7 +467,7 @@ describe("Professional boundary in Sprint 8 UI", () => {
       (
         render(
           await CommentLetterPreviewPage({
-            params: { projectId, draftId: "cldraft_1" },
+            params: Promise.resolve({ projectId, draftId: "cldraft_1" }),
           }),
         ).container.textContent ?? ""
       ).toLowerCase(),

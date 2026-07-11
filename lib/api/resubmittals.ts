@@ -1,10 +1,16 @@
-import { API_BASE_URL, authHeaders, safeFetch } from "./client";
+import {
+  API_BASE_URL,
+  apiGetMapped,
+  authHeaders,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Production Foundations Sprint 7: resubmittal rounds. Registering a resubmittal
 // round records an applicant submission for reviewer review. It never decides
 // whether the resubmittal satisfies engineering requirements and never resolves
-// or closes anything. Read calls return null when the backend is unavailable;
-// mutating calls return a clear { ok, error } result.
+// or closes anything. Read calls return a typed ApiResult that preserves the
+// failure category; mutating calls return a clear { ok, error } result.
 //
 // NEXT_PUBLIC_API_BASE_URL is the backend origin only (no /api/v1 path); this
 // client appends the /api/v1 paths itself.
@@ -70,6 +76,15 @@ function mapRound(r: Record<string, unknown>): ResubmittalRound {
   };
 }
 
+// Strict read-path mapper. The requireString assertions make a structurally
+// invalid backend payload surface as an explicit invalid_response failure
+// through apiGetMapped instead of propagating undefined fields into the UI.
+function mapRoundRead(r: Record<string, unknown>): ResubmittalRound {
+  requireString(r.resubmittal_round_id, "resubmittal_round_id");
+  requireString(r.project_id, "project_id");
+  return mapRound(r);
+}
+
 function mapSummary(s: Record<string, unknown>): ResubmittalRoundSummary {
   return {
     resubmittalRoundId: s.resubmittal_round_id as string,
@@ -124,12 +139,11 @@ async function postJson<T>(
 
 export async function listResubmittalRounds(
   projectId: string,
-): Promise<ResubmittalRound[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<ResubmittalRound[]>> {
+  return apiGetMapped<Record<string, unknown>[], ResubmittalRound[]>(
     `/api/v1/projects/${projectId}/resubmittal-rounds`,
+    (data) => data.map(mapRoundRead),
   );
-  if (!data) return null;
-  return data.map(mapRound);
 }
 
 export async function registerResubmittalRound(
@@ -158,11 +172,11 @@ export async function registerResubmittalRound(
 export async function getResubmittalRound(
   projectId: string,
   roundId: string,
-): Promise<ResubmittalRound | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<ResubmittalRound>> {
+  return apiGetMapped<Record<string, unknown>, ResubmittalRound>(
     `/api/v1/projects/${projectId}/resubmittal-rounds/${roundId}`,
+    mapRoundRead,
   );
-  return data ? mapRound(data) : null;
 }
 
 export async function linkDocumentToResubmittalRound(
@@ -196,9 +210,12 @@ export async function carryForwardItemsToRound(
 export async function getResubmittalRoundSummary(
   projectId: string,
   roundId: string,
-): Promise<ResubmittalRoundSummary | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<ResubmittalRoundSummary>> {
+  return apiGetMapped<Record<string, unknown>, ResubmittalRoundSummary>(
     `/api/v1/projects/${projectId}/resubmittal-rounds/${roundId}/summary`,
+    (data) => {
+      requireString(data.resubmittal_round_id, "resubmittal_round_id");
+      return mapSummary(data);
+    },
   );
-  return data ? mapSummary(data) : null;
 }

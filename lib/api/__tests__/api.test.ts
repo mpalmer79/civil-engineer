@@ -1,3 +1,4 @@
+import { unwrap } from "./testHelpers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { documents as staticDocuments } from "@/data/documents";
@@ -64,7 +65,7 @@ describe("API mapping", () => {
       items_requiring_human_review: 50,
     });
 
-    const summary = await getReviewPacketSummary("packet_1");
+    const summary = unwrap(await getReviewPacketSummary("packet_1"));
 
     expect(summary).not.toBeNull();
     expect(summary?.packetId).toBe("packet_1");
@@ -110,6 +111,8 @@ describe("Explicit demo data source", () => {
 
     const summary = await getReviewPacketSummary("packet_1");
 
-    expect(summary).toBeNull();
+    expect(summary.ok).toBe(false);
+
+    if (!summary.ok) expect(summary.kind).toBe("network");
   });
 });

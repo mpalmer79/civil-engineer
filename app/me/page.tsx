@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ApiFailure } from "@/lib/api/client";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -21,6 +23,7 @@ export default function AccountPage() {
   const [orgs, setOrgs] = useState<Organization[] | null>(null);
   const [projects, setProjects] = useState<UserProject[] | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [failure, setFailure] = useState<ApiFailure | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -31,8 +34,10 @@ export default function AccountPage() {
     ]).then(([u, o, p]) => {
       if (!active) return;
       setUser(u);
-      setOrgs(o);
-      setProjects(p);
+      setOrgs(o.ok ? o.data : null);
+      setProjects(p.ok ? p.data : null);
+      const firstFailure = [o, p].find((r) => !r.ok);
+      setFailure(firstFailure && !firstFailure.ok ? firstFailure : null);
       setLoaded(true);
     });
     return () => {
@@ -48,6 +53,7 @@ export default function AccountPage() {
         description="Your signed-in identity, organizations, and accessible projects. Roles control who can review records; they do not determine engineering outcomes."
       />
       <div className="mx-auto max-w-4xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
+        {failure ? <RequestFailureCard failure={failure} /> : null}
         {loaded && !user ? (
           <SectionCard title="Not signed in">
             <p className="text-sm text-slate-600">

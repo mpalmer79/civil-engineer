@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -14,18 +15,26 @@ export const dynamic = "force-dynamic";
 // actions. Applicant responses are recorded for reviewer review, never as proof.
 // Carry-forward keeps the item under review across rounds. Nothing here approves,
 // certifies, verifies, resolves, or closes anything.
-export default async function ResponseMatrixItemDetailPage({
-  params,
-}: {
-  params: { projectId: string; itemId: string };
-}) {
-  const [item, packages] = await Promise.all([
+export default async function ResponseMatrixItemDetailPage(
+  props: {
+    params: Promise<{ projectId: string; itemId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [itemResult, packagesResult] = await Promise.all([
     getResponseMatrixItem(params.projectId, params.itemId),
     listResponsePackages(params.projectId),
   ]);
-  if (!item) {
-    notFound();
+  if (!itemResult.ok) {
+    if (itemResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={itemResult} />
+      </div>
+    );
   }
+  const item = itemResult.data;
+  const packages = packagesResult.ok ? packagesResult.data : null;
   const base = `/projects/${params.projectId}`;
 
   const metadata: [string, string | null][] = [

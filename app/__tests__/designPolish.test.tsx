@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -99,7 +100,7 @@ describe("Account page", () => {
       createdAt: null,
       lastLoginAt: null,
     });
-    listMyOrganizationsMock.mockResolvedValue([
+    listMyOrganizationsMock.mockResolvedValue(ok([
       {
         organizationId: "org_1",
         organizationName: "Town of Riverton",
@@ -108,8 +109,8 @@ describe("Account page", () => {
         role: "org_admin",
         membershipId: "m1",
       },
-    ]);
-    listMyProjectsMock.mockResolvedValue([
+    ]));
+    listMyProjectsMock.mockResolvedValue(ok([
       {
         projectId: "proj_1",
         projectName: "Brookside Meadows",
@@ -119,7 +120,7 @@ describe("Account page", () => {
         organizationId: "org_1",
         accessLevel: "reviewer",
       },
-    ]);
+    ]));
   });
 
   it("renders profile, organization, and project sections with chips", async () => {
@@ -138,8 +139,8 @@ describe("Account page", () => {
   });
 
   it("shows polished empty states when no orgs or projects exist", async () => {
-    listMyOrganizationsMock.mockResolvedValue([]);
-    listMyProjectsMock.mockResolvedValue([]);
+    listMyOrganizationsMock.mockResolvedValue(ok([]));
+    listMyProjectsMock.mockResolvedValue(ok([]));
     const { default: AccountPage } = await import("@/app/me/page");
     render(<AccountPage />);
     await waitFor(() =>
@@ -153,7 +154,7 @@ describe("Account page", () => {
 
 describe("Project access page", () => {
   beforeEach(() => {
-    listProjectAccessMock.mockResolvedValue([
+    listProjectAccessMock.mockResolvedValue(ok([
       {
         projectAccessId: "pa_1",
         projectId: "proj_1",
@@ -164,16 +165,14 @@ describe("Project access page", () => {
         isActive: true,
         createdAt: null,
       },
-    ]);
+    ]));
   });
 
   it("renders access entries as chips and a shared-styled grant form", async () => {
     const { default: ProjectAccessPage } = await import(
       "@/app/projects/[projectId]/access/page"
     );
-    const { container } = render(
-      <ProjectAccessPage params={{ projectId: "proj_1" }} />,
-    );
+    const { container } = render(await ProjectAccessPage({ params: Promise.resolve({ projectId: "proj_1" }) }));
     await waitFor(() =>
       expect(screen.getByText("Current access")).toBeInTheDocument(),
     );

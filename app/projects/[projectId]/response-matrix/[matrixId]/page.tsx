@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -19,19 +20,28 @@ export const dynamic = "force-dynamic";
 // review-support items with their applicant response, reviewer follow-up, and
 // carry-forward status. Statuses are review-support labels only. Nothing here
 // approves, certifies, verifies, resolves, or closes anything.
-export default async function ResponseMatrixDetailPage({
-  params,
-}: {
-  params: { projectId: string; matrixId: string };
-}) {
-  const [matrix, items, packages] = await Promise.all([
+export default async function ResponseMatrixDetailPage(
+  props: {
+    params: Promise<{ projectId: string; matrixId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [matrixResult, itemsResult, packagesResult] = await Promise.all([
     getResponseMatrix(params.projectId, params.matrixId),
     listResponseMatrixItems(params.projectId, params.matrixId),
     listResponsePackages(params.projectId),
   ]);
-  if (!matrix) {
-    notFound();
+  if (!matrixResult.ok) {
+    if (matrixResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={matrixResult} />
+      </div>
+    );
   }
+  const matrix = matrixResult.data;
+  const items = itemsResult.ok ? itemsResult.data : null;
+  const packages = packagesResult.ok ? packagesResult.data : null;
   const base = `/projects/${params.projectId}`;
 
   const summaryRow = (label: string, summary: Record<string, number>) => {

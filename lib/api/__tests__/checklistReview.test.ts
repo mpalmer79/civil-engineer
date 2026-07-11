@@ -1,3 +1,4 @@
+import { unwrap } from "./testHelpers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -34,7 +35,7 @@ describe("listRulePacks", () => {
         item_count: 16,
       },
     ]);
-    const packs = await listRulePacks();
+    const packs = unwrap(await listRulePacks());
     expect(packs).toHaveLength(1);
     expect(packs?.[0].itemCount).toBe(16);
     expect(packs?.[0].sourceMode).toBe("seeded_demo");

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ApiFailure } from "@/lib/api/client";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -30,6 +32,7 @@ const BROOKSIDE_ID = "proj_brookside_meadows";
 export default function WorkspacePage() {
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [user, setUser] = useState<CurrentUser | null>(null);
+  const [failure, setFailure] = useState<ApiFailure | null>(null);
   const [orgs, setOrgs] = useState<Organization[] | null>(null);
   const [projects, setProjects] = useState<UserProject[] | null>(null);
 
@@ -45,8 +48,10 @@ export default function WorkspacePage() {
     ]).then(([u, o, p]) => {
       if (!active) return;
       setUser(u);
-      setOrgs(o);
-      setProjects(p);
+      setOrgs(o.ok ? o.data : null);
+      setProjects(p.ok ? p.data : null);
+      const firstFailure = [o, p].find((r) => !r.ok);
+      setFailure(firstFailure && !firstFailure.ok ? firstFailure : null);
     });
     return () => {
       active = false;

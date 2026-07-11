@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -77,9 +78,9 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    listProjects: vi.fn(async () => [demoProject, userProject]),
-    getProjectDetail: vi.fn(async () => userProject),
-    listProjectDocuments: vi.fn(async () => [
+    listProjects: vi.fn(async () => ok([demoProject, userProject])),
+    getProjectDetail: vi.fn(async () => ok(userProject)),
+    listProjectDocuments: vi.fn(async () => ok([
       {
         documentId: "doc_user_1",
         projectId: userProject.projectId,
@@ -101,8 +102,8 @@ vi.mock("@/lib/api", async (importOriginal) => {
         uploadedAt: null,
         registeredAt: "2026-06-26T00:00:00Z",
       },
-    ]),
-    listProjectFindings: vi.fn(async () => [
+    ])),
+    listProjectFindings: vi.fn(async () => ok([
       {
         findingId: "find_user_1",
         projectId: userProject.projectId,
@@ -121,8 +122,8 @@ vi.mock("@/lib/api", async (importOriginal) => {
         createdByName: "Demo Reviewer",
         createdAt: null,
       },
-    ]),
-    listProjectAuditEvents: vi.fn(async () => [
+    ])),
+    listProjectAuditEvents: vi.fn(async () => ok([
       {
         auditEventId: "audit_1",
         projectId: userProject.projectId,
@@ -135,7 +136,7 @@ vi.mock("@/lib/api", async (importOriginal) => {
         timestamp: "2026-06-26T00:00:00Z",
         eventMetadata: { source_mode: "user_created" },
       },
-    ]),
+    ])),
   };
 });
 
@@ -148,7 +149,7 @@ import ProjectFindingsPage from "@/app/projects/[projectId]/findings/page";
 import NewFindingPage from "@/app/projects/[projectId]/findings/new/page";
 import ProjectAuditEventsPage from "@/app/projects/[projectId]/audit-events/page";
 
-const params = { projectId: "proj_user_abc123" };
+const params = Promise.resolve({ projectId: "proj_user_abc123" });
 
 describe("Projects list page", () => {
   it("renders demo and user-created project rows with source badges", async () => {
@@ -196,7 +197,7 @@ describe("Project documents page", () => {
 
 describe("Document registration page", () => {
   it("renders the document registration form", async () => {
-    render(RegisterDocumentPage({ params }));
+    render(await RegisterDocumentPage({ params }));
     expect(screen.getByText("Register metadata")).toBeInTheDocument();
     // "Register document" is both the page title and the form submit button.
     expect(screen.getAllByText("Register document").length).toBeGreaterThan(0);
@@ -215,7 +216,7 @@ describe("Reviewer findings page", () => {
 
 describe("New finding page", () => {
   it("renders the reviewer finding form", async () => {
-    render(NewFindingPage({ params }));
+    render(await NewFindingPage({ params }));
     expect(
       screen.getByText("Create review-support finding"),
     ).toBeInTheDocument();
@@ -239,8 +240,8 @@ describe("Audit events page", () => {
 describe("Professional boundary in new UI", () => {
   it("uses no prohibited final-decision wording", async () => {
     const { container: c1 } = render(await ProjectDetailPage({ params }));
-    const { container: c2 } = render(NewFindingPage({ params }));
-    const { container: c3 } = render(RegisterDocumentPage({ params }));
+    const { container: c2 } = render(await NewFindingPage({ params }));
+    const { container: c3 } = render(await RegisterDocumentPage({ params }));
     const text = (
       (c1.textContent ?? "") +
       (c2.textContent ?? "") +

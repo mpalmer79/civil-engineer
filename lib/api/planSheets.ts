@@ -1,4 +1,13 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
+import {
+  API_BASE_URL,
+  PROJECT_ID,
+  apiGetMapped,
+  authHeaders,
+  requireArray,
+  requireRecord,
+  requireString,
+  type ApiResult,
+} from "./client";
 import {
   mapCadMetadata,
   mapPlanConsistencyFinding,
@@ -14,9 +23,8 @@ import {
 // Phase 6: plan sheets.
 //
 // Phase 6 data is backend-canonical. The frontend does not duplicate the plan
-// set or CAD metadata. When the backend is unavailable these functions return
-// empty results and the UI shows a status note rather than stale or simulated
-// data.
+// set or CAD metadata. Read calls return a typed ApiResult so callers can
+// render explicit failure states instead of stale or simulated data.
 
 export type PlanSheet = {
   sheetId: string;
@@ -76,9 +84,9 @@ type ApiPlanSheetSummary = {
 
 function mapPlanSheet(s: ApiPlanSheet): PlanSheet {
   return {
-    sheetId: s.sheet_id,
-    projectId: s.project_id,
-    sheetNumber: s.sheet_number,
+    sheetId: requireString(s.sheet_id, "sheet_id"),
+    projectId: requireString(s.project_id, "project_id"),
+    sheetNumber: requireString(s.sheet_number, "sheet_number"),
     sheetTitle: s.sheet_title,
     discipline: s.discipline,
     revision: s.revision,
@@ -94,7 +102,7 @@ function mapPlanSheet(s: ApiPlanSheet): PlanSheet {
 
 function mapPlanSheetSummary(s: ApiPlanSheetSummary): PlanSheetSummary {
   return {
-    projectId: s.project_id,
+    projectId: requireString(s.project_id, "project_id"),
     totalSheets: s.total_sheets,
     presentSheets: s.present_sheets,
     missingOrReferencedNotIncluded: s.missing_or_referenced_not_included,
@@ -108,29 +116,32 @@ function mapPlanSheetSummary(s: ApiPlanSheetSummary): PlanSheetSummary {
 
 export async function getPlanSheets(
   projectId: string = PROJECT_ID,
-): Promise<PlanSheet[]> {
-  const data = await safeFetch<ApiPlanSheet[]>(
+): Promise<ApiResult<PlanSheet[]>> {
+  return apiGetMapped<ApiPlanSheet[], PlanSheet[]>(
     `/api/v1/projects/${projectId}/plan-sheets`,
+    (data) =>
+      requireArray(data, "plan_sheets").map((s) =>
+        mapPlanSheet(s as ApiPlanSheet),
+      ),
   );
-  return data ? data.map(mapPlanSheet) : [];
 }
 
 export async function getPlanSheetSummary(
   projectId: string = PROJECT_ID,
-): Promise<PlanSheetSummary | null> {
-  const data = await safeFetch<ApiPlanSheetSummary>(
+): Promise<ApiResult<PlanSheetSummary>> {
+  return apiGetMapped<ApiPlanSheetSummary, PlanSheetSummary>(
     `/api/v1/projects/${projectId}/plan-sheets/summary`,
+    mapPlanSheetSummary,
   );
-  return data ? mapPlanSheetSummary(data) : null;
 }
 
 // Phase 7: plan sheet viewer, sheet hotspots, and plan consistency review
 // actions.
 //
 // Phase 7 data is backend-canonical, consistent with Phase 6. The frontend does
-// not simulate hotspots or review actions. Read calls return empty results when
-// the backend is unavailable, and the review action mutation returns a clear
-// backend-required result.
+// not simulate hotspots or review actions. Read calls return a typed ApiResult
+// with an explicit failure state, and the review action mutation returns a
+// clear backend-required result.
 
 export type PlanSheetHotspot = {
   hotspotId: string;
@@ -233,11 +244,11 @@ type ApiPlanReviewAction = {
 
 function mapSheetHotspot(h: ApiPlanSheetHotspot): PlanSheetHotspot {
   return {
-    hotspotId: h.hotspot_id,
-    projectId: h.project_id,
-    sheetId: h.sheet_id,
+    hotspotId: requireString(h.hotspot_id, "hotspot_id"),
+    projectId: requireString(h.project_id, "project_id"),
+    sheetId: requireString(h.sheet_id, "sheet_id"),
     hotspotType: h.hotspot_type,
-    label: h.label,
+    label: requireString(h.label, "label"),
     description: h.description,
     xPercent: h.x_percent,
     yPercent: h.y_percent,
@@ -258,9 +269,9 @@ function mapPlanReviewAction(
   a: ApiPlanReviewAction,
 ): PlanConsistencyReviewAction {
   return {
-    reviewActionId: a.review_action_id,
-    planFindingId: a.plan_finding_id,
-    projectId: a.project_id,
+    reviewActionId: requireString(a.review_action_id, "review_action_id"),
+    planFindingId: requireString(a.plan_finding_id, "plan_finding_id"),
+    projectId: requireString(a.project_id, "project_id"),
     reviewerName: a.reviewer_name,
     action: a.action,
     reviewerNote: a.reviewer_note,
@@ -272,52 +283,67 @@ function mapPlanReviewAction(
 
 export async function getSheetHotspots(
   projectId: string = PROJECT_ID,
-): Promise<PlanSheetHotspot[]> {
-  const data = await safeFetch<ApiPlanSheetHotspot[]>(
+): Promise<ApiResult<PlanSheetHotspot[]>> {
+  return apiGetMapped<ApiPlanSheetHotspot[], PlanSheetHotspot[]>(
     `/api/v1/projects/${projectId}/sheet-hotspots`,
+    (data) =>
+      requireArray(data, "sheet_hotspots").map((h) =>
+        mapSheetHotspot(h as ApiPlanSheetHotspot),
+      ),
   );
-  return data ? data.map(mapSheetHotspot) : [];
 }
 
 export async function getSheetHotspotsForSheet(
   sheetId: string,
-): Promise<PlanSheetHotspot[]> {
-  const data = await safeFetch<ApiPlanSheetHotspot[]>(
+): Promise<ApiResult<PlanSheetHotspot[]>> {
+  return apiGetMapped<ApiPlanSheetHotspot[], PlanSheetHotspot[]>(
     `/api/v1/plan-sheets/${sheetId}/sheet-hotspots`,
+    (data) =>
+      requireArray(data, "sheet_hotspots").map((h) =>
+        mapSheetHotspot(h as ApiPlanSheetHotspot),
+      ),
   );
-  return data ? data.map(mapSheetHotspot) : [];
 }
 
 export async function getSheetViewerContext(
   sheetId: string,
-): Promise<SheetViewerContext | null> {
-  const data = await safeFetch<ApiSheetViewerContext>(
+): Promise<ApiResult<SheetViewerContext>> {
+  return apiGetMapped<ApiSheetViewerContext, SheetViewerContext>(
     `/api/v1/plan-sheets/${sheetId}/viewer-context`,
+    (data) => ({
+      sheet: mapPlanSheet(requireRecord(data.sheet, "sheet") as ApiPlanSheet),
+      hotspots: requireArray(data.hotspots, "hotspots").map((h) =>
+        mapSheetHotspot(h as ApiPlanSheetHotspot),
+      ),
+      cadMetadata: requireArray(data.cad_metadata, "cad_metadata").map((m) =>
+        mapCadMetadata(m as ApiCadMetadata),
+      ),
+      planReferences: requireArray(data.plan_references, "plan_references").map(
+        (r) => mapPlanReference(r as ApiPlanReference),
+      ),
+      planConsistencyFindings: requireArray(
+        data.plan_consistency_findings,
+        "plan_consistency_findings",
+      ).map((f) => mapPlanConsistencyFinding(f as ApiPlanConsistencyFinding)),
+      previewNote: data.preview_note,
+    }),
   );
-  if (!data) return null;
-  return {
-    sheet: mapPlanSheet(data.sheet),
-    hotspots: data.hotspots.map(mapSheetHotspot),
-    cadMetadata: data.cad_metadata.map(mapCadMetadata),
-    planReferences: data.plan_references.map(mapPlanReference),
-    planConsistencyFindings: data.plan_consistency_findings.map(
-      mapPlanConsistencyFinding,
-    ),
-    previewNote: data.preview_note,
-  };
 }
 
 export async function getPlanConsistencyReviewActions(
   planFindingId?: string,
   projectId: string = PROJECT_ID,
-): Promise<PlanConsistencyReviewAction[]> {
+): Promise<ApiResult<PlanConsistencyReviewAction[]>> {
   const query = planFindingId
     ? `?plan_finding_id=${encodeURIComponent(planFindingId)}`
     : "";
-  const data = await safeFetch<ApiPlanReviewAction[]>(
+  return apiGetMapped<ApiPlanReviewAction[], PlanConsistencyReviewAction[]>(
     `/api/v1/projects/${projectId}/plan-consistency-review-actions${query}`,
+    (data) =>
+      requireArray(data, "plan_consistency_review_actions").map((a) =>
+        mapPlanReviewAction(a as ApiPlanReviewAction),
+      ),
   );
-  return data ? data.map(mapPlanReviewAction) : [];
 }
 
 export async function createPlanConsistencyReviewAction(

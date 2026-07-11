@@ -117,14 +117,15 @@ export default function WorkflowBoardClient({
   }, []);
 
   const refreshBoard = useCallback(async () => {
-    const [boardItems, boardSummary, handoffSummary] = await Promise.all([
+    const [itemsResult, boardSummaryResult, handoffResult] = await Promise.all([
       getWorkflowItems(undefined, projectId),
       getWorkflowBoardSummary(projectId),
       getReadyForHandoffSummary(projectId),
     ]);
+    const boardItems = itemsResult.ok ? itemsResult.data : [];
     setItems(boardItems);
-    setSummary(boardSummary);
-    setHandoff(handoffSummary);
+    setSummary(boardSummaryResult.ok ? boardSummaryResult.data : null);
+    setHandoff(handoffResult.ok ? handoffResult.data : null);
     return boardItems;
   }, [projectId]);
 
@@ -133,7 +134,8 @@ export default function WorkflowBoardClient({
       setDetail(null);
       return;
     }
-    setDetail(await getWorkflowItem(id));
+    const detailResult = await getWorkflowItem(id);
+    setDetail(detailResult.ok ? detailResult.data : null);
   }, []);
 
   useEffect(() => {

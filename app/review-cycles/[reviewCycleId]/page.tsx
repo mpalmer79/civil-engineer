@@ -3,14 +3,16 @@ import PageHeader from "@/components/PageHeader";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import ReviewCycleSummaryCard from "@/components/ReviewCycleSummaryCard";
 import NextCyclePreparationPanelReadOnly from "@/components/NextCyclePreparationReadOnly";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { getReviewCycle, getNextCyclePreparation } from "@/lib/api";
 
-export default async function ReviewCycleDetailRoute({
-  params,
-}: {
-  params: { reviewCycleId: string };
-}) {
-  const [cycle, preparation] = await Promise.all([
+export default async function ReviewCycleDetailRoute(
+  props: {
+    params: Promise<{ reviewCycleId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [cycleResult, preparationResult] = await Promise.all([
     getReviewCycle(params.reviewCycleId),
     getNextCyclePreparation(params.reviewCycleId),
   ]);
@@ -19,7 +21,7 @@ export default async function ReviewCycleDetailRoute({
     <div>
       <PageHeader
         eyebrow="Review cycle detail"
-        title={cycle ? cycle.cycleName : "Review cycle"}
+        title={cycleResult.ok ? cycleResult.data.cycleName : "Review cycle"}
         description="A single review round for Brookside Meadows. This view is review-support only and does not approve plans, certify compliance, verify CAD, or validate design."
       />
 
@@ -31,15 +33,19 @@ export default async function ReviewCycleDetailRoute({
           Back to review cycles
         </Link>
 
-        {cycle ? (
-          <ReviewCycleSummaryCard cycle={cycle} />
+        {cycleResult.ok ? (
+          <ReviewCycleSummaryCard cycle={cycleResult.data} />
         ) : (
-          <div className="surface-card p-6 text-sm text-slate-500">
-            Review cycle not found, or the backend is not reachable.
-          </div>
+          <RequestFailureCard failure={cycleResult} />
         )}
 
-        <NextCyclePreparationPanelReadOnly preparation={preparation} />
+        {preparationResult.ok ? (
+          <NextCyclePreparationPanelReadOnly
+            preparation={preparationResult.data}
+          />
+        ) : (
+          <RequestFailureCard failure={preparationResult} />
+        )}
 
         <SafetyBoundaryBanner />
       </div>

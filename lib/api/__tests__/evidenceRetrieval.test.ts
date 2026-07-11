@@ -1,3 +1,4 @@
+import { unwrap } from "./testHelpers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -136,9 +137,9 @@ describe("evidence candidate client", () => {
         ranking_score: 0,
       },
     ]);
-    const list = await listProjectEvidenceCandidates("proj_1", {
+    const list = unwrap(await listProjectEvidenceCandidates("proj_1", {
       candidateStatus: "saved_for_review",
-    });
+    }));
     expect(list).toHaveLength(1);
     const url = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock
       .calls[0][0] as string;

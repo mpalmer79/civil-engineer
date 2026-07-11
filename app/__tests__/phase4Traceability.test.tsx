@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import {
   cleanup,
   fireEvent,
@@ -188,9 +189,9 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDetail: vi.fn(async () => project),
-    getProjectTraceability: vi.fn(async () => traceability),
-    getReviewPacketPrintView: vi.fn(async () => printView),
+    getProjectDetail: vi.fn(async () => ok(project)),
+    getProjectTraceability: vi.fn(async () => ok(traceability)),
+    getReviewPacketPrintView: vi.fn(async () => ok(printView)),
   };
 });
 
@@ -201,7 +202,7 @@ afterEach(() => cleanup());
 
 describe("Project traceability page", () => {
   it("renders summary tiles, limitations, and linked + no-linked rows", async () => {
-    render(await ProjectTraceabilityPage({ params: { projectId } }));
+    render(await ProjectTraceabilityPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Traceability")).toBeInTheDocument();
     // Summary tiles.
     expect(screen.getByText("Checklist items")).toBeInTheDocument();
@@ -236,7 +237,7 @@ describe("Project traceability page", () => {
   });
 
   it("filters rows by relationship type", async () => {
-    render(await ProjectTraceabilityPage({ params: { projectId } }));
+    render(await ProjectTraceabilityPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("SW-2")).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("Relationship type"), {
       target: { value: "linked_evidence" },
@@ -249,7 +250,7 @@ describe("Project traceability page", () => {
 
   it("introduces no banned wording", async () => {
     const { container } = render(
-      await ProjectTraceabilityPage({ params: { projectId } }),
+      await ProjectTraceabilityPage({ params: Promise.resolve({ projectId }) }),
     );
     const text = (container.textContent ?? "").toLowerCase();
     for (const word of BANNED) expect(text).not.toContain(word);

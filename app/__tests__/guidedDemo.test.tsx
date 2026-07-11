@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
@@ -49,16 +50,18 @@ vi.mock("@/lib/api", async (importOriginal) => {
 import GuidedDemoPage from "@/app/guided-demo/page";
 
 function withCounts() {
-  getProjectTraceability.mockResolvedValue({
-    summary: {
-      totalTraceabilityRows: 9,
-      totalWorkflowItems: 6,
-      totalPacketItems: 14,
-      totalFindings: 7,
-    },
-  });
-  getPlanConsistencySummary.mockResolvedValue({ planConsistencyFindings: 4 });
-  getCadReviewFindings.mockResolvedValue([{}, {}, {}]);
+  getProjectTraceability.mockResolvedValue(
+    ok({
+      summary: {
+        totalTraceabilityRows: 9,
+        totalWorkflowItems: 6,
+        totalPacketItems: 14,
+        totalFindings: 7,
+      },
+    }),
+  );
+  getPlanConsistencySummary.mockResolvedValue(ok({ planConsistencyFindings: 4 }));
+  getCadReviewFindings.mockResolvedValue(ok([{}, {}, {}]));
 }
 
 beforeEach(() => {
@@ -135,9 +138,15 @@ describe("Guided demo route", () => {
   });
 
   it("falls back to qualitative proof when counts are unavailable", async () => {
-    getProjectTraceability.mockResolvedValue(null);
-    getPlanConsistencySummary.mockResolvedValue(null);
-    getCadReviewFindings.mockResolvedValue([]);
+    const unavailable = {
+      ok: false as const,
+      kind: "network" as const,
+      message: "Backend unavailable.",
+      retryable: true,
+    };
+    getProjectTraceability.mockResolvedValue(unavailable);
+    getPlanConsistencySummary.mockResolvedValue(unavailable);
+    getCadReviewFindings.mockResolvedValue(unavailable);
     render(await GuidedDemoPage());
     // The labels still render; the values degrade to a qualitative marker.
     expect(screen.getByText("Traceability rows")).toBeInTheDocument();

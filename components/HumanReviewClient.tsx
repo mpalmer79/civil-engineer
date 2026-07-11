@@ -82,21 +82,25 @@ export default function HumanReviewClient() {
   const [loaded, setLoaded] = useState(false);
 
   const refresh = useCallback(async () => {
-    const [queue, acts] = await Promise.all([
+    const [queueResult, actsResult] = await Promise.all([
       getHumanReviewQueue(),
       getProjectReviewActions(),
     ]);
+    const queue = queueResult.ok ? queueResult.data : [];
+    const acts = actsResult.ok ? actsResult.data : [];
     setDrafts(queue);
     setActions(acts);
-    setBackendUp(queue.length > 0 || acts.length > 0);
+    setBackendUp(queueResult.ok || actsResult.ok);
     setLoaded(true);
   }, []);
 
   useEffect(() => {
     (async () => {
-      const list = await getProjectChunks();
+      const listResult = await getProjectChunks();
       const map: Record<string, ChunkItem> = {};
-      for (const c of list) map[c.chunkId] = c;
+      if (listResult.ok) {
+        for (const c of listResult.data) map[c.chunkId] = c;
+      }
       setChunks(map);
       await refresh();
     })();

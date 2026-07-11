@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -13,18 +14,26 @@ export const dynamic = "force-dynamic";
 // reviewer register a new round. Registering a round records an applicant
 // submission for reviewer review. It does not decide whether the resubmittal
 // satisfies engineering requirements and does not resolve or close anything.
-export default async function ResubmittalRoundsPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
-  const [project, rounds] = await Promise.all([
+export default async function ResubmittalRoundsPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [projectResult, roundsResult] = await Promise.all([
     getProjectDetail(params.projectId),
     listResubmittalRounds(params.projectId),
   ]);
-  if (!project) {
-    notFound();
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
+  const rounds = roundsResult.ok ? roundsResult.data : null;
   const base = `/projects/${params.projectId}`;
 
   return (

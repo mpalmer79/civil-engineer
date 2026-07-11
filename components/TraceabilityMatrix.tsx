@@ -170,7 +170,7 @@ function RowReviewCell({
       projectId,
       row.traceabilityRowKey,
     );
-    setHistory(items);
+    setHistory(items.ok ? items.data : null);
   }, [projectId, row.traceabilityRowKey]);
 
   async function submit() {

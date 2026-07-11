@@ -1,8 +1,16 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
+import {
+  API_BASE_URL,
+  PROJECT_ID,
+  apiFetch,
+  apiGetMapped,
+  authHeaders,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Phase 13: multi-round resubmittal, revision comparison, and applicant response
 // cycle. Data is backend-canonical. The frontend does not simulate review cycle
-// data. Read calls return null or empty results when the backend is unavailable,
+// data. Read calls return a typed ApiResult that preserves the failure category,
 // and mutating calls return a clear backend-required result.
 
 export type ReviewCycle = {
@@ -255,6 +263,15 @@ function mapReviewCycle(d: Json): ReviewCycle {
   return camel<ReviewCycle>(d);
 }
 
+// Strict read-path mapper. The requireString assertions make a structurally
+// invalid backend payload surface as an explicit invalid_response failure
+// through apiGetMapped instead of propagating undefined fields into the UI.
+function mapReviewCycleRead(d: Json): ReviewCycle {
+  requireString(d.review_cycle_id, "review_cycle_id");
+  requireString(d.project_id, "project_id");
+  return mapReviewCycle(d);
+}
+
 async function postJson<T>(
   path: string,
   body: unknown,
@@ -318,32 +335,37 @@ async function patchJson<T>(
 
 // Review cycle.
 
-export async function getReviewCycles(): Promise<ReviewCycle[]> {
-  const data = await safeFetch<Json[]>(
+export async function getReviewCycles(): Promise<ApiResult<ReviewCycle[]>> {
+  return apiGetMapped<Json[], ReviewCycle[]>(
     `/api/v1/projects/${PROJECT_ID}/review-cycles`,
+    (data) => data.map(mapReviewCycleRead),
   );
-  return data ? data.map(mapReviewCycle) : [];
 }
 
 export async function getReviewCycle(
   reviewCycleId: string,
-): Promise<ReviewCycle | null> {
-  const data = await safeFetch<Json>(`/api/v1/review-cycles/${reviewCycleId}`);
-  return data ? mapReviewCycle(data) : null;
-}
-
-export async function getReviewCycleDashboard(): Promise<ReviewCycleDashboard | null> {
-  const data = await safeFetch<Json>(
-    `/api/v1/projects/${PROJECT_ID}/review-cycle-dashboard`,
+): Promise<ApiResult<ReviewCycle>> {
+  return apiGetMapped<Json, ReviewCycle>(
+    `/api/v1/review-cycles/${reviewCycleId}`,
+    mapReviewCycleRead,
   );
-  if (!data) return null;
-  const mapped = camel<ReviewCycleDashboard>(data);
-  mapped.reviewCycles = ((data.review_cycles as Json[]) ?? []).map(mapReviewCycle);
-  return mapped;
 }
 
-export async function getReviewCycleSummary(): Promise<Json | null> {
-  return safeFetch<Json>(
+export async function getReviewCycleDashboard(): Promise<ApiResult<ReviewCycleDashboard>> {
+  return apiGetMapped<Json, ReviewCycleDashboard>(
+    `/api/v1/projects/${PROJECT_ID}/review-cycle-dashboard`,
+    (data) => {
+      const mapped = camel<ReviewCycleDashboard>(data);
+      mapped.reviewCycles = ((data.review_cycles as Json[]) ?? []).map(
+        mapReviewCycleRead,
+      );
+      return mapped;
+    },
+  );
+}
+
+export async function getReviewCycleSummary(): Promise<ApiResult<Json>> {
+  return apiFetch<Json>(
     `/api/v1/projects/${PROJECT_ID}/review-cycle-summary`,
   );
 }
@@ -361,28 +383,29 @@ export async function createReviewCycle(
 
 // Resubmittal.
 
-export async function getResubmittalPackages(): Promise<ResubmittalPackage[]> {
-  const data = await safeFetch<Json[]>(
+export async function getResubmittalPackages(): Promise<ApiResult<ResubmittalPackage[]>> {
+  return apiGetMapped<Json[], ResubmittalPackage[]>(
     `/api/v1/projects/${PROJECT_ID}/resubmittals`,
+    (data) => data.map((d) => camel<ResubmittalPackage>(d)),
   );
-  return data ? data.map((d) => camel<ResubmittalPackage>(d)) : [];
 }
 
 export async function getResubmittalPackage(
   resubmittalPackageId: string,
-): Promise<ResubmittalPackage | null> {
-  const data = await safeFetch<Json>(
+): Promise<ApiResult<ResubmittalPackage>> {
+  return apiGetMapped<Json, ResubmittalPackage>(
     `/api/v1/resubmittals/${resubmittalPackageId}`,
+    (data) => {
+      const mapped = camel<ResubmittalPackage>(data);
+      mapped.documents = ((data.documents as Json[]) ?? []).map((d) =>
+        camel<ResubmittalDocument>(d),
+      );
+      mapped.applicantResponses = (
+        (data.applicant_responses as Json[]) ?? []
+      ).map((d) => camel<ApplicantResponse>(d));
+      return mapped;
+    },
   );
-  if (!data) return null;
-  const mapped = camel<ResubmittalPackage>(data);
-  mapped.documents = ((data.documents as Json[]) ?? []).map((d) =>
-    camel<ResubmittalDocument>(d),
-  );
-  mapped.applicantResponses = ((data.applicant_responses as Json[]) ?? []).map(
-    (d) => camel<ApplicantResponse>(d),
-  );
-  return mapped;
 }
 
 export async function createResubmittalPackage(
@@ -458,11 +481,11 @@ export async function createApplicantResponse(
 
 // Applicant responses and mappings.
 
-export async function getApplicantResponses(): Promise<ApplicantResponse[]> {
-  const data = await safeFetch<Json[]>(
+export async function getApplicantResponses(): Promise<ApiResult<ApplicantResponse[]>> {
+  return apiGetMapped<Json[], ApplicantResponse[]>(
     `/api/v1/projects/${PROJECT_ID}/applicant-responses`,
+    (data) => data.map((d) => camel<ApplicantResponse>(d)),
   );
-  return data ? data.map((d) => camel<ApplicantResponse>(d)) : [];
 }
 
 export async function createApplicantResponseMapping(
@@ -508,11 +531,11 @@ export async function suggestResponseMappings(
 
 export async function getResponseMappingSummary(
   reviewCycleId: string,
-): Promise<ResponseMappingSummary | null> {
-  const data = await safeFetch<Json>(
+): Promise<ApiResult<ResponseMappingSummary>> {
+  return apiGetMapped<Json, ResponseMappingSummary>(
     `/api/v1/review-cycles/${reviewCycleId}/response-mapping-summary`,
+    (data) => camel<ResponseMappingSummary>(data),
   );
-  return data ? camel<ResponseMappingSummary>(data) : null;
 }
 
 // Revision comparison.
@@ -538,38 +561,38 @@ export async function runRevisionComparison(
   };
 }
 
-export async function getRevisionComparisons(): Promise<RevisionComparisonRun[]> {
-  const data = await safeFetch<Json[]>(
+export async function getRevisionComparisons(): Promise<ApiResult<RevisionComparisonRun[]>> {
+  return apiGetMapped<Json[], RevisionComparisonRun[]>(
     `/api/v1/projects/${PROJECT_ID}/revision-comparisons`,
+    (data) => data.map((d) => camel<RevisionComparisonRun>(d)),
   );
-  return data ? data.map((d) => camel<RevisionComparisonRun>(d)) : [];
 }
 
 export async function getRevisionComparison(
   comparisonRunId: string,
-): Promise<RevisionComparisonRun | null> {
-  const data = await safeFetch<Json>(
+): Promise<ApiResult<RevisionComparisonRun>> {
+  return apiGetMapped<Json, RevisionComparisonRun>(
     `/api/v1/revision-comparisons/${comparisonRunId}`,
+    (data) => camel<RevisionComparisonRun>(data),
   );
-  return data ? camel<RevisionComparisonRun>(data) : null;
 }
 
 export async function getRevisionChanges(
   comparisonRunId: string,
-): Promise<RevisionChangeRecord[]> {
-  const data = await safeFetch<Json[]>(
+): Promise<ApiResult<RevisionChangeRecord[]>> {
+  return apiGetMapped<Json[], RevisionChangeRecord[]>(
     `/api/v1/revision-comparisons/${comparisonRunId}/changes`,
+    (data) => data.map((d) => camel<RevisionChangeRecord>(d)),
   );
-  return data ? data.map((d) => camel<RevisionChangeRecord>(d)) : [];
 }
 
 export async function getRevisionComparisonSummary(
   comparisonRunId: string,
-): Promise<RevisionComparisonSummary | null> {
-  const data = await safeFetch<Json>(
+): Promise<ApiResult<RevisionComparisonSummary>> {
+  return apiGetMapped<Json, RevisionComparisonSummary>(
     `/api/v1/revision-comparisons/${comparisonRunId}/summary`,
+    (data) => camel<RevisionComparisonSummary>(data),
   );
-  return data ? camel<RevisionComparisonSummary>(data) : null;
 }
 
 // Carry-forward.
@@ -591,20 +614,20 @@ export async function carryForwardUnresolvedItems(
   };
 }
 
-export async function getCarryForwards(): Promise<IssueCarryForward[]> {
-  const data = await safeFetch<Json[]>(
+export async function getCarryForwards(): Promise<ApiResult<IssueCarryForward[]>> {
+  return apiGetMapped<Json[], IssueCarryForward[]>(
     `/api/v1/projects/${PROJECT_ID}/carry-forwards`,
+    (data) => data.map((d) => camel<IssueCarryForward>(d)),
   );
-  return data ? data.map((d) => camel<IssueCarryForward>(d)) : [];
 }
 
 export async function getCarryForwardSummary(
   reviewCycleId: string,
-): Promise<CarryForwardSummary | null> {
-  const data = await safeFetch<Json>(
+): Promise<ApiResult<CarryForwardSummary>> {
+  return apiGetMapped<Json, CarryForwardSummary>(
     `/api/v1/review-cycles/${reviewCycleId}/carry-forward-summary`,
+    (data) => camel<CarryForwardSummary>(data),
   );
-  return data ? camel<CarryForwardSummary>(data) : null;
 }
 
 // Resolution.
@@ -656,20 +679,20 @@ export async function updateResponseResolutionStatus(
   };
 }
 
-export async function getResponseResolutionRecords(): Promise<ResponseResolutionRecord[]> {
-  const data = await safeFetch<Json[]>(
+export async function getResponseResolutionRecords(): Promise<ApiResult<ResponseResolutionRecord[]>> {
+  return apiGetMapped<Json[], ResponseResolutionRecord[]>(
     `/api/v1/projects/${PROJECT_ID}/resolution-records`,
+    (data) => data.map((d) => camel<ResponseResolutionRecord>(d)),
   );
-  return data ? data.map((d) => camel<ResponseResolutionRecord>(d)) : [];
 }
 
 export async function getResolutionSummary(
   reviewCycleId: string,
-): Promise<ResolutionSummary | null> {
-  const data = await safeFetch<Json>(
+): Promise<ApiResult<ResolutionSummary>> {
+  return apiGetMapped<Json, ResolutionSummary>(
     `/api/v1/review-cycles/${reviewCycleId}/resolution-summary`,
+    (data) => camel<ResolutionSummary>(data),
   );
-  return data ? camel<ResolutionSummary>(data) : null;
 }
 
 // Next cycle.
@@ -690,9 +713,9 @@ export async function prepareNextCycle(
 
 export async function getNextCyclePreparation(
   reviewCycleId: string,
-): Promise<NextCyclePreparation | null> {
-  const data = await safeFetch<Json>(
+): Promise<ApiResult<NextCyclePreparation>> {
+  return apiGetMapped<Json, NextCyclePreparation>(
     `/api/v1/review-cycles/${reviewCycleId}/next-cycle-preparation`,
+    (data) => camel<NextCyclePreparation>(data),
   );
-  return data ? camel<NextCyclePreparation>(data) : null;
 }

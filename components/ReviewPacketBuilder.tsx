@@ -40,12 +40,13 @@ export default function ReviewPacketBuilder({
   const [loaded, setLoaded] = useState(false);
 
   const loadPacket = useCallback(async (id: string) => {
-    const [detail, sum] = await Promise.all([
+    const [detailResult, sumResult] = await Promise.all([
       getReviewPacket(id),
       getReviewPacketSummary(id),
     ]);
+    const detail = detailResult.ok ? detailResult.data : null;
     setPacket(detail);
-    setSummary(sum);
+    setSummary(sumResult.ok ? sumResult.data : null);
     if (detail && detail.sections.length > 0) {
       const firstWithItems = detail.sections.find((s) => s.items.length > 0);
       if (firstWithItems) setSelectedItemId(firstWithItems.items[0].itemId);
@@ -57,9 +58,9 @@ export default function ReviewPacketBuilder({
       if (packetId) {
         await loadPacket(packetId);
       } else {
-        const packets = await getReviewPackets(projectId);
-        if (packets.length > 0) {
-          await loadPacket(packets[0].packetId);
+        const packetsResult = await getReviewPackets(projectId);
+        if (packetsResult.ok && packetsResult.data.length > 0) {
+          await loadPacket(packetsResult.data[0].packetId);
         }
       }
       setLoaded(true);
@@ -72,7 +73,8 @@ export default function ReviewPacketBuilder({
     const result = await generateReviewPacket(projectId);
     if (result.ok && result.packet) {
       setPacket(result.packet);
-      setSummary(await getReviewPacketSummary(result.packet.packetId));
+      const sumResult = await getReviewPacketSummary(result.packet.packetId);
+      setSummary(sumResult.ok ? sumResult.data : null);
       const firstWithItems = result.packet.sections.find(
         (s) => s.items.length > 0,
       );
@@ -99,7 +101,9 @@ export default function ReviewPacketBuilder({
         };
       });
       if (packet) {
-        getReviewPacketSummary(packet.packetId).then(setSummary);
+        getReviewPacketSummary(packet.packetId).then((sumResult) => {
+          setSummary(sumResult.ok ? sumResult.data : null);
+        });
       }
     },
     [packet],

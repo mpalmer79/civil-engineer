@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -155,31 +156,31 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDetail: vi.fn(async () => project),
+    getProjectDetail: vi.fn(async () => ok(project)),
     // CAD
-    getCadFiles: vi.fn(async () => []),
-    getCadUploadLimits: vi.fn(async () => null),
-    getCadIntakeDashboard: vi.fn(async () => cadDashboard),
-    getCadParseQueue: vi.fn(async () => []),
-    getUnpromotedCadFindings: vi.fn(async () => [unpromotedFinding]),
-    getCadReviewFindings: vi.fn(async () => []),
+    getCadFiles: vi.fn(async () => ok([])),
+    getCadUploadLimits: vi.fn(async () => ok(null)),
+    getCadIntakeDashboard: vi.fn(async () => ok(cadDashboard)),
+    getCadParseQueue: vi.fn(async () => ok([])),
+    getUnpromotedCadFindings: vi.fn(async () => ok([unpromotedFinding])),
+    getCadReviewFindings: vi.fn(async () => ok([])),
     // Workflow
-    getWorkflowItems: vi.fn(async () => [workflowItem]),
-    getWorkflowBoardSummary: vi.fn(async () => workflowSummary),
-    getReadyForHandoffSummary: vi.fn(async () => handoffSummary),
-    getWorkflowItem: vi.fn(async () => ({
+    getWorkflowItems: vi.fn(async () => ok([workflowItem])),
+    getWorkflowBoardSummary: vi.fn(async () => ok(workflowSummary)),
+    getReadyForHandoffSummary: vi.fn(async () => ok(handoffSummary)),
+    getWorkflowItem: vi.fn(async () => ok(({
       ...workflowItem,
       evidenceLinks: [],
       followUps: [],
       actions: [],
-    })),
+    }))),
     // Review packets
-    getReviewPackets: vi.fn(async () => []),
+    getReviewPackets: vi.fn(async () => ok([])),
     // Plan sheet
-    getSheetViewerContext: vi.fn(async () => sheetContext),
+    getSheetViewerContext: vi.fn(async () => ok(sheetContext)),
     // Command center fallback
-    getProjectCommandCenter: vi.fn(async () => null),
-    getProjectHealthSummary: vi.fn(async () => null),
+    getProjectCommandCenter: vi.fn(async () => ok(null)),
+    getProjectHealthSummary: vi.fn(async () => ok(null)),
   };
 });
 
@@ -193,7 +194,7 @@ afterEach(() => cleanup());
 
 describe("Project CAD page", () => {
   it("renders dashboard data, limitations note, and unpromoted promotion action", async () => {
-    render(await ProjectCadPage({ params: { projectId } }));
+    render(await ProjectCadPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("CAD intake and metadata")).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getByText("Uploaded CAD files")).toBeInTheDocument(),
@@ -210,7 +211,7 @@ describe("Project CAD page", () => {
   });
 
   it("introduces no banned wording", async () => {
-    const { container } = render(await ProjectCadPage({ params: { projectId } }));
+    const { container } = render(await ProjectCadPage({ params: Promise.resolve({ projectId }) }));
     await waitFor(() =>
       expect(screen.getByText("Uploaded CAD files")).toBeInTheDocument(),
     );
@@ -221,7 +222,7 @@ describe("Project CAD page", () => {
 
 describe("Project workflow board page", () => {
   it("renders the summary and grouped items", async () => {
-    render(await ProjectWorkflowBoardPage({ params: { projectId } }));
+    render(await ProjectWorkflowBoardPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Workflow board")).toBeInTheDocument();
     await waitFor(() =>
       expect(
@@ -233,7 +234,7 @@ describe("Project workflow board page", () => {
 
 describe("Project review packets page", () => {
   it("renders an honest empty state with a generate action", async () => {
-    render(await ProjectReviewPacketsPage({ params: { projectId } }));
+    render(await ProjectReviewPacketsPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Review packets")).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getByText("Generate review packet")).toBeInTheDocument(),
@@ -245,7 +246,7 @@ describe("Project plan sheet page", () => {
   it("renders real sheet metadata when available", async () => {
     render(
       await PlanSheetDetailPage({
-        params: { projectId, sheetId: "sheet_1" },
+        params: Promise.resolve({ projectId, sheetId: "sheet_1" }),
       }),
     );
     expect(screen.getByText("Sheet metadata")).toBeInTheDocument();
@@ -257,17 +258,19 @@ describe("Project plan sheet page", () => {
 
   it("shows an honest unavailable state when the sheet is not found", async () => {
     const api = await import("@/lib/api");
-    (api.getSheetViewerContext as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
-      null,
-    );
+    (api.getSheetViewerContext as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: false,
+      kind: "unavailable",
+      message: "Sheet metadata is unavailable.",
+      retryable: true,
+    });
     render(
       await PlanSheetDetailPage({
-        params: { projectId, sheetId: "missing" },
+        params: Promise.resolve({ projectId, sheetId: "missing" }),
       }),
     );
-    expect(
-      screen.getByText("Sheet metadata is unavailable"),
-    ).toBeInTheDocument();
+    const failureCard = screen.getByTestId("request-failure");
+    expect(failureCard).toHaveAttribute("data-failure-kind", "unavailable");
   });
 });
 

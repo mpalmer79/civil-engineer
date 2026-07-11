@@ -2,21 +2,29 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import SectionCard from "@/components/SectionCard";
 import StatusChip from "@/components/StatusChip";
 import { getRulePack } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-export default async function RulePackDetailPage({
-  params,
-}: {
-  params: { rulePackId: string };
-}) {
-  const pack = await getRulePack(params.rulePackId);
-  if (!pack) {
-    notFound();
+export default async function RulePackDetailPage(
+  props: {
+    params: Promise<{ rulePackId: string }>;
   }
+) {
+  const params = await props.params;
+  const packResult = await getRulePack(params.rulePackId);
+  if (!packResult.ok) {
+    if (packResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={packResult} />
+      </div>
+    );
+  }
+  const pack = packResult.data;
   const items = pack.items ?? [];
   const categories = Array.from(new Set(items.map((i) => i.category)));
 

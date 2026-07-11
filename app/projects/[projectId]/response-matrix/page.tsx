@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -13,18 +14,26 @@ export const dynamic = "force-dynamic";
 // each one. A response matrix organizes review-support items and tracks applicant
 // responses for reviewer review. It does not approve, certify, verify, resolve, or
 // close anything.
-export default async function ResponseMatrixLandingPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
-  const [project, matrices] = await Promise.all([
+export default async function ResponseMatrixLandingPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [projectResult, matricesResult] = await Promise.all([
     getProjectDetail(params.projectId),
     listResponseMatrices(params.projectId),
   ]);
-  if (!project) {
-    notFound();
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
+  const matrices = matricesResult.ok ? matricesResult.data : null;
   const base = `/projects/${params.projectId}`;
 
   return (

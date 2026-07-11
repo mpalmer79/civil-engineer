@@ -26,7 +26,8 @@ export default function PlanSheetViewer({ sheetId }: { sheetId: string }) {
 
   useEffect(() => {
     (async () => {
-      const ctx = await getSheetViewerContext(sheetId);
+      const ctxResult = await getSheetViewerContext(sheetId);
+      const ctx = ctxResult.ok ? ctxResult.data : null;
       setContext(ctx);
       setFindings(ctx ? ctx.planConsistencyFindings : []);
       if (ctx && ctx.hotspots.length > 0) {

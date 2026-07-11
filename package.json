@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "description": "Civil Engineer AI: Stormwater review-support platform with DXF intake, plan review workflow, response packages, resubmittal tracking, revision comparison, evidence traceability, and reviewer command center.",
   "scripts": {
@@ -15,29 +15,37 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "check:content": "node scripts/check-content-integrity.mjs",
+    "generate:api": "node scripts/generate-api-types.mjs",
+    "check:contracts": "node scripts/generate-api-types.mjs --check",
     "check": "npm run typecheck && npm run lint && npm run check:content && npm run test",
     "verify": "npm run check && npm run build",
     "verify:live": "node scripts/verify-live-site.mjs",
     "verify:pilot": "node scripts/verify-pilot-release.mjs"
   },
   "dependencies": {
-    "next": "^14.2.35",
-    "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "next": "15.5.20",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "overrides": {
+    "next": {
+      "postcss": "8.5.15"
+    }
   },
   "devDependencies": {
     "@testing-library/jest-dom": "6.4.6",
-    "@testing-library/react": "16.0.0",
+    "@testing-library/react": "16.3.2",
     "@types/node": "20.14.10",
-    "@types/react": "18.3.3",
-    "@types/react-dom": "18.3.0",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "4.3.1",
     "@vitest/coverage-v8": "2.0.5",
     "autoprefixer": "10.4.19",
     "eslint": "8.57.0",
-    "eslint-config-next": "14.2.5",
+    "eslint-config-next": "15.5.20",
     "jsdom": "24.1.0",
-    "postcss": "8.4.39",
+    "openapi-typescript": "7.10.1",
+    "postcss": "8.5.15",
     "tailwindcss": "3.4.6",
     "typescript": "5.5.3",
     "vitest": "2.0.5"

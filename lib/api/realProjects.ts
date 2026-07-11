@@ -1,9 +1,16 @@
-import { API_BASE_URL, authHeaders, safeFetch } from "./client";
+import {
+  API_BASE_URL,
+  apiGetMapped,
+  authHeaders,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Production Foundations Sprint 1: real project intake and persistent review
 // records. This data is backend-canonical. The frontend does not simulate real
-// project records. Read calls return null or empty arrays when the backend is
-// unavailable; mutating calls return a clear { ok, error } result.
+// project records. Read calls return a typed ApiResult that preserves the
+// failure status and category; mutating calls return a clear { ok, error }
+// result.
 //
 // NEXT_PUBLIC_API_BASE_URL is the backend origin only (for example
 // http://localhost:8000). It must not include the /api/v1 path; this client
@@ -76,11 +83,14 @@ export type ProjectDocument = {
   lastDownloadedAt: string | null;
 };
 
+// Documents are a high-risk reviewer surface, so the mapper asserts the
+// identifiers and required fields. A payload missing them surfaces as an
+// explicit invalid_response failure through apiGetMapped.
 function mapDocument(d: Record<string, unknown>): ProjectDocument {
   return {
-    documentId: d.document_id as string,
-    projectId: d.project_id as string,
-    fileName: d.file_name as string,
+    documentId: requireString(d.document_id, "document_id"),
+    projectId: requireString(d.project_id, "project_id"),
+    fileName: requireString(d.file_name, "file_name"),
     originalFileName: (d.original_file_name as string) ?? null,
     documentType: d.document_type as string,
     status: d.status as string,
@@ -176,10 +186,12 @@ type ApiProjectDetail = {
   audit_event_count: number;
 };
 
+// Projects are a high-risk reviewer surface, so the mapper asserts the
+// identifiers and required fields before mapping.
 function mapProject(d: ApiProjectDetail): ProjectDetail {
   return {
-    projectId: d.project_id,
-    projectName: d.project_name,
+    projectId: requireString(d.project_id, "project_id"),
+    projectName: requireString(d.project_name, "project_name"),
     projectType: d.project_type,
     locationContext: d.location_context,
     jurisdiction: d.jurisdiction,
@@ -214,23 +226,22 @@ function mapProject(d: ApiProjectDetail): ProjectDetail {
 
 export async function listProjects(
   sourceMode?: ProjectSourceMode | "all",
-): Promise<ProjectDetail[] | null> {
+): Promise<ApiResult<ProjectDetail[]>> {
   const query =
     sourceMode && sourceMode !== "all" ? `?source_mode=${sourceMode}` : "";
-  const data = await safeFetch<ApiProjectDetail[]>(
+  return apiGetMapped<ApiProjectDetail[], ProjectDetail[]>(
     `/api/v1/projects${query}`,
+    (data) => data.map(mapProject),
   );
-  if (!data) return null;
-  return data.map(mapProject);
 }
 
 export async function getProjectDetail(
   projectId: string,
-): Promise<ProjectDetail | null> {
-  const data = await safeFetch<ApiProjectDetail>(
+): Promise<ApiResult<ProjectDetail>> {
+  return apiGetMapped<ApiProjectDetail, ProjectDetail>(
     `/api/v1/projects/${projectId}`,
+    mapProject,
   );
-  return data ? mapProject(data) : null;
 }
 
 export type CreateProjectInput = {
@@ -319,21 +330,30 @@ export async function createProject(
 
 export async function listProjectDocuments(
   projectId: string,
-): Promise<ProjectDocument[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<ProjectDocument[]>> {
+  return apiGetMapped<Record<string, unknown>[], ProjectDocument[]>(
     `/api/v1/projects/${projectId}/documents`,
+    (data) => data.map(mapDocument),
   );
-  if (!data) return null;
-  return data.map(mapDocument);
 }
 
 export async function getProjectDocument(
   projectId: string,
   documentId: string,
-): Promise<ProjectDocument | null> {
+): Promise<ApiResult<ProjectDocument>> {
   const docs = await listProjectDocuments(projectId);
-  if (!docs) return null;
-  return docs.find((d) => d.documentId === documentId) ?? null;
+  if (!docs.ok) return docs;
+  const doc = docs.data.find((d) => d.documentId === documentId);
+  if (!doc) {
+    return {
+      ok: false,
+      kind: "not_found",
+      status: 404,
+      message: "This document does not exist on this project record.",
+      retryable: false,
+    };
+  }
+  return { ...docs, data: doc };
 }
 
 export type RegisterDocumentInput = {
@@ -405,17 +425,13 @@ export async function uploadProjectDocument(
   }
 }
 
-export async function listProjectFindings(
-  projectId: string,
-): Promise<ReviewerFinding[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
-    `/api/v1/projects/${projectId}/findings`,
-  );
-  if (!data) return null;
-  return data.map((f) => ({
-    findingId: f.finding_id as string,
-    projectId: f.project_id as string,
-    title: f.title as string,
+// Findings are a high-risk reviewer surface, so the mapper asserts the
+// identifiers and required fields before mapping.
+function mapFinding(f: Record<string, unknown>): ReviewerFinding {
+  return {
+    findingId: requireString(f.finding_id, "finding_id"),
+    projectId: requireString(f.project_id, "project_id"),
+    title: requireString(f.title, "title"),
     category: f.category as string,
     riskLevel: f.risk_level as string,
     evidenceStatus: (f.evidence_status as string) ?? null,
@@ -430,16 +446,35 @@ export async function listProjectFindings(
     reviewerNotes: (f.reviewer_notes as string) ?? null,
     createdByName: (f.created_by_name as string) ?? null,
     createdAt: (f.created_at as string) ?? null,
-  }));
+  };
+}
+
+export async function listProjectFindings(
+  projectId: string,
+): Promise<ApiResult<ReviewerFinding[]>> {
+  return apiGetMapped<Record<string, unknown>[], ReviewerFinding[]>(
+    `/api/v1/projects/${projectId}/findings`,
+    (data) => data.map(mapFinding),
+  );
 }
 
 export async function getProjectFinding(
   projectId: string,
   findingId: string,
-): Promise<ReviewerFinding | null> {
+): Promise<ApiResult<ReviewerFinding>> {
   const findings = await listProjectFindings(projectId);
-  if (!findings) return null;
-  return findings.find((f) => f.findingId === findingId) ?? null;
+  if (!findings.ok) return findings;
+  const finding = findings.data.find((f) => f.findingId === findingId);
+  if (!finding) {
+    return {
+      ok: false,
+      kind: "not_found",
+      status: 404,
+      message: "This finding does not exist on this project record.",
+      retryable: false,
+    };
+  }
+  return { ...findings, data: finding };
 }
 
 export type CreateFindingInput = {
@@ -479,23 +514,23 @@ export async function createProjectFinding(
 
 export async function listProjectAuditEvents(
   projectId: string,
-): Promise<ProjectAuditEvent[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<ProjectAuditEvent[]>> {
+  return apiGetMapped<Record<string, unknown>[], ProjectAuditEvent[]>(
     `/api/v1/projects/${projectId}/audit-events`,
+    (data) =>
+      data.map((e) => ({
+        auditEventId: e.audit_event_id as string,
+        projectId: e.project_id as string,
+        eventType: e.event_type as string,
+        actorType: e.actor_type as string,
+        actorDisplayName: (e.actor_display_name as string) ?? null,
+        relatedEntityType: e.related_entity_type as string,
+        relatedEntityId: e.related_entity_id as string,
+        description: e.description as string,
+        timestamp: e.timestamp as string,
+        eventMetadata: (e.event_metadata as Record<string, unknown>) ?? {},
+      })),
   );
-  if (!data) return null;
-  return data.map((e) => ({
-    auditEventId: e.audit_event_id as string,
-    projectId: e.project_id as string,
-    eventType: e.event_type as string,
-    actorType: e.actor_type as string,
-    actorDisplayName: (e.actor_display_name as string) ?? null,
-    relatedEntityType: e.related_entity_type as string,
-    relatedEntityId: e.related_entity_id as string,
-    description: e.description as string,
-    timestamp: e.timestamp as string,
-    eventMetadata: (e.event_metadata as Record<string, unknown>) ?? {},
-  }));
 }
 
 export type CreateEvidenceReferenceInput = {

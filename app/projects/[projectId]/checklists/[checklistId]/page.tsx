@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -20,18 +21,26 @@ const EVIDENCE_STATUS_LABELS: Record<string, string> = {
   needs_reviewer_confirmation: "Needs reviewer confirmation",
 };
 
-export default async function ChecklistDetailPage({
-  params,
-}: {
-  params: { projectId: string; checklistId: string };
-}) {
-  const [checklist, items] = await Promise.all([
+export default async function ChecklistDetailPage(
+  props: {
+    params: Promise<{ projectId: string; checklistId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [checklistResult, itemsResult] = await Promise.all([
     getProjectChecklist(params.projectId, params.checklistId),
     listProjectChecklistItems(params.projectId, params.checklistId),
   ]);
-  if (!checklist) {
-    notFound();
+  if (!checklistResult.ok) {
+    if (checklistResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={checklistResult} />
+      </div>
+    );
   }
+  const checklist = checklistResult.data;
+  const items = itemsResult.ok ? itemsResult.data : null;
   const base = `/projects/${params.projectId}`;
   const checklistBase = `${base}/checklists/${params.checklistId}`;
   const itemList = items ?? [];

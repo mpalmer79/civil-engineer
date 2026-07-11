@@ -1,3 +1,4 @@
+import { unwrap } from "@/lib/api/__tests__/testHelpers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -101,7 +102,7 @@ afterEach(() => {
 describe("response matrix client", () => {
   it("maps a list of matrices to camelCase", async () => {
     vi.stubGlobal("fetch", mockFetchOnce([rawMatrix]));
-    const result = await listResponseMatrices("proj_1");
+    const result = unwrap(await listResponseMatrices("proj_1"));
     expect(result).not.toBeNull();
     expect(result?.[0].responseMatrixId).toBe("rm_1");
     expect(result?.[0].applicantResponseSummary.awaiting_applicant_response).toBe(
@@ -109,7 +110,7 @@ describe("response matrix client", () => {
     );
   });
 
-  it("returns null when the backend is unavailable", async () => {
+  it("reports an explicit network failure when the backend is unavailable", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
@@ -117,12 +118,13 @@ describe("response matrix client", () => {
       }) as unknown as typeof fetch,
     );
     const result = await listResponseMatrices("proj_1");
-    expect(result).toBeNull();
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.kind).toBe("network");
   });
 
   it("maps a single matrix on get", async () => {
     vi.stubGlobal("fetch", mockFetchOnce(rawMatrix));
-    const result = await getResponseMatrix("proj_1", "rm_1");
+    const result = unwrap(await getResponseMatrix("proj_1", "rm_1"));
     expect(result?.name).toBe("Response matrix 1");
   });
 
@@ -188,7 +190,7 @@ describe("response matrix client", () => {
 describe("resubmittal client", () => {
   it("maps a list of rounds to camelCase", async () => {
     vi.stubGlobal("fetch", mockFetchOnce([rawRound]));
-    const result = await listResubmittalRounds("proj_1");
+    const result = unwrap(await listResubmittalRounds("proj_1"));
     expect(result?.[0].resubmittalRoundId).toBe("rr_1");
     expect(result?.[0].roundNumber).toBe(2);
     expect(result?.[0].documentCount).toBe(1);
@@ -237,7 +239,7 @@ describe("resubmittal client", () => {
         carry_forward_summary: { carried_forward_for_review: 1 },
       }),
     );
-    const result = await getResubmittalRoundSummary("proj_1", "rr_1");
+    const result = unwrap(await getResubmittalRoundSummary("proj_1", "rr_1"));
     expect(result?.matrixItemCount).toBe(1);
     expect(result?.applicantResponseSummary.applicant_response_received).toBe(1);
   });

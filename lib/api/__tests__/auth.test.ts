@@ -130,27 +130,37 @@ describe("getCurrentUser", () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it("reads the current user through the same-origin proxy when signed in", async () => {
+  it("reads validated session state from the session status endpoint", async () => {
     setIndicatorCookie();
     mockFetchOnce({
-      user_id: "u",
-      email: "e@example.com",
-      display_name: "Signed In",
-      is_active: true,
-      is_demo_user: false,
+      authenticated: true,
+      user: {
+        user_id: "u",
+        email: "e@example.com",
+        display_name: "Signed In",
+        is_active: true,
+        is_demo_user: false,
+      },
     });
     const user = await getCurrentUser();
     expect(user?.displayName).toBe("Signed In");
     const call = (globalThis.fetch as unknown as ReturnType<typeof vi.fn>).mock
       .calls[0];
-    // The browser path goes through the same-origin proxy, and no
+    // Session truth comes from the server-validated status endpoint; no
     // Authorization header is constructed in browser code.
-    expect(String(call[0])).toBe("/api/backend/api/v1/auth/me");
-    const headers = ((call[1] as RequestInit).headers ?? {}) as Record<
+    expect(String(call[0])).toBe("/api/session/status");
+    const headers = ((call[1] as RequestInit | undefined)?.headers ?? {}) as Record<
       string,
       string
     >;
     expect(headers.Authorization).toBeUndefined();
+  });
+
+  it("returns null when the validated session is unauthenticated", async () => {
+    setIndicatorCookie();
+    mockFetchOnce({ authenticated: false, user: null });
+    const user = await getCurrentUser();
+    expect(user).toBeNull();
   });
 });
 

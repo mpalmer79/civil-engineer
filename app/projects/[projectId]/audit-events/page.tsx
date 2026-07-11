@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -17,18 +18,26 @@ function metadataSummary(metadata: Record<string, unknown>): string {
   return entries.map(([k, v]) => `${k}: ${String(v)}`).join(", ");
 }
 
-export default async function ProjectAuditEventsPage({
-  params,
-}: {
-  params: { projectId: string };
-}) {
-  const [project, events] = await Promise.all([
+export default async function ProjectAuditEventsPage(
+  props: {
+    params: Promise<{ projectId: string }>;
+  }
+) {
+  const params = await props.params;
+  const [projectResult, eventsResult] = await Promise.all([
     getProjectDetail(params.projectId),
     listProjectAuditEvents(params.projectId),
   ]);
-  if (!project) {
-    notFound();
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
+  const events = eventsResult.ok ? eventsResult.data : null;
   const base = `/projects/${project.projectId}`;
 
   return (

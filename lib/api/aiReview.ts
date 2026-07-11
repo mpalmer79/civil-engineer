@@ -1,10 +1,18 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
+import {
+  API_BASE_URL,
+  PROJECT_ID,
+  apiGetMapped,
+  authHeaders,
+  requireArray,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Phase 4: AI Review Assistant.
 //
 // Draft findings are backend-canonical. The AI review page reads and triggers
-// runs against the backend. When the backend is unavailable these functions
-// return null or empty results and the UI shows a status note.
+// runs against the backend. Read functions return an explicit ApiResult so a
+// backend failure renders as a real failure state, never as an empty run list.
 
 export type ProviderModeInfo = {
   provider: string;
@@ -80,10 +88,13 @@ type ApiDraft = {
   validation_errors: string[];
 };
 
+// Draft findings feed the reviewer queue, so the required identifiers are
+// asserted at runtime; apiGetMapped turns a thrown assertion into an explicit
+// invalid_response failure.
 function mapRun(r: ApiRun): AiReviewRun {
   return {
-    reviewRunId: r.review_run_id,
-    projectId: r.project_id,
+    reviewRunId: requireString(r.review_run_id, "review_run_id"),
+    projectId: requireString(r.project_id, "project_id"),
     runType: r.run_type,
     provider: r.provider,
     modelName: r.model_name,
@@ -99,47 +110,53 @@ function mapRun(r: ApiRun): AiReviewRun {
 
 export function mapDraft(d: ApiDraft): AiDraftFinding {
   return {
-    draftFindingId: d.draft_finding_id,
-    reviewRunId: d.review_run_id,
-    projectId: d.project_id,
-    checklistItemId: d.checklist_item_id,
+    draftFindingId: requireString(d.draft_finding_id, "draft_finding_id"),
+    reviewRunId: requireString(d.review_run_id, "review_run_id"),
+    projectId: requireString(d.project_id, "project_id"),
+    checklistItemId: requireString(d.checklist_item_id, "checklist_item_id"),
     findingType: d.finding_type,
-    title: d.title,
+    title: requireString(d.title, "title"),
     summary: d.summary,
     riskLevel: d.risk_level,
     confidence: d.confidence,
-    status: d.status,
+    status: requireString(d.status, "status"),
     recommendedHumanAction: d.recommended_human_action,
-    sourceChunkIds: d.source_chunk_ids,
+    sourceChunkIds: requireArray(
+      d.source_chunk_ids,
+      "source_chunk_ids",
+    ) as string[],
     validationStatus: d.validation_status,
     safetyCheckStatus: d.safety_check_status,
     validationErrors: d.validation_errors,
   };
 }
 
-export async function getProviderMode(): Promise<ProviderModeInfo | null> {
-  const data = await safeFetch<{
-    provider: string;
-    mode: string;
-    model_name: string;
-    live_calls_enabled: boolean;
-    detail: string;
-  }>(`/api/v1/projects/${PROJECT_ID}/ai-provider-mode`);
-  if (!data) return null;
-  return {
-    provider: data.provider,
-    mode: data.mode,
-    modelName: data.model_name,
-    liveCallsEnabled: data.live_calls_enabled,
-    detail: data.detail,
-  };
+type ApiProviderMode = {
+  provider: string;
+  mode: string;
+  model_name: string;
+  live_calls_enabled: boolean;
+  detail: string;
+};
+
+export async function getProviderMode(): Promise<ApiResult<ProviderModeInfo>> {
+  return apiGetMapped<ApiProviderMode, ProviderModeInfo>(
+    `/api/v1/projects/${PROJECT_ID}/ai-provider-mode`,
+    (data) => ({
+      provider: data.provider,
+      mode: data.mode,
+      modelName: data.model_name,
+      liveCallsEnabled: data.live_calls_enabled,
+      detail: data.detail,
+    }),
+  );
 }
 
-export async function getAiReviewRuns(): Promise<AiReviewRun[]> {
-  const data = await safeFetch<ApiRun[]>(
+export async function getAiReviewRuns(): Promise<ApiResult<AiReviewRun[]>> {
+  return apiGetMapped<ApiRun[], AiReviewRun[]>(
     `/api/v1/projects/${PROJECT_ID}/ai-review-runs`,
+    (data) => data.map(mapRun),
   );
-  return data ? data.map(mapRun) : [];
 }
 
 export async function startAiReviewRun(): Promise<AiReviewRun | null> {
@@ -157,16 +174,18 @@ export async function startAiReviewRun(): Promise<AiReviewRun | null> {
 
 export async function getRunDraftFindings(
   reviewRunId: string,
-): Promise<AiDraftFinding[]> {
-  const data = await safeFetch<ApiDraft[]>(
+): Promise<ApiResult<AiDraftFinding[]>> {
+  return apiGetMapped<ApiDraft[], AiDraftFinding[]>(
     `/api/v1/ai-review-runs/${reviewRunId}/draft-findings`,
+    (data) => data.map(mapDraft),
   );
-  return data ? data.map(mapDraft) : [];
 }
 
-export async function getProjectDraftFindings(): Promise<AiDraftFinding[]> {
-  const data = await safeFetch<ApiDraft[]>(
+export async function getProjectDraftFindings(): Promise<
+  ApiResult<AiDraftFinding[]>
+> {
+  return apiGetMapped<ApiDraft[], AiDraftFinding[]>(
     `/api/v1/projects/${PROJECT_ID}/draft-findings`,
+    (data) => data.map(mapDraft),
   );
-  return data ? data.map(mapDraft) : [];
 }

@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import {
   cleanup,
   fireEvent,
@@ -129,18 +130,18 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDetail: vi.fn(async () => project),
-    getWorkflowItems: vi.fn(async () => [itemHigh, itemLow]),
-    getWorkflowBoardSummary: vi.fn(async () => workflowSummary),
-    getReadyForHandoffSummary: vi.fn(async () => handoffSummary),
-    getWorkflowItem: vi.fn(async () => ({
+    getProjectDetail: vi.fn(async () => ok(project)),
+    getWorkflowItems: vi.fn(async () => ok([itemHigh, itemLow])),
+    getWorkflowBoardSummary: vi.fn(async () => ok(workflowSummary)),
+    getReadyForHandoffSummary: vi.fn(async () => ok(handoffSummary)),
+    getWorkflowItem: vi.fn(async () => ok(({
       ...itemHigh,
       evidenceLinks: [],
       followUps: [],
       actions: [],
-    })),
-    getPlanSheets: vi.fn(async () => [planSheet]),
-    getPlanSheetSummary: vi.fn(async () => planSummary),
+    }))),
+    getPlanSheets: vi.fn(async () => ok([planSheet])),
+    getPlanSheetSummary: vi.fn(async () => ok(planSummary)),
   };
 });
 
@@ -212,7 +213,7 @@ describe("Workflow board filters", () => {
 
 describe("Plan sheet index page", () => {
   it("renders sheet metadata and links to detail", async () => {
-    render(await PlanSheetIndexPage({ params: { projectId } }));
+    render(await PlanSheetIndexPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("Plan sheets")).toBeInTheDocument();
     expect(screen.getByText("Grading and drainage plan")).toBeInTheDocument();
     const link = screen.getByText("C-3").closest("a");
@@ -224,11 +225,14 @@ describe("Plan sheet index page", () => {
 
   it("shows an honest empty state when no sheets exist", async () => {
     const api = await import("@/lib/api");
-    (api.getPlanSheets as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
-    (api.getPlanSheetSummary as ReturnType<typeof vi.fn>).mockResolvedValueOnce(
-      null,
-    );
-    render(await PlanSheetIndexPage({ params: { projectId } }));
+    (api.getPlanSheets as ReturnType<typeof vi.fn>).mockResolvedValueOnce(ok([]));
+    (api.getPlanSheetSummary as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: false,
+      kind: "not_found",
+      message: "No summary yet.",
+      retryable: false,
+    });
+    render(await PlanSheetIndexPage({ params: Promise.resolve({ projectId }) }));
     expect(screen.getByText("No plan sheets available")).toBeInTheDocument();
   });
 });

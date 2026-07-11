@@ -31,14 +31,16 @@ export default function EvaluationScoringClient() {
 
   useEffect(() => {
     (async () => {
-      const runs = await getAiReviewRuns();
-      if (runs.length === 0) {
+      const runsResult = await getAiReviewRuns();
+      if (!runsResult.ok || runsResult.data.length === 0) {
         setBackendUp(false);
         return;
       }
+      const runs = runsResult.data;
       setBackendUp(true);
       setRun(runs[0]);
-      setResult(await getRunEvaluation(runs[0].reviewRunId));
+      const evalResult = await getRunEvaluation(runs[0].reviewRunId);
+      setResult(evalResult.ok ? evalResult.data : null);
     })();
   }, []);
 
