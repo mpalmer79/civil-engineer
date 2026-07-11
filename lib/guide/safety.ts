@@ -21,7 +21,7 @@ export const SAFETY_RESPONSE =
 // decision. Matched against the lowercased question with word boundaries.
 const DECISION_PATTERNS: RegExp[] = [
   // Judgment about adequacy, sizing, safety, or compliance of a design.
-  /\bis (this|the|my|our) (basin|pond|design|plan|project|system|pipe|culvert|site)[a-z ]* (correct|right|adequate|sufficient|safe|compliant|acceptable|ok|okay|good enough|properly sized|sized correctly)\b/,
+  /\bis (this|the|my|our) ((detention|infiltration|wet|dry) )?(basin|pond|design|plan|project|system|pipe|culvert|site)[a-z ]*(correct|right|adequate|sufficient|safe|compliant|acceptable|ok|okay|good enough|properly sized|sized correctly)\b/,
   /\b(correctly|properly|adequately) (sized|designed|engineered)\b/,
   /\bdoes (this|the|my|our) (plan|design|project|basin|site)[a-z ]* (comply|meet|satisfy)\b/,
   /\b(comply|compliant) with (the )?(code|regulation|ordinance|standard)\b/,

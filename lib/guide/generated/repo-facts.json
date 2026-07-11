@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "commit": "defd323aad8b0ea2fc364257d1c2ce3600e253cd",
+  "commit": "51da5920b1566c485b67d14db185ed907585123e",
   "dependencies": {
     "next": "15.5.20",
     "react": "19.2.7",
@@ -21,6 +21,8 @@
     "check:content",
     "generate:api",
     "check:contracts",
+    "generate:guide",
+    "check:guide",
     "check",
     "verify",
     "verify:live",
@@ -137,6 +139,10 @@
     {
       "file": "docs/adr/0005-backend-domain-decomposition.md",
       "title": "ADR 0005: Backend domain decomposition"
+    },
+    {
+      "file": "docs/adr/0006-local-guide-knowledge-architecture.md",
+      "title": "ADR 0006: Local guide knowledge and retrieval architecture"
     }
   ],
   "keyDocuments": [

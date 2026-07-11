@@ -119,3 +119,86 @@ above; deductions reflect the deferred items.
 The remaining thirteen points are held by the deferred items above, each of
 which has a recorded decision and a staged plan. No P0 or P1 defect remains
 open.
+
+
+## Security, Contracts, Browser Quality, and Guide Intelligence
+
+Second transformation phase, after PR #68. Confirmed baseline before work:
+Next.js 14.2.35 with one high and one moderate production advisory
+(npm audit), a BFF that buffered whole request bodies through arrayBuffer with
+no size limit or timeout, a fixed 120-minute session constant, a client
+readable indicator cookie treated as session truth, 130 active safeFetch call
+sites across 27 modules (the review estimate of 133 was close), no OpenAPI
+generated contract, no Playwright or Axe suites, and a guide with seven static
+topics, substring matching, a noun-blocking safety filter, and a stale seeded
+fallback claim.
+
+### Completed
+
+| Item | Result |
+| --- | --- |
+| Dependency security | Next.js 15.5.20 (all advisories in the 14.x line are patched only in 15.5.16+), React 19.2.7, eslint-config-next 15.5.20, PostCSS 8.5.15 with an override for Next.js's pinned copy. npm audit --omit=dev: zero vulnerabilities. CI gates production audit at high severity. Node runtime aligned to 22 across .nvmrc, engines, and CI. |
+| BFF hardening | Threat model at docs/security/BFF_PROXY_THREAT_MODEL.md. Strict path validation (dot segments, encoded and double-encoded traversal, backslashes, absolute URLs), route-class body limits (auth 64 KB, JSON 2 MB, document uploads 25 MB, CAD uploads 5 MB, matching backend config) enforced on declared length and streamed count, streaming upload forwarding with no arrayBuffer, route-class timeouts (10 s auth, 30 s JSON, 120 s uploads) returning typed 504s distinct from 502s, client-abort propagation, allowlisted request and response headers, correlation IDs end to end, and session cookie clearing on backend 401. 24 proxy tests. |
+| Session lifetime | Cookie max age derived from the backend login and registration expires_in_minutes with strict validation (reject missing, nonnumeric, zero, negative, above 30 days). New /api/session/status endpoint provides validated non-sensitive session truth and clears stale cookies; the indicator cookie is documented as a rendering optimization only. TRUSTED_APP_ORIGIN enables exact scheme, host, and port Origin validation behind reverse proxies. 22 session tests. |
+| ApiResult migration | Zero safeFetch references; the wrapper is deleted. All 27 modules return typed results with unauthenticated, forbidden, not_found, validation, conflict, rate_limited, timeout, unavailable, server, network, and invalid_response categories plus correlation IDs and retryability. High-risk mappers validate required fields at mapping time. Roughly sixty consumer pages and components render explicit failure states through RequestFailureCard; public demo surfaces keep labeled fixture behavior; authenticated surfaces never substitute demo data. |
+| OpenAPI contracts | ADR 0004 implemented: openapi.json (252 routes, 286 schemas) exported from the FastAPI app, schema.d.ts generated with openapi-typescript, named high-risk aliases in lib/api/generated/wire.ts, reproducible via npm run generate:api, CI contracts job fails on stale artifacts. |
+| Guide intelligence | ADR 0006. Knowledge moved out of the component into lib/guide: 30-entry allowlisted catalog, generated repository facts (dependencies, 89 routes, ADRs, commit), token-aware BM25-style retrieval with synonyms, stemming, typo tolerance, phrase boosts, route-context and conversation boosts, intent-based safety classification, deterministic answer composition with commit-pinned source citations, page awareness, follow-up resolution, and confidence behavior. Stale seeded-fallback claim removed; LinkedIn link is HTTPS. Privacy: no network calls, no telemetry, lazy-loaded engine. Freshness gate in CI (paths, routes, facts, retired claims). Evaluation corpus: 118 questions; CI enforces at least 95 percent top-topic retrieval (measured passing), 100 percent on 16 critical safety cases (passing), zero unsupported citations. |
+
+### Validation (this phase)
+
+| Gate | Result |
+| --- | --- |
+| npm audit --omit=dev | 0 vulnerabilities |
+| Frontend typecheck, lint | Pass |
+| Frontend tests | 537 passing (523 pre-guide suites plus guide evaluation and component suites), 0 failing |
+| Production build (Next 15, React 19) | Pass |
+| Content integrity gate | Pass |
+| Contract freshness (npm run check:contracts) | Pass |
+| Guide freshness (npm run check:guide) | Pass |
+| Guide evaluation | 118 cases, retrieval at or above 95 percent, critical safety 100 percent |
+| Backend pytest and coverage | 787 passed, 1 skipped, 92.8 percent (unchanged; backend untouched this phase) |
+
+### Deferred with reasons
+
+1. Playwright and Axe release suites: not started; the browser gates that
+   Priority Seven depends on are the next milestone. Documented journeys
+   remain covered by unit and route-handler tests.
+2. Route-group shell separation (Priority 6B): navigation remains progressive
+   within a single root layout; moving seventy page directories was
+   deliberately not combined with the framework major upgrade in one phase.
+3. Backend domain extraction (Priority Seven): intentionally blocked by the
+   instruction not to begin before Playwright and Axe gates protect the
+   refactor; ADR 0005 remains the staged plan.
+4. Frontend coverage: measured at 56.6 percent statements and lines, 62.4
+   percent branches, 50.4 percent functions over app, components, and lib
+   (generated artifacts excluded). CI now enforces ratchet floors at the
+   measured baseline (55/60/48/55) so coverage can only rise; the documented
+   targets of 70 statements and lines, 65 branches, and 60 functions are not
+   yet met and remain tracked here. Security-critical modules exceed the
+   targets already: lib/server/session.ts at 100 percent, the BFF proxy and
+   session routes covered by their dedicated suites, and lib/guide modules at
+   96 to 100 percent.
+
+### Updated score
+
+Scored against the repository rubric. Security and tenancy rises on the
+hardened proxy, derived session lifetime, and validated session truth; data
+honesty holds at 10 with the completed migration; testing gains the contract,
+guide, and audit gates but still lacks browser and accessibility automation.
+
+| Category | Score / 10 |
+| --- | --- |
+| Product clarity | 9 |
+| Recruiter experience | 9 |
+| Frontend architecture | 9 |
+| Backend architecture | 7 |
+| Data honesty and integrity | 10 |
+| Security and tenancy | 10 |
+| Testing and release discipline | 9 |
+| Accessibility and performance | 7 |
+| Documentation and onboarding | 9 |
+| AI governance and professional safety | 10 |
+| **Total** | **89 / 100** |
+
+No P0 or P1 issue remains open; the eleven withheld points are held by the
+deferred items above, each with a recorded owner decision.

@@ -30,10 +30,12 @@ the current-state document wins.
   - [0003 Secure session architecture](adr/0003-secure-session-architecture.md)
   - [0004 OpenAPI type generation](adr/0004-openapi-type-generation.md)
   - [0005 Backend domain decomposition](adr/0005-backend-domain-decomposition.md)
+  - [0006 Local guide knowledge and retrieval architecture](adr/0006-local-guide-knowledge-architecture.md)
 
 ## Security and professional boundary
 
 - [SECURITY_AND_PROFESSIONAL_BOUNDARY.md](SECURITY_AND_PROFESSIONAL_BOUNDARY.md)
+- [security/BFF_PROXY_THREAT_MODEL.md](security/BFF_PROXY_THREAT_MODEL.md): the proxy threat model
 - [AUTHENTICATION_AND_ACCESS_CONTROL.md](AUTHENTICATION_AND_ACCESS_CONTROL.md), [AUTH_LIFECYCLE.md](AUTH_LIFECYCLE.md)
 - [TENANT_ISOLATION_AUDIT.md](TENANT_ISOLATION_AUDIT.md)
 - [COMMENT_LETTER_TEMPLATE_BOUNDARY.md](COMMENT_LETTER_TEMPLATE_BOUNDARY.md)
@@ -68,6 +70,7 @@ the current-state document wins.
 ## Testing
 
 - [test-summary.md](test-summary.md)
+- [civil-engineer-ai-guide.md](civil-engineer-ai-guide.md): guide architecture, evaluation targets, and freshness gate
 
 ## Historical phase and sprint records (archived)
 

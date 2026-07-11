@@ -1,282 +1,172 @@
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
-import { join } from "node:path";
 
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+let mockPathname = "/";
+vi.mock("next/navigation", () => ({
+  usePathname: () => mockPathname,
+}));
 
 import CivilEngineerAIGuide from "@/components/CivilEngineerAIGuide";
 
-afterEach(() => cleanup());
-
-const DEVELOPER_QUESTION =
-  "I would like to know more about the developer of this project.";
-
-function openGuide() {
+async function openGuide() {
   render(<CivilEngineerAIGuide />);
-  fireEvent.click(
-    screen.getByRole("button", { name: /civil engineer ai guide/i }),
+  fireEvent.click(screen.getByRole("button", { name: /civil engineer ai guide/i }));
+  // The engine lazy-loads; the Ask button enables once it is ready.
+  await waitFor(() =>
+    expect(screen.getByRole("button", { name: "Ask" })).toBeEnabled(),
   );
 }
 
-function ask(text: string) {
-  fireEvent.change(screen.getByLabelText(/ask me about this project/i), {
+async function ask(text: string) {
+  fireEvent.change(screen.getByLabelText(/ask about this project/i), {
     target: { value: text },
   });
-  fireEvent.click(screen.getByRole("button", { name: /^ask$/i }));
+  fireEvent.click(screen.getByRole("button", { name: "Ask" }));
 }
 
-describe("CivilEngineerAIGuide launcher and panel", () => {
-  it("renders a launcher labeled Civil Engineer AI Guide", () => {
-    render(<CivilEngineerAIGuide />);
-    const launcher = screen.getByRole("button", {
-      name: /civil engineer ai guide/i,
-    });
-    expect(launcher).toBeInTheDocument();
-    expect(launcher).toHaveAttribute("aria-expanded", "false");
-  });
+beforeEach(() => {
+  mockPathname = "/";
+});
 
-  it("opens an accessible dialog panel with a visible title and intro", () => {
-    openGuide();
-    const panel = screen.getByRole("dialog", {
-      name: /civil engineer ai guide/i,
-    });
-    expect(panel).toBeInTheDocument();
-    expect(
-      screen.getByText(/welcome\. i can help you explore this civil engineer ai project/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/ai provides review support\. you make the decisions\. every review is human\./i),
-    ).toBeInTheDocument();
-  });
+afterEach(() => cleanup());
 
-  it("closes from the close button and returns to a collapsed launcher", () => {
-    openGuide();
-    fireEvent.click(screen.getByRole("button", { name: /close guide/i }));
-    expect(screen.queryByRole("dialog")).toBeNull();
-    expect(
-      screen.getByRole("button", { name: /civil engineer ai guide/i }),
-    ).toHaveAttribute("aria-expanded", "false");
-  });
+describe("guide launcher and focus behavior", () => {
+  it("opens the panel, focuses it, and returns focus to the launcher on Escape", async () => {
+    await openGuide();
+    const panel = document.getElementById("ceai-guide-panel");
+    expect(panel).not.toBeNull();
+    expect(document.activeElement).toBe(panel);
 
-  it("closes on Escape", () => {
-    openGuide();
     fireEvent.keyDown(document, { key: "Escape" });
-    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(document.getElementById("ceai-guide-panel")).toBeNull();
+    expect(document.activeElement).toBe(
+      screen.getByRole("button", { name: /civil engineer ai guide/i }),
+    );
+  });
+
+  it("announces answers through a polite live region", async () => {
+    await openGuide();
+    const panel = document.getElementById("ceai-guide-panel");
+    expect(panel?.querySelector('[aria-live="polite"]')).not.toBeNull();
   });
 });
 
-describe("CivilEngineerAIGuide categories and suggested questions", () => {
-  it("renders the category chips", () => {
-    openGuide();
-    for (const chip of [
-      "Project Overview",
-      "For Civil Engineers",
-      "Brookside Meadows Demo",
-      "Review Workflow",
-      "Evidence & Documents",
-      "Technical Implementation",
-      "Developer & Source Code",
-    ]) {
-      expect(screen.getByRole("button", { name: chip })).toBeInTheDocument();
-    }
-  });
-
-  it("renders the three suggested questions, including the exact developer question", () => {
-    openGuide();
-    expect(
-      screen.getByRole("button", {
-        name: "What does Civil Engineer AI help reviewers do?",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", {
-        name: "How does the Brookside Meadows demo work?",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: DEVELOPER_QUESTION }),
-    ).toBeInTheDocument();
-  });
-
-  it("shows the developer answer with profile and repository links", () => {
-    openGuide();
-    fireEvent.click(screen.getByRole("button", { name: DEVELOPER_QUESTION }));
-    expect(
-      screen.getByText(/developed by michael palmer/i),
-    ).toBeInTheDocument();
-
-    const links = {
-      LinkedIn: "http://linkedin.com/in/mpalmer1234",
-      GitHub: "https://www.github.com/mpalmer79",
-      "Project Repository": "https://www.github.com/mpalmer79/civil-engineer",
-    };
-    for (const [label, href] of Object.entries(links)) {
-      expect(screen.getByRole("link", { name: label })).toHaveAttribute(
-        "href",
-        href,
-      );
-    }
-  });
-
-  it("links topic answers only to routes that exist", () => {
-    openGuide();
-    fireEvent.click(
-      screen.getByRole("button", {
-        name: "What does Civil Engineer AI help reviewers do?",
-      }),
+describe("grounded answering", () => {
+  it("answers a direct question with sources and related topics", async () => {
+    await openGuide();
+    await ask("How does authentication work?");
+    await waitFor(() =>
+      expect(screen.getByText(/browser never holds the token/i)).toBeInTheDocument(),
     );
-    for (const [label, route] of [
-      ["Start Guided Demo", "app/guided-demo"],
-      ["Open Review Queue", "app/dashboard/queue"],
-      ["View Projects", "app/projects"],
-    ] as const) {
-      expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
+    // Repository source references render as stable links.
+    const source = screen.getByRole("link", { name: /adr\/0003-secure-session-architecture/i });
+    expect(source.getAttribute("href")).toContain("github.com/mpalmer79/civil-engineer");
+  });
+
+  it("handles a typo-bearing question", async () => {
+    await openGuide();
+    await ask("whats is civl engineer ai");
+    await waitFor(() =>
+      expect(screen.getByText(/reviewer-controlled, evidence-first/i)).toBeInTheDocument(),
+    );
+  });
+
+  it("resolves a short follow-up against the previous answer", async () => {
+    await openGuide();
+    await ask("what is csrf protection here");
+    await waitFor(() =>
+      expect(screen.getByText(/two independent checks/i)).toBeInTheDocument(),
+    );
+    await ask("what tests cover it");
+    await waitFor(() =>
       expect(
-        readFileSync(join(process.cwd(), route, "page.tsx"), "utf8").length,
-      ).toBeGreaterThan(0);
-    }
-  });
-});
-
-describe("CivilEngineerAIGuide typed input", () => {
-  it("answers a known keyword question with the matching static answer", () => {
-    openGuide();
-    ask("Where can I find the GitHub repository?");
-    expect(screen.getByText(/developed by michael palmer/i)).toBeInTheDocument();
-  });
-
-  it("echoes the asked question in the conversation thread", () => {
-    openGuide();
-    ask("Where can I find the GitHub repository?");
-    expect(
-      screen.getByText("Where can I find the GitHub repository?"),
-    ).toBeInTheDocument();
-  });
-
-  it("accumulates multiple exchanges instead of replacing the answer", () => {
-    openGuide();
-    ask("How does the Brookside Meadows demo work?");
-    ask("What is the review workflow process?");
-    expect(
-      screen.getByText(/synthetic 47-lot residential subdivision/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/begins with project intake/i),
-    ).toBeInTheDocument();
-  });
-
-  it("clears the conversation with the clear button", () => {
-    openGuide();
-    ask("How does the Brookside Meadows demo work?");
-    fireEvent.click(screen.getByRole("button", { name: /clear conversation/i }));
-    expect(
-      screen.queryByText(/synthetic 47-lot residential subdivision/i),
-    ).toBeNull();
-    expect(
-      screen.queryByRole("button", { name: /clear conversation/i }),
-    ).toBeNull();
-  });
-
-  it("falls back for unrelated questions", () => {
-    openGuide();
-    ask("What is the best pizza in town?");
-    expect(
-      screen.getByText(/i do not have enough project-specific information/i),
-    ).toBeInTheDocument();
-  });
-
-  it("answers the real-world value question with the overview, not the fallback", () => {
-    openGuide();
-    ask("How does this help solve real world challenges?");
-    expect(
-      screen.getByText(/plan review is evidence work/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByText(/i do not have enough project-specific information/i),
-    ).toBeNull();
-  });
-
-  it("answers the civil engineer value question with the reviewer answer, not the fallback", () => {
-    openGuide();
-    ask("How can this help me as a civil engineer?");
-    expect(
-      screen.getByText(/the value is organization and traceability/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByText(/i do not have enough project-specific information/i),
-    ).toBeNull();
-  });
-
-  it("answers technical stack questions with the implementation answer", () => {
-    openGuide();
-    ask("What is the technical stack behind this?");
-    expect(
-      screen.getByText(/next\.js app router with typescript/i),
-    ).toBeInTheDocument();
-  });
-
-  it("keeps the user's question visible alongside the answer after sending", () => {
-    openGuide();
-    ask("How can this help me as a civil engineer?");
-    expect(
-      screen.getByText("How can this help me as a civil engineer?"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/the value is organization and traceability/i),
-    ).toBeInTheDocument();
-  });
-
-  it("keeps the scoped safety response for real-use questions despite value keywords", () => {
-    openGuide();
-    ask("Can I use this for my real world project?");
-    expect(
-      screen.getByText(/cannot provide engineering, permitting, legal, or code-compliance advice/i),
-    ).toBeInTheDocument();
-  });
-
-  it("uses the scoped safety response for engineering decision questions", () => {
-    openGuide();
-    ask("Can the AI approve this plan?");
-    expect(
-      screen.getByText(/cannot provide engineering, permitting, legal, or code-compliance advice/i),
-    ).toBeInTheDocument();
-  });
-
-  it("uses the scoped safety response for sizing and code questions", () => {
-    openGuide();
-    ask("What is the correct detention basin size?");
-    expect(
-      screen.getByText(/final engineering decisions remain under qualified human review/i),
-    ).toBeInTheDocument();
-  });
-});
-
-describe("CivilEngineerAIGuide scope and language hygiene", () => {
-  const source = () =>
-    readFileSync(
-      join(process.cwd(), "components/CivilEngineerAIGuide.tsx"),
-      "utf8",
+        screen.getAllByRole("link", { name: /session\.test\.ts/i }).length,
+      ).toBeGreaterThanOrEqual(1),
     );
-
-  it("makes no external API calls and references no LLM providers", () => {
-    const text = source().toLowerCase();
-    expect(text).not.toContain("fetch(");
-    expect(text).not.toContain("axios");
-    expect(text).not.toContain("openai");
-    expect(text).not.toContain("anthropic");
-    expect(text).not.toContain("api key");
   });
 
-  it("never says ask me anything or unsafe capability claims", () => {
-    const text = source().toLowerCase();
-    expect(text).not.toContain("ask me anything");
-    expect(text).not.toContain("i can answer any question");
-    expect(text).not.toContain("autonomous review");
-    expect(text).not.toContain("automated approval");
-    expect(text).not.toContain("replaces civil engineers");
+  it("answers page-context questions from the current route", async () => {
+    mockPathname = "/documents";
+    await openGuide();
+    await ask("what am I looking at?");
+    await waitFor(() =>
+      expect(screen.getByText(/seeded brookside meadows submission package/i)).toBeInTheDocument(),
+    );
+  });
+});
+
+describe("safety classification", () => {
+  it("refuses an engineering-decision question", async () => {
+    await openGuide();
+    await ask("Is this basin correctly sized?");
+    await waitFor(() =>
+      expect(
+        screen.getByText(/cannot provide engineering, permitting, legal/i),
+      ).toBeInTheDocument(),
+    );
   });
 
-  it("contains no em dashes in guide copy", () => {
-    expect(source()).not.toContain("\u2014");
+  it("answers a repository question that merely names a basin", async () => {
+    await openGuide();
+    await ask("Where is detention basin information represented?");
+    await waitFor(() =>
+      expect(screen.getByText(/pond a on the grading plan/i)).toBeInTheDocument(),
+    );
+  });
+});
+
+describe("low-confidence behavior", () => {
+  it("declines to guess on unknown questions and offers likely topics", async () => {
+    await openGuide();
+    await ask("what is the weather in boston");
+    await waitFor(() =>
+      expect(
+        screen.getByText(/could not locate enough public project information/i),
+      ).toBeInTheDocument(),
+    );
+  });
+});
+
+describe("privacy and honesty guarantees", () => {
+  it("makes no network requests when answering", async () => {
+    const fetchSpy = vi.fn();
+    vi.stubGlobal("fetch", fetchSpy);
+    await openGuide();
+    await ask("How does authentication work?");
+    await waitFor(() =>
+      expect(screen.getByText(/browser never holds the token/i)).toBeInTheDocument(),
+    );
+    expect(fetchSpy).not.toHaveBeenCalled();
+    vi.unstubAllGlobals();
+  });
+
+  it("states its local, private nature in the intro", async () => {
+    await openGuide();
+    expect(screen.getByText(/your questions stay in this browser/i)).toBeInTheDocument();
+  });
+
+  it("no longer claims a seeded fallback for backend failures", () => {
+    const knowledge = readFileSync("lib/guide/knowledge.ts", "utf8");
+    expect(knowledge).not.toContain("falls back to seeded");
+    const component = readFileSync("components/CivilEngineerAIGuide.tsx", "utf8");
+    expect(component).not.toContain("falls back to seeded");
+  });
+
+  it("uses HTTPS for the LinkedIn link", () => {
+    const knowledge = readFileSync("lib/guide/knowledge.ts", "utf8");
+    expect(knowledge).not.toContain("http://linkedin");
+    expect(knowledge).toContain("https://linkedin.com/in/mpalmer1234");
+  });
+
+  it("does not use em dashes in guide source or knowledge", () => {
+    for (const path of [
+      "components/CivilEngineerAIGuide.tsx",
+      "lib/guide/knowledge.ts",
+      "lib/guide/safety.ts",
+      "lib/guide/answerComposer.ts",
+    ]) {
+      expect(readFileSync(path, "utf8")).not.toContain("\u2014");
+    }
   });
 });

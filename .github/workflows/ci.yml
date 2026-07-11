@@ -62,8 +62,10 @@ jobs:
         run: npm run lint
       - name: Content integrity (attribution and em dash gate)
         run: npm run check:content
-      - name: Test
-        run: npm test
+      - name: Guide knowledge freshness (sources, routes, generated facts)
+        run: npm run check:guide
+      - name: Test with coverage floors
+        run: npm run test:coverage
       - name: Production build
         # The build has no network dependency (the app uses a system font
         # stack, not next/font/google), so it runs in a sandboxed CI runner.
