@@ -1,8 +1,13 @@
 import {
   API_BASE_URL,
+  apiGetMapped,
   authHeaders,
   hasSessionIndicator,
-  safeFetch,
+  requireArray,
+  requireRecord,
+  requireString,
+  type ApiFailure,
+  type ApiResult,
 } from "./client";
 
 // Authentication and access control client. The session lives in an HttpOnly
@@ -80,12 +85,15 @@ function mapUser(u: Record<string, unknown>): CurrentUser {
   };
 }
 
+// Access control shapes are high risk, so the required identifiers are
+// asserted at runtime. A structurally invalid payload becomes an explicit
+// invalid_response failure through apiGetMapped instead of undefined fields.
 function mapOrganization(o: Record<string, unknown>): Organization {
   return {
-    organizationId: o.organization_id as string,
-    organizationName: o.organization_name as string,
-    organizationType: o.organization_type as string,
-    sourceMode: o.source_mode as string,
+    organizationId: requireString(o.organization_id, "organization_id"),
+    organizationName: requireString(o.organization_name, "organization_name"),
+    organizationType: requireString(o.organization_type, "organization_type"),
+    sourceMode: requireString(o.source_mode, "source_mode"),
     role: (o.role as string) ?? null,
     membershipId: (o.membership_id as string) ?? null,
   };
@@ -93,22 +101,22 @@ function mapOrganization(o: Record<string, unknown>): Organization {
 
 function mapMembership(m: Record<string, unknown>): Membership {
   return {
-    membershipId: m.membership_id as string,
-    organizationId: m.organization_id as string,
-    userId: m.user_id as string,
+    membershipId: requireString(m.membership_id, "membership_id"),
+    organizationId: requireString(m.organization_id, "organization_id"),
+    userId: requireString(m.user_id, "user_id"),
     userEmail: (m.user_email as string) ?? null,
     displayName: (m.display_name as string) ?? null,
-    role: m.role as string,
+    role: requireString(m.role, "role"),
     isActive: (m.is_active as boolean) ?? true,
   };
 }
 
 function mapUserProject(p: Record<string, unknown>): UserProject {
   return {
-    projectId: p.project_id as string,
-    projectName: p.project_name as string,
-    sourceMode: p.source_mode as string,
-    visibilityMode: p.visibility_mode as string,
+    projectId: requireString(p.project_id, "project_id"),
+    projectName: requireString(p.project_name, "project_name"),
+    sourceMode: requireString(p.source_mode, "source_mode"),
+    visibilityMode: requireString(p.visibility_mode, "visibility_mode"),
     demoPublic: (p.demo_public as boolean) ?? false,
     organizationId: (p.organization_id as string) ?? null,
     accessLevel: (p.access_level as string) ?? null,
@@ -117,11 +125,11 @@ function mapUserProject(p: Record<string, unknown>): UserProject {
 
 function mapAccess(a: Record<string, unknown>): ProjectAccessEntry {
   return {
-    projectAccessId: a.project_access_id as string,
-    projectId: a.project_id as string,
+    projectAccessId: requireString(a.project_access_id, "project_access_id"),
+    projectId: requireString(a.project_id, "project_id"),
     organizationId: (a.organization_id as string) ?? null,
     userId: (a.user_id as string) ?? null,
-    accessLevel: a.access_level as string,
+    accessLevel: requireString(a.access_level, "access_level"),
     grantedByUserId: (a.granted_by_user_id as string) ?? null,
     isActive: (a.is_active as boolean) ?? true,
     createdAt: (a.created_at as string) ?? null,
@@ -282,49 +290,72 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   }
 }
 
-export async function listMyProjects(): Promise<UserProject[] | null> {
-  if (!hasSessionIndicator()) return null;
-  const data = await safeFetch<Record<string, unknown>[]>("/api/v1/me/projects");
-  if (!data) return null;
-  return data.map(mapUserProject);
+// Explicit local failure used when no session indicator cookie exists. The
+// request is skipped because it would certainly return 401, and the caller
+// still receives a real unauthenticated failure instead of null.
+function localUnauthenticatedFailure(): ApiFailure {
+  return {
+    ok: false,
+    kind: "unauthenticated",
+    status: 401,
+    message: "Sign in to view this content.",
+    retryable: false,
+  };
 }
 
-export async function listMyOrganizations(): Promise<Organization[] | null> {
-  if (!hasSessionIndicator()) return null;
-  const data = await safeFetch<Record<string, unknown>[]>(
-    "/api/v1/me/organizations",
+export async function listMyProjects(): Promise<ApiResult<UserProject[]>> {
+  if (!hasSessionIndicator()) return localUnauthenticatedFailure();
+  return apiGetMapped<unknown, UserProject[]>("/api/v1/me/projects", (wire) =>
+    requireArray(wire, "projects").map((p) =>
+      mapUserProject(requireRecord(p, "project")),
+    ),
   );
-  if (!data) return null;
-  return data.map(mapOrganization);
+}
+
+export async function listMyOrganizations(): Promise<
+  ApiResult<Organization[]>
+> {
+  if (!hasSessionIndicator()) return localUnauthenticatedFailure();
+  return apiGetMapped<unknown, Organization[]>(
+    "/api/v1/me/organizations",
+    (wire) =>
+      requireArray(wire, "organizations").map((o) =>
+        mapOrganization(requireRecord(o, "organization")),
+      ),
+  );
 }
 
 export async function getOrganization(
   organizationId: string,
-): Promise<Organization | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<Organization>> {
+  return apiGetMapped<unknown, Organization>(
     `/api/v1/organizations/${organizationId}`,
+    (wire) => mapOrganization(requireRecord(wire, "organization")),
   );
-  return data ? mapOrganization(data) : null;
 }
 
 export async function listOrganizationMembers(
   organizationId: string,
-): Promise<Membership[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<Membership[]>> {
+  return apiGetMapped<unknown, Membership[]>(
     `/api/v1/organizations/${organizationId}/members`,
+    (wire) =>
+      requireArray(wire, "members").map((m) =>
+        mapMembership(requireRecord(m, "membership")),
+      ),
   );
-  if (!data) return null;
-  return data.map(mapMembership);
 }
 
 export async function listProjectAccess(
   projectId: string,
-): Promise<ProjectAccessEntry[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<ProjectAccessEntry[]>> {
+  return apiGetMapped<unknown, ProjectAccessEntry[]>(
     `/api/v1/projects/${projectId}/access`,
+    (wire) =>
+      requireArray(wire, "access_entries").map((a) =>
+        mapAccess(requireRecord(a, "project_access")),
+      ),
   );
-  if (!data) return null;
-  return data.map(mapAccess);
 }
 
 export async function grantProjectAccess(

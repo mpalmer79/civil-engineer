@@ -5,7 +5,12 @@
 // Stripe key is ever read on the client. A plan or subscription status is an
 // account-posture label, not a review outcome.
 
-import { API_BASE_URL, authHeaders, safeFetch } from "./client";
+import {
+  API_BASE_URL,
+  apiGetMapped,
+  authHeaders,
+  type ApiResult,
+} from "./client";
 
 export type Plan = {
   planCode: string;
@@ -106,53 +111,51 @@ function mapUsageLimit(raw: Record<string, unknown>): UsageLimit {
   };
 }
 
-export async function listPlans(): Promise<Plan[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+export async function listPlans(): Promise<ApiResult<Plan[]>> {
+  return apiGetMapped<Record<string, unknown>[], Plan[]>(
     "/api/v1/billing/plans",
+    (data) => data.map(mapPlan),
   );
-  return data ? data.map(mapPlan) : null;
 }
 
-export async function getBillingStatus(): Promise<BillingStatus | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+export async function getBillingStatus(): Promise<ApiResult<BillingStatus>> {
+  return apiGetMapped<Record<string, unknown>, BillingStatus>(
     "/api/v1/billing/status",
+    mapStatus,
   );
-  return data ? mapStatus(data) : null;
 }
 
 export async function getOrganizationBilling(
   organizationId: string,
-): Promise<OrganizationBilling | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<OrganizationBilling>> {
+  return apiGetMapped<Record<string, unknown>, OrganizationBilling>(
     `/api/v1/organizations/${organizationId}/billing`,
+    (data) => ({
+      subscription: mapSubscription(
+        data.subscription as Record<string, unknown>,
+      ),
+      billing: mapStatus(data.billing as Record<string, unknown>),
+      plans: (data.plans as Record<string, unknown>[]).map(mapPlan),
+      checkoutAvailable: (data.checkout_available as boolean) ?? false,
+    }),
   );
-  if (!data) return null;
-  return {
-    subscription: mapSubscription(
-      data.subscription as Record<string, unknown>,
-    ),
-    billing: mapStatus(data.billing as Record<string, unknown>),
-    plans: (data.plans as Record<string, unknown>[]).map(mapPlan),
-    checkoutAvailable: (data.checkout_available as boolean) ?? false,
-  };
 }
 
 export async function getOrganizationUsage(
   organizationId: string,
-): Promise<UsageSummary | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<UsageSummary>> {
+  return apiGetMapped<Record<string, unknown>, UsageSummary>(
     `/api/v1/organizations/${organizationId}/usage`,
+    (data) => ({
+      organizationId: data.organization_id as string,
+      planCode: data.plan_code as string,
+      planName: data.plan_name as string,
+      subscriptionStatus: data.subscription_status as string,
+      enforcement: data.enforcement as string,
+      limits: (data.limits as Record<string, unknown>[]).map(mapUsageLimit),
+      totals: (data.totals as Record<string, number>) ?? {},
+    }),
   );
-  if (!data) return null;
-  return {
-    organizationId: data.organization_id as string,
-    planCode: data.plan_code as string,
-    planName: data.plan_name as string,
-    subscriptionStatus: data.subscription_status as string,
-    enforcement: data.enforcement as string,
-    limits: (data.limits as Record<string, unknown>[]).map(mapUsageLimit),
-    totals: (data.totals as Record<string, number>) ?? {},
-  };
 }
 
 export async function startCheckout(

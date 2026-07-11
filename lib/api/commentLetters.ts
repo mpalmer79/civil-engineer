@@ -1,12 +1,18 @@
-import { API_BASE_URL, authHeaders, safeFetch } from "./client";
+import {
+  API_BASE_URL,
+  apiGetMapped,
+  authHeaders,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Production Foundations Sprint 8: comment letter drafts. A comment letter draft
 // is generated deterministically from a response package using fixed templates
 // only. There are no live AI calls. The draft is reviewer-editable and carries a
 // fixed review-support boundary statement. It does not approve plans, certify
 // compliance, validate design, resolve an issue, or close an issue. Read calls
-// return null when the backend is unavailable; mutating calls return a clear
-// { ok, error } result.
+// return a typed ApiResult that preserves the failure category; mutating calls
+// return a clear { ok, error } result.
 //
 // NEXT_PUBLIC_API_BASE_URL is the backend origin only (no /api/v1 path); this
 // client appends the /api/v1 paths itself.
@@ -80,6 +86,16 @@ function mapDraft(d: Record<string, unknown>): CommentLetterDraft {
     createdAt: (d.created_at as string) ?? null,
     updatedAt: (d.updated_at as string) ?? null,
   };
+}
+
+// Strict read-path mapper. The requireString assertions make a structurally
+// invalid backend payload surface as an explicit invalid_response failure
+// through apiGetMapped instead of propagating undefined fields into the UI.
+function mapDraftRead(d: Record<string, unknown>): CommentLetterDraft {
+  requireString(d.comment_letter_draft_id, "comment_letter_draft_id");
+  requireString(d.response_package_id, "response_package_id");
+  requireString(d.title, "title");
+  return mapDraft(d);
 }
 
 function mapPreview(p: Record<string, unknown>): CommentLetterPreview {
@@ -157,11 +173,11 @@ export async function generateCommentLetterDraft(
 export async function getCommentLetterDraft(
   projectId: string,
   draftId: string,
-): Promise<CommentLetterDraft | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<CommentLetterDraft>> {
+  return apiGetMapped<Record<string, unknown>, CommentLetterDraft>(
     `/api/v1/projects/${projectId}/comment-letter-drafts/${draftId}`,
+    mapDraftRead,
   );
-  return data ? mapDraft(data) : null;
 }
 
 export async function updateCommentLetterDraft(
@@ -204,9 +220,12 @@ export async function updateCommentLetterDraft(
 export async function previewCommentLetter(
   projectId: string,
   draftId: string,
-): Promise<CommentLetterPreview | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<CommentLetterPreview>> {
+  return apiGetMapped<Record<string, unknown>, CommentLetterPreview>(
     `/api/v1/projects/${projectId}/comment-letter-drafts/${draftId}/preview`,
+    (data) => {
+      requireString(data.comment_letter_draft_id, "comment_letter_draft_id");
+      return mapPreview(data);
+    },
   );
-  return data ? mapPreview(data) : null;
 }

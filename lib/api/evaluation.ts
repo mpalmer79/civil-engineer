@@ -2,8 +2,12 @@ import {
   API_BASE_URL,
   PROJECT_ID,
   apiFetch,
-  safeFetch,
-  type DemoDataSource, authHeaders} from "./client";
+  apiGetMapped,
+  authHeaders,
+  requireString,
+  type ApiResult,
+  type DemoDataSource,
+} from "./client";
 import {
   evaluationCases as staticEvaluationCases,
   evaluationSummary as staticEvaluationSummary,
@@ -176,9 +180,12 @@ function mapEvaluationMatch(m: ApiEvaluationMatch): EvaluationMatch {
 
 function mapEvaluationResult(r: ApiEvaluationResult): AiEvaluationResult {
   return {
-    evaluationResultId: r.evaluation_result_id,
-    projectId: r.project_id,
-    reviewRunId: r.review_run_id,
+    evaluationResultId: requireString(
+      r.evaluation_result_id,
+      "evaluation_result_id",
+    ),
+    projectId: requireString(r.project_id, "project_id"),
+    reviewRunId: requireString(r.review_run_id, "review_run_id"),
     expectedFindingsCount: r.expected_findings_count,
     draftFindingsCount: r.draft_findings_count,
     matchedFindingsCount: r.matched_findings_count,
@@ -234,27 +241,27 @@ export async function runEvaluation(
 
 export async function getRunEvaluation(
   reviewRunId: string,
-): Promise<AiEvaluationResult | null> {
-  const data = await safeFetch<ApiEvaluationResult>(
+): Promise<ApiResult<AiEvaluationResult>> {
+  return apiGetMapped<ApiEvaluationResult, AiEvaluationResult>(
     `/api/v1/ai-review-runs/${reviewRunId}/evaluation`,
+    mapEvaluationResult,
   );
-  return data ? mapEvaluationResult(data) : null;
 }
 
 export async function getProjectEvaluationResults(): Promise<
-  AiEvaluationResult[]
+  ApiResult<AiEvaluationResult[]>
 > {
-  const data = await safeFetch<ApiEvaluationResult[]>(
+  return apiGetMapped<ApiEvaluationResult[], AiEvaluationResult[]>(
     `/api/v1/projects/${PROJECT_ID}/ai-evaluation-results`,
+    (data) => data.map(mapEvaluationResult),
   );
-  return data ? data.map(mapEvaluationResult) : [];
 }
 
 export async function getEvaluationResult(
   evaluationResultId: string,
-): Promise<AiEvaluationResult | null> {
-  const data = await safeFetch<ApiEvaluationResult>(
+): Promise<ApiResult<AiEvaluationResult>> {
+  return apiGetMapped<ApiEvaluationResult, AiEvaluationResult>(
     `/api/v1/ai-evaluation-results/${evaluationResultId}`,
+    mapEvaluationResult,
   );
-  return data ? mapEvaluationResult(data) : null;
 }

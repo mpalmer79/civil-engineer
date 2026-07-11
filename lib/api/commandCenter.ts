@@ -1,9 +1,18 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
+import {
+  API_BASE_URL,
+  PROJECT_ID,
+  apiGetMapped,
+  authHeaders,
+  requireArray,
+  requireRecord,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Phase 14: reviewer command center and project health dashboard. Data is
 // backend-canonical. The frontend does not simulate command center data. Read
-// calls return null or empty results when the backend is unavailable, and
-// mutating calls return a clear backend-required result.
+// calls return a typed ApiResult that preserves the failure status and
+// category, and mutating calls return a clear backend-required result.
 
 export type ProjectCommandCenterSnapshot = {
   snapshotId: string;
@@ -168,24 +177,69 @@ function camel<T>(obj: Json | null | undefined): T {
   return out as T;
 }
 
+// Command center is a high-risk reviewer surface, so the read mappers assert
+// the identifiers each record needs before camel-casing. A payload missing a
+// required field surfaces as an explicit invalid_response failure through
+// apiGetMapped instead of propagating undefined fields into the UI.
 function mapSnapshot(d: Json): ProjectCommandCenterSnapshot {
+  requireString(d.snapshot_id, "snapshot_id");
+  requireString(d.project_id, "project_id");
   return camel<ProjectCommandCenterSnapshot>(d);
 }
 
-function mapNextSteps(d: Json | null | undefined): ReviewerNextSteps {
+function mapHealthMetric(d: Json): ProjectHealthMetric {
+  requireString(d.metric_id, "metric_id");
+  requireString(d.label, "label");
+  return camel<ProjectHealthMetric>(d);
+}
+
+function mapAttentionItem(d: Json): ReviewerAttentionItem {
+  requireString(d.attention_item_id, "attention_item_id");
+  requireString(d.title, "title");
+  requireString(d.status, "status");
+  return camel<ReviewerAttentionItem>(d);
+}
+
+function mapTimelineEvent(d: Json): ProjectTimelineEvent {
+  requireString(d.timeline_event_id, "timeline_event_id");
+  requireString(d.event_title, "event_title");
+  return camel<ProjectTimelineEvent>(d);
+}
+
+function mapReadinessCheck(d: Json): ReviewReadinessCheck {
+  requireString(d.readiness_check_id, "readiness_check_id");
+  requireString(d.label, "label");
+  return camel<ReviewReadinessCheck>(d);
+}
+
+function mapReviewerNote(d: Json): DashboardReviewerNote {
+  requireString(d.note_id, "note_id");
+  requireString(d.note_text, "note_text");
+  return camel<DashboardReviewerNote>(d);
+}
+
+function mapNextSteps(d: Json): ReviewerNextSteps {
+  requireString(d.project_id, "project_id");
   const base = camel<ReviewerNextSteps>(d);
-  base.steps = (((d?.steps as Json[]) ?? []).map((s) =>
-    camel<ReviewerNextStep>(s),
-  ));
+  base.steps = requireArray(d.steps ?? [], "steps").map((s) =>
+    camel<ReviewerNextStep>(s as Json),
+  );
   return base;
 }
 
-function mapModuleLinks(d: Json | null | undefined): ProjectModuleLinks {
+function mapModuleLinks(d: Json): ProjectModuleLinks {
+  requireString(d.project_id, "project_id");
   const base = camel<ProjectModuleLinks>(d);
-  base.links = (((d?.links as Json[]) ?? []).map((l) =>
-    camel<ProjectModuleLink>(l),
-  ));
+  base.links = requireArray(d.links ?? [], "links").map((l) =>
+    camel<ProjectModuleLink>(l as Json),
+  );
   return base;
+}
+
+function mapHealthSummary(d: Json): ProjectHealthSummary {
+  requireString(d.project_id, "project_id");
+  requireString(d.overall_status, "overall_status");
+  return camel<ProjectHealthSummary>(d);
 }
 
 async function postJson<T>(
@@ -234,51 +288,65 @@ export async function generateCommandCenterSnapshot(
     `/api/v1/projects/${projectId}/command-center/snapshot`,
     undefined,
   );
-  return { ...result, data: result.data ? mapSnapshot(result.data) : undefined };
+  return {
+    ...result,
+    data: result.data
+      ? camel<ProjectCommandCenterSnapshot>(result.data)
+      : undefined,
+  };
 }
 
 export async function getProjectCommandCenter(
   projectId: string = PROJECT_ID,
-): Promise<ProjectCommandCenterPayload | null> {
-  const data = await safeFetch<Json>(
+): Promise<ApiResult<ProjectCommandCenterPayload>> {
+  return apiGetMapped<Json, ProjectCommandCenterPayload>(
     `/api/v1/projects/${projectId}/command-center`,
+    (data) => ({
+      snapshot: mapSnapshot(requireRecord(data.snapshot, "snapshot")),
+      healthMetrics: requireArray(data.health_metrics, "health_metrics").map(
+        (m) => mapHealthMetric(m as Json),
+      ),
+      attentionItems: requireArray(data.attention_items, "attention_items").map(
+        (a) => mapAttentionItem(a as Json),
+      ),
+      timeline: requireArray(data.timeline, "timeline").map((e) =>
+        mapTimelineEvent(e as Json),
+      ),
+      readinessChecks: requireArray(
+        data.readiness_checks,
+        "readiness_checks",
+      ).map((c) => mapReadinessCheck(c as Json)),
+      nextSteps: mapNextSteps(requireRecord(data.next_steps, "next_steps")),
+      moduleLinks: mapModuleLinks(
+        requireRecord(data.module_links, "module_links"),
+      ),
+      reviewerNotes: requireArray(data.reviewer_notes, "reviewer_notes").map(
+        (n) => mapReviewerNote(n as Json),
+      ),
+      limitationsNote: (data.limitations_note as string) ?? "",
+    }),
   );
-  if (!data) return null;
-  return {
-    snapshot: mapSnapshot(data.snapshot as Json),
-    healthMetrics: ((data.health_metrics as Json[]) ?? []).map((m) =>
-      camel<ProjectHealthMetric>(m),
-    ),
-    attentionItems: ((data.attention_items as Json[]) ?? []).map((a) =>
-      camel<ReviewerAttentionItem>(a),
-    ),
-    timeline: ((data.timeline as Json[]) ?? []).map((e) =>
-      camel<ProjectTimelineEvent>(e),
-    ),
-    readinessChecks: ((data.readiness_checks as Json[]) ?? []).map((c) =>
-      camel<ReviewReadinessCheck>(c),
-    ),
-    nextSteps: mapNextSteps(data.next_steps as Json),
-    moduleLinks: mapModuleLinks(data.module_links as Json),
-    reviewerNotes: ((data.reviewer_notes as Json[]) ?? []).map((n) =>
-      camel<DashboardReviewerNote>(n),
-    ),
-    limitationsNote: (data.limitations_note as string) ?? "",
-  };
 }
 
-export async function getLatestCommandCenterSnapshot(): Promise<ProjectCommandCenterSnapshot | null> {
-  const data = await safeFetch<Json>(
+export async function getLatestCommandCenterSnapshot(): Promise<
+  ApiResult<ProjectCommandCenterSnapshot>
+> {
+  return apiGetMapped<Json, ProjectCommandCenterSnapshot>(
     `/api/v1/projects/${PROJECT_ID}/command-center/latest`,
+    mapSnapshot,
   );
-  return data ? mapSnapshot(data) : null;
 }
 
-export async function getProjectHealthMetrics(): Promise<ProjectHealthMetric[]> {
-  const data = await safeFetch<Json[]>(
+export async function getProjectHealthMetrics(): Promise<
+  ApiResult<ProjectHealthMetric[]>
+> {
+  return apiGetMapped<Json[], ProjectHealthMetric[]>(
     `/api/v1/projects/${PROJECT_ID}/command-center/health-metrics`,
+    (data) =>
+      requireArray(data, "health_metrics").map((m) =>
+        mapHealthMetric(m as Json),
+      ),
   );
-  return data ? data.map((m) => camel<ProjectHealthMetric>(m)) : [];
 }
 
 export async function getReviewerAttentionItems(filters?: {
@@ -286,19 +354,22 @@ export async function getReviewerAttentionItems(filters?: {
   severity?: string;
   sourceModule?: string;
   attentionType?: string;
-}): Promise<ReviewerAttentionItem[]> {
+}): Promise<ApiResult<ReviewerAttentionItem[]>> {
   const params = new URLSearchParams();
   if (filters?.status) params.set("status", filters.status);
   if (filters?.severity) params.set("severity", filters.severity);
   if (filters?.sourceModule) params.set("source_module", filters.sourceModule);
   if (filters?.attentionType) params.set("attention_type", filters.attentionType);
   const query = params.toString();
-  const data = await safeFetch<Json[]>(
+  return apiGetMapped<Json[], ReviewerAttentionItem[]>(
     `/api/v1/projects/${PROJECT_ID}/command-center/attention-items${
       query ? `?${query}` : ""
     }`,
+    (data) =>
+      requireArray(data, "attention_items").map((a) =>
+        mapAttentionItem(a as Json),
+      ),
   );
-  return data ? data.map((a) => camel<ReviewerAttentionItem>(a)) : [];
 }
 
 export async function updateAttentionItemStatus(
@@ -346,18 +417,26 @@ export async function updateAttentionItemStatus(
   }
 }
 
-export async function getProjectTimeline(): Promise<ProjectTimelineEvent[]> {
-  const data = await safeFetch<Json[]>(
+export async function getProjectTimeline(): Promise<
+  ApiResult<ProjectTimelineEvent[]>
+> {
+  return apiGetMapped<Json[], ProjectTimelineEvent[]>(
     `/api/v1/projects/${PROJECT_ID}/command-center/timeline`,
+    (data) =>
+      requireArray(data, "timeline").map((e) => mapTimelineEvent(e as Json)),
   );
-  return data ? data.map((e) => camel<ProjectTimelineEvent>(e)) : [];
 }
 
-export async function getReviewReadinessChecks(): Promise<ReviewReadinessCheck[]> {
-  const data = await safeFetch<Json[]>(
+export async function getReviewReadinessChecks(): Promise<
+  ApiResult<ReviewReadinessCheck[]>
+> {
+  return apiGetMapped<Json[], ReviewReadinessCheck[]>(
     `/api/v1/projects/${PROJECT_ID}/command-center/readiness-checks`,
+    (data) =>
+      requireArray(data, "readiness_checks").map((c) =>
+        mapReadinessCheck(c as Json),
+      ),
   );
-  return data ? data.map((c) => camel<ReviewReadinessCheck>(c)) : [];
 }
 
 export async function addDashboardReviewerNote(
@@ -385,32 +464,41 @@ export async function addDashboardReviewerNote(
   };
 }
 
-export async function getDashboardReviewerNotes(): Promise<DashboardReviewerNote[]> {
-  const data = await safeFetch<Json[]>(
+export async function getDashboardReviewerNotes(): Promise<
+  ApiResult<DashboardReviewerNote[]>
+> {
+  return apiGetMapped<Json[], DashboardReviewerNote[]>(
     `/api/v1/projects/${PROJECT_ID}/command-center/notes`,
+    (data) =>
+      requireArray(data, "reviewer_notes").map((n) =>
+        mapReviewerNote(n as Json),
+      ),
   );
-  return data ? data.map((n) => camel<DashboardReviewerNote>(n)) : [];
 }
 
-export async function getReviewerNextSteps(): Promise<ReviewerNextSteps | null> {
-  const data = await safeFetch<Json>(
+export async function getReviewerNextSteps(): Promise<
+  ApiResult<ReviewerNextSteps>
+> {
+  return apiGetMapped<Json, ReviewerNextSteps>(
     `/api/v1/projects/${PROJECT_ID}/command-center/next-steps`,
+    mapNextSteps,
   );
-  return data ? mapNextSteps(data) : null;
 }
 
-export async function getProjectModuleLinks(): Promise<ProjectModuleLinks | null> {
-  const data = await safeFetch<Json>(
+export async function getProjectModuleLinks(): Promise<
+  ApiResult<ProjectModuleLinks>
+> {
+  return apiGetMapped<Json, ProjectModuleLinks>(
     `/api/v1/projects/${PROJECT_ID}/command-center/module-links`,
+    mapModuleLinks,
   );
-  return data ? mapModuleLinks(data) : null;
 }
 
 export async function getProjectHealthSummary(
   projectId: string = PROJECT_ID,
-): Promise<ProjectHealthSummary | null> {
-  const data = await safeFetch<Json>(
+): Promise<ApiResult<ProjectHealthSummary>> {
+  return apiGetMapped<Json, ProjectHealthSummary>(
     `/api/v1/projects/${projectId}/command-center/health-summary`,
+    mapHealthSummary,
   );
-  return data ? camel<ProjectHealthSummary>(data) : null;
 }

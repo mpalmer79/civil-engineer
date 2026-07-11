@@ -7,10 +7,12 @@ import {
   getProjectCommandCenter,
   getProjectHealthSummary,
   updateAttentionItemStatus,
+  type ApiFailure,
   type ProjectCommandCenterPayload,
   type ProjectHealthSummary,
   type ReviewerAttentionItem,
 } from "@/lib/api";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import CommandCenterBoundaryNotice from "@/components/CommandCenterBoundaryNotice";
 import CommandCenterSummaryCard from "@/components/CommandCenterSummaryCard";
 import ProjectHealthMetricGrid from "@/components/ProjectHealthMetricGrid";
@@ -36,20 +38,24 @@ export default function ProjectDashboard({
   const [payload, setPayload] = useState<ProjectCommandCenterPayload | null>(
     null,
   );
+  const [payloadFailure, setPayloadFailure] = useState<ApiFailure | null>(null);
   const [healthSummary, setHealthSummary] = useState<ProjectHealthSummary | null>(
     null,
   );
+  const [summaryFailure, setSummaryFailure] = useState<ApiFailure | null>(null);
   const [selected, setSelected] = useState<ReviewerAttentionItem | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const [data, summary] = await Promise.all([
+    const [dataResult, summaryResult] = await Promise.all([
       getProjectCommandCenter(projectId),
       getProjectHealthSummary(projectId),
     ]);
-    setPayload(data);
-    setHealthSummary(summary);
+    setPayload(dataResult.ok ? dataResult.data : null);
+    setPayloadFailure(dataResult.ok ? null : dataResult);
+    setHealthSummary(summaryResult.ok ? summaryResult.data : null);
+    setSummaryFailure(summaryResult.ok ? null : summaryResult);
   }, [projectId]);
 
   useEffect(() => {
@@ -122,11 +128,13 @@ export default function ProjectDashboard({
     return (
       <div className="space-y-6">
         <CommandCenterBoundaryNotice />
+        {payloadFailure ? (
+          <RequestFailureCard failure={payloadFailure} />
+        ) : null}
         <div className="surface-card p-6">
           <p className="text-sm text-slate-600">
-            The command center is unavailable. Start the backend API to load this
-            project&rsquo;s command center. Command center data is not simulated
-            in the browser.
+            The command center is unavailable. Command center data is not
+            simulated in the browser. If no snapshot exists yet, generate one.
           </p>
           <button
             type="button"

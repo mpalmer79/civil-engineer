@@ -1,10 +1,22 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
+import {
+  API_BASE_URL,
+  PROJECT_ID,
+  apiGetMapped,
+  authHeaders,
+  requireArray,
+  requireRecord,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Phase 11: real CAD (DXF) intake and parsing.
 //
 // Phase 11 data is backend-canonical. The frontend does not simulate parsed CAD
-// data. Read calls return null or empty results when the backend is
-// unavailable, and the mutating calls return a clear backend-required result.
+// data. Read calls return a typed ApiResult so callers can render explicit
+// failure states, and the mutating calls return a clear backend-required
+// result. CAD intake is a high-risk mapping surface, so the mappers assert
+// identifiers and required fields; a malformed payload surfaces as an
+// invalid_response failure instead of propagating undefined fields.
 
 export type CadFileUpload = {
   cadFileId: string;
@@ -367,13 +379,13 @@ type ApiSummary = {
 
 function mapCadFile(f: ApiCadFile): CadFileUpload {
   return {
-    cadFileId: f.cad_file_id,
-    projectId: f.project_id,
-    fileName: f.file_name,
-    fileType: f.file_type,
+    cadFileId: requireString(f.cad_file_id, "cad_file_id"),
+    projectId: requireString(f.project_id, "project_id"),
+    fileName: requireString(f.file_name, "file_name"),
+    fileType: requireString(f.file_type, "file_type"),
     fileSizeBytes: f.file_size_bytes,
     storagePath: f.storage_path,
-    uploadStatus: f.upload_status,
+    uploadStatus: requireString(f.upload_status, "upload_status"),
     uploadedBy: f.uploaded_by,
     limitationsNote: f.limitations_note,
     originalFileName: f.original_file_name ?? null,
@@ -391,12 +403,12 @@ function mapCadFile(f: ApiCadFile): CadFileUpload {
 
 function mapParseRun(r: ApiParseRun): CadParseRun {
   return {
-    parseRunId: r.parse_run_id,
-    cadFileId: r.cad_file_id,
-    projectId: r.project_id,
+    parseRunId: requireString(r.parse_run_id, "parse_run_id"),
+    cadFileId: requireString(r.cad_file_id, "cad_file_id"),
+    projectId: requireString(r.project_id, "project_id"),
     parserName: r.parser_name,
     parserVersion: r.parser_version,
-    status: r.status,
+    status: requireString(r.status, "status"),
     startedAt: r.started_at,
     completedAt: r.completed_at,
     entityCount: r.entity_count,
@@ -411,11 +423,11 @@ function mapParseRun(r: ApiParseRun): CadParseRun {
 
 function mapLayer(l: ApiLayer): CadLayerExtract {
   return {
-    layerExtractId: l.layer_extract_id,
-    parseRunId: l.parse_run_id,
-    cadFileId: l.cad_file_id,
-    projectId: l.project_id,
-    layerName: l.layer_name,
+    layerExtractId: requireString(l.layer_extract_id, "layer_extract_id"),
+    parseRunId: requireString(l.parse_run_id, "parse_run_id"),
+    cadFileId: requireString(l.cad_file_id, "cad_file_id"),
+    projectId: requireString(l.project_id, "project_id"),
+    layerName: requireString(l.layer_name, "layer_name"),
     entityCount: l.entity_count,
     hasText: l.has_text,
     hasGeometry: l.has_geometry,
@@ -426,11 +438,11 @@ function mapLayer(l: ApiLayer): CadLayerExtract {
 
 function mapEntity(e: ApiEntity): CadEntityExtract {
   return {
-    entityExtractId: e.entity_extract_id,
-    parseRunId: e.parse_run_id,
-    cadFileId: e.cad_file_id,
-    projectId: e.project_id,
-    entityType: e.entity_type,
+    entityExtractId: requireString(e.entity_extract_id, "entity_extract_id"),
+    parseRunId: requireString(e.parse_run_id, "parse_run_id"),
+    cadFileId: requireString(e.cad_file_id, "cad_file_id"),
+    projectId: requireString(e.project_id, "project_id"),
+    entityType: requireString(e.entity_type, "entity_type"),
     layerName: e.layer_name,
     blockName: e.block_name,
     handle: e.handle,
@@ -446,11 +458,11 @@ function mapEntity(e: ApiEntity): CadEntityExtract {
 
 function mapBlock(b: ApiBlock): CadBlockExtract {
   return {
-    blockExtractId: b.block_extract_id,
-    parseRunId: b.parse_run_id,
-    cadFileId: b.cad_file_id,
-    projectId: b.project_id,
-    blockName: b.block_name,
+    blockExtractId: requireString(b.block_extract_id, "block_extract_id"),
+    parseRunId: requireString(b.parse_run_id, "parse_run_id"),
+    cadFileId: requireString(b.cad_file_id, "cad_file_id"),
+    projectId: requireString(b.project_id, "project_id"),
+    blockName: requireString(b.block_name, "block_name"),
     insertCount: b.insert_count,
     layerNames: b.layer_names ?? [],
     textValues: b.text_values ?? [],
@@ -461,11 +473,11 @@ function mapBlock(b: ApiBlock): CadBlockExtract {
 
 function mapText(t: ApiText): CadTextExtract {
   return {
-    textExtractId: t.text_extract_id,
-    parseRunId: t.parse_run_id,
-    cadFileId: t.cad_file_id,
-    projectId: t.project_id,
-    textValue: t.text_value,
+    textExtractId: requireString(t.text_extract_id, "text_extract_id"),
+    parseRunId: requireString(t.parse_run_id, "parse_run_id"),
+    cadFileId: requireString(t.cad_file_id, "cad_file_id"),
+    projectId: requireString(t.project_id, "project_id"),
+    textValue: requireString(t.text_value, "text_value"),
     normalizedText: t.normalized_text,
     entityType: t.entity_type,
     layerName: t.layer_name,
@@ -481,11 +493,11 @@ function mapText(t: ApiText): CadTextExtract {
 
 function mapCandidate(c: ApiCandidate): CadReferenceCandidate {
   return {
-    candidateId: c.candidate_id,
-    parseRunId: c.parse_run_id,
-    cadFileId: c.cad_file_id,
-    projectId: c.project_id,
-    referenceText: c.reference_text,
+    candidateId: requireString(c.candidate_id, "candidate_id"),
+    parseRunId: requireString(c.parse_run_id, "parse_run_id"),
+    cadFileId: requireString(c.cad_file_id, "cad_file_id"),
+    projectId: requireString(c.project_id, "project_id"),
+    referenceText: requireString(c.reference_text, "reference_text"),
     normalizedReference: c.normalized_reference,
     referenceType: c.reference_type,
     sourceEntityId: c.source_entity_id,
@@ -500,14 +512,17 @@ function mapCandidate(c: ApiCandidate): CadReferenceCandidate {
 
 function mapFinding(f: ApiFinding): CadReviewFinding {
   return {
-    cadReviewFindingId: f.cad_review_finding_id,
-    parseRunId: f.parse_run_id,
-    cadFileId: f.cad_file_id,
-    projectId: f.project_id,
-    findingType: f.finding_type,
-    title: f.title,
+    cadReviewFindingId: requireString(
+      f.cad_review_finding_id,
+      "cad_review_finding_id",
+    ),
+    parseRunId: requireString(f.parse_run_id, "parse_run_id"),
+    cadFileId: requireString(f.cad_file_id, "cad_file_id"),
+    projectId: requireString(f.project_id, "project_id"),
+    findingType: requireString(f.finding_type, "finding_type"),
+    title: requireString(f.title, "title"),
     description: f.description,
-    severity: f.severity,
+    severity: requireString(f.severity, "severity"),
     sourceReferenceCandidateId: f.source_reference_candidate_id,
     sourceLayerExtractId: f.source_layer_extract_id,
     sourceTextExtractId: f.source_text_extract_id,
@@ -523,10 +538,10 @@ function mapFinding(f: ApiFinding): CadReviewFinding {
 
 function mapSummary(s: ApiSummary): CadParseSummary {
   return {
-    parseRunId: s.parse_run_id,
-    cadFileId: s.cad_file_id,
-    projectId: s.project_id,
-    status: s.status,
+    parseRunId: requireString(s.parse_run_id, "parse_run_id"),
+    cadFileId: requireString(s.cad_file_id, "cad_file_id"),
+    projectId: requireString(s.project_id, "project_id"),
+    status: requireString(s.status, "status"),
     entityCount: s.entity_count,
     layerCount: s.layer_count,
     blockCount: s.block_count,
@@ -542,110 +557,137 @@ function mapSummary(s: ApiSummary): CadParseSummary {
   };
 }
 
-export async function getCadFiles(projectId: string = PROJECT_ID): Promise<CadFileUpload[]> {
-  const data = await safeFetch<ApiCadFile[]>(
+export async function getCadFiles(
+  projectId: string = PROJECT_ID,
+): Promise<ApiResult<CadFileUpload[]>> {
+  return apiGetMapped<ApiCadFile[], CadFileUpload[]>(
     `/api/v1/projects/${projectId}/cad-files`,
+    (data) =>
+      requireArray(data, "cad_files").map((f) => mapCadFile(f as ApiCadFile)),
   );
-  return data ? data.map(mapCadFile) : [];
 }
 
-export async function getCadParseRuns(projectId: string = PROJECT_ID): Promise<CadParseRun[]> {
-  const data = await safeFetch<ApiParseRun[]>(
+export async function getCadParseRuns(
+  projectId: string = PROJECT_ID,
+): Promise<ApiResult<CadParseRun[]>> {
+  return apiGetMapped<ApiParseRun[], CadParseRun[]>(
     `/api/v1/projects/${projectId}/cad-parse-runs`,
+    (data) =>
+      requireArray(data, "cad_parse_runs").map((r) =>
+        mapParseRun(r as ApiParseRun),
+      ),
   );
-  return data ? data.map(mapParseRun) : [];
 }
 
 export async function getCadParseRun(
   parseRunId: string,
-): Promise<CadParseRun | null> {
-  const data = await safeFetch<ApiParseRun>(
+): Promise<ApiResult<CadParseRun>> {
+  return apiGetMapped<ApiParseRun, CadParseRun>(
     `/api/v1/cad-parse-runs/${parseRunId}`,
+    mapParseRun,
   );
-  return data ? mapParseRun(data) : null;
 }
 
 export async function getCadParseSummary(
   parseRunId: string,
-): Promise<CadParseSummary | null> {
-  const data = await safeFetch<ApiSummary>(
+): Promise<ApiResult<CadParseSummary>> {
+  return apiGetMapped<ApiSummary, CadParseSummary>(
     `/api/v1/cad-parse-runs/${parseRunId}/summary`,
+    mapSummary,
   );
-  return data ? mapSummary(data) : null;
 }
 
 export async function getCadLayers(
   parseRunId: string,
-): Promise<CadLayerExtract[]> {
-  const data = await safeFetch<ApiLayer[]>(
+): Promise<ApiResult<CadLayerExtract[]>> {
+  return apiGetMapped<ApiLayer[], CadLayerExtract[]>(
     `/api/v1/cad-parse-runs/${parseRunId}/layers`,
+    (data) => requireArray(data, "layers").map((l) => mapLayer(l as ApiLayer)),
   );
-  return data ? data.map(mapLayer) : [];
 }
 
 export async function getCadEntities(
   parseRunId: string,
-): Promise<CadEntityExtract[]> {
-  const data = await safeFetch<ApiEntity[]>(
+): Promise<ApiResult<CadEntityExtract[]>> {
+  return apiGetMapped<ApiEntity[], CadEntityExtract[]>(
     `/api/v1/cad-parse-runs/${parseRunId}/entities`,
+    (data) =>
+      requireArray(data, "entities").map((e) => mapEntity(e as ApiEntity)),
   );
-  return data ? data.map(mapEntity) : [];
 }
 
 export async function getCadBlocks(
   parseRunId: string,
-): Promise<CadBlockExtract[]> {
-  const data = await safeFetch<ApiBlock[]>(
+): Promise<ApiResult<CadBlockExtract[]>> {
+  return apiGetMapped<ApiBlock[], CadBlockExtract[]>(
     `/api/v1/cad-parse-runs/${parseRunId}/blocks`,
+    (data) => requireArray(data, "blocks").map((b) => mapBlock(b as ApiBlock)),
   );
-  return data ? data.map(mapBlock) : [];
 }
 
-export async function getCadText(parseRunId: string): Promise<CadTextExtract[]> {
-  const data = await safeFetch<ApiText[]>(
+export async function getCadText(
+  parseRunId: string,
+): Promise<ApiResult<CadTextExtract[]>> {
+  return apiGetMapped<ApiText[], CadTextExtract[]>(
     `/api/v1/cad-parse-runs/${parseRunId}/text`,
+    (data) => requireArray(data, "text").map((t) => mapText(t as ApiText)),
   );
-  return data ? data.map(mapText) : [];
 }
 
 export async function getCadReferenceCandidates(
   parseRunId: string,
-): Promise<CadReferenceCandidate[]> {
-  const data = await safeFetch<ApiCandidate[]>(
+): Promise<ApiResult<CadReferenceCandidate[]>> {
+  return apiGetMapped<ApiCandidate[], CadReferenceCandidate[]>(
     `/api/v1/cad-parse-runs/${parseRunId}/reference-candidates`,
+    (data) =>
+      requireArray(data, "reference_candidates").map((c) =>
+        mapCandidate(c as ApiCandidate),
+      ),
   );
-  return data ? data.map(mapCandidate) : [];
 }
 
-export async function getCadReviewFindings(projectId: string = PROJECT_ID): Promise<CadReviewFinding[]> {
-  const data = await safeFetch<ApiFinding[]>(
+export async function getCadReviewFindings(
+  projectId: string = PROJECT_ID,
+): Promise<ApiResult<CadReviewFinding[]>> {
+  return apiGetMapped<ApiFinding[], CadReviewFinding[]>(
     `/api/v1/projects/${projectId}/cad-review-findings`,
+    (data) =>
+      requireArray(data, "cad_review_findings").map((f) =>
+        mapFinding(f as ApiFinding),
+      ),
   );
-  return data ? data.map(mapFinding) : [];
 }
 
 export async function getCadFileReviewContext(
   cadFileId: string,
-): Promise<CadFileReviewContext | null> {
-  const data = await safeFetch<{
-    cad_file: ApiCadFile;
-    parse_run: ApiParseRun | null;
-    summary: ApiSummary | null;
-    layers: ApiLayer[];
-    reference_candidates: ApiCandidate[];
-    findings: ApiFinding[];
-    note: string;
-  }>(`/api/v1/cad-files/${cadFileId}/review-context`);
-  if (!data) return null;
-  return {
-    cadFile: mapCadFile(data.cad_file),
+): Promise<ApiResult<CadFileReviewContext>> {
+  return apiGetMapped<
+    {
+      cad_file: ApiCadFile;
+      parse_run: ApiParseRun | null;
+      summary: ApiSummary | null;
+      layers: ApiLayer[];
+      reference_candidates: ApiCandidate[];
+      findings: ApiFinding[];
+      note: string;
+    },
+    CadFileReviewContext
+  >(`/api/v1/cad-files/${cadFileId}/review-context`, (data) => ({
+    cadFile: mapCadFile(requireRecord(data.cad_file, "cad_file") as ApiCadFile),
     parseRun: data.parse_run ? mapParseRun(data.parse_run) : null,
     summary: data.summary ? mapSummary(data.summary) : null,
-    layers: (data.layers ?? []).map(mapLayer),
-    referenceCandidates: (data.reference_candidates ?? []).map(mapCandidate),
-    findings: (data.findings ?? []).map(mapFinding),
+    layers: requireArray(data.layers ?? [], "layers").map((l) =>
+      mapLayer(l as ApiLayer),
+    ),
+    referenceCandidates: requireArray(
+      data.reference_candidates ?? [],
+      "reference_candidates",
+    ).map((c) => mapCandidate(c as ApiCandidate)),
+    findings: requireArray(data.findings ?? [], "findings").map((f) =>
+      mapFinding(f as ApiFinding),
+    ),
     note: data.note,
-  };
+  }));
 }
 
 export async function createCadFileRecord(

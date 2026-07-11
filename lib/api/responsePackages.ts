@@ -1,10 +1,21 @@
-import { API_BASE_URL, PROJECT_ID, safeFetch, authHeaders} from "./client";
+import {
+  API_BASE_URL,
+  PROJECT_ID,
+  apiGetMapped,
+  authHeaders,
+  requireArray,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Phase 10: external review response package.
 //
 // Phase 10 data is backend-canonical. The frontend does not simulate response
-// package data. Read calls return null or empty results when the backend is
-// unavailable, and the mutating calls return a clear backend-required result.
+// package data. Read calls return a typed ApiResult that preserves the status
+// and failure category, and the mutating calls return a clear backend-required
+// result. Response packages are a high-risk domain, so mappers assert
+// identifiers and required fields; a structurally invalid payload surfaces as
+// an invalid_response failure instead of undefined fields in the UI.
 
 export type ResponsePackageEvidenceLink = {
   evidenceLinkId: string;
@@ -239,11 +250,14 @@ type ApiAction = {
 
 function mapEvidenceLink(l: ApiEvidenceLink): ResponsePackageEvidenceLink {
   return {
-    evidenceLinkId: l.evidence_link_id,
-    responsePackageId: l.response_package_id,
-    responseItemId: l.response_item_id,
-    evidenceType: l.evidence_type,
-    evidenceId: l.evidence_id,
+    evidenceLinkId: requireString(l.evidence_link_id, "evidence_link_id"),
+    responsePackageId: requireString(
+      l.response_package_id,
+      "response_package_id",
+    ),
+    responseItemId: requireString(l.response_item_id, "response_item_id"),
+    evidenceType: requireString(l.evidence_type, "evidence_type"),
+    evidenceId: requireString(l.evidence_id, "evidence_id"),
     relationship: l.relationship,
     label: l.label,
     description: l.description,
@@ -252,16 +266,19 @@ function mapEvidenceLink(l: ApiEvidenceLink): ResponsePackageEvidenceLink {
 
 function mapItem(i: ApiItem): ResponsePackageItem {
   return {
-    itemId: i.item_id,
-    responsePackageId: i.response_package_id,
-    sectionId: i.section_id,
+    itemId: requireString(i.item_id, "item_id"),
+    responsePackageId: requireString(
+      i.response_package_id,
+      "response_package_id",
+    ),
+    sectionId: requireString(i.section_id, "section_id"),
     workflowItemId: i.workflow_item_id,
     packetItemId: i.packet_item_id,
-    title: i.title,
-    draftText: i.draft_text,
+    title: requireString(i.title, "title"),
+    draftText: requireString(i.draft_text, "draft_text"),
     reviewerNote: i.reviewer_note,
     severity: i.severity,
-    status: i.status,
+    status: requireString(i.status, "status"),
     sourceType: i.source_type,
     sourceId: i.source_id,
     assignedRole: i.assigned_role,
@@ -273,9 +290,12 @@ function mapItem(i: ApiItem): ResponsePackageItem {
 
 function mapSection(s: ApiSection): ResponsePackageSection {
   return {
-    sectionId: s.section_id,
-    responsePackageId: s.response_package_id,
-    title: s.title,
+    sectionId: requireString(s.section_id, "section_id"),
+    responsePackageId: requireString(
+      s.response_package_id,
+      "response_package_id",
+    ),
+    title: requireString(s.title, "title"),
     sectionType: s.section_type,
     displayOrder: s.display_order,
     summary: s.summary,
@@ -287,9 +307,12 @@ function mapSection(s: ApiSection): ResponsePackageSection {
 
 function mapAttachment(a: ApiAttachment): ResponsePackageAttachment {
   return {
-    attachmentId: a.attachment_id,
-    responsePackageId: a.response_package_id,
-    label: a.label,
+    attachmentId: requireString(a.attachment_id, "attachment_id"),
+    responsePackageId: requireString(
+      a.response_package_id,
+      "response_package_id",
+    ),
+    label: requireString(a.label, "label"),
     attachmentType: a.attachment_type,
     sourceType: a.source_type,
     sourceId: a.source_id,
@@ -300,12 +323,15 @@ function mapAttachment(a: ApiAttachment): ResponsePackageAttachment {
 
 function mapPackage(p: ApiPackage): ResponsePackage {
   return {
-    responsePackageId: p.response_package_id,
-    projectId: p.project_id,
+    responsePackageId: requireString(
+      p.response_package_id,
+      "response_package_id",
+    ),
+    projectId: requireString(p.project_id, "project_id"),
     sourcePacketId: p.source_packet_id,
-    title: p.title,
-    audienceType: p.audience_type,
-    status: p.status,
+    title: requireString(p.title, "title"),
+    audienceType: requireString(p.audience_type, "audience_type"),
+    status: requireString(p.status, "status"),
     summary: p.summary,
     draftIntro: p.draft_intro,
     draftClosing: p.draft_closing,
@@ -326,8 +352,11 @@ function mapPackageDetail(p: ApiPackage): ResponsePackageDetail {
 
 function mapAction(a: ApiAction): ResponsePackageAction {
   return {
-    actionId: a.action_id,
-    responsePackageId: a.response_package_id,
+    actionId: requireString(a.action_id, "action_id"),
+    responsePackageId: requireString(
+      a.response_package_id,
+      "response_package_id",
+    ),
     responseItemId: a.response_item_id,
     actionType: a.action_type,
     previousStatus: a.previous_status,
@@ -338,71 +367,87 @@ function mapAction(a: ApiAction): ResponsePackageAction {
   };
 }
 
-export async function getResponsePackages(): Promise<ResponsePackage[]> {
-  const data = await safeFetch<ApiPackage[]>(
+export async function getResponsePackages(): Promise<
+  ApiResult<ResponsePackage[]>
+> {
+  return apiGetMapped<ApiPackage[], ResponsePackage[]>(
     `/api/v1/projects/${PROJECT_ID}/response-packages`,
+    (data) =>
+      requireArray(data, "response_packages").map((p) =>
+        mapPackage(p as ApiPackage),
+      ),
   );
-  return data ? data.map(mapPackage) : [];
 }
 
 export async function getResponsePackage(
   responsePackageId: string,
-): Promise<ResponsePackageDetail | null> {
-  const data = await safeFetch<ApiPackage>(
+): Promise<ApiResult<ResponsePackageDetail>> {
+  return apiGetMapped<ApiPackage, ResponsePackageDetail>(
     `/api/v1/response-packages/${responsePackageId}`,
+    mapPackageDetail,
   );
-  return data ? mapPackageDetail(data) : null;
 }
 
 export async function getResponsePackageAttachments(
   responsePackageId: string,
-): Promise<ResponsePackageAttachment[]> {
-  const data = await safeFetch<ApiAttachment[]>(
+): Promise<ApiResult<ResponsePackageAttachment[]>> {
+  return apiGetMapped<ApiAttachment[], ResponsePackageAttachment[]>(
     `/api/v1/response-packages/${responsePackageId}/attachments`,
+    (data) =>
+      requireArray(data, "attachments").map((a) =>
+        mapAttachment(a as ApiAttachment),
+      ),
   );
-  return data ? data.map(mapAttachment) : [];
 }
 
 export async function getResponsePackageHistory(
   responsePackageId: string,
-): Promise<ResponsePackageHistory | null> {
-  const data = await safeFetch<{
-    response_package_id: string;
-    project_id: string;
-    actions: ApiAction[];
-    note: string;
-  }>(`/api/v1/response-packages/${responsePackageId}/history`);
-  if (!data) return null;
-  return {
-    responsePackageId: data.response_package_id,
-    projectId: data.project_id,
+): Promise<ApiResult<ResponsePackageHistory>> {
+  return apiGetMapped<
+    {
+      response_package_id: string;
+      project_id: string;
+      actions: ApiAction[];
+      note: string;
+    },
+    ResponsePackageHistory
+  >(`/api/v1/response-packages/${responsePackageId}/history`, (data) => ({
+    responsePackageId: requireString(
+      data.response_package_id,
+      "response_package_id",
+    ),
+    projectId: requireString(data.project_id, "project_id"),
     actions: (data.actions ?? []).map(mapAction),
     note: data.note,
-  };
+  }));
 }
 
 export async function getResponsePackageSummary(
   responsePackageId: string,
-): Promise<ResponsePackageSummary | null> {
-  const data = await safeFetch<{
-    response_package_id: string;
-    project_id: string;
-    status: string;
-    audience_type: string;
-    total_sections: number;
-    total_items: number;
-    total_attachments: number;
-    total_evidence_links: number;
-    items_by_section_type: Record<string, number>;
-    items_by_status: Record<string, number>;
-    items_by_severity: Record<string, number>;
-    items_requiring_human_review: number;
-  }>(`/api/v1/response-packages/${responsePackageId}/summary`);
-  if (!data) return null;
-  return {
-    responsePackageId: data.response_package_id,
-    projectId: data.project_id,
-    status: data.status,
+): Promise<ApiResult<ResponsePackageSummary>> {
+  return apiGetMapped<
+    {
+      response_package_id: string;
+      project_id: string;
+      status: string;
+      audience_type: string;
+      total_sections: number;
+      total_items: number;
+      total_attachments: number;
+      total_evidence_links: number;
+      items_by_section_type: Record<string, number>;
+      items_by_status: Record<string, number>;
+      items_by_severity: Record<string, number>;
+      items_requiring_human_review: number;
+    },
+    ResponsePackageSummary
+  >(`/api/v1/response-packages/${responsePackageId}/summary`, (data) => ({
+    responsePackageId: requireString(
+      data.response_package_id,
+      "response_package_id",
+    ),
+    projectId: requireString(data.project_id, "project_id"),
+    status: requireString(data.status, "status"),
     audienceType: data.audience_type,
     totalSections: data.total_sections,
     totalItems: data.total_items,
@@ -412,46 +457,50 @@ export async function getResponsePackageSummary(
     itemsByStatus: data.items_by_status,
     itemsBySeverity: data.items_by_severity,
     itemsRequiringHumanReview: data.items_requiring_human_review,
-  };
+  }));
 }
 
 export async function getResponsePackagePrintView(
   responsePackageId: string,
-): Promise<ResponsePackagePrintView | null> {
-  const data = await safeFetch<{
-    response_package_id: string;
-    project_id: string;
-    title: string;
-    audience_type: string;
-    status: string;
-    summary: string;
-    draft_intro: string;
-    draft_closing: string;
-    created_by: string;
-    created_at: string;
-    limitations_note: string;
-    external_communication_boundary: string;
-    draft_notice: string;
-    sections: {
+): Promise<ApiResult<ResponsePackagePrintView>> {
+  return apiGetMapped<
+    {
+      response_package_id: string;
+      project_id: string;
       title: string;
-      section_type: string;
+      audience_type: string;
+      status: string;
       summary: string;
-      items: ApiItem[];
-    }[];
-    attachments: ApiAttachment[];
-    signoff_checklist: {
-      label: string;
-      detail: string;
-      confirmed: boolean;
-    }[];
-  }>(`/api/v1/response-packages/${responsePackageId}/print-view`);
-  if (!data) return null;
-  return {
-    responsePackageId: data.response_package_id,
-    projectId: data.project_id,
-    title: data.title,
+      draft_intro: string;
+      draft_closing: string;
+      created_by: string;
+      created_at: string;
+      limitations_note: string;
+      external_communication_boundary: string;
+      draft_notice: string;
+      sections: {
+        title: string;
+        section_type: string;
+        summary: string;
+        items: ApiItem[];
+      }[];
+      attachments: ApiAttachment[];
+      signoff_checklist: {
+        label: string;
+        detail: string;
+        confirmed: boolean;
+      }[];
+    },
+    ResponsePackagePrintView
+  >(`/api/v1/response-packages/${responsePackageId}/print-view`, (data) => ({
+    responsePackageId: requireString(
+      data.response_package_id,
+      "response_package_id",
+    ),
+    projectId: requireString(data.project_id, "project_id"),
+    title: requireString(data.title, "title"),
     audienceType: data.audience_type,
-    status: data.status,
+    status: requireString(data.status, "status"),
     summary: data.summary,
     draftIntro: data.draft_intro,
     draftClosing: data.draft_closing,
@@ -460,19 +509,27 @@ export async function getResponsePackagePrintView(
     limitationsNote: data.limitations_note,
     externalCommunicationBoundary: data.external_communication_boundary,
     draftNotice: data.draft_notice,
-    sections: data.sections.map((s) => ({
-      title: s.title,
-      sectionType: s.section_type,
-      summary: s.summary,
-      items: (s.items ?? []).map(mapItem),
-    })),
+    sections: requireArray(data.sections, "sections").map((raw) => {
+      const s = raw as {
+        title: string;
+        section_type: string;
+        summary: string;
+        items: ApiItem[];
+      };
+      return {
+        title: requireString(s.title, "sections[].title"),
+        sectionType: s.section_type,
+        summary: s.summary,
+        items: (s.items ?? []).map(mapItem),
+      };
+    }),
     attachments: (data.attachments ?? []).map(mapAttachment),
     signoffChecklist: (data.signoff_checklist ?? []).map((c) => ({
       label: c.label,
       detail: c.detail,
       confirmed: c.confirmed,
     })),
-  };
+  }));
 }
 
 export async function generateResponsePackage(): Promise<{

@@ -1,9 +1,17 @@
-import { API_BASE_URL, authHeaders, safeFetch } from "./client";
+import {
+  API_BASE_URL,
+  apiGetMapped,
+  authHeaders,
+  requireString,
+  type ApiResult,
+} from "./client";
 
 // Production Foundations Sprint 2: PDF page indexing and reviewer-selected
-// evidence citations. This data is backend-canonical. Read calls return null
-// when the backend is unavailable; mutating calls return a clear { ok, error }
-// result.
+// evidence citations. This data is backend-canonical. Read calls return a
+// typed ApiResult that preserves the failure category and status; mutating
+// calls return a clear { ok, error } result. Mappers assert required
+// identifiers so an invalid payload surfaces as an explicit invalid_response
+// failure instead of propagating undefined fields into evidence UI.
 //
 // NEXT_PUBLIC_API_BASE_URL is the backend origin only (no /api/v1 path); this
 // client appends the /api/v1 paths itself.
@@ -73,13 +81,16 @@ type MutationResult<T> = {
 
 function mapPage(p: Record<string, unknown>): DocumentPage {
   return {
-    documentPageId: p.document_page_id as string,
-    projectId: p.project_id as string,
-    documentId: p.document_id as string,
+    documentPageId: requireString(p.document_page_id, "document_page_id"),
+    projectId: requireString(p.project_id, "project_id"),
+    documentId: requireString(p.document_id, "document_id"),
     pageNumber: p.page_number as number,
     pageLabel: (p.page_label as string) ?? null,
     extractedText: (p.extracted_text as string) ?? null,
-    textExtractionStatus: p.text_extraction_status as string,
+    textExtractionStatus: requireString(
+      p.text_extraction_status,
+      "text_extraction_status",
+    ),
     textExtractionMethod: (p.text_extraction_method as string) ?? null,
     charCount: (p.char_count as number) ?? 0,
     wordCount: (p.word_count as number) ?? 0,
@@ -90,18 +101,21 @@ function mapPage(p: Record<string, unknown>): DocumentPage {
 
 function mapCitation(c: Record<string, unknown>): EvidenceCitation {
   return {
-    evidenceCitationId: c.evidence_citation_id as string,
-    projectId: c.project_id as string,
-    findingId: c.finding_id as string,
-    documentId: c.document_id as string,
+    evidenceCitationId: requireString(
+      c.evidence_citation_id,
+      "evidence_citation_id",
+    ),
+    projectId: requireString(c.project_id, "project_id"),
+    findingId: requireString(c.finding_id, "finding_id"),
+    documentId: requireString(c.document_id, "document_id"),
     documentPageId: (c.document_page_id as string) ?? null,
     pageNumber: (c.page_number as number) ?? null,
     pageLabel: (c.page_label as string) ?? null,
     sectionLabel: (c.section_label as string) ?? null,
     quotedExcerpt: (c.quoted_excerpt as string) ?? null,
     reviewerNote: (c.reviewer_note as string) ?? null,
-    citationType: c.citation_type as string,
-    citationStatus: c.citation_status as string,
+    citationType: requireString(c.citation_type, "citation_type"),
+    citationStatus: requireString(c.citation_status, "citation_status"),
     createdByName: (c.created_by_name as string) ?? null,
     sourceMode: c.source_mode as string,
     createdAt: (c.created_at as string) ?? null,
@@ -131,11 +145,18 @@ async function postJson<T>(
       }
       return { ok: false, backendReachable: true, error: detail };
     }
-    return {
-      ok: true,
-      backendReachable: true,
-      data: mapper((await res.json()) as Record<string, unknown>),
-    };
+    const raw = (await res.json()) as Record<string, unknown>;
+    // Map outside the transport failure path so an invalid payload reports an
+    // honest shape error instead of a false "backend unavailable" message.
+    try {
+      return { ok: true, backendReachable: true, data: mapper(raw) };
+    } catch {
+      return {
+        ok: false,
+        backendReachable: true,
+        error: "The backend returned an unexpected payload shape.",
+      };
+    }
   } catch {
     return {
       ok: false,
@@ -188,23 +209,22 @@ export async function buildDocumentChunks(
 export async function listDocumentPages(
   projectId: string,
   documentId: string,
-): Promise<DocumentPage[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<DocumentPage[]>> {
+  return apiGetMapped<Record<string, unknown>[], DocumentPage[]>(
     `/api/v1/projects/${projectId}/documents/${documentId}/pages`,
+    (data) => data.map(mapPage),
   );
-  if (!data) return null;
-  return data.map(mapPage);
 }
 
 export async function getDocumentPage(
   projectId: string,
   documentId: string,
   pageNumber: number,
-): Promise<DocumentPage | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<DocumentPage>> {
+  return apiGetMapped<Record<string, unknown>, DocumentPage>(
     `/api/v1/projects/${projectId}/documents/${documentId}/pages/${pageNumber}`,
+    mapPage,
   );
-  return data ? mapPage(data) : null;
 }
 
 export type CreateCitationInput = {
@@ -242,22 +262,20 @@ export async function createEvidenceCitation(
 export async function listFindingCitations(
   projectId: string,
   findingId: string,
-): Promise<EvidenceCitation[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<EvidenceCitation[]>> {
+  return apiGetMapped<Record<string, unknown>[], EvidenceCitation[]>(
     `/api/v1/projects/${projectId}/findings/${findingId}/citations`,
+    (data) => data.map(mapCitation),
   );
-  if (!data) return null;
-  return data.map(mapCitation);
 }
 
 export async function listProjectEvidenceCitations(
   projectId: string,
-): Promise<EvidenceCitation[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<EvidenceCitation[]>> {
+  return apiGetMapped<Record<string, unknown>[], EvidenceCitation[]>(
     `/api/v1/projects/${projectId}/evidence-citations`,
+    (data) => data.map(mapCitation),
   );
-  if (!data) return null;
-  return data.map(mapCitation);
 }
 
 export async function updateEvidenceCitation(

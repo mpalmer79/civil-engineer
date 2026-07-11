@@ -68,3 +68,26 @@ jobs:
         # The build has no network dependency (the app uses a system font
         # stack, not next/font/google), so it runs in a sandboxed CI runner.
         run: npm run build
+
+  contracts:
+    name: API contract freshness (OpenAPI + generated types)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Verify generated contract is current
+        # Regenerates openapi.json from the FastAPI app and schema.d.ts from
+        # openapi-typescript, then fails if the committed artifacts differ.
+        run: node scripts/generate-api-types.mjs --check
