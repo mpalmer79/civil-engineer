@@ -32,7 +32,7 @@ export default function CadParseQueue({
         parse failure, not an engineering decision about the plan.
       </p>
       {items.length === 0 ? (
-        <p className="mt-4 text-sm text-slate-500">
+        <p className="mt-4 text-sm text-slate-600">
           No CAD files in the queue yet. Upload a DXF file to begin.
         </p>
       ) : (
@@ -56,7 +56,7 @@ export default function CadParseQueue({
                     >
                       {item.fileName}
                     </button>
-                    <p className="mt-0.5 text-xs text-slate-500">
+                    <p className="mt-0.5 text-xs text-slate-600">
                       {item.uploadSource.replace(/_/g, " ")} ·{" "}
                       {item.findingCount} finding(s)
                       {item.warningCount > 0

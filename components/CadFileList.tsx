@@ -19,7 +19,7 @@ export default function CadFileList({
 }) {
   if (files.length === 0) {
     return (
-      <div className="surface-card p-6 text-sm text-slate-500">
+      <div className="surface-card p-6 text-sm text-slate-600">
         No CAD files registered yet.
       </div>
     );

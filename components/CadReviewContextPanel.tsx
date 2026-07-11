@@ -16,30 +16,30 @@ export default function CadReviewContextPanel({
     <div className="surface-card p-6">
       <h3 className="text-lg font-semibold text-slate-900">Review context</h3>
       <dl className="mt-3 grid grid-cols-2 gap-2 text-sm">
-        <dt className="text-slate-500">File</dt>
+        <dt className="text-slate-600">File</dt>
         <dd className="text-slate-700">{cadFile.fileName}</dd>
-        <dt className="text-slate-500">Upload status</dt>
+        <dt className="text-slate-600">Upload status</dt>
         <dd className="text-slate-700">
           {cadFile.uploadStatus.replace(/_/g, " ")}
         </dd>
-        <dt className="text-slate-500">Parse status</dt>
+        <dt className="text-slate-600">Parse status</dt>
         <dd className="text-slate-700">
           {parseRun ? parseRun.status.replace(/_/g, " ") : "not parsed"}
         </dd>
-        <dt className="text-slate-500">Findings</dt>
+        <dt className="text-slate-600">Findings</dt>
         <dd className="text-slate-700">{context.findings.length}</dd>
-        <dt className="text-slate-500">Reference candidates</dt>
+        <dt className="text-slate-600">Reference candidates</dt>
         <dd className="text-slate-700">
           {context.referenceCandidates.length}
         </dd>
         {summary ? (
           <>
-            <dt className="text-slate-500">Layers</dt>
+            <dt className="text-slate-600">Layers</dt>
             <dd className="text-slate-700">{summary.layerCount}</dd>
           </>
         ) : null}
       </dl>
-      <p className="mt-4 text-xs text-slate-500">{context.note}</p>
+      <p className="mt-4 text-xs text-slate-600">{context.note}</p>
     </div>
   );
 }

@@ -66,7 +66,7 @@ export default function CadUploadPanel({
         <div>
           <label
             htmlFor="cad-upload-file"
-            className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+            className="block text-xs font-semibold uppercase tracking-wide text-slate-600"
           >
             DXF file
           </label>
@@ -79,13 +79,13 @@ export default function CadUploadPanel({
             className="mt-1 block w-full text-sm text-slate-700 file:mr-3 file:rounded-md file:border-0 file:bg-water-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-water-700"
           />
           {fileName ? (
-            <p className="mt-1 text-xs text-slate-500">Selected: {fileName}</p>
+            <p className="mt-1 text-xs text-slate-600">Selected: {fileName}</p>
           ) : null}
         </div>
         <div>
           <label
             htmlFor="cad-upload-uploaded-by"
-            className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+            className="block text-xs font-semibold uppercase tracking-wide text-slate-600"
           >
             Uploaded by
           </label>
@@ -109,7 +109,7 @@ export default function CadUploadPanel({
       </button>
 
       {limits ? (
-        <p className="mt-3 text-xs text-slate-500">
+        <p className="mt-3 text-xs text-slate-600">
           Files must be .dxf and no larger than {limits.maxFileSizeMb} MB.
         </p>
       ) : null}

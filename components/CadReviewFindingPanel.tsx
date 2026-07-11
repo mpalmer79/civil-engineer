@@ -3,8 +3,8 @@ import type { CadReviewFinding } from "@/lib/api";
 const severityStyles: Record<string, string> = {
   high: "text-red-700",
   medium: "text-amber-700",
-  low: "text-slate-500",
-  info: "text-slate-500",
+  low: "text-slate-600",
+  info: "text-slate-600",
 };
 
 // Lists CAD review-support findings raised from the DXF metadata. Every finding
@@ -17,7 +17,7 @@ export default function CadReviewFindingPanel({
 }) {
   if (findings.length === 0) {
     return (
-      <div className="surface-card p-6 text-sm text-slate-500">
+      <div className="surface-card p-6 text-sm text-slate-600">
         No CAD review findings raised.
       </div>
     );
@@ -38,7 +38,7 @@ export default function CadReviewFindingPanel({
                 {finding.title}
               </span>
               <span className="flex items-center gap-2 text-xs">
-                <span className={severityStyles[finding.severity] ?? "text-slate-500"}>
+                <span className={severityStyles[finding.severity] ?? "text-slate-600"}>
                   {finding.severity}
                 </span>
                 <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600">
@@ -47,7 +47,7 @@ export default function CadReviewFindingPanel({
               </span>
             </div>
             <p className="mt-1 text-sm text-slate-600">{finding.description}</p>
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-slate-500">
               {finding.findingType.replace(/_/g, " ")}
               {finding.linkedWorkflowItemId
                 ? " · linked to workflow item"

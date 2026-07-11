@@ -3,7 +3,7 @@ import type { CadParseRun, CadParseSummary } from "@/lib/api";
 function CountChips({ counts }: { counts: Record<string, number> }) {
   const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
   if (entries.length === 0) {
-    return <p className="mt-1 text-sm text-slate-500">None</p>;
+    return <p className="mt-1 text-sm text-slate-600">None</p>;
   }
   return (
     <div className="mt-1 flex flex-wrap gap-2">
@@ -34,7 +34,7 @@ export default function CadParseSummaryCard({
     <div className="surface-card p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-lg font-semibold text-slate-900">Parse run</h3>
-        <span className="text-sm text-slate-500">
+        <span className="text-sm text-slate-600">
           {run.parserName} {run.parserVersion} · status:{" "}
           {run.status.replace(/_/g, " ")}
         </span>
@@ -48,7 +48,7 @@ export default function CadParseSummaryCard({
           ["Warnings", run.warningCount],
         ].map(([label, value]) => (
           <div key={label} className="rounded-lg bg-slate-50 px-3 py-2">
-            <p className="text-xs uppercase tracking-wide text-slate-500">
+            <p className="text-xs uppercase tracking-wide text-slate-600">
               {label}
             </p>
             <p className="text-lg font-semibold text-slate-900">{value}</p>
@@ -63,26 +63,26 @@ export default function CadParseSummaryCard({
       {summary ? (
         <div className="mt-4 space-y-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
               Layers by category
             </p>
             <CountChips counts={summary.layersByCategory} />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
               References by confidence
             </p>
             <CountChips counts={summary.referencesByConfidence} />
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
               Findings by type
             </p>
             <CountChips counts={summary.findingsByType} />
           </div>
         </div>
       ) : null}
-      <p className="mt-4 text-xs text-slate-500">{run.limitationsNote}</p>
+      <p className="mt-4 text-xs text-slate-600">{run.limitationsNote}</p>
     </div>
   );
 }

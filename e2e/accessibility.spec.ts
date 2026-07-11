@@ -31,12 +31,18 @@ for (const target of PUBLIC_PAGES) {
     const gating = results.violations.filter((violation) =>
       ["serious", "critical"].includes(violation.impact ?? ""),
     );
+    // Include full node detail in the assertion payload so a CI failure
+    // names the exact elements without needing the trace artifact.
     expect(
       gating.map((violation) => ({
         id: violation.id,
         impact: violation.impact,
-        nodes: violation.nodes.length,
         help: violation.help,
+        nodes: violation.nodes.map((node) => ({
+          target: node.target.join(" "),
+          summary: node.failureSummary,
+          html: node.html.slice(0, 200),
+        })),
       })),
     ).toEqual([]);
   });

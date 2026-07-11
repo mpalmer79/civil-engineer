@@ -161,7 +161,7 @@ export default function CadReviewClient() {
             <h3 className="text-base font-semibold text-slate-900">
               Civil feature metadata
             </h3>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-600">
               Seeded or derived CAD-aware review metadata. Real DXF extraction
               happens in CAD Intake.
             </p>
@@ -183,7 +183,7 @@ export default function CadReviewClient() {
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 text-sm">
-            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
               <tr>
                 <th className="px-4 py-3">Feature</th>
                 <th className="px-4 py-3">Entity type</th>
@@ -199,7 +199,7 @@ export default function CadReviewClient() {
                   <td className="px-4 py-3 text-slate-700">
                     {m.entityLabel}
                     {m.notes ? (
-                      <div className="mt-0.5 text-xs text-slate-500">
+                      <div className="mt-0.5 text-xs text-slate-600">
                         {m.notes}
                       </div>
                     ) : null}
@@ -210,13 +210,13 @@ export default function CadReviewClient() {
                   <td className="px-4 py-3 text-slate-600">
                     {m.discipline.replace(/_/g, " ")}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-500">
+                  <td className="px-4 py-3 font-mono text-xs text-slate-600">
                     {m.sheetId ?? "-"}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-500">
+                  <td className="px-4 py-3 font-mono text-xs text-slate-600">
                     {m.layerName ?? "-"}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">
+                  <td className="px-4 py-3 text-xs text-slate-600">
                     {m.sourceType.replace(/_/g, " ")}
                   </td>
                 </tr>
@@ -231,14 +231,14 @@ export default function CadReviewClient() {
           <h3 className="text-base font-semibold text-slate-900">
             Civil feature references
           </h3>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-600">
             Where the package points from a document, sheet, or feature to
             another, and whether the target was located and labels agree.
           </p>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200 text-sm">
-            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+            <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
               <tr>
                 <th className="px-4 py-3">Reference</th>
                 <th className="px-4 py-3">Context</th>
@@ -251,7 +251,7 @@ export default function CadReviewClient() {
                   <td className="px-4 py-3 text-slate-700">
                     {r.referenceLabel}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">
+                  <td className="px-4 py-3 text-xs text-slate-600">
                     {r.referenceContext}
                   </td>
                   <td className="px-4 py-3">
@@ -269,13 +269,13 @@ export default function CadReviewClient() {
           <h3 className="text-base font-semibold text-slate-900">
             Plan consistency findings
           </h3>
-          <p className="mt-1 text-xs text-slate-500">
+          <p className="mt-1 text-xs text-slate-600">
             Review-support findings generated from the plan references and
             sheets. Each one requires human review.
           </p>
         </div>
         {findings.length === 0 ? (
-          <p className="px-4 py-4 text-sm text-slate-500">
+          <p className="px-4 py-4 text-sm text-slate-600">
             No plan consistency findings yet. Run the plan consistency check to
             generate them.
           </p>
@@ -294,7 +294,7 @@ export default function CadReviewClient() {
                   {f.title}
                 </h4>
                 <p className="mt-1 text-sm text-slate-600">{f.summary}</p>
-                <p className="mt-2 text-xs text-slate-500">
+                <p className="mt-2 text-xs text-slate-600">
                   <span className="font-semibold text-slate-700">
                     Recommended human action:
                   </span>{" "}
@@ -303,7 +303,7 @@ export default function CadReviewClient() {
                 {f.relatedSheetIds.length ||
                 f.relatedCadMetadataIds.length ||
                 f.relatedChecklistItems.length ? (
-                  <p className="mt-2 text-xs text-slate-400">
+                  <p className="mt-2 text-xs text-slate-500">
                     sheets: {f.relatedSheetIds.join(", ") || "-"} · features:{" "}
                     {f.relatedCadMetadataIds.join(", ") || "-"} · checklist:{" "}
                     {f.relatedChecklistItems.join(", ") || "-"}

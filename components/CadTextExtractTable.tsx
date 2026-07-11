@@ -8,7 +8,7 @@ export default function CadTextExtractTable({
 }) {
   if (texts.length === 0) {
     return (
-      <div className="surface-card p-6 text-sm text-slate-500">
+      <div className="surface-card p-6 text-sm text-slate-600">
         No text extracted.
       </div>
     );
@@ -17,7 +17,7 @@ export default function CadTextExtractTable({
     <div className="surface-card overflow-x-auto p-0">
       <table className="min-w-full divide-y divide-slate-100 text-sm">
         <thead>
-          <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
+          <tr className="text-left text-xs uppercase tracking-wide text-slate-600">
             <th className="px-4 py-3">Text</th>
             <th className="px-4 py-3">Reference type</th>
             <th className="px-4 py-3">Layer</th>
@@ -33,10 +33,10 @@ export default function CadTextExtractTable({
               <td className="px-4 py-2 text-slate-600">
                 {text.referenceType.replace(/_/g, " ")}
               </td>
-              <td className="px-4 py-2 text-slate-500">
+              <td className="px-4 py-2 text-slate-600">
                 {text.layerName ?? "n/a"}
               </td>
-              <td className="px-4 py-2 text-slate-500">
+              <td className="px-4 py-2 text-slate-600">
                 {text.reviewCategory.replace(/_/g, " ")}
               </td>
             </tr>

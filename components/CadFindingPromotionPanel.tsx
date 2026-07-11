@@ -36,7 +36,7 @@ export default function CadFindingPromotionPanel({
         <div>
           <label
             htmlFor="cad-promotion-reviewer-name"
-            className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+            className="block text-xs font-semibold uppercase tracking-wide text-slate-600"
           >
             Reviewer name
           </label>
@@ -51,7 +51,7 @@ export default function CadFindingPromotionPanel({
         <div>
           <label
             htmlFor="cad-promotion-reviewer-note"
-            className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+            className="block text-xs font-semibold uppercase tracking-wide text-slate-600"
           >
             Reviewer note (optional)
           </label>

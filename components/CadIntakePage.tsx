@@ -319,7 +319,7 @@ export default function CadIntakePage({
 
   if (!loaded) {
     return (
-      <div className="surface-card p-6 text-sm text-slate-500">
+      <div className="surface-card p-6 text-sm text-slate-600">
         Loading CAD intake...
       </div>
     );
@@ -386,7 +386,7 @@ export default function CadIntakePage({
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-600">
               DXF parsing extracts metadata and references only. It does not
               verify CAD or validate the design.
             </p>
@@ -449,7 +449,7 @@ export default function CadIntakePage({
                     Blocks
                   </h3>
                   {blocks.length === 0 ? (
-                    <p className="mt-2 text-sm text-slate-500">
+                    <p className="mt-2 text-sm text-slate-600">
                       No blocks extracted.
                     </p>
                   ) : (
@@ -462,7 +462,7 @@ export default function CadIntakePage({
                           <span className="font-medium text-slate-800">
                             {block.blockName}
                           </span>
-                          <span className="ml-2 text-xs text-slate-500">
+                          <span className="ml-2 text-xs text-slate-600">
                             {block.insertCount} insert(s)
                           </span>
                         </li>

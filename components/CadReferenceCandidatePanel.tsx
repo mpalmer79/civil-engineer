@@ -17,7 +17,7 @@ export default function CadReferenceCandidatePanel({
 }) {
   if (candidates.length === 0) {
     return (
-      <div className="surface-card p-6 text-sm text-slate-500">
+      <div className="surface-card p-6 text-sm text-slate-600">
         No reference candidates detected.
       </div>
     );
@@ -46,7 +46,7 @@ export default function CadReferenceCandidatePanel({
                 {candidate.confidenceLabel.replace(/_/g, " ")}
               </span>
             </div>
-            <p className="mt-0.5 text-xs text-slate-500">
+            <p className="mt-0.5 text-xs text-slate-600">
               {candidate.referenceType.replace(/_/g, " ")} ·{" "}
               {candidate.matchReason}
             </p>
