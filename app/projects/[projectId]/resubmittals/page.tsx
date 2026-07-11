@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -19,13 +20,20 @@ export default async function ResubmittalRoundsPage(
   }
 ) {
   const params = await props.params;
-  const [project, rounds] = await Promise.all([
+  const [projectResult, roundsResult] = await Promise.all([
     getProjectDetail(params.projectId),
     listResubmittalRounds(params.projectId),
   ]);
-  if (!project) {
-    notFound();
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
+  const rounds = roundsResult.ok ? roundsResult.data : null;
   const base = `/projects/${params.projectId}`;
 
   return (

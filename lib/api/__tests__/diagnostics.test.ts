@@ -1,3 +1,4 @@
+import { unwrap } from "./testHelpers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 
@@ -61,7 +62,7 @@ describe("diagnostics API client", () => {
     } as Response);
     globalThis.fetch = fetchMock;
 
-    const result = await getReadiness();
+    const result = unwrap(await getReadiness());
     expect(result?.status).toBe("ready");
     expect(result?.demoMode).toBe(true);
     expect(result?.checks).toHaveLength(3);
@@ -76,7 +77,7 @@ describe("diagnostics API client", () => {
     } as Response);
     globalThis.fetch = fetchMock;
 
-    const result = await getEnvironmentDiagnostics();
+    const result = unwrap(await getEnvironmentDiagnostics());
     expect(result?.overallStatus).toBe("ready");
     expect(result?.items[0].publicHint).toBe("1.0.0");
     const init = fetchMock.mock.calls[0][1] as RequestInit;
@@ -87,7 +88,7 @@ describe("diagnostics API client", () => {
     );
   });
 
-  it("sends auth headers on storage diagnostics and returns null on 401", async () => {
+  it("reports an explicit unauthenticated failure on 401 storage diagnostics", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
@@ -96,14 +97,16 @@ describe("diagnostics API client", () => {
     globalThis.fetch = fetchMock;
 
     const result = await getStorageDiagnostics();
-    expect(result).toBeNull();
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.kind).toBe("unauthenticated");
     expect(fetchMock.mock.calls[0][0]).toContain("/api/v1/diagnostics/storage");
   });
 
   it("returns null when the backend is unavailable", async () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error("down"));
     const result = await getReadiness();
-    expect(result).toBeNull();
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.kind).toBe("network");
   });
 
   it("reads public frontend-config and security-boundary diagnostics", async () => {
@@ -129,11 +132,11 @@ describe("diagnostics API client", () => {
         }),
       } as Response);
 
-    const cfg = await getFrontendConfigDiagnostics();
+    const cfg = unwrap(await getFrontendConfigDiagnostics());
     expect(cfg?.apiPrefix).toBe("/api/v1");
     expect(cfg?.frontendEnvVar).toBe("NEXT_PUBLIC_API_BASE_URL");
 
-    const boundary = await getSecurityBoundaryDiagnostics();
+    const boundary = unwrap(await getSecurityBoundaryDiagnostics());
     expect(boundary?.diagnosticsAreOperationalOnly).toBe(true);
     expect(boundary?.prohibitedOutcomeTerms).toContain("approved");
   });

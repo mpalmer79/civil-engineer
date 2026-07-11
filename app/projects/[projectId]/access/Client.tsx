@@ -35,7 +35,7 @@ export default function ProjectAccessPageClient({ projectId }: { projectId: stri
 
   const load = () => {
     listProjectAccess(projectId).then((e) => {
-      setEntries(e);
+      setEntries(e.ok ? e.data : null);
       setLoaded(true);
     });
   };

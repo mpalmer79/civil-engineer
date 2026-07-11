@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -60,7 +61,7 @@ describe("Workspace home", () => {
       createdAt: null,
       lastLoginAt: null,
     });
-    listMyOrganizations.mockResolvedValue([
+    listMyOrganizations.mockResolvedValue(ok([
       {
         organizationId: "o1",
         organizationName: "Meadow Civil",
@@ -69,8 +70,8 @@ describe("Workspace home", () => {
         role: "org_admin",
         membershipId: "m1",
       },
-    ]);
-    listMyProjects.mockResolvedValue([
+    ]));
+    listMyProjects.mockResolvedValue(ok([
       {
         projectId: "p1",
         projectName: "Real Project",
@@ -80,7 +81,7 @@ describe("Workspace home", () => {
         organizationId: "o1",
         accessLevel: "reviewer",
       },
-    ]);
+    ]));
     render(<WorkspacePage />);
     await waitFor(() => {
       expect(screen.getByText("Op Erator")).toBeInTheDocument();
@@ -102,8 +103,8 @@ describe("Workspace home", () => {
       createdAt: null,
       lastLoginAt: null,
     });
-    listMyOrganizations.mockResolvedValue([]);
-    listMyProjects.mockResolvedValue([]);
+    listMyOrganizations.mockResolvedValue(ok([]));
+    listMyProjects.mockResolvedValue(ok([]));
     render(<WorkspacePage />);
     await waitFor(() => {
       expect(screen.getByText("Rev Iewer")).toBeInTheDocument();

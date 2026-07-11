@@ -18,7 +18,8 @@ export default function EvidenceTraceabilityMatrix({
 
   useEffect(() => {
     (async () => {
-      setData(await getReviewPacketTraceability(packetId));
+      const dataResult = await getReviewPacketTraceability(packetId);
+      setData(dataResult.ok ? dataResult.data : null);
       setLoaded(true);
     })();
   }, [packetId]);

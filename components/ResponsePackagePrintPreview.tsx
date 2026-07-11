@@ -21,7 +21,8 @@ export default function ResponsePackagePrintPreview({
 
   useEffect(() => {
     (async () => {
-      setView(await getResponsePackagePrintView(packageId));
+      const viewResult = await getResponsePackagePrintView(packageId);
+      setView(viewResult.ok ? viewResult.data : null);
       setLoaded(true);
     })();
   }, [packageId]);

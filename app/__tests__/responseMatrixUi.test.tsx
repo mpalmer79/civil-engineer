@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import {
   cleanup,
   fireEvent,
@@ -214,14 +215,14 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDetail: vi.fn(async () => project),
-    listResponseMatrices: vi.fn(async () => [matrix]),
-    getResponseMatrix: vi.fn(async () => matrix),
-    listResponseMatrixItems: vi.fn(async () => [item]),
-    getResponseMatrixItem: vi.fn(async () => item),
-    listResubmittalRounds: vi.fn(async () => [round]),
-    getResubmittalRound: vi.fn(async () => round),
-    getResubmittalRoundSummary: vi.fn(async () => summary),
+    getProjectDetail: vi.fn(async () => ok(project)),
+    listResponseMatrices: vi.fn(async () => ok([matrix])),
+    getResponseMatrix: vi.fn(async () => ok(matrix)),
+    listResponseMatrixItems: vi.fn(async () => ok([item])),
+    getResponseMatrixItem: vi.fn(async () => ok(item)),
+    listResubmittalRounds: vi.fn(async () => ok([round])),
+    getResubmittalRound: vi.fn(async () => ok(round)),
+    getResubmittalRoundSummary: vi.fn(async () => ok(summary)),
     createResponseMatrix: createMatrixMock,
     recordApplicantResponse: recordResponseMock,
     updateResponseMatrixItem: updateItemMock,

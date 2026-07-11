@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -21,13 +22,20 @@ export default async function ResponsePackagesLandingPage(
   }
 ) {
   const params = await props.params;
-  const [project, packages] = await Promise.all([
+  const [projectResult, packagesResult] = await Promise.all([
     getProjectDetail(params.projectId),
     listResponsePackages(params.projectId),
   ]);
-  if (!project) {
-    notFound();
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
+  const packages = packagesResult.ok ? packagesResult.data : null;
   const base = `/projects/${params.projectId}`;
 
   return (

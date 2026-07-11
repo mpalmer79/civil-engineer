@@ -1,4 +1,6 @@
-import { API_BASE_URL, authHeaders, safeFetch } from "./client";
+import { API_BASE_URL, authHeaders, apiFetch,
+  type ApiResult,
+} from "./client";
 
 // Production Foundations Sprint 8: reviewer response packages. A response package
 // assembles reviewer-selected records into a controlled communication artifact and
@@ -216,10 +218,11 @@ const base = (projectId: string) =>
 
 export async function listResponsePackages(
   projectId: string,
-): Promise<ReviewerResponsePackage[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(base(projectId));
-  if (!data) return null;
-  return data.map(mapPackage);
+): Promise<ApiResult<ReviewerResponsePackage[]>> {
+  const result = await apiFetch<Record<string, unknown>[]>(base(projectId));
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: data.map(mapPackage) };
 }
 
 export async function createResponsePackage(
@@ -246,11 +249,13 @@ export async function createResponsePackage(
 export async function getResponsePackageDetail(
   projectId: string,
   responsePackageId: string,
-): Promise<ReviewerResponsePackage | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<ReviewerResponsePackage>> {
+  const result = await apiFetch<Record<string, unknown>>(
     `${base(projectId)}/${responsePackageId}`,
   );
-  return data ? mapPackage(data) : null;
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: mapPackage(data) };
 }
 
 export async function addMatrixItemsToPackage(
@@ -351,11 +356,13 @@ export async function updateResponsePackageItem(
 export async function previewResponsePackage(
   projectId: string,
   responsePackageId: string,
-): Promise<ResponsePackagePreview | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<ResponsePackagePreview>> {
+  const result = await apiFetch<Record<string, unknown>>(
     `${base(projectId)}/${responsePackageId}/preview`,
   );
-  return data ? mapPreview(data) : null;
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: mapPreview(data) };
 }
 
 export async function markPackageReadyForHandoff(

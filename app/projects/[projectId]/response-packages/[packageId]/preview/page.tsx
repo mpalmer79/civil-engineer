@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import SectionCard from "@/components/SectionCard";
 import { previewResponsePackage } from "@/lib/api";
 
@@ -17,13 +18,19 @@ export default async function ResponsePackagePreviewPage(
   }
 ) {
   const params = await props.params;
-  const preview = await previewResponsePackage(
+  const previewResult = await previewResponsePackage(
     params.projectId,
     params.packageId,
   );
-  if (!preview) {
-    notFound();
+  if (!previewResult.ok) {
+    if (previewResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={previewResult} />
+      </div>
+    );
   }
+  const preview = previewResult.data;
   const base = `/projects/${params.projectId}`;
 
   return (

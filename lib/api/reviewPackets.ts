@@ -6,6 +6,7 @@ import {
   requireArray,
   requireString,
   type ApiResult,
+  apiFetch,
 } from "./client";
 
 // Phase 8: review packet builder and evidence traceability.
@@ -324,26 +325,30 @@ function mapPacketAction(a: ApiPacketAction): ReviewPacketReviewerAction {
 
 export async function getReviewPackets(
   projectId: string = PROJECT_ID,
-): Promise<ReviewPacket[]> {
-  const data = await safeFetch<ApiReviewPacket[]>(
+): Promise<ApiResult<ReviewPacket[]>> {
+  const result = await apiFetch<ApiReviewPacket[]>(
     `/api/v1/projects/${projectId}/review-packets`,
   );
-  return data ? data.map(mapReviewPacket) : [];
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: data.map(mapReviewPacket) };
 }
 
 export async function getReviewPacket(
   packetId: string,
-): Promise<ReviewPacketDetail | null> {
-  const data = await safeFetch<ApiReviewPacket>(
+): Promise<ApiResult<ReviewPacketDetail>> {
+  const result = await apiFetch<ApiReviewPacket>(
     `/api/v1/review-packets/${packetId}`,
   );
-  return data ? mapReviewPacketDetail(data) : null;
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: mapReviewPacketDetail(data) };
 }
 
 export async function getReviewPacketTraceability(
   packetId: string,
-): Promise<ReviewPacketTraceability | null> {
-  const data = await safeFetch<{
+): Promise<ApiResult<ReviewPacketTraceability>> {
+  const result = await apiFetch<{
     packet_id: string;
     project_id: string;
     total_rows: number;
@@ -361,8 +366,11 @@ export async function getReviewPacketTraceability(
     }[];
     note: string;
   }>(`/api/v1/review-packets/${packetId}/traceability`);
-  if (!data) return null;
+  if (!result.ok) return result;
+  const data = result.data;
   return {
+    ...result,
+    data: {
     packetId: data.packet_id,
     projectId: data.project_id,
     totalRows: data.total_rows,
@@ -379,13 +387,14 @@ export async function getReviewPacketTraceability(
       label: r.label,
     })),
     note: data.note,
+    },
   };
 }
 
 export async function getReviewPacketPrintView(
   packetId: string,
-): Promise<ReviewPacketPrintView | null> {
-  const data = await safeFetch<{
+): Promise<ApiResult<ReviewPacketPrintView>> {
+  const result = await apiFetch<{
     packet_id: string;
     project_id: string;
     title: string;
@@ -416,8 +425,11 @@ export async function getReviewPacketPrintView(
     }[];
     traceability_note?: string | null;
   }>(`/api/v1/review-packets/${packetId}/print-view`);
-  if (!data) return null;
+  if (!result.ok) return result;
+  const data = result.data;
   return {
+    ...result,
+    data: {
     packetId: data.packet_id,
     projectId: data.project_id,
     title: data.title,
@@ -447,13 +459,14 @@ export async function getReviewPacketPrintView(
       requiresReviewerConfirmation: r.requires_reviewer_confirmation,
     })),
     traceabilityNote: data.traceability_note ?? null,
+    },
   };
 }
 
 export async function getReviewPacketSummary(
   packetId: string,
-): Promise<ReviewPacketSummary | null> {
-  const data = await safeFetch<{
+): Promise<ApiResult<ReviewPacketSummary>> {
+  const result = await apiFetch<{
     packet_id: string;
     project_id: string;
     status: string;
@@ -465,8 +478,11 @@ export async function getReviewPacketSummary(
     items_by_severity: Record<string, number>;
     items_requiring_human_review: number;
   }>(`/api/v1/review-packets/${packetId}/summary`);
-  if (!data) return null;
+  if (!result.ok) return result;
+  const data = result.data;
   return {
+    ...result,
+    data: {
     packetId: data.packet_id,
     projectId: data.project_id,
     status: data.status,
@@ -477,6 +493,7 @@ export async function getReviewPacketSummary(
     itemsByStatus: data.items_by_status,
     itemsBySeverity: data.items_by_severity,
     itemsRequiringHumanReview: data.items_requiring_human_review,
+    },
   };
 }
 

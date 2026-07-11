@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -20,12 +21,23 @@ export default async function ChecklistItemDetailPage(
   }
 ) {
   const params = await props.params;
-  const [items, matrices, packages] = await Promise.all([
+  const [itemsResult, matricesResult, packagesResult] = await Promise.all([
     listProjectChecklistItems(params.projectId, params.checklistId),
     listResponseMatrices(params.projectId),
     listResponsePackages(params.projectId),
   ]);
-  const item = items?.find((i) => i.projectChecklistItemId === params.itemId);
+  if (!itemsResult.ok) {
+    if (itemsResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={itemsResult} />
+      </div>
+    );
+  }
+  const items = itemsResult.data;
+  const matrices = matricesResult.ok ? matricesResult.data : null;
+  const packages = packagesResult.ok ? packagesResult.data : null;
+  const item = items.find((i) => i.projectChecklistItemId === params.itemId);
   if (!item) {
     notFound();
   }

@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import {
   cleanup,
   fireEvent,
@@ -188,9 +189,9 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDetail: vi.fn(async () => project),
-    getProjectTraceability: vi.fn(async () => traceability),
-    getReviewPacketPrintView: vi.fn(async () => printView),
+    getProjectDetail: vi.fn(async () => ok(project)),
+    getProjectTraceability: vi.fn(async () => ok(traceability)),
+    getReviewPacketPrintView: vi.fn(async () => ok(printView)),
   };
 });
 

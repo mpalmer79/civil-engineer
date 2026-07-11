@@ -133,8 +133,9 @@ export default function ProjectDashboard({
         ) : null}
         <div className="surface-card p-6">
           <p className="text-sm text-slate-600">
-            The command center is unavailable. Command center data is not
-            simulated in the browser. If no snapshot exists yet, generate one.
+            The command center is unavailable for this project. Command center
+            data is not simulated in the browser. If no snapshot exists yet,
+            generate one.
           </p>
           <button
             type="button"

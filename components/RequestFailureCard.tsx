@@ -74,7 +74,7 @@ export default function RequestFailureCard({
   failure: ApiFailure;
   signInHref?: string;
 }) {
-  const copy = COPY[failure.kind];
+  const copy = COPY[failure.kind] ?? COPY.server;
   return (
     <div
       role="status"

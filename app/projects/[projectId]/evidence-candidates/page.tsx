@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -17,14 +18,22 @@ export default async function EvidenceCandidateQueuePage(
   }
 ) {
   const params = await props.params;
-  const [project, candidates, documents] = await Promise.all([
+  const [projectResult, candidatesResult, documentsResult] = await Promise.all([
     getProjectDetail(params.projectId),
     listProjectEvidenceCandidates(params.projectId),
     listProjectDocuments(params.projectId),
   ]);
-  if (!project) {
-    notFound();
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
+  const candidates = candidatesResult.ok ? candidatesResult.data : null;
+  const documents = documentsResult.ok ? documentsResult.data : null;
   const base = `/projects/${project.projectId}`;
   const documentName = (id: string) => {
     const d = documents?.find((doc) => doc.documentId === id);

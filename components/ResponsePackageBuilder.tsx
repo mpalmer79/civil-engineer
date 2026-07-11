@@ -1,5 +1,7 @@
 "use client";
 
+import RequestFailureCard from "@/components/RequestFailureCard";
+import type { ApiFailure } from "@/lib/api/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   generateResponsePackage,
@@ -52,16 +54,19 @@ export default function ResponsePackageBuilder({
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [failure, setFailure] = useState<ApiFailure | null>(null);
 
   const loadPackage = useCallback(async (id: string) => {
-    const [detail, sum, hist] = await Promise.all([
+    const [detailResult, sumResult, histResult] = await Promise.all([
       getResponsePackage(id),
       getResponsePackageSummary(id),
       getResponsePackageHistory(id),
     ]);
+    if (!detailResult.ok) setFailure(detailResult);
+    const detail = detailResult.ok ? detailResult.data : null;
     setPkg(detail);
-    setSummary(sum);
-    setHistory(hist ? hist.actions : []);
+    setSummary(sumResult.ok ? sumResult.data : null);
+    setHistory(histResult.ok ? histResult.data.actions : []);
     if (detail) {
       const firstWithItems = detail.sections.find((s) => s.items.length > 0);
       if (firstWithItems) setSelectedItemId(firstWithItems.items[0].itemId);
@@ -73,9 +78,11 @@ export default function ResponsePackageBuilder({
       if (responsePackageId) {
         await loadPackage(responsePackageId);
       } else {
-        const packages = await getResponsePackages();
-        if (packages.length > 0) {
-          await loadPackage(packages[0].responsePackageId);
+        const packagesResult = await getResponsePackages();
+        if (packagesResult.ok && packagesResult.data.length > 0) {
+          await loadPackage(packagesResult.data[0].responsePackageId);
+        } else if (!packagesResult.ok) {
+          setFailure(packagesResult);
         }
       }
       setLoaded(true);
@@ -84,12 +91,12 @@ export default function ResponsePackageBuilder({
 
   const refresh = useCallback(async () => {
     if (pkg) {
-      const [sum, hist] = await Promise.all([
+      const [sumResult, histResult] = await Promise.all([
         getResponsePackageSummary(pkg.responsePackageId),
         getResponsePackageHistory(pkg.responsePackageId),
       ]);
-      setSummary(sum);
-      setHistory(hist ? hist.actions : []);
+      setSummary(sumResult.ok ? sumResult.data : null);
+      setHistory(histResult.ok ? histResult.data.actions : []);
     }
   }, [pkg]);
 
@@ -154,6 +161,15 @@ export default function ResponsePackageBuilder({
     }
     return null;
   }, [pkg, selectedItemId]);
+
+  if (loaded && !pkg && failure) {
+    return (
+      <div className="space-y-4">
+        <ExternalCommunicationBoundaryNotice />
+        <RequestFailureCard failure={failure} />
+      </div>
+    );
+  }
 
   if (loaded && !pkg) {
     return (

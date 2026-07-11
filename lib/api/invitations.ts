@@ -5,7 +5,9 @@
 // production; outside production the backend also returns a dev token so the
 // flow can be completed locally. The token is never logged.
 
-import { API_BASE_URL, authHeaders, safeFetch } from "./client";
+import { API_BASE_URL, authHeaders, apiFetch,
+  type ApiResult,
+} from "./client";
 
 export type Invitation = {
   invitationId: string;
@@ -92,11 +94,13 @@ async function mutate<T>(
 
 export async function listInvitations(
   organizationId: string,
-): Promise<Invitation[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<Invitation[]>> {
+  const result = await apiFetch<Record<string, unknown>[]>(
     `/api/v1/organizations/${organizationId}/invitations`,
   );
-  return data ? data.map(mapInvitation) : null;
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: data.map(mapInvitation) };
 }
 
 export type CreateInvitationResult = {
@@ -133,12 +137,15 @@ export async function revokeInvitation(
 
 export async function lookupInvitation(
   token: string,
-): Promise<InvitationLookup | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<InvitationLookup>> {
+  const result = await apiFetch<Record<string, unknown>>(
     `/api/v1/invitations/lookup?token=${encodeURIComponent(token)}`,
   );
-  if (!data) return null;
+  if (!result.ok) return result;
+  const data = result.data;
   return {
+    ...result,
+    data: {
     organizationId: data.organization_id as string,
     organizationName: (data.organization_name as string) ?? null,
     email: data.email as string,
@@ -146,6 +153,7 @@ export async function lookupInvitation(
     status: data.status as string,
     acceptable: (data.acceptable as boolean) ?? false,
     expiresAt: (data.expires_at as string) ?? null,
+    },
   };
 }
 

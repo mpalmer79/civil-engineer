@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
@@ -6,10 +7,19 @@ import PlanStatusBadge from "@/components/PlanStatusBadge";
 import { getPlanSheets, getSheetHotspots } from "@/lib/api";
 
 export default async function SheetViewerPage() {
-  const [sheets, hotspots] = await Promise.all([
+  const [sheetsResult, hotspotsResult] = await Promise.all([
     getPlanSheets(),
     getSheetHotspots(),
   ]);
+  if (!sheetsResult.ok) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={sheetsResult} />
+      </div>
+    );
+  }
+  const sheets = sheetsResult.data;
+  const hotspots = hotspotsResult.ok ? hotspotsResult.data : [];
 
   const hotspotCountBySheet: Record<string, number> = {};
   for (const h of hotspots) {

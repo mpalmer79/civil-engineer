@@ -32,15 +32,15 @@ export default function CadReviewClient() {
       getPlanConsistencyFindings(),
       getPlanConsistencySummary(),
     ]);
-    if (meta.length === 0 && refs.length === 0) {
+    if (!meta.ok && !refs.ok) {
       setBackendUp(false);
       return;
     }
     setBackendUp(true);
-    setMetadata(meta);
-    setReferences(refs);
-    setFindings(finds);
-    setSummary(sum);
+    setMetadata(meta.ok ? meta.data : []);
+    setReferences(refs.ok ? refs.data : []);
+    setFindings(finds.ok ? finds.data : []);
+    setSummary(sum.ok ? sum.data : null);
   }, []);
 
   useEffect(() => {
@@ -66,7 +66,8 @@ export default function CadReviewClient() {
     const result = await runPlanConsistencyCheck();
     if (result.ok && result.summary) {
       setSummary(result.summary);
-      setFindings(await getPlanConsistencyFindings());
+      const findsResult = await getPlanConsistencyFindings();
+      setFindings(findsResult.ok ? findsResult.data : []);
       setMessage(
         `Plan consistency check completed: ${result.summary.planConsistencyFindings} findings require human review.`,
       );

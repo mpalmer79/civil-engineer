@@ -904,8 +904,8 @@ export type CadSelectedPromotionResult = {
   error?: string;
 };
 
-export async function getCadUploadLimits(): Promise<CadUploadLimits | null> {
-  const data = await safeFetch<{
+export async function getCadUploadLimits(): Promise<ApiResult<CadUploadLimits>> {
+  return apiGetMapped<{
     supported_extensions: string[];
     supported_file_types: string[];
     max_file_size_bytes: number;
@@ -913,9 +913,7 @@ export async function getCadUploadLimits(): Promise<CadUploadLimits | null> {
     allowed_validation_statuses: string[];
     allowed_queue_statuses: string[];
     note: string;
-  }>(`/api/v1/cad-upload-limits`);
-  if (!data) return null;
-  return {
+  }, CadUploadLimits>(`/api/v1/cad-upload-limits`, (data) => ({
     supportedExtensions: data.supported_extensions ?? [],
     supportedFileTypes: data.supported_file_types ?? [],
     maxFileSizeBytes: data.max_file_size_bytes,
@@ -923,7 +921,7 @@ export async function getCadUploadLimits(): Promise<CadUploadLimits | null> {
     allowedValidationStatuses: data.allowed_validation_statuses ?? [],
     allowedQueueStatuses: data.allowed_queue_statuses ?? [],
     note: data.note,
-  };
+  }));
 }
 
 export async function uploadCadFile(
@@ -1027,8 +1025,8 @@ export async function requestCadParse(cadFileId: string): Promise<{
   }
 }
 
-export async function getCadParseQueue(projectId: string = PROJECT_ID): Promise<CadParseQueueItem[]> {
-  const data = await safeFetch<
+export async function getCadParseQueue(projectId: string = PROJECT_ID): Promise<ApiResult<CadParseQueueItem[]>> {
+  return apiGetMapped<
     {
       cad_file_id: string;
       project_id: string;
@@ -1046,11 +1044,10 @@ export async function getCadParseQueue(projectId: string = PROJECT_ID): Promise<
       parse_requested_at: string | null;
       parse_completed_at: string | null;
       requires_human_review: boolean;
-    }[]
-  >(`/api/v1/projects/${projectId}/cad-parse-queue`);
-  if (!data) return [];
-  return data.map((r) => ({
-    cadFileId: r.cad_file_id,
+    }[],
+    CadParseQueueItem[]
+  >(`/api/v1/projects/${projectId}/cad-parse-queue`, (data) => data.map((r) => ({
+    cadFileId: requireString(r.cad_file_id, "cad_file_id"),
     projectId: r.project_id,
     fileName: r.file_name,
     uploadSource: r.upload_source,
@@ -1066,11 +1063,11 @@ export async function getCadParseQueue(projectId: string = PROJECT_ID): Promise<
     parseRequestedAt: r.parse_requested_at,
     parseCompletedAt: r.parse_completed_at,
     requiresHumanReview: r.requires_human_review,
-  }));
+  })));
 }
 
-export async function getCadIntakeDashboard(projectId: string = PROJECT_ID): Promise<CadIntakeDashboard | null> {
-  const data = await safeFetch<{
+export async function getCadIntakeDashboard(projectId: string = PROJECT_ID): Promise<ApiResult<CadIntakeDashboard>> {
+  return apiGetMapped<{
     project_id: string;
     total_files: number;
     files_needing_parse: number;
@@ -1083,10 +1080,8 @@ export async function getCadIntakeDashboard(projectId: string = PROJECT_ID): Pro
     validation_status_counts: Record<string, number>;
     parse_status_counts: Record<string, number>;
     limitations_note: string;
-  }>(`/api/v1/projects/${projectId}/cad-intake/dashboard`);
-  if (!data) return null;
-  return {
-    projectId: data.project_id,
+  }, CadIntakeDashboard>(`/api/v1/projects/${projectId}/cad-intake/dashboard`, (data) => ({
+    projectId: requireString(data.project_id, "project_id"),
     totalFiles: data.total_files,
     filesNeedingParse: data.files_needing_parse,
     filesWithParseFailures: data.files_with_parse_failures,
@@ -1098,14 +1093,14 @@ export async function getCadIntakeDashboard(projectId: string = PROJECT_ID): Pro
     validationStatusCounts: data.validation_status_counts ?? {},
     parseStatusCounts: data.parse_status_counts ?? {},
     limitationsNote: data.limitations_note,
-  };
+  }));
 }
 
-export async function getUnpromotedCadFindings(projectId: string = PROJECT_ID): Promise<UnpromotedCadFinding[]> {
-  const data = await safeFetch<ApiFinding[]>(
+export async function getUnpromotedCadFindings(projectId: string = PROJECT_ID): Promise<ApiResult<UnpromotedCadFinding[]>> {
+  return apiGetMapped<ApiFinding[], UnpromotedCadFinding[]>(
     `/api/v1/projects/${projectId}/cad-review-findings/unpromoted`,
+    (data) => data.map(mapFinding),
   );
-  return data ? data.map(mapFinding) : [];
 }
 
 export async function promoteCadFindingToWorkflow(

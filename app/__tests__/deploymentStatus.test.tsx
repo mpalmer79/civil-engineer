@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -31,8 +32,8 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getReadiness: vi.fn(async () => readiness),
-    getStorageDiagnostics: vi.fn(async () => storage),
+    getReadiness: vi.fn(async () => ok(readiness)),
+    getStorageDiagnostics: vi.fn(async () => ok(storage)),
   };
 });
 

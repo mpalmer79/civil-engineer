@@ -143,7 +143,11 @@ function ProjectVisualCard({ project }: { project: ProjectDetail }) {
 }
 
 export default async function ProjectsPage() {
-  const projects = await listProjects("all");
+  // Mixed surface: the public Brookside demo stays available even when the
+  // authenticated project list cannot load, so a failure renders an explicit
+  // alert above the demo section rather than replacing the whole page.
+  const projectsResult = await listProjects("all");
+  const projects = projectsResult.ok ? projectsResult.data : null;
   const demoProjects =
     projects?.filter((p) => p.sourceMode === "demo_fixture") ?? [];
   const realProjects =

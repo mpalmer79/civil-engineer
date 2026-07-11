@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import {
   cleanup,
   fireEvent,
@@ -53,9 +54,9 @@ const ADMIN_ORG = {
 beforeEach(() => {
   for (const fn of Object.values(mocks)) fn.mockReset();
   mocks.isSignedIn.mockReturnValue(true);
-  mocks.listMyOrganizations.mockResolvedValue([ADMIN_ORG]);
-  mocks.listOrganizationMembers.mockResolvedValue([]);
-  mocks.listInvitations.mockResolvedValue([]);
+  mocks.listMyOrganizations.mockResolvedValue(ok([ADMIN_ORG]));
+  mocks.listOrganizationMembers.mockResolvedValue(ok([]));
+  mocks.listInvitations.mockResolvedValue(ok([]));
 });
 
 afterEach(() => cleanup());
@@ -97,7 +98,7 @@ function billingPayload(overrides: Record<string, unknown> = {}) {
 
 describe("WorkspaceBillingClient", () => {
   it("shows an honest unavailable state when checkout is not configured", async () => {
-    mocks.getOrganizationBilling.mockResolvedValue(billingPayload());
+    mocks.getOrganizationBilling.mockResolvedValue(ok(billingPayload()));
     render(<WorkspaceBillingClient />);
     await waitFor(() =>
       expect(
@@ -116,12 +117,10 @@ describe("WorkspaceBillingClient", () => {
   });
 
   it("shows the checkout CTA only when checkout is available", async () => {
-    mocks.getOrganizationBilling.mockResolvedValue(
-      billingPayload({
+    mocks.getOrganizationBilling.mockResolvedValue(ok(billingPayload({
         billing: { enabled: true, mode: "test", message: "Billing is configured." },
         checkoutAvailable: true,
-      }),
-    );
+      }),));
     render(<WorkspaceBillingClient />);
     await waitFor(() =>
       expect(screen.getByText("Subscribe to Professional")).toBeInTheDocument(),
@@ -143,7 +142,7 @@ describe("WorkspaceBillingClient", () => {
 
 describe("WorkspaceUsageClient", () => {
   it("renders advisory usage limits with status", async () => {
-    mocks.getOrganizationUsage.mockResolvedValue({
+    mocks.getOrganizationUsage.mockResolvedValue(ok({
       organizationId: "o1",
       planCode: "demo",
       planName: "Demo",
@@ -154,7 +153,7 @@ describe("WorkspaceUsageClient", () => {
         { key: "documents", category: "document_uploaded", used: 0, limit: 5, status: "ok" },
       ],
       totals: { project_created: 1 },
-    });
+    }));
     render(<WorkspaceUsageClient />);
     await waitFor(() => expect(screen.getByText("Projects")).toBeInTheDocument());
     const text = (document.body.textContent ?? "").toLowerCase();
@@ -206,9 +205,9 @@ describe("WorkspaceTeamClient", () => {
   });
 
   it("hides the invite form for a non-admin member", async () => {
-    mocks.listMyOrganizations.mockResolvedValue([
+    mocks.listMyOrganizations.mockResolvedValue(ok([
       { ...ADMIN_ORG, role: "reviewer" },
-    ]);
+    ]));
     render(<WorkspaceTeamClient />);
     await waitFor(() =>
       expect(screen.getByText("Team management")).toBeInTheDocument(),
@@ -277,7 +276,7 @@ describe("Password reset", () => {
 describe("AcceptInviteClient", () => {
   it("previews the invitation and accepts when signed in", async () => {
     mocks.isSignedIn.mockReturnValue(true);
-    mocks.lookupInvitation.mockResolvedValue({
+    mocks.lookupInvitation.mockResolvedValue(ok({
       organizationId: "o1",
       organizationName: "Acme Civil",
       email: "t@example.com",
@@ -285,7 +284,7 @@ describe("AcceptInviteClient", () => {
       status: "pending",
       acceptable: true,
       expiresAt: null,
-    });
+    }));
     mocks.acceptInvitation.mockResolvedValue({
       ok: true,
       backendReachable: true,
@@ -301,7 +300,7 @@ describe("AcceptInviteClient", () => {
 
   it("prompts sign-in when signed out", async () => {
     mocks.isSignedIn.mockReturnValue(false);
-    mocks.lookupInvitation.mockResolvedValue({
+    mocks.lookupInvitation.mockResolvedValue(ok({
       organizationId: "o1",
       organizationName: "Acme Civil",
       email: "t@example.com",
@@ -309,7 +308,7 @@ describe("AcceptInviteClient", () => {
       status: "pending",
       acceptable: true,
       expiresAt: null,
-    });
+    }));
     render(<AcceptInviteClient token="invtok" />);
     await waitFor(() =>
       expect(document.querySelector('a[href="/login"]')).not.toBeNull(),
@@ -319,7 +318,7 @@ describe("AcceptInviteClient", () => {
 
   it("shows an unusable state for an expired invitation", async () => {
     mocks.isSignedIn.mockReturnValue(true);
-    mocks.lookupInvitation.mockResolvedValue({
+    mocks.lookupInvitation.mockResolvedValue(ok({
       organizationId: "o1",
       organizationName: "Acme Civil",
       email: "t@example.com",
@@ -327,7 +326,7 @@ describe("AcceptInviteClient", () => {
       status: "expired",
       acceptable: false,
       expiresAt: null,
-    });
+    }));
     render(<AcceptInviteClient token="invtok" />);
     await waitFor(() => {
       const text = (document.body.textContent ?? "").toLowerCase();

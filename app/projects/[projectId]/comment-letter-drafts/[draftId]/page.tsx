@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import CommentLetterEditor from "@/components/CommentLetterEditor";
 import { getCommentLetterDraft } from "@/lib/api";
 
@@ -17,10 +18,16 @@ export default async function CommentLetterDraftPage(
   }
 ) {
   const params = await props.params;
-  const draft = await getCommentLetterDraft(params.projectId, params.draftId);
-  if (!draft) {
-    notFound();
+  const draftResult = await getCommentLetterDraft(params.projectId, params.draftId);
+  if (!draftResult.ok) {
+    if (draftResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={draftResult} />
+      </div>
+    );
   }
+  const draft = draftResult.data;
   const base = `/projects/${params.projectId}`;
 
   return (

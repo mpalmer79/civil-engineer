@@ -1,3 +1,4 @@
+import { unwrap } from "./testHelpers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -44,7 +45,7 @@ describe("Phase 13 review cycle API mapping", () => {
         updated_at: "2026-06-25T00:00:00Z",
       },
     ]);
-    const cycles = await getReviewCycles();
+    const cycles = unwrap(await getReviewCycles());
     expect(cycles).toHaveLength(1);
     expect(cycles[0].reviewCycleId).toBe("cycle_1");
     expect(cycles[0].cycleNumber).toBe(1);
@@ -87,7 +88,7 @@ describe("Phase 13 review cycle API mapping", () => {
       next_cycle_ready: true,
       limitations_note: "review support only",
     });
-    const dashboard = await getReviewCycleDashboard();
+    const dashboard = unwrap(await getReviewCycleDashboard());
     expect(dashboard?.cycleCount).toBe(2);
     expect(dashboard?.reviewCycles).toHaveLength(1);
     expect(dashboard?.reviewCycles[0].cycleName).toBe("Review round 2");
@@ -130,7 +131,7 @@ describe("Phase 13 review cycle API mapping", () => {
       applicant_responses: [],
       note: "review support only",
     });
-    const pkg = await getResubmittalPackage("resub_1");
+    const pkg = unwrap(await getResubmittalPackage("resub_1"));
     expect(pkg?.packageName).toBe("Resubmittal 1");
     expect(pkg?.documents).toHaveLength(1);
     expect(pkg?.documents?.[0].documentType).toBe("dxf_cad_file");
@@ -159,7 +160,7 @@ describe("Phase 13 review cycle API mapping", () => {
         created_at: "2026-06-25T00:00:00Z",
       },
     ]);
-    const changes = await getRevisionChanges("rev_1");
+    const changes = unwrap(await getRevisionChanges("rev_1"));
     expect(changes[0].changeType).toBe("added");
     expect(changes[0].currentValue).toBe("C-8.8");
   });
@@ -174,7 +175,8 @@ describe("Phase 13 review cycle API mapping", () => {
   it("reports the backend unreachable on a network failure", async () => {
     mockFetchUnreachable();
     const cycles = await getReviewCycles();
-    expect(cycles).toEqual([]);
+    expect(cycles.ok).toBe(false);
+    if (!cycles.ok) expect(cycles.kind).toBe("network");
 
     const result = await createReviewCycle("Round 2");
     expect(result.ok).toBe(false);

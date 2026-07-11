@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import {
   cleanup,
   fireEvent,
@@ -68,15 +69,15 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDocument: vi.fn(async () => baseDoc),
-    getProjectDetail: vi.fn(async () => ({
+    getProjectDocument: vi.fn(async () => ok(baseDoc)),
+    getProjectDetail: vi.fn(async () => ok(({
       projectId: "proj_user_1",
       projectName: "Storage Project",
-    })),
-    listProjectDocuments: vi.fn(async () => [
+    }))),
+    listProjectDocuments: vi.fn(async () => ok([
       baseDoc,
       { ...baseDoc, documentId: "doc_user_2", fileAvailable: false },
-    ]),
+    ])),
     downloadDocument: downloadMock,
   };
 });
@@ -114,7 +115,7 @@ describe("Document detail page", () => {
   it("gates indexing on file availability", async () => {
     const apiModule = await import("@/lib/api");
     (apiModule.getProjectDocument as unknown as ReturnType<typeof vi.fn>)
-      .mockResolvedValueOnce({ ...baseDoc, fileAvailable: false });
+      .mockResolvedValueOnce(ok({ ...baseDoc, fileAvailable: false }));
     render(
       await DocumentDetailPage({
         params: Promise.resolve({ projectId, documentId: "doc_user_1" }),

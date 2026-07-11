@@ -1,4 +1,6 @@
-import { API_BASE_URL, authHeaders, safeFetch } from "./client";
+import { API_BASE_URL, authHeaders, apiFetch,
+  type ApiResult,
+} from "./client";
 
 // Production Foundations Sprint 7: applicant response matrix. Reviewer-controlled
 // response tracking across resubmittal rounds. An applicant response is recorded
@@ -151,12 +153,13 @@ async function postJson<T>(
 
 export async function listResponseMatrices(
   projectId: string,
-): Promise<ResponseMatrix[] | null> {
-  const data = await safeFetch<Record<string, unknown>[]>(
+): Promise<ApiResult<ResponseMatrix[]>> {
+  const result = await apiFetch<Record<string, unknown>[]>(
     `/api/v1/projects/${projectId}/response-matrices`,
   );
-  if (!data) return null;
-  return data.map(mapMatrix);
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: data.map(mapMatrix) };
 }
 
 export async function createResponseMatrix(
@@ -173,11 +176,13 @@ export async function createResponseMatrix(
 export async function getResponseMatrix(
   projectId: string,
   responseMatrixId: string,
-): Promise<ResponseMatrix | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<ResponseMatrix>> {
+  const result = await apiFetch<Record<string, unknown>>(
     `/api/v1/projects/${projectId}/response-matrices/${responseMatrixId}`,
   );
-  return data ? mapMatrix(data) : null;
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: mapMatrix(data) };
 }
 
 export async function addFindingToMatrix(
@@ -210,25 +215,27 @@ export async function listResponseMatrixItems(
   projectId: string,
   matrixId: string,
   filters?: { applicantResponseStatus?: string },
-): Promise<ResponseMatrixItem[] | null> {
+): Promise<ApiResult<ResponseMatrixItem[]>> {
   const params = filters?.applicantResponseStatus
     ? `?applicant_response_status=${filters.applicantResponseStatus}`
     : "";
-  const data = await safeFetch<Record<string, unknown>[]>(
+  const result = await apiFetch<Record<string, unknown>[]>(
     `/api/v1/projects/${projectId}/response-matrices/${matrixId}/items${params}`,
   );
-  if (!data) return null;
-  return data.map(mapItem);
+  if (!result.ok) return result;
+  return { ...result, data: result.data.map(mapItem) };
 }
 
 export async function getResponseMatrixItem(
   projectId: string,
   itemId: string,
-): Promise<ResponseMatrixItem | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<ResponseMatrixItem>> {
+  const result = await apiFetch<Record<string, unknown>>(
     `/api/v1/projects/${projectId}/response-matrix-items/${itemId}`,
   );
-  return data ? mapItem(data) : null;
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: mapItem(data) };
 }
 
 export async function updateResponseMatrixItem(

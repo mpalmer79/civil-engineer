@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -95,7 +96,7 @@ afterEach(() => {
 
 describe("Projects workspace", () => {
   it("renders a workspace header with a create project record action", async () => {
-    listProjectsMock.mockResolvedValue([demoProject, userProject]);
+    listProjectsMock.mockResolvedValue(ok([demoProject, userProject]));
     render(await ProjectsPage());
     expect(screen.getByText("Projects")).toBeInTheDocument();
     expect(
@@ -104,7 +105,7 @@ describe("Projects workspace", () => {
   });
 
   it("separates the public demo from real project records", async () => {
-    listProjectsMock.mockResolvedValue([demoProject, userProject]);
+    listProjectsMock.mockResolvedValue(ok([demoProject, userProject]));
     render(await ProjectsPage());
     expect(screen.getByText("Real project records")).toBeInTheDocument();
     expect(screen.getByText("Public guided demo")).toBeInTheDocument();
@@ -120,7 +121,7 @@ describe("Projects workspace", () => {
   });
 
   it("shows a polished empty state when no real project records exist", async () => {
-    listProjectsMock.mockResolvedValue([demoProject]);
+    listProjectsMock.mockResolvedValue(ok([demoProject]));
     render(await ProjectsPage());
     expect(
       screen.getByText("No real project records yet"),
@@ -130,14 +131,14 @@ describe("Projects workspace", () => {
   });
 
   it("surfaces a backend alert without hiding the error", async () => {
-    listProjectsMock.mockResolvedValue(null);
+    listProjectsMock.mockResolvedValue({ ok: false, kind: "network", message: "Backend unavailable.", retryable: true });
     render(await ProjectsPage());
     const alert = screen.getByRole("alert");
     expect(alert).toHaveTextContent("Backend required");
   });
 
   it("uses no prohibited final-decision wording", async () => {
-    listProjectsMock.mockResolvedValue([demoProject, userProject]);
+    listProjectsMock.mockResolvedValue(ok([demoProject, userProject]));
     const { container } = render(await ProjectsPage());
     const text = (container.textContent ?? "").toLowerCase();
     for (const word of PROHIBITED_WORDS) {

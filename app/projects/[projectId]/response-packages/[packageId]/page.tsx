@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
@@ -22,13 +23,20 @@ export default async function ResponsePackageDetailPage(
   }
 ) {
   const params = await props.params;
-  const [pkg, findings] = await Promise.all([
+  const [pkgResult, findingsResult] = await Promise.all([
     getResponsePackageDetail(params.projectId, params.packageId),
     listProjectFindings(params.projectId),
   ]);
-  if (!pkg) {
-    notFound();
+  if (!pkgResult.ok) {
+    if (pkgResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={pkgResult} />
+      </div>
+    );
   }
+  const pkg = pkgResult.data;
+  const findings = findingsResult.ok ? findingsResult.data : null;
   const base = `/projects/${params.projectId}`;
   const items = pkg.items ?? [];
 

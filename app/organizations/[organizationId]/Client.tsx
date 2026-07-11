@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ApiFailure } from "@/lib/api/client";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import Link from "next/link";
 
 import PageHeader from "@/components/PageHeader";
@@ -20,6 +22,7 @@ export default function OrganizationPageClient({ organizationId }: { organizatio
   const [org, setOrg] = useState<Organization | null>(null);
   const [members, setMembers] = useState<Membership[] | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [failure, setFailure] = useState<ApiFailure | null>(null);
   const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
@@ -30,8 +33,10 @@ export default function OrganizationPageClient({ organizationId }: { organizatio
       listOrganizationMembers(organizationId),
     ]).then(([o, m]) => {
       if (!active) return;
-      setOrg(o);
-      setMembers(m);
+      setOrg(o.ok ? o.data : null);
+      setMembers(m.ok ? m.data : null);
+      const firstFailure = [o, m].find((r) => !r.ok);
+      setFailure(firstFailure && !firstFailure.ok ? firstFailure : null);
       setLoaded(true);
     });
     return () => {
@@ -47,6 +52,7 @@ export default function OrganizationPageClient({ organizationId }: { organizatio
         description="Organization metadata and members. Member roles control review access; they do not approve plans, certify compliance, or determine engineering outcomes."
       />
       <div className="mx-auto max-w-4xl space-y-6 px-4 py-10 sm:px-6 lg:px-8">
+        {failure ? <RequestFailureCard failure={failure} /> : null}
         <Link href="/organizations" className="nav-link">
           Back to organizations
         </Link>

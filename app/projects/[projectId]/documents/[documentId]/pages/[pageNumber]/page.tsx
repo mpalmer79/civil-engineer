@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import SectionCard from "@/components/SectionCard";
 import EvidenceCitationForm from "@/components/EvidenceCitationForm";
 import { getDocumentPage } from "@/lib/api";
@@ -15,14 +16,20 @@ export default async function DocumentPageDetail(
 ) {
   const params = await props.params;
   const pageNumber = Number(params.pageNumber);
-  const page = await getDocumentPage(
+  const pageResult = await getDocumentPage(
     params.projectId,
     params.documentId,
     pageNumber,
   );
-  if (!page) {
-    notFound();
+  if (!pageResult.ok) {
+    if (pageResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={pageResult} />
+      </div>
+    );
   }
+  const page = pageResult.data;
   const base = `/projects/${params.projectId}/documents/${params.documentId}`;
   const hasText =
     page.textExtractionStatus === "text_extracted" && !!page.extractedText;

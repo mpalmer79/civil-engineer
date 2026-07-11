@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import PageHeader from "@/components/PageHeader";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import RevisionComparisonSummaryCard from "@/components/RevisionComparisonSummaryCard";
@@ -11,10 +12,19 @@ export default async function RevisionComparisonDetailRoute(
   }
 ) {
   const params = await props.params;
-  const [run, changes] = await Promise.all([
+  const [runResult, changesResult] = await Promise.all([
     getRevisionComparison(params.comparisonRunId),
     getRevisionChanges(params.comparisonRunId),
   ]);
+  if (!runResult.ok) {
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={runResult} />
+      </div>
+    );
+  }
+  const run = runResult.data;
+  const changes = changesResult.ok ? changesResult.data : [];
 
   return (
     <div>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import SectionCard from "@/components/SectionCard";
 import MetricCard from "@/components/MetricCard";
 import EmptyState from "@/components/EmptyState";
@@ -26,15 +27,31 @@ export default async function PlanSheetIndexPage(
   }
 ) {
   const params = await props.params;
-  const project = await getProjectDetail(params.projectId);
-  if (!project) {
-    notFound();
+  const projectResult = await getProjectDetail(params.projectId);
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
   const base = `/projects/${project.projectId}`;
-  const [sheets, summary] = await Promise.all([
+  const [sheetsResult, summaryResult] = await Promise.all([
     getPlanSheets(project.projectId),
     getPlanSheetSummary(project.projectId),
   ]);
+  if (!sheetsResult.ok) {
+    if (sheetsResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={sheetsResult} />
+      </div>
+    );
+  }
+  const sheets = sheetsResult.data;
+  const summary = summaryResult.ok ? summaryResult.data : null;
 
   return (
     <div>

@@ -31,11 +31,11 @@ export default function WorkspaceBillingClient() {
     const authed = isSignedIn();
     setSignedIn(authed);
     if (!authed) return;
-    listMyOrganizations().then((o) => setOrgs(o));
+    listMyOrganizations().then((o) => setOrgs(o.ok ? o.data : null));
   }, []);
 
   useEffect(() => {
-    if (orgId) getOrganizationBilling(orgId).then((b) => setBilling(b));
+    if (orgId) getOrganizationBilling(orgId).then((b) => setBilling(b.ok ? b.data : null));
   }, [orgId]);
 
   const handleCheckout = async () => {

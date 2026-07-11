@@ -275,7 +275,12 @@ describe("Review packet handoff traceability state", () => {
 
   it("renders traceability review state and keeps draft notice and limitations", async () => {
     const api = await import("@/lib/api");
-    vi.spyOn(api, "getReviewPacketPrintView").mockResolvedValue(printView);
+    vi.spyOn(api, "getReviewPacketPrintView").mockResolvedValue({
+      ok: true,
+      data: printView,
+      source: "backend",
+      status: 200,
+    });
 
     render(<ReviewPacketPrintPreview packetId="pkt_1" />);
 

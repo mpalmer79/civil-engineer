@@ -1,3 +1,4 @@
+import { unwrap } from "./testHelpers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -47,7 +48,7 @@ describe("CAD intake API mapping", () => {
       },
     ]);
 
-    const files = await getCadFiles();
+    const files = unwrap(await getCadFiles());
     expect(files).toHaveLength(1);
     expect(files[0].cadFileId).toBe("cad_1");
     expect(files[0].fileType).toBe("dxf");
@@ -74,7 +75,7 @@ describe("CAD intake API mapping", () => {
       limitations_note: "DXF metadata extraction for review support only.",
     });
 
-    const summary = await getCadParseSummary("cadrun_1");
+    const summary = unwrap(await getCadParseSummary("cadrun_1"));
     expect(summary).not.toBeNull();
     expect(summary?.entityCount).toBe(23);
     expect(summary?.referencesByConfidence).toEqual({
@@ -106,7 +107,7 @@ describe("CAD intake API mapping", () => {
       },
     ]);
 
-    const findings = await getCadReviewFindings();
+    const findings = unwrap(await getCadReviewFindings());
     expect(findings[0].findingType).toBe("missing_plan_sheet_match");
     expect(findings[0].status).toBe("draft");
     expect(findings[0].requiresHumanReview).toBe(true);
@@ -122,7 +123,8 @@ describe("CAD intake API mapping", () => {
   it("reports the backend unreachable on a network failure", async () => {
     mockFetchUnreachable();
     const files = await getCadFiles();
-    expect(files).toEqual([]);
+    expect(files.ok).toBe(false);
+    if (!files.ok) expect(files.kind).toBe("network");
 
     const result = await createCadFileRecord();
     expect(result.ok).toBe(false);
@@ -141,7 +143,7 @@ describe("Phase 12 CAD upload, queue, dashboard, and promotion", () => {
       allowed_queue_statuses: ["queued", "parsing", "completed"],
       note: "DXF is the only supported file type.",
     });
-    const limits = await getCadUploadLimits();
+    const limits = unwrap(await getCadUploadLimits());
     expect(limits?.supportedExtensions).toEqual([".dxf"]);
     expect(limits?.maxFileSizeMb).toBe(5);
     expect(limits?.allowedValidationStatuses).toContain("needs_human_review");
@@ -231,7 +233,7 @@ describe("Phase 12 CAD upload, queue, dashboard, and promotion", () => {
         requires_human_review: false,
       },
     ]);
-    const queue = await getCadParseQueue();
+    const queue = unwrap(await getCadParseQueue());
     expect(queue).toHaveLength(1);
     expect(queue[0].queueStatus).toBe("completed");
     expect(queue[0].findingCount).toBe(3);
@@ -252,7 +254,7 @@ describe("Phase 12 CAD upload, queue, dashboard, and promotion", () => {
       parse_status_counts: { completed: 1, failed: 1 },
       limitations_note: "review support only",
     });
-    const dashboard = await getCadIntakeDashboard();
+    const dashboard = unwrap(await getCadIntakeDashboard());
     expect(dashboard?.totalFiles).toBe(2);
     expect(dashboard?.unpromotedFindingsCount).toBe(4);
     expect(dashboard?.queueStatusCounts).toEqual({ completed: 1, failed: 1 });
@@ -281,7 +283,7 @@ describe("Phase 12 CAD upload, queue, dashboard, and promotion", () => {
         created_at: "2026-06-25T00:00:00Z",
       },
     ]);
-    const findings = await getUnpromotedCadFindings();
+    const findings = unwrap(await getUnpromotedCadFindings());
     expect(findings[0].promotedToWorkflow).toBe(false);
     expect(findings[0].linkedWorkflowItemId).toBeNull();
   });

@@ -45,19 +45,19 @@ export default function WorkspaceTeamClient() {
   const orgId = primaryOrg?.organizationId ?? null;
 
   const refresh = useCallback(async (organizationId: string, admin: boolean) => {
-    const [m, inv] = await Promise.all([
+    const [mResult, invResult] = await Promise.all([
       listOrganizationMembers(organizationId),
       admin ? listInvitations(organizationId) : Promise.resolve(null),
     ]);
-    setMembers(m);
-    setInvites(inv);
+    setMembers(mResult.ok ? mResult.data : null);
+    setInvites(invResult && invResult.ok ? invResult.data : null);
   }, []);
 
   useEffect(() => {
     const authed = isSignedIn();
     setSignedIn(authed);
     if (!authed) return;
-    listMyOrganizations().then((o) => setOrgs(o));
+    listMyOrganizations().then((o) => setOrgs(o.ok ? o.data : null));
   }, []);
 
   useEffect(() => {

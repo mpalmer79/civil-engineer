@@ -1,4 +1,6 @@
-import { API_BASE_URL, authHeaders, safeFetch } from "./client";
+import { API_BASE_URL, authHeaders, apiFetch,
+  type ApiResult,
+} from "./client";
 
 // Production Foundations Sprint 6: durable file storage. Document files are
 // stored through a backend storage provider abstraction (local for development,
@@ -56,20 +58,26 @@ function mapStatus(s: Record<string, unknown>): DocumentStorageStatus {
 export async function getDocumentStorageStatus(
   projectId: string,
   documentId: string,
-): Promise<DocumentStorageStatus | null> {
-  const data = await safeFetch<Record<string, unknown>>(
+): Promise<ApiResult<DocumentStorageStatus>> {
+  const result = await apiFetch<Record<string, unknown>>(
     `/api/v1/projects/${projectId}/documents/${documentId}/storage-status`,
   );
-  return data ? mapStatus(data) : null;
+  if (!result.ok) return result;
+  const data = result.data;
+  return { ...result, data: mapStatus(data) };
 }
 
-export async function getStorageHealth(): Promise<StorageHealth | null> {
-  const data = await safeFetch<Record<string, unknown>>("/api/v1/storage/health");
-  if (!data) return null;
+export async function getStorageHealth(): Promise<ApiResult<StorageHealth>> {
+  const result = await apiFetch<Record<string, unknown>>("/api/v1/storage/health");
+  if (!result.ok) return result;
+  const data = result.data;
   return {
+    ...result,
+    data: {
     provider: data.provider as string,
     configured: (data.configured as boolean) ?? false,
     detail: (data.detail as string) ?? null,
+    },
   };
 }
 

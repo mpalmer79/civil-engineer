@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import SectionCard from "@/components/SectionCard";
 import MetricCard from "@/components/MetricCard";
 import EmptyState from "@/components/EmptyState";
@@ -143,16 +144,33 @@ export default async function PlanConsistencyPage(
   }
 ) {
   const params = await props.params;
-  const project = await getProjectDetail(params.projectId);
-  if (!project) {
-    notFound();
+  const projectResult = await getProjectDetail(params.projectId);
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
   const base = `/projects/${project.projectId}`;
-  const [summary, findings, reviewActions] = await Promise.all([
+  const [summaryResult, findingsResult, reviewActionsResult] = await Promise.all([
     getPlanConsistencySummary(project.projectId),
     getPlanConsistencyFindings(project.projectId),
     getPlanConsistencyReviewActions(undefined, project.projectId),
   ]);
+  if (!summaryResult.ok) {
+    if (summaryResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={summaryResult} />
+      </div>
+    );
+  }
+  const summary = summaryResult.data;
+  const findings = findingsResult.ok ? findingsResult.data : [];
+  const reviewActions = reviewActionsResult.ok ? reviewActionsResult.data : [];
   const actionsByFinding = new Map<string, PlanConsistencyReviewAction[]>();
   for (const action of reviewActions) {
     const list = actionsByFinding.get(action.planFindingId) ?? [];

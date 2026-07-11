@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import {
   cleanup,
   fireEvent,
@@ -267,19 +268,19 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDetail: vi.fn(async () => project),
-    listProjectDocuments: vi.fn(async () => [document]),
-    listProjectEvidenceCandidates: vi.fn(async () => [candidate]),
-    getEvidenceCandidate: vi.fn(async () => candidate),
+    getProjectDetail: vi.fn(async () => ok(project)),
+    listProjectDocuments: vi.fn(async () => ok([document])),
+    listProjectEvidenceCandidates: vi.fn(async () => ok([candidate])),
+    getEvidenceCandidate: vi.fn(async () => ok(candidate)),
     searchProjectEvidence: searchEvidenceMock,
     searchProjectChunkEvidence: searchChunkEvidenceMock,
     saveEvidenceCandidate: saveCandidateMock,
     promoteCandidateToDraftFinding: promoteMock,
     buildDocumentChunks: buildChunksMock,
-    getProjectDocument: vi.fn(async () => document),
-    listResubmittalRounds: vi.fn(async () => []),
-    getProjectFinding: vi.fn(async () => null),
-    listFindingCitations: vi.fn(async () => []),
+    getProjectDocument: vi.fn(async () => ok(document)),
+    listResubmittalRounds: vi.fn(async () => ok([])),
+    getProjectFinding: vi.fn(async () => ok(null)),
+    listFindingCitations: vi.fn(async () => ok([])),
   };
 });
 

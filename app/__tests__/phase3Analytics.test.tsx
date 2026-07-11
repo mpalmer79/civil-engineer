@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -135,12 +136,12 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDetail: vi.fn(async () => project),
-    getPlanConsistencySummary: vi.fn(async () => planSummary),
-    getPlanConsistencyFindings: vi.fn(async () => [planFinding]),
-    getPlanConsistencyReviewActions: vi.fn(async () => []),
-    getProjectCommandCenter: vi.fn(async () => ccPayload),
-    getProjectHealthSummary: vi.fn(async () => healthSummary),
+    getProjectDetail: vi.fn(async () => ok(project)),
+    getPlanConsistencySummary: vi.fn(async () => ok(planSummary)),
+    getPlanConsistencyFindings: vi.fn(async () => ok([planFinding])),
+    getPlanConsistencyReviewActions: vi.fn(async () => ok([])),
+    getProjectCommandCenter: vi.fn(async () => ok(ccPayload)),
+    getProjectHealthSummary: vi.fn(async () => ok(healthSummary)),
   };
 });
 

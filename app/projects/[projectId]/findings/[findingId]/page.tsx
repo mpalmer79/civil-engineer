@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
 import AddToResponseMatrixButton from "@/components/AddToResponseMatrixButton";
@@ -22,7 +23,7 @@ export default async function FindingDetailPage(
   }
 ) {
   const params = await props.params;
-  const [finding, citations, candidates, matrices, packages] =
+  const [findingResult, citationsResult, candidatesResult, matricesResult, packagesResult] =
     await Promise.all([
       getProjectFinding(params.projectId, params.findingId),
       listFindingCitations(params.projectId, params.findingId),
@@ -32,9 +33,19 @@ export default async function FindingDetailPage(
       listResponseMatrices(params.projectId),
       listResponsePackages(params.projectId),
     ]);
-  if (!finding) {
-    notFound();
+  if (!findingResult.ok) {
+    if (findingResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={findingResult} />
+      </div>
+    );
   }
+  const finding = findingResult.data;
+  const citations = citationsResult.ok ? citationsResult.data : null;
+  const candidates = candidatesResult.ok ? candidatesResult.data : null;
+  const matrices = matricesResult.ok ? matricesResult.data : null;
+  const packages = packagesResult.ok ? packagesResult.data : null;
   const base = `/projects/${params.projectId}`;
 
   const metadata: [string, string | null][] = [

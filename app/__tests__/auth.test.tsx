@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import {
   cleanup,
   fireEvent,
@@ -76,7 +77,7 @@ vi.mock("@/lib/api", async (importOriginal) => {
     isSignedIn: isSignedInMock,
     logoutUser: logoutMock,
     listMyOrganizations: vi.fn(async () => []),
-    listMyProjects: vi.fn(async () => []),
+    listMyProjects: vi.fn(async () => ok([])),
   };
 });
 

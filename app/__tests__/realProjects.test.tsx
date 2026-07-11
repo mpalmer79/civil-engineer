@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import fs from "node:fs";
 import path from "node:path";
 
@@ -77,9 +78,9 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    listProjects: vi.fn(async () => [demoProject, userProject]),
-    getProjectDetail: vi.fn(async () => userProject),
-    listProjectDocuments: vi.fn(async () => [
+    listProjects: vi.fn(async () => ok([demoProject, userProject])),
+    getProjectDetail: vi.fn(async () => ok(userProject)),
+    listProjectDocuments: vi.fn(async () => ok([
       {
         documentId: "doc_user_1",
         projectId: userProject.projectId,
@@ -101,8 +102,8 @@ vi.mock("@/lib/api", async (importOriginal) => {
         uploadedAt: null,
         registeredAt: "2026-06-26T00:00:00Z",
       },
-    ]),
-    listProjectFindings: vi.fn(async () => [
+    ])),
+    listProjectFindings: vi.fn(async () => ok([
       {
         findingId: "find_user_1",
         projectId: userProject.projectId,
@@ -121,8 +122,8 @@ vi.mock("@/lib/api", async (importOriginal) => {
         createdByName: "Demo Reviewer",
         createdAt: null,
       },
-    ]),
-    listProjectAuditEvents: vi.fn(async () => [
+    ])),
+    listProjectAuditEvents: vi.fn(async () => ok([
       {
         auditEventId: "audit_1",
         projectId: userProject.projectId,
@@ -135,7 +136,7 @@ vi.mock("@/lib/api", async (importOriginal) => {
         timestamp: "2026-06-26T00:00:00Z",
         eventMetadata: { source_mode: "user_created" },
       },
-    ]),
+    ])),
   };
 });
 

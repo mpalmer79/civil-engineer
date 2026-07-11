@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RequestFailureCard from "@/components/RequestFailureCard";
 
 import PageHeader from "@/components/PageHeader";
 import GuidedDemoExperience, {
@@ -23,17 +24,21 @@ function proofCard(value: number | null | undefined, label: string): DemoProofCa
 
 export default async function GuidedDemoPage() {
   // Fixture-backed counts from the seeded Brookside Meadows demo, fetched in
-  // parallel. Each call returns null on a backend miss, so the demo degrades to
-  // qualitative proof cards rather than fake numbers.
-  const [traceability, planSummary, cadFindings] = await Promise.all([
+  // parallel. This is a public demo surface: when the backend misses, the demo
+  // degrades to qualitative proof cards rather than fake numbers or a
+  // full-page failure.
+  const [traceabilityResult, planSummaryResult, cadFindingsResult] = await Promise.all([
     getProjectTraceability(BROOKSIDE_PROJECT_ID),
     getPlanConsistencySummary(BROOKSIDE_PROJECT_ID),
     getCadReviewFindings(BROOKSIDE_PROJECT_ID),
   ]);
+  const traceability = traceabilityResult.ok ? traceabilityResult.data : null;
+  const planSummary = planSummaryResult.ok ? planSummaryResult.data : null;
+  const cadFindings = cadFindingsResult.ok ? cadFindingsResult.data : null;
 
   const summary = traceability?.summary ?? null;
   const proof: DemoProofCard[] = [
-    proofCard(cadFindings.length || null, "CAD review-support findings"),
+    proofCard(cadFindings?.length || null, "CAD review-support findings"),
     proofCard(planSummary?.planConsistencyFindings, "Plan consistency findings"),
     proofCard(summary?.totalTraceabilityRows, "Traceability rows"),
     proofCard(summary?.totalWorkflowItems, "Workflow items"),

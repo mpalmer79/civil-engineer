@@ -1,3 +1,4 @@
+import { unwrap } from "./testHelpers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -31,7 +32,7 @@ describe("getDocumentStorageStatus", () => {
       download_count: 2,
       last_downloaded_at: "2026-06-26T00:00:00Z",
     });
-    const status = await getDocumentStorageStatus("proj_1", "doc_1");
+    const status = unwrap(await getDocumentStorageStatus("proj_1", "doc_1"));
     expect(status?.fileAvailable).toBe(true);
     expect(status?.storageProvider).toBe("local");
     expect(status?.downloadCount).toBe(2);
@@ -45,7 +46,8 @@ describe("getDocumentStorageStatus", () => {
   it("returns null when the backend is unreachable", async () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error("down"));
     const status = await getDocumentStorageStatus("proj_1", "doc_1");
-    expect(status).toBeNull();
+    expect(status.ok).toBe(false);
+    if (!status.ok) expect(status.kind).toBe("network");
   });
 });
 
@@ -56,7 +58,7 @@ describe("getStorageHealth", () => {
       configured: true,
       detail: "Local development storage is configured.",
     });
-    const health = await getStorageHealth();
+    const health = unwrap(await getStorageHealth());
     expect(health?.provider).toBe("local");
     expect(health?.configured).toBe(true);
   });

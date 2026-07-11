@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -190,21 +191,20 @@ vi.mock("@/lib/api", async (importOriginal) => {
   return {
     ...actual,
     getProjectDocument: vi.fn(async (_p: string, id: string) => {
-      if (id === "doc_user_2") return csvDoc;
-      if (id === "doc_user_3") return unindexedPdfDoc;
-      if (id === "doc_user_4") return noTextPdfDoc;
-      return userDoc;
+      if (id === "doc_user_2") return ok(csvDoc);
+      if (id === "doc_user_3") return ok(unindexedPdfDoc);
+      if (id === "doc_user_4") return ok(noTextPdfDoc);
+      return ok(userDoc);
     }),
-    listProjectDocuments: vi.fn(async () => [userDoc, csvDoc]),
-    listDocumentPages: vi.fn(async () => [page, noTextPage]),
+    listProjectDocuments: vi.fn(async () => ok([userDoc, csvDoc])),
+    listDocumentPages: vi.fn(async () => ok([page, noTextPage])),
     getDocumentPage: vi.fn(async (_p: string, _d: string, n: number) =>
-      n === 2 ? noTextPage : page,
-    ),
-    getProjectDetail: vi.fn(async () => project),
-    getProjectFinding: vi.fn(async () => finding),
-    listProjectFindings: vi.fn(async () => [finding]),
-    listFindingCitations: vi.fn(async () => [citation]),
-    listProjectEvidenceCitations: vi.fn(async () => [citation]),
+      ok(n === 2 ? noTextPage : page,)),
+    getProjectDetail: vi.fn(async () => ok(project)),
+    getProjectFinding: vi.fn(async () => ok(finding)),
+    listProjectFindings: vi.fn(async () => ok([finding])),
+    listFindingCitations: vi.fn(async () => ok([citation])),
+    listProjectEvidenceCitations: vi.fn(async () => ok([citation])),
     indexPdfDocument: vi.fn(async () => ({
       ok: true,
       backendReachable: true,

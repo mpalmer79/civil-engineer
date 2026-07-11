@@ -1,3 +1,4 @@
+import { unwrap } from "./testHelpers";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -141,7 +142,7 @@ describe("Phase 14 command center API mapping", () => {
       limitations_note: "does not approve",
     });
 
-    const payload = await getProjectCommandCenter();
+    const payload = unwrap(await getProjectCommandCenter());
     expect(payload?.snapshot.overallStatus).toBe("active_review");
     expect(payload?.healthMetrics[0].sourceRoute).toBe("/workflow-board");
     expect(payload?.attentionItems[0].attentionType).toBe(
@@ -171,7 +172,7 @@ describe("Phase 14 command center API mapping", () => {
       summary: "summary",
       limitations_note: "does not approve",
     });
-    const summary = await getProjectHealthSummary();
+    const summary = unwrap(await getProjectHealthSummary());
     expect(summary?.overallStatus).toBe("needs_attention");
     expect(summary?.readinessReadyCount).toBe(4);
   });
@@ -199,7 +200,8 @@ describe("Phase 14 command center API mapping", () => {
   it("reports the backend unreachable on a network failure", async () => {
     mockFetchUnreachable();
     const payload = await getProjectCommandCenter();
-    expect(payload).toBeNull();
+    expect(payload.ok).toBe(false);
+    if (!payload.ok) expect(payload.kind).toBe("network");
 
     const result = await generateCommandCenterSnapshot();
     expect(result.ok).toBe(false);

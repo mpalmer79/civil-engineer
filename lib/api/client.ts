@@ -252,11 +252,3 @@ export type DemoSourced<T> = {
   data: T;
   source: DemoDataSource;
 };
-
-// Transitional wrapper kept for modules that still model absence as null.
-// It must never be used to substitute seeded data for a failed authenticated
-// request; callers that need failure detail should migrate to apiFetch.
-export async function safeFetch<T>(path: string): Promise<T | null> {
-  const result = await apiFetch<T>(path);
-  return result.ok ? result.data : null;
-}

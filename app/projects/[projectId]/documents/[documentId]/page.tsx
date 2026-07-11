@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
 import IndexPdfButton from "@/components/IndexPdfButton";
@@ -23,13 +24,19 @@ export default async function DocumentDetailPage(
   }
 ) {
   const params = await props.params;
-  const [doc, rounds] = await Promise.all([
+  const [docResult, roundsResult] = await Promise.all([
     getProjectDocument(params.projectId, params.documentId),
     listResubmittalRounds(params.projectId),
   ]);
-  if (!doc) {
-    notFound();
+  if (!docResult.ok) {
+    if (docResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={docResult} />
+      </div>
+    );
   }
+  const doc = docResult.data;
   const base = `/projects/${params.projectId}`;
   const hasFile = doc.sourceMode === "user_uploaded" && doc.uploadStatus === "stored";
   const pdf = isPdf(doc.originalFileName ?? doc.fileName, doc.contentType);
@@ -176,13 +183,15 @@ export default async function DocumentDetailPage(
           </dl>
         </SectionCard>
 
-        {rounds !== null ? (
+        {roundsResult.ok ? (
           <LinkDocumentToResubmittalRound
             projectId={params.projectId}
             documentId={doc.documentId}
-            rounds={rounds}
+            rounds={roundsResult.data}
           />
-        ) : null}
+        ) : (
+          <RequestFailureCard failure={roundsResult} />
+        )}
       </div>
     </div>
   );

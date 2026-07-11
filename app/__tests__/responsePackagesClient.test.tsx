@@ -1,3 +1,4 @@
+import { unwrap } from "@/lib/api/__tests__/testHelpers";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
@@ -84,19 +85,21 @@ afterEach(() => {
 describe("response package client", () => {
   it("maps a list of packages to camelCase", async () => {
     vi.stubGlobal("fetch", mockFetchOnce([rawPackage]));
-    const result = await listResponsePackages("proj_1");
+    const result = unwrap(await listResponsePackages("proj_1"));
     expect(result?.[0].responsePackageId).toBe("rpkg_1");
     expect(result?.[0].packageType).toBe("initial_review_comment_letter");
   });
 
-  it("returns null when the backend is unavailable", async () => {
+  it("reports an explicit network failure when the backend is unavailable", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async () => {
         throw new Error("network");
       }) as unknown as typeof fetch,
     );
-    expect(await listResponsePackages("proj_1")).toBeNull();
+    const result = await listResponsePackages("proj_1");
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.kind).toBe("network");
   });
 
   it("sends a create payload and maps the response", async () => {
@@ -164,7 +167,7 @@ describe("response package client", () => {
         ],
       }),
     );
-    const preview = await previewResponsePackage("proj_1", "rpkg_1");
+    const preview = unwrap(await previewResponsePackage("proj_1", "rpkg_1"));
     expect(preview?.boundaryStatement.toLowerCase()).toContain("does not approve");
     expect(preview?.items[0].reviewerCommentText).toBe("Provide the outlet detail.");
   });
@@ -248,7 +251,7 @@ describe("comment letter client", () => {
         sections: [{ heading: "Introduction", body: "Intro" }],
       }),
     );
-    const preview = await previewCommentLetter("proj_1", "cldraft_1");
+    const preview = unwrap(await previewCommentLetter("proj_1", "cldraft_1"));
     expect(preview?.sections[0].heading).toBe("Introduction");
   });
 });

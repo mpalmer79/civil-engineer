@@ -1,3 +1,4 @@
+import { ok } from "@/lib/api/__tests__/testHelpers";
 import {
   cleanup,
   fireEvent,
@@ -225,12 +226,12 @@ vi.mock("@/lib/api", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@/lib/api")>();
   return {
     ...actual,
-    getProjectDetail: vi.fn(async () => project),
-    listRulePacks: vi.fn(async () => [rulePack]),
-    getRulePack: vi.fn(async () => rulePack),
-    listProjectChecklists: vi.fn(async () => [checklist]),
-    getProjectChecklist: vi.fn(async () => checklist),
-    listProjectChecklistItems: vi.fn(async () => [checklistItem]),
+    getProjectDetail: vi.fn(async () => ok(project)),
+    listRulePacks: vi.fn(async () => ok([rulePack])),
+    getRulePack: vi.fn(async () => ok(rulePack)),
+    listProjectChecklists: vi.fn(async () => ok([checklist])),
+    getProjectChecklist: vi.fn(async () => ok(checklist)),
+    listProjectChecklistItems: vi.fn(async () => ok([checklistItem])),
     createProjectChecklistFromRulePack: createChecklistMock,
     updateProjectChecklistItem: updateItemMock,
     searchChecklistItemEvidence: searchMock,

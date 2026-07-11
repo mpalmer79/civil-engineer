@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import PageHeader from "@/components/PageHeader";
+import RequestFailureCard from "@/components/RequestFailureCard";
 import ProjectDashboard from "@/components/ProjectDashboard";
 import { getProjectDetail } from "@/lib/api";
 
@@ -13,10 +14,16 @@ export default async function ProjectCommandCenterPage(
   }
 ) {
   const params = await props.params;
-  const project = await getProjectDetail(params.projectId);
-  if (!project) {
-    notFound();
+  const projectResult = await getProjectDetail(params.projectId);
+  if (!projectResult.ok) {
+    if (projectResult.kind === "not_found") notFound();
+    return (
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+        <RequestFailureCard failure={projectResult} />
+      </div>
+    );
   }
+  const project = projectResult.data;
   const base = `/projects/${project.projectId}`;
 
   return (
