@@ -1,12 +1,16 @@
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 import DemoDataBadge from "@/components/DemoDataBadge";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import { checklist } from "@/data/checklist";
 import { documents } from "@/data/documents";
 import { findings } from "@/data/findings";
-import { BROOKSIDE_PROJECT_ID, fiveMinutePath, technicalPath } from "@/lib/demoJourney";
+import {
+  BROOKSIDE_PROJECT_ID,
+  fiveMinutePath,
+  technicalPath,
+} from "@/lib/demoJourney";
 
 // Recruiter-first product entry. This page explains what Civil Engineer AI is,
 // who it supports, and how to evaluate it. It intentionally shows no
@@ -22,9 +26,15 @@ const heroImage = {
   alt: "Illustrative preliminary site plan for the synthetic Brookside Meadows case study, showing proposed roads, lots, a stormwater basin, and review evidence callouts",
 } as const;
 
+const workspaceImage = {
+  src: "/images/civil-engineer/dxf-review-report-workspace.webp",
+  alt: "Civil Engineer AI coffee mug beside organized DXF analysis and stormwater review reports on a glass office desk",
+} as const;
+
 // Case-study facts, counted directly from the seeded fixture so the homepage
 // can never drift from the data it describes. The ten planted review issues
 // are documented in docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md (I-1 through I-10).
+
 const caseStudyFacts = [
   { value: "47", label: "Lots in the synthetic subdivision" },
   { value: String(documents.length), label: "Documents in the demo package" },
@@ -109,6 +119,7 @@ export default function HomePage() {
             <p className="text-xs font-semibold uppercase tracking-wider text-water-700">
               Stormwater review support
             </p>
+
             <h1
               id="home-hero-heading"
               className="mt-3 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl"
@@ -116,6 +127,7 @@ export default function HomePage() {
               Review stormwater submissions with evidence, context, and human
               control.
             </h1>
+
             <p className="mt-4 text-base leading-relaxed text-slate-600">
               Civil Engineer AI organizes project documents, plan references,
               review findings, applicant responses, and revision history for
@@ -130,6 +142,7 @@ export default function HomePage() {
               >
                 Start the Brookside Meadows Guided Demo
               </Link>
+
               <Link
                 href="/start-here"
                 className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-water-600"
@@ -152,6 +165,7 @@ export default function HomePage() {
                 />
               </div>
             </div>
+
             <figcaption className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
               <DemoDataBadge label="Synthetic case study" />
               <span>
@@ -165,18 +179,26 @@ export default function HomePage() {
       </section>
 
       {/* Case-study proof points */}
-      <section aria-labelledby="case-study-heading" className="border-b border-slate-100">
+      <section
+        aria-labelledby="case-study-heading"
+        className="border-b border-slate-100"
+      >
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
           <div className="flex flex-col items-start justify-between gap-2 sm:flex-row sm:items-end">
             <div>
-              <h2 id="case-study-heading" className="text-xl font-semibold text-slate-950">
+              <h2
+                id="case-study-heading"
+                className="text-xl font-semibold text-slate-950"
+              >
                 The Brookside Meadows case study
               </h2>
+
               <p className="mt-1 text-sm text-slate-600">
                 Fixed facts from the seeded review fixture, not live operational
                 metrics.
               </p>
             </div>
+
             <DemoDataBadge />
           </div>
 
@@ -186,48 +208,60 @@ export default function HomePage() {
                 key={fact.label}
                 className="rounded-xl border border-slate-200 bg-white p-4 shadow-card"
               >
-                <dd className="text-2xl font-bold text-slate-950">{fact.value}</dd>
+                <dd className="text-2xl font-bold text-slate-950">
+                  {fact.value}
+                </dd>
+
                 <dt className="mt-1 text-xs text-slate-500">{fact.label}</dt>
               </div>
             ))}
           </dl>
 
           <p className="mt-4 text-xs text-slate-500">
-            The ten planted issues (a design storm discrepancy, missing
-            infiltration testing, a basin naming conflict, a missing revised
-            sheet, and others) are documented in the project story and traced
-            through every module, so the same concern is inspectable end to
-            end.
+            The ten planted issues, including a design storm discrepancy,
+            missing infiltration testing, a basin naming conflict, and a missing
+            revised sheet, are documented in the project story and traced
+            through every module. The same concern remains inspectable from
+            intake through reviewer handoff.
           </p>
         </div>
       </section>
 
       {/* Six-stage reviewer workflow */}
-      <section aria-labelledby="workflow-heading" className="border-b border-slate-100 bg-slate-50">
+      <section
+        aria-labelledby="workflow-heading"
+        className="border-b border-slate-100 bg-slate-50"
+      >
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-          <h2 id="workflow-heading" className="text-xl font-semibold text-slate-950">
+          <h2
+            id="workflow-heading"
+            className="text-xl font-semibold text-slate-950"
+          >
             One reviewer journey, six stages
           </h2>
+
           <p className="mt-1 text-sm text-slate-600">
             Each stage links into the seeded Brookside Meadows workspace so you
             can inspect the full module behind it.
           </p>
 
           <ol className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {workflowStages.map((s) => (
-              <li key={s.stage}>
+            {workflowStages.map((stage) => (
+              <li key={stage.stage}>
                 <Link
-                  href={s.href}
+                  href={stage.href}
                   className="flex h-full flex-col rounded-xl border border-slate-200 bg-white p-5 shadow-card transition hover:border-water-300 hover:shadow-card-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-water-600"
                 >
                   <span className="text-xs font-semibold uppercase tracking-wide text-water-700">
-                    Stage {s.stage}
+                    Stage {stage.stage}
                   </span>
+
                   <span className="mt-1 text-sm font-semibold text-slate-900">
-                    {s.title}
+                    {stage.title}
                   </span>
+
                   <span className="mt-2 text-xs leading-relaxed text-slate-600">
-                    {s.detail}
+                    {stage.detail}
                   </span>
                 </Link>
               </li>
@@ -236,18 +270,95 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* DXF review workspace */}
+      <section
+        aria-labelledby="dxf-workspace-heading"
+        className="border-b border-slate-100 bg-white"
+      >
+        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
+          <div className="grid items-center gap-8 lg:grid-cols-12 lg:gap-12">
+            <div className="lg:order-2 lg:col-span-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-water-700">
+                DXF-to-review workflow
+              </p>
+
+              <h2
+                id="dxf-workspace-heading"
+                className="mt-3 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl"
+              >
+                Turn drawing data into reviewer-ready evidence.
+              </h2>
+
+              <p className="mt-4 text-sm leading-relaxed text-slate-600">
+                The reproducible proof processes a synthetic subdivision DXF
+                through the real upload and parsing services, verifies
+                extraction results against versioned ground truth, and
+                publishes traceable review-support artifacts.
+              </p>
+
+              <p className="mt-4 text-sm leading-relaxed text-slate-600">
+                Civil Engineer AI keeps drawing metadata, classified layers,
+                extracted site information, findings, and supporting evidence
+                connected to the project record. Engineering judgment,
+                compliance decisions, and approval remain with the reviewer.
+              </p>
+
+              <div className="mt-6">
+                <Link
+                  href="/proof-of-concept"
+                  className="inline-flex items-center rounded-lg bg-water-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-water-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-water-600"
+                >
+                  Review the Reproducible DXF Proof
+                </Link>
+              </div>
+            </div>
+
+            <figure className="lg:order-1 lg:col-span-7">
+              <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-card-lg">
+                <div className="relative aspect-[4/3] w-full">
+                  <Image
+                    src={workspaceImage.src}
+                    alt={workspaceImage.alt}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 672px"
+                    className="object-cover object-center"
+                  />
+                </div>
+              </div>
+
+              <figcaption className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                <DemoDataBadge label="Synthetic case study" />
+
+                <span>
+                  Illustrative workspace using synthetic Brookside Meadows
+                  review materials.
+                </span>
+              </figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
       {/* Human review boundary */}
-      <section aria-labelledby="boundary-heading" className="border-b border-slate-100">
+      <section
+        aria-labelledby="boundary-heading"
+        className="border-b border-slate-100 bg-slate-50"
+      >
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-          <h2 id="boundary-heading" className="text-xl font-semibold text-slate-950">
+          <h2
+            id="boundary-heading"
+            className="text-xl font-semibold text-slate-950"
+          >
             The human review boundary
           </h2>
+
           <p className="mt-1 max-w-3xl text-sm text-slate-600">
             AI provides review support. You make the decisions. Every review is
             human. The system organizes evidence and drafts review-support
             findings; it never approves a plan, certifies compliance, or
             replaces a licensed Professional Engineer.
           </p>
+
           <div className="mt-5">
             <SafetyBoundaryBanner />
           </div>
@@ -255,22 +366,35 @@ export default function HomePage() {
       </section>
 
       {/* Real versus seeded */}
-      <section aria-labelledby="real-vs-seeded-heading" className="border-b border-slate-100 bg-slate-50">
+      <section
+        aria-labelledby="real-vs-seeded-heading"
+        className="border-b border-slate-100 bg-white"
+      >
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-          <h2 id="real-vs-seeded-heading" className="text-xl font-semibold text-slate-950">
+          <h2
+            id="real-vs-seeded-heading"
+            className="text-xl font-semibold text-slate-950"
+          >
             What is real and what is seeded
           </h2>
+
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
             {realVsSeeded.map((item) => (
               <div
                 key={item.title}
                 className="rounded-xl border border-slate-200 bg-white p-5 shadow-card"
               >
-                <h3 className="text-sm font-semibold text-slate-900">{item.title}</h3>
-                <p className="mt-2 text-xs leading-relaxed text-slate-600">{item.detail}</p>
+                <h3 className="text-sm font-semibold text-slate-900">
+                  {item.title}
+                </h3>
+
+                <p className="mt-2 text-xs leading-relaxed text-slate-600">
+                  {item.detail}
+                </p>
               </div>
             ))}
           </div>
+
           <p className="mt-4 text-xs text-slate-500">
             The full real-versus-seeded matrix lives in the repository at
             docs/real-vs-mocked.md, and the technical overview page summarizes
@@ -280,9 +404,15 @@ export default function HomePage() {
       </section>
 
       {/* Recruiter review paths */}
-      <section aria-labelledby="review-paths-heading" className="border-b border-slate-100">
+      <section
+        aria-labelledby="review-paths-heading"
+        className="border-b border-slate-100 bg-slate-50"
+      >
         <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-          <h2 id="review-paths-heading" className="text-xl font-semibold text-slate-950">
+          <h2
+            id="review-paths-heading"
+            className="text-xl font-semibold text-slate-950"
+          >
             Two ways to evaluate this project
           </h2>
 
@@ -291,6 +421,7 @@ export default function HomePage() {
               <h3 className="text-sm font-semibold text-slate-900">
                 Five-minute product path
               </h3>
+
               <ol className="mt-3 space-y-2">
                 {fiveMinutePath.map((step) => (
                   <li key={step.href} className="text-xs text-slate-600">
@@ -300,6 +431,7 @@ export default function HomePage() {
                     >
                       {step.label}
                     </Link>
+
                     <span className="ml-1">{step.note}</span>
                   </li>
                 ))}
@@ -310,6 +442,7 @@ export default function HomePage() {
               <h3 className="text-sm font-semibold text-slate-900">
                 Fifteen-minute technical path
               </h3>
+
               <ul className="mt-3 list-disc space-y-2 pl-4">
                 {technicalPath.map((topic) => (
                   <li key={topic} className="text-xs text-slate-600">
@@ -320,18 +453,19 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-6">
+          <div className="mt-6 rounded-xl border border-slate-200 bg-white p-6">
             <h3 className="text-sm font-semibold text-slate-900">
               Technical proof: reproducible DXF intake
             </h3>
+
             <p className="mt-2 text-xs leading-relaxed text-slate-600">
               A synthetic, structurally valid subdivision DXF is processed
               through the real upload and parse services, compared against
-              versioned ground truth, and published with downloadable
-              artifacts and SHA-256 hashes. The proof shows deterministic
-              metadata extraction and review support, not engineering
-              approval.
+              versioned ground truth, and published with downloadable artifacts
+              and SHA-256 hashes. The proof shows deterministic metadata
+              extraction and review support, not engineering approval.
             </p>
+
             <Link
               href="/proof-of-concept"
               className="mt-3 inline-flex text-xs font-semibold text-water-700 hover:underline"
@@ -345,14 +479,19 @@ export default function HomePage() {
       {/* Final CTA */}
       <section aria-labelledby="final-cta-heading" className="bg-slate-900">
         <div className="mx-auto max-w-6xl px-4 py-12 text-center sm:px-6 lg:px-8">
-          <h2 id="final-cta-heading" className="text-xl font-semibold text-white">
+          <h2
+            id="final-cta-heading"
+            className="text-xl font-semibold text-white"
+          >
             See one concern traced from document to handoff
           </h2>
+
           <p className="mx-auto mt-2 max-w-2xl text-sm text-slate-300">
             The guided demo walks the Brookside Meadows review in about five
             minutes: intake, evidence, checklist, applicant response, and
             reviewer-controlled handoff.
           </p>
+
           <div className="mt-6">
             <Link
               href="/guided-demo"
