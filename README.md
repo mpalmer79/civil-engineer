@@ -295,6 +295,15 @@ npm run dev
 
 The frontend runs at `http://localhost:3000` and reads the backend base URL from `NEXT_PUBLIC_API_BASE_URL` (default `http://localhost:8000`). Copy `.env.example` to `.env.local` to override it.
 
+Social link previews resolve against `NEXT_PUBLIC_SITE_URL` (the deployed frontend origin only, no trailing path). When unset, metadata falls back to the deployed Railway frontend origin, so local builds still emit absolute HTTPS Open Graph URLs. The Brookside social preview image is generated and checked with:
+
+```bash
+npm run media:generate
+npm run media:verify
+```
+
+See [`docs/design/BROOKSIDE_VISUAL_SYSTEM.md`](docs/design/BROOKSIDE_VISUAL_SYSTEM.md) for the Brookside visual system: source image, crop decision, placements, disclosures, and metadata configuration.
+
 ## Railway deployment plan
 
 The app is prepared for one Railway project with two services. See [`docs/RAILWAY_DEPLOYMENT_GUIDE.md`](docs/RAILWAY_DEPLOYMENT_GUIDE.md) for full configuration details.

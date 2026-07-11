@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "commit": "2167f2eab07932cbad1b9540eb72edc277b4c853",
+  "commit": "b2f51f943bd271f16493e633aa7b5028a07eecfc",
   "dependencies": {
     "next": "15.5.20",
     "react": "19.2.7",
@@ -20,6 +20,8 @@
     "test:coverage",
     "test:e2e",
     "check:content",
+    "media:generate",
+    "media:verify",
     "generate:api",
     "check:contracts",
     "generate:guide",

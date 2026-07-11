@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 
 import DemoDataBadge from "@/components/DemoDataBadge";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
@@ -7,6 +8,17 @@ import { checklist } from "@/data/checklist";
 import { documents } from "@/data/documents";
 import { findings } from "@/data/findings";
 import { BROOKSIDE_PROJECT_ID, fiveMinutePath, technicalPath } from "@/lib/demoJourney";
+import {
+  DEFAULT_DESCRIPTION,
+  DEFAULT_TITLE,
+  pageMetadata,
+} from "@/lib/pageMetadata";
+
+export const metadata: Metadata = pageMetadata({
+  title: DEFAULT_TITLE,
+  description: DEFAULT_DESCRIPTION,
+  path: "/",
+});
 
 // Recruiter-first product entry. This page explains what Civil Engineer AI is,
 // who it supports, and how to evaluate it. It intentionally shows no

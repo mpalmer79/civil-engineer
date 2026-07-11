@@ -1,6 +1,8 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import RequestFailureCard from "@/components/RequestFailureCard";
 
+import BrooksideProjectVisual from "@/components/BrooksideProjectVisual";
 import PageHeader from "@/components/PageHeader";
 import GuidedDemoExperience, {
   type DemoProofCard,
@@ -12,8 +14,16 @@ import {
   getPlanConsistencySummary,
   getProjectTraceability,
 } from "@/lib/api";
+import { pageMetadata } from "@/lib/pageMetadata";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Brookside Meadows Guided Review | Civil Engineer AI",
+  description:
+    "Follow a synthetic 47-lot subdivision through document intake, evidence review, findings, applicant responses, and reviewer-controlled handoff. Seeded demo data, no login needed.",
+  path: "/guided-demo",
+});
 
 // Build a fixture-backed proof card. When a count is available it shows the
 // number; when the backend is unavailable it falls back to a qualitative card
@@ -59,6 +69,31 @@ export default async function GuidedDemoPage() {
       />
 
       <div className="mx-auto max-w-5xl space-y-8 px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+        {/* Restrained Brookside cover: names the case study and shows the
+            conceptual aerial without pushing the first demo action out of
+            reach. */}
+        <section
+          aria-labelledby="brookside-cover-heading"
+          className="surface-card p-4 sm:p-6"
+        >
+          <div className="grid gap-5 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-8">
+            <BrooksideProjectVisual variant="demo-cover" priority />
+            <div>
+              <h2
+                id="brookside-cover-heading"
+                className="text-lg font-semibold text-slate-900"
+              >
+                Brookside Meadows Guided Review
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
+                Follow a synthetic 47-lot subdivision through document intake,
+                evidence review, findings, applicant responses, and
+                reviewer-controlled handoff.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Buyer context and what the demo will show, before the tour. */}
         <section className="surface-card p-6">
           <h2 className="text-lg font-semibold text-slate-900">

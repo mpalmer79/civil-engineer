@@ -1,10 +1,13 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import PageHeader from "@/components/PageHeader";
 import SafetyBoundaryBanner from "@/components/SafetyBoundaryBanner";
 import GuidedDemoCard from "@/components/GuidedDemoCard";
+import BrooksideProjectVisual from "@/components/BrooksideProjectVisual";
 import MarketingMedia from "@/components/MarketingMedia";
 import { marketingMedia } from "@/lib/marketingMedia";
+import { pageMetadata } from "@/lib/pageMetadata";
 import {
   BROOKSIDE_PROJECT_ID,
   demoJourneySteps,
@@ -17,6 +20,13 @@ import {
 } from "@/lib/demoJourney";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Start Here: Brookside Meadows Demo Path | Civil Engineer AI",
+  description:
+    "The fastest way to understand Civil Engineer AI: what the review-support platform is, what the synthetic Brookside Meadows case study shows, and the recommended demo path for recruiters and technical evaluators.",
+  path: "/start-here",
+});
 
 // Start Here: the recruiter and evaluator entry point. It answers what the
 // product is, who it is for, what problem it solves, what Brookside Meadows is,
@@ -111,20 +121,27 @@ export default function StartHerePage() {
 
         {/* What is Brookside Meadows */}
         <section className="surface-card border-amber-200 bg-amber-50/40 p-4 sm:p-6">
-          <h2 className="section-title">What is Brookside Meadows?</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            Brookside Meadows is a synthetic public demo fixture: a fictional
-            residential development used to show the review-support workflow with
-            seeded demo records. It is not a real submission and does not
-            represent a real permitting, approval, or compliance determination.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <Link href="/guided-demo" className="btn btn-primary btn-sm">
-              Start Guided Demo
-            </Link>
-            <Link href={base} className="btn btn-secondary btn-sm">
-              Open Brookside Meadows
-            </Link>
+          <div className="grid gap-5 lg:grid-cols-2 lg:items-center lg:gap-8">
+            {/* Image first in the DOM so it stacks above the text on mobile
+                and sits in the left column on desktop. */}
+            <BrooksideProjectVisual variant="feature" />
+            <div>
+              <h2 className="section-title">What is Brookside Meadows?</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
+                Brookside Meadows is a synthetic public demo fixture: a fictional
+                residential development used to show the review-support workflow with
+                seeded demo records. It is not a real submission and does not
+                represent a real permitting, approval, or compliance determination.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <Link href="/guided-demo" className="btn btn-primary btn-sm">
+                  Start Guided Demo
+                </Link>
+                <Link href={base} className="btn btn-secondary btn-sm">
+                  Open Brookside Meadows
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
 

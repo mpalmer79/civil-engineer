@@ -1,6 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 
+import BrooksideProjectVisual from "@/components/BrooksideProjectVisual";
 import PageHeader from "@/components/PageHeader";
 import SectionCard from "@/components/SectionCard";
 import SourceBadge from "@/components/SourceBadge";
@@ -9,9 +11,17 @@ import SignInNotice from "@/components/SignInNotice";
 import EmptyState from "@/components/EmptyState";
 import ProjectsDashboardCards from "@/components/ProjectsDashboardCards";
 import { listProjects, type ProjectDetail } from "@/lib/api";
+import { pageMetadata } from "@/lib/pageMetadata";
 import { projectMedia } from "@/lib/projectMedia";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = pageMetadata({
+  title: "Projects | Civil Engineer AI",
+  description:
+    "Organize stormwater review records, open the synthetic Brookside Meadows sample project, and start new document-first review workspaces.",
+  path: "/projects",
+});
 
 function ProjectMedia({
   src,
@@ -112,15 +122,9 @@ function ProjectVisualCard({ project }: { project: ProjectDetail }) {
       href={`/projects/${project.projectId}`}
       className="interactive-card block overflow-hidden"
     >
-      <div className="relative h-40 w-full sm:h-52">
-        <Image
-          src={projectMedia.brooksideThumbnail.src}
-          alt={projectMedia.brooksideThumbnail.alt}
-          fill
-          sizes="(min-width: 1024px) 33vw, 100vw"
-          className="object-cover"
-        />
-      </div>
+      {/* Brookside imagery is reserved for the synthetic demo fixture. Real
+          project records render as rows with no Brookside visual. */}
+      <BrooksideProjectVisual variant="card" />
       <div className="p-4 sm:p-5">
         <div className="flex flex-wrap items-center gap-2">
           <SourceBadge sourceMode={project.sourceMode} />

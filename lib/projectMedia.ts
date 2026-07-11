@@ -1,11 +1,15 @@
+import { brooksideMedia } from "@/lib/brooksideMedia";
+
 export const projectMedia = {
   hero: {
     src: "/images/civil-engineer/projects-hero-aerial.webp",
     alt: "Aerial view of a residential stormwater review project with roads, homes, and a central pond.",
   },
+  // The Brookside aerial is owned by lib/brooksideMedia.ts; this entry only
+  // re-exposes it so older imports keep working without a second registry.
   brooksideThumbnail: {
-    src: "/images/civil-engineer/brookside-project-thumbnail.webp",
-    alt: "Brookside Meadows sample project thumbnail showing a residential subdivision around a stormwater pond.",
+    src: brooksideMedia.image.src,
+    alt: brooksideMedia.image.alt,
   },
   documentsPreview: {
     src: "/images/civil-engineer/project-documents-preview.webp",
