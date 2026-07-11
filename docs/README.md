@@ -11,6 +11,7 @@ the current-state document wins.
 - [recruiter-walkthrough.md](recruiter-walkthrough.md): the five-minute review path
 - [real-vs-mocked.md](real-vs-mocked.md): what is implemented, seeded, simulated, or out of scope
 - [100_SCORE_TRANSFORMATION.md](100_SCORE_TRANSFORMATION.md): transformation tracker, baseline, defect register, and validation results
+- [proof-of-concept/DXF_PROOF_OF_CONCEPT.md](proof-of-concept/DXF_PROOF_OF_CONCEPT.md): the reproducible DXF intake proof, with [methodology](proof-of-concept/DXF_TEST_METHODOLOGY.md), [limitations](proof-of-concept/DXF_LIMITATIONS.md), and the [artifact manifest](proof-of-concept/DXF_ARTIFACT_MANIFEST.md)
 
 ## Product
 

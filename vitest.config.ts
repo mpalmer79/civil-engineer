@@ -18,7 +18,8 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     include: ["**/*.test.{ts,tsx}"],
-    exclude: ["node_modules", ".next", "backend"],
+    // e2e holds Playwright specs, which have their own runner.
+    exclude: ["node_modules", ".next", "backend", "e2e"],
     coverage: {
       provider: "v8",
       include: ["app/**", "components/**", "lib/**"],
@@ -33,10 +34,10 @@ export default defineConfig({
       // functions) are tracked in docs/100_SCORE_TRANSFORMATION.md and not
       // yet met; raise these floors as coverage grows, never lower them.
       thresholds: {
-        statements: 55,
-        branches: 60,
-        functions: 48,
-        lines: 55,
+        statements: 57,
+        branches: 62,
+        functions: 50,
+        lines: 57,
       },
     },
   },

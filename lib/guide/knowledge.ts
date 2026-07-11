@@ -253,7 +253,69 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
     links: [{ href: "/cad-intake", label: "CAD Intake (demo)" }],
     sources: ["backend/app/services/cad_intake_service.py", "docs/PHASE_11_CAD_INTAKE_DXF_PARSING.md"],
     limitation: "It never verifies CAD drawings or validates final design geometry.",
-    related: ["documents", "known-limitations"],
+    related: ["documents", "known-limitations", "proof-of-concept", "dxf-intelligence"],
+    safety: "public",
+  },
+  {
+    id: "proof-of-concept",
+    title: "The DXF proof of concept",
+    topic: "features",
+    shortAnswer:
+      "The proof of concept at /proof-of-concept shows a synthetic, structurally valid subdivision DXF processed through the real upload and parse services: 47 conceptual lots, roads, contours, wetland and buffer, detention and infiltration facilities, storm pipes, references, and reusable blocks. The page publishes the extraction results, reference match states, review-support findings, and four downloadable artifacts with SHA-256 hashes. It demonstrates deterministic DXF metadata extraction, consistency checking, reference identification, and reviewer-support analysis.",
+    detail: [
+      "The drawing is synthetic on purpose: a generated fixture makes the test reproducible and never presents a real submission. Two committed scripts, scripts/generate_brookside_proof_dxf.py and scripts/run_dxf_proof.py, rebuild the DXF, rerun the pipeline against versioned ground truth, and regenerate the artifacts byte-identically. Continuous integration fails if the committed artifacts drift.",
+      "What it proves: valid DXF intake, real parser execution, entity and layer inventory, text and block extraction, reference identification against the plan-sheet index, persistence, reviewer-facing retrieval, and deterministic finding generation. What it does not prove: basin sizing, pipe slope, hydraulic capacity, grading, regulatory compliance, construction readiness, design safety, plan approval, survey accuracy, or complete CAD semantic understanding.",
+      "Downloads: the DXF, the structured JSON result, the Markdown integration report, and a ZIP bundle, each served through an allowlisted download route and listed in a manifest with its size and hash.",
+    ],
+    limitation:
+      "The proof validates the intake pipeline, not engineering design. Every finding it produces still needs human review.",
+    keyPhrases: ["proof of concept", "dxf proof", "poc", "dxf test", "integration test report", "test bundle", "artifact downloads", "reproducible proof", "what does the proof prove", "download the dxf"],
+    aliases: ["proof", "poc page", "proof page"],
+    entities: ["proof of concept"],
+    links: [
+      { href: "/proof-of-concept", label: "Open the Proof of Concept" },
+      { href: "/guided-demo", label: "Guided Demo" },
+    ],
+    sources: [
+      "app/proof-of-concept/page.tsx",
+      "scripts/generate_brookside_proof_dxf.py",
+      "scripts/run_dxf_proof.py",
+      "scripts/dxf_proof_expected.json",
+    ],
+    realOrSeeded:
+      "The pipeline, parser, and persistence are real; the drawing is a generated synthetic fixture and is labeled that way on every artifact.",
+    contextTags: ["/proof-of-concept"],
+    related: ["dxf-intake", "dxf-intelligence", "human-review-boundary"],
+    priority: 2,
+    safety: "public",
+  },
+  {
+    id: "dxf-intelligence",
+    title: "DXF layer taxonomy, facility identity, and reference parsing",
+    topic: "features",
+    shortAnswer:
+      "DXF review support runs on a data-driven layer taxonomy, structured stormwater facility identities, a context-aware reference parser, and safe geometry bounds. The taxonomy classifies common civil layers such as C-PROP, C-ROAD, C-LOTS, C-LABEL, and C-LANDSCAPE with the matching rule and confidence recorded, and leaves unknown layers visible for reviewer categorization. Facility labels parse into a type plus identifier, so DETENTION BASIN 1 and INFILTRATION BASIN 1 are recognized as different facility types that happen to share the number 1 and are not flagged as a conflict.",
+    detail: [
+      "Reference parsing supports forms such as C-3.1, SHEET C-3.1, DETAIL 4/C-5.0, and DETAIL 4 ON SHEET C-5.0, with negative rules so elevations, slopes, stations, dates, and pipe sizes are never claimed as sheets. Matches compare against the project plan-sheet index and report as matched, missing, or ambiguous.",
+      "Geometry bounds cover lines, polylines, arcs, circles, ellipses, splines, points, hatches, dimensions, and block inserts with rotation, scale, and nesting. Entities without a safe bound report an explicit reason instead of fabricated coordinates. Drawing units come from the DXF header and are never assumed.",
+    ],
+    limitation:
+      "A layer category is a routing aid, not a statement that the layer content is correct. A possible naming inconsistency is a reviewer question, never a confirmed design conflict.",
+    keyPhrases: ["layer taxonomy", "layer classification", "facility identity", "basin conflict", "detention basin 1", "infiltration basin 1", "reference parsing", "sheet reference matching", "geometry bounds", "drawing units", "unknown layers", "false positive"],
+    aliases: ["taxonomy", "layer categories", "reference matching"],
+    links: [
+      { href: "/proof-of-concept", label: "See the results on the Proof of Concept" },
+    ],
+    sources: [
+      "backend/app/services/cad/layer_taxonomy.py",
+      "backend/app/services/cad/facility_identity.py",
+      "backend/app/services/cad/reference_parser.py",
+      "backend/app/services/cad/geometry.py",
+    ],
+    realOrSeeded:
+      "These are implemented backend modules with dedicated test suites; the proof page shows their output over the synthetic fixture.",
+    contextTags: ["/proof-of-concept", "/cad-intake"],
+    related: ["dxf-intake", "proof-of-concept", "known-limitations"],
     safety: "public",
   },
   {

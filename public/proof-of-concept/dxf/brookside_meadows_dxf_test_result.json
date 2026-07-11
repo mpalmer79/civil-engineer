@@ -1,0 +1,784 @@
+{
+  "snapshot_id": "brookside-proof-v1",
+  "fixture_version": "brookside-proof-v1",
+  "synthetic": true,
+  "parser": {
+    "name": "ezdxf",
+    "version": "1.4.4"
+  },
+  "drawing_units": "feet",
+  "pipeline": [
+    {
+      "stage": "File upload",
+      "boundary": "POST /api/v1/projects/{id}/cad-files/upload",
+      "module": "backend/app/api/v1/cad_intake.py"
+    },
+    {
+      "stage": "Intake validation",
+      "boundary": "validate_cad_upload_file",
+      "module": "backend/app/services/cad_intake_service.py"
+    },
+    {
+      "stage": "Safe storage registration",
+      "boundary": "save_uploaded_dxf_file",
+      "module": "backend/app/services/cad_intake_service.py"
+    },
+    {
+      "stage": "DXF parse request",
+      "boundary": "POST /api/v1/cad-files/{id}/parse",
+      "module": "backend/app/api/v1/cad_intake.py"
+    },
+    {
+      "stage": "ezdxf processing",
+      "boundary": "parse_dxf_file",
+      "module": "backend/app/services/cad_intake_service.py"
+    },
+    {
+      "stage": "Layer extraction and classification",
+      "boundary": "classify_layer",
+      "module": "backend/app/services/cad/layer_taxonomy.py"
+    },
+    {
+      "stage": "Entity extraction with safe bounds",
+      "boundary": "entity_bounds",
+      "module": "backend/app/services/cad/geometry.py"
+    },
+    {
+      "stage": "Text extraction",
+      "boundary": "_entity_text",
+      "module": "backend/app/services/cad_intake_service.py"
+    },
+    {
+      "stage": "Block extraction",
+      "boundary": "CadBlockExtract",
+      "module": "backend/app/services/cad_intake_service.py"
+    },
+    {
+      "stage": "Reference parsing",
+      "boundary": "parse_references",
+      "module": "backend/app/services/cad/reference_parser.py"
+    },
+    {
+      "stage": "Facility identity and review-support findings",
+      "boundary": "detect_facility_conflicts",
+      "module": "backend/app/services/cad/facility_identity.py"
+    },
+    {
+      "stage": "Database persistence",
+      "boundary": "SQLAlchemy models",
+      "module": "backend/app/db/models.py"
+    },
+    {
+      "stage": "Reviewer-facing result retrieval",
+      "boundary": "GET /api/v1/cad-parse-runs/{id}/summary",
+      "module": "backend/app/api/v1/cad_intake.py"
+    }
+  ],
+  "intake": {
+    "upload_http_status": 200,
+    "validation_status": "accepted",
+    "parse_status": "completed"
+  },
+  "counts": {
+    "entities": 168,
+    "layers": 15,
+    "blocks": 5,
+    "text_records": 80,
+    "reference_candidates": 16,
+    "findings": 8,
+    "matched_references": 3,
+    "missing_references": 1,
+    "ambiguous_references": 1,
+    "missing_or_ambiguous_references": 2,
+    "warning_count": 0
+  },
+  "entity_types": {
+    "ARC": 1,
+    "CIRCLE": 1,
+    "HATCH": 1,
+    "INSERT": 10,
+    "LINE": 11,
+    "LWPOLYLINE": 61,
+    "POINT": 1,
+    "SPLINE": 2,
+    "TEXT": 80
+  },
+  "layers": [
+    {
+      "layer_name": "0",
+      "entity_count": 0,
+      "category": "unknown",
+      "requires_human_review": true,
+      "classification_rule": {
+        "rule_kind": "neutral",
+        "confidence": "high",
+        "explanation": "Default CAD layer with no review meaning of its own."
+      }
+    },
+    {
+      "layer_name": "C-EROS",
+      "entity_count": 6,
+      "category": "erosion_control",
+      "requires_human_review": false,
+      "classification_rule": {
+        "rule_kind": "token",
+        "confidence": "high",
+        "explanation": "EROS token indicates erosion and sediment control."
+      }
+    },
+    {
+      "layer_name": "C-GRAD",
+      "entity_count": 8,
+      "category": "grading",
+      "requires_human_review": false,
+      "classification_rule": {
+        "rule_kind": "token",
+        "confidence": "high",
+        "explanation": "GRAD token indicates grading content."
+      }
+    },
+    {
+      "layer_name": "C-LABEL",
+      "entity_count": 77,
+      "category": "annotation",
+      "requires_human_review": false,
+      "classification_rule": {
+        "rule_kind": "exact",
+        "confidence": "high",
+        "explanation": "C-LABEL holds annotation labels."
+      }
+    },
+    {
+      "layer_name": "C-LANDSCAPE",
+      "entity_count": 2,
+      "category": "landscape",
+      "requires_human_review": false,
+      "classification_rule": {
+        "rule_kind": "exact",
+        "confidence": "high",
+        "explanation": "C-LANDSCAPE holds landscape planting content."
+      }
+    },
+    {
+      "layer_name": "C-LOTS",
+      "entity_count": 50,
+      "category": "lots_parcels",
+      "requires_human_review": false,
+      "classification_rule": {
+        "rule_kind": "exact",
+        "confidence": "high",
+        "explanation": "C-LOTS holds lot and parcel linework."
+      }
+    },
+    {
+      "layer_name": "C-PROP",
+      "entity_count": 1,
+      "category": "property_boundary",
+      "requires_human_review": false,
+      "classification_rule": {
+        "rule_kind": "exact",
+        "confidence": "medium",
+        "explanation": "C-PROP commonly holds property lines. Some firms use PROP for proposed work, so a reviewer can override this."
+      }
+    },
+    {
+      "layer_name": "C-ROAD",
+      "entity_count": 3,
+      "category": "road_alignment",
+      "requires_human_review": false,
+      "classification_rule": {
+        "rule_kind": "exact",
+        "confidence": "high",
+        "explanation": "C-ROAD holds road geometry and alignments."
+      }
+    },
+    {
+      "layer_name": "C-STRM",
+      "entity_count": 11,
+      "category": "stormwater",
+      "requires_human_review": false,
+      "classification_rule": {
+        "rule_kind": "token",
+        "confidence": "high",
+        "explanation": "STRM token indicates storm drainage."
+      }
+    },
+    {
+      "layer_name": "C-UTIL",
+      "entity_count": 4,
+      "category": "utilities",
+      "requires_human_review": false,
+      "classification_rule": {
+        "rule_kind": "token",
+        "confidence": "high",
+        "explanation": "UTIL token indicates utilities."
+      }
+    },
+    {
+      "layer_name": "C-WETL",
+      "entity_count": 3,
+      "category": "wetland_buffer",
+      "requires_human_review": false,
+      "classification_rule": {
+        "rule_kind": "token",
+        "confidence": "high",
+        "explanation": "WETL token indicates wetland content."
+      }
+    },
+    {
+      "layer_name": "DRAFT-01",
+      "entity_count": 1,
+      "category": "unknown",
+      "requires_human_review": true,
+      "classification_rule": {
+        "rule_kind": "none",
+        "confidence": "low",
+        "explanation": "No taxonomy rule matched. The layer keeps its inventory and needs reviewer categorization."
+      }
+    },
+    {
+      "layer_name": "Defpoints",
+      "entity_count": 0,
+      "category": "unknown",
+      "requires_human_review": true,
+      "classification_rule": {
+        "rule_kind": "neutral",
+        "confidence": "high",
+        "explanation": "Default CAD layer with no review meaning of its own."
+      }
+    },
+    {
+      "layer_name": "V-MISC",
+      "entity_count": 1,
+      "category": "unknown",
+      "requires_human_review": true,
+      "classification_rule": {
+        "rule_kind": "none",
+        "confidence": "low",
+        "explanation": "No taxonomy rule matched. The layer keeps its inventory and needs reviewer categorization."
+      }
+    },
+    {
+      "layer_name": "X-EXPORT",
+      "entity_count": 1,
+      "category": "unknown",
+      "requires_human_review": true,
+      "classification_rule": {
+        "rule_kind": "none",
+        "confidence": "low",
+        "explanation": "No taxonomy rule matched. The layer keeps its inventory and needs reviewer categorization."
+      }
+    }
+  ],
+  "blocks": [
+    {
+      "block_name": "LOT_MARKER",
+      "insert_count": 3
+    },
+    {
+      "block_name": "NORTH_ARROW",
+      "insert_count": 1
+    },
+    {
+      "block_name": "STORM_MANHOLE",
+      "insert_count": 3
+    },
+    {
+      "block_name": "TITLEBLOCK_FRAME",
+      "insert_count": 1
+    },
+    {
+      "block_name": "TREE_SYMBOL",
+      "insert_count": 2
+    }
+  ],
+  "references": [
+    {
+      "reference_text": "BIORETENTION AREA 3",
+      "normalized_reference": "BIORETENTION AREA 3",
+      "reference_type": "basin_label",
+      "match_state": "extracted_label",
+      "confidence_label": "medium",
+      "match_reason": "Basin label extracted for reviewer confirmation."
+    },
+    {
+      "reference_text": "DETENTION BASIN 1",
+      "normalized_reference": "DETENTION BASIN 1",
+      "reference_type": "basin_label",
+      "match_state": "extracted_label",
+      "confidence_label": "medium",
+      "match_reason": "Basin label extracted for reviewer confirmation."
+    },
+    {
+      "reference_text": "INFILTRATION BASIN 1",
+      "normalized_reference": "INFILTRATION BASIN 1",
+      "reference_type": "basin_label",
+      "match_state": "extracted_label",
+      "confidence_label": "medium",
+      "match_reason": "Basin label extracted for reviewer confirmation."
+    },
+    {
+      "reference_text": "NORTH DETENTION BASIN 2",
+      "normalized_reference": "NORTH DETENTION BASIN 2",
+      "reference_type": "basin_label",
+      "match_state": "extracted_label",
+      "confidence_label": "medium",
+      "match_reason": "Basin label extracted for reviewer confirmation."
+    },
+    {
+      "reference_text": "OUTLET STRUCTURE 1",
+      "normalized_reference": "OUTLET STRUCTURE 1",
+      "reference_type": "basin_label",
+      "match_state": "extracted_label",
+      "confidence_label": "medium",
+      "match_reason": "Basin label extracted for reviewer confirmation."
+    },
+    {
+      "reference_text": "POND A",
+      "normalized_reference": "POND A",
+      "reference_type": "basin_label",
+      "match_state": "extracted_label",
+      "confidence_label": "medium",
+      "match_reason": "Basin label extracted for reviewer confirmation."
+    },
+    {
+      "reference_text": "RAIN GARDEN 3",
+      "normalized_reference": "RAIN GARDEN 3",
+      "reference_type": "basin_label",
+      "match_state": "extracted_label",
+      "confidence_label": "medium",
+      "match_reason": "Basin label extracted for reviewer confirmation."
+    },
+    {
+      "reference_text": "SOUTH DETENTION BASIN 2",
+      "normalized_reference": "SOUTH DETENTION BASIN 2",
+      "reference_type": "basin_label",
+      "match_state": "extracted_label",
+      "confidence_label": "medium",
+      "match_reason": "Basin label extracted for reviewer confirmation."
+    },
+    {
+      "reference_text": "WET POND A",
+      "normalized_reference": "WET POND A",
+      "reference_type": "basin_label",
+      "match_state": "extracted_label",
+      "confidence_label": "medium",
+      "match_reason": "Basin label extracted for reviewer confirmation."
+    },
+    {
+      "reference_text": "DETAIL ?/C-4.X",
+      "normalized_reference": "C-4.X",
+      "reference_type": "detail_reference",
+      "match_state": "ambiguous",
+      "confidence_label": "needs_human_review",
+      "match_reason": "Detail number is unreadable or unresolved."
+    },
+    {
+      "reference_text": "DETAIL 4/C-5.0",
+      "normalized_reference": "C-5.0",
+      "reference_type": "detail_reference",
+      "match_state": "matched",
+      "confidence_label": "high",
+      "match_reason": "Detail sheet C-5.0 matches a seeded plan sheet."
+    },
+    {
+      "reference_text": "OUTFALL 1",
+      "normalized_reference": "OUTFALL 1",
+      "reference_type": "outfall_label",
+      "match_state": "extracted_label",
+      "confidence_label": "medium",
+      "match_reason": "outfall label extracted for reviewer confirmation."
+    },
+    {
+      "reference_text": "C-3.1",
+      "normalized_reference": "C-3.1",
+      "reference_type": "sheet_reference",
+      "match_state": "matched",
+      "confidence_label": "high",
+      "match_reason": "Sheet C-3.1 matches seeded plan sheet."
+    },
+    {
+      "reference_text": "C-5.0",
+      "normalized_reference": "C-5.0",
+      "reference_type": "sheet_reference",
+      "match_state": "matched",
+      "confidence_label": "high",
+      "match_reason": "Sheet C-5.0 matches seeded plan sheet."
+    },
+    {
+      "reference_text": "C-9.9",
+      "normalized_reference": "C-9.9",
+      "reference_type": "sheet_reference",
+      "match_state": "missing",
+      "confidence_label": "needs_human_review",
+      "match_reason": "Sheet C-9.9 has no matching seeded plan sheet."
+    },
+    {
+      "reference_text": "WETLAND BUFFER 50 FT",
+      "normalized_reference": "WETLAND BUFFER 50 FT",
+      "reference_type": "wetland_buffer_label",
+      "match_state": "extracted_label",
+      "confidence_label": "medium",
+      "match_reason": "wetland buffer label extracted for reviewer confirmation."
+    }
+  ],
+  "findings": [
+    {
+      "finding_type": "missing_plan_sheet_match",
+      "severity": "medium",
+      "title": "Referenced sheet C-9.9 has no plan sheet match",
+      "description": "The DXF references sheet C-9.9, which has no matching seeded plan sheet. Reviewer confirmation needed.",
+      "requires_human_review": true,
+      "deterministic_rule": true
+    },
+    {
+      "finding_type": "possible_label_conflict",
+      "severity": "medium",
+      "title": "Possible facility naming inconsistency for '2'",
+      "description": "Labels: NORTH DETENTION BASIN 2, SOUTH DETENTION BASIN 2. Labels of the same facility type (detention_basin) share identifier '2' but use materially different names. Possible naming inconsistency; needs reviewer confirmation. Matching rule: same_type_different_name. Confidence: medium.",
+      "requires_human_review": true,
+      "deterministic_rule": true
+    },
+    {
+      "finding_type": "possible_label_conflict",
+      "severity": "medium",
+      "title": "Possible facility naming inconsistency for '3'",
+      "description": "Labels: BIORETENTION AREA 3, RAIN GARDEN 3. Two different facility type labels sit at effectively the same drawing location. One facility may carry two type labels. Possible naming inconsistency; needs reviewer confirmation. Matching rule: incompatible_types_same_location. Confidence: medium.",
+      "requires_human_review": true,
+      "deterministic_rule": true
+    },
+    {
+      "finding_type": "possible_label_conflict",
+      "severity": "medium",
+      "title": "Possible facility naming inconsistency for 'A'",
+      "description": "Labels: POND A, WET POND A. A generic label shares identifier 'A' with a retention_basin label. The generic label may be an inconsistent name for the same facility. Possible naming inconsistency; needs reviewer confirmation. Matching rule: generic_and_typed_same_identifier. Confidence: low.",
+      "requires_human_review": true,
+      "deterministic_rule": true
+    },
+    {
+      "finding_type": "unclear_detail_reference",
+      "severity": "medium",
+      "title": "Unclear detail reference: DETAIL ?/C-4.X",
+      "description": "The detail reference could not be resolved and needs human review.",
+      "requires_human_review": true,
+      "deterministic_rule": true
+    },
+    {
+      "finding_type": "unknown_layer_category",
+      "severity": "low",
+      "title": "Layer 'DRAFT-01' could not be categorized",
+      "description": "Layer 'DRAFT-01' has 1 entities but no recognized review category. Reviewer categorization needed.",
+      "requires_human_review": true,
+      "deterministic_rule": true
+    },
+    {
+      "finding_type": "unknown_layer_category",
+      "severity": "low",
+      "title": "Layer 'V-MISC' could not be categorized",
+      "description": "Layer 'V-MISC' has 1 entities but no recognized review category. Reviewer categorization needed.",
+      "requires_human_review": true,
+      "deterministic_rule": true
+    },
+    {
+      "finding_type": "unknown_layer_category",
+      "severity": "low",
+      "title": "Layer 'X-EXPORT' could not be categorized",
+      "description": "Layer 'X-EXPORT' has 1 entities but no recognized review category. Reviewer categorization needed.",
+      "requires_human_review": true,
+      "deterministic_rule": true
+    }
+  ],
+  "checks": [
+    {
+      "check": "upload_http_status",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "check": "validation_status",
+      "expected": "accepted",
+      "actual": "accepted",
+      "pass": true
+    },
+    {
+      "check": "parse_http_status",
+      "expected": 200,
+      "actual": 200,
+      "pass": true
+    },
+    {
+      "check": "parse_status",
+      "expected": "completed",
+      "actual": "completed",
+      "pass": true
+    },
+    {
+      "check": "entity_count",
+      "expected": 168,
+      "actual": 168,
+      "pass": true
+    },
+    {
+      "check": "layer_count",
+      "expected": 15,
+      "actual": 15,
+      "pass": true
+    },
+    {
+      "check": "block_count",
+      "expected": 5,
+      "actual": 5,
+      "pass": true
+    },
+    {
+      "check": "text_count",
+      "expected": 80,
+      "actual": 80,
+      "pass": true
+    },
+    {
+      "check": "reference_candidates",
+      "expected": 16,
+      "actual": 16,
+      "pass": true
+    },
+    {
+      "check": "findings",
+      "expected": 8,
+      "actual": 8,
+      "pass": true
+    },
+    {
+      "check": "matched_references",
+      "expected": 3,
+      "actual": 3,
+      "pass": true
+    },
+    {
+      "check": "missing_references",
+      "expected": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "check": "ambiguous_references",
+      "expected": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "check": "reference:sheet_reference:C-3.1",
+      "expected": "matched",
+      "actual": "matched",
+      "pass": true
+    },
+    {
+      "check": "reference:sheet_reference:C-5.0",
+      "expected": "matched",
+      "actual": "matched",
+      "pass": true
+    },
+    {
+      "check": "reference:detail_reference:C-5.0",
+      "expected": "matched",
+      "actual": "matched",
+      "pass": true
+    },
+    {
+      "check": "reference:sheet_reference:C-9.9",
+      "expected": "missing",
+      "actual": "missing",
+      "pass": true
+    },
+    {
+      "check": "reference:detail_reference:C-4.X",
+      "expected": "ambiguous",
+      "actual": "ambiguous",
+      "pass": true
+    },
+    {
+      "check": "layer:0",
+      "expected": "unknown",
+      "actual": "unknown",
+      "pass": true
+    },
+    {
+      "check": "layer:Defpoints",
+      "expected": "unknown",
+      "actual": "unknown",
+      "pass": true
+    },
+    {
+      "check": "layer:C-PROP",
+      "expected": "property_boundary",
+      "actual": "property_boundary",
+      "pass": true
+    },
+    {
+      "check": "layer:C-ROAD",
+      "expected": "road_alignment",
+      "actual": "road_alignment",
+      "pass": true
+    },
+    {
+      "check": "layer:C-LOTS",
+      "expected": "lots_parcels",
+      "actual": "lots_parcels",
+      "pass": true
+    },
+    {
+      "check": "layer:C-LABEL",
+      "expected": "annotation",
+      "actual": "annotation",
+      "pass": true
+    },
+    {
+      "check": "layer:C-LANDSCAPE",
+      "expected": "landscape",
+      "actual": "landscape",
+      "pass": true
+    },
+    {
+      "check": "layer:C-GRAD",
+      "expected": "grading",
+      "actual": "grading",
+      "pass": true
+    },
+    {
+      "check": "layer:C-STRM",
+      "expected": "stormwater",
+      "actual": "stormwater",
+      "pass": true
+    },
+    {
+      "check": "layer:C-WETL",
+      "expected": "wetland_buffer",
+      "actual": "wetland_buffer",
+      "pass": true
+    },
+    {
+      "check": "layer:C-EROS",
+      "expected": "erosion_control",
+      "actual": "erosion_control",
+      "pass": true
+    },
+    {
+      "check": "layer:C-UTIL",
+      "expected": "utilities",
+      "actual": "utilities",
+      "pass": true
+    },
+    {
+      "check": "layer:V-MISC",
+      "expected": "unknown",
+      "actual": "unknown",
+      "pass": true
+    },
+    {
+      "check": "layer:X-EXPORT",
+      "expected": "unknown",
+      "actual": "unknown",
+      "pass": true
+    },
+    {
+      "check": "layer:DRAFT-01",
+      "expected": "unknown",
+      "actual": "unknown",
+      "pass": true
+    },
+    {
+      "check": "block_names",
+      "expected": [
+        "LOT_MARKER",
+        "NORTH_ARROW",
+        "STORM_MANHOLE",
+        "TITLEBLOCK_FRAME",
+        "TREE_SYMBOL"
+      ],
+      "actual": [
+        "LOT_MARKER",
+        "NORTH_ARROW",
+        "STORM_MANHOLE",
+        "TITLEBLOCK_FRAME",
+        "TREE_SYMBOL"
+      ],
+      "pass": true
+    },
+    {
+      "check": "findings:missing_plan_sheet_match",
+      "expected": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "check": "findings:unclear_detail_reference",
+      "expected": 1,
+      "actual": 1,
+      "pass": true
+    },
+    {
+      "check": "findings:possible_label_conflict",
+      "expected": 3,
+      "actual": 3,
+      "pass": true
+    },
+    {
+      "check": "findings:unknown_layer_category",
+      "expected": 3,
+      "actual": 3,
+      "pass": true
+    },
+    {
+      "check": "detention_vs_infiltration_not_paired",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "check": "common_layers_not_flagged_unknown",
+      "expected": [],
+      "actual": [],
+      "pass": true
+    },
+    {
+      "check": "invert_elevation_not_a_reference",
+      "expected": false,
+      "actual": false,
+      "pass": true
+    },
+    {
+      "check": "facility_labels",
+      "expected": [
+        "BIORETENTION AREA 3",
+        "DETENTION BASIN 1",
+        "INFILTRATION BASIN 1",
+        "NORTH DETENTION BASIN 2",
+        "OUTLET STRUCTURE 1",
+        "POND A",
+        "RAIN GARDEN 3",
+        "SOUTH DETENTION BASIN 2",
+        "WET POND A"
+      ],
+      "actual": [
+        "BIORETENTION AREA 3",
+        "DETENTION BASIN 1",
+        "INFILTRATION BASIN 1",
+        "NORTH DETENTION BASIN 2",
+        "OUTLET STRUCTURE 1",
+        "POND A",
+        "RAIN GARDEN 3",
+        "SOUTH DETENTION BASIN 2",
+        "WET POND A"
+      ],
+      "pass": true
+    }
+  ],
+  "limitations": [
+    "Reference matching runs against the seeded Brookside Meadows plan-sheet index; a project without an index cannot distinguish missing from unindexed.",
+    "Paper-space entities are inventoried in the parse audit metadata, not persisted per entity.",
+    "Geometry bounds for splines, ellipses, hatches, and dimensions are safe overestimates, not exact envelopes.",
+    "The drawing is synthetic and conceptual; no surveyed accuracy is implied."
+  ],
+  "boundary_statement": "This result demonstrates deterministic DXF metadata extraction, consistency checking, reference identification, and reviewer-support analysis. It does not verify CAD, validate design, certify compliance, or approve plans. Every finding needs human review."
+}

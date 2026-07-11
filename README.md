@@ -25,6 +25,7 @@ The walkthrough loops through nine actual app screens: the homepage hero, the Br
 
 ## Technical Review Links
 
+- [DXF Proof of Concept](docs/proof-of-concept/DXF_PROOF_OF_CONCEPT.md): a reproducible proof that a synthetic, structurally valid subdivision DXF passes through the real upload and parse pipeline, with downloadable artifacts and SHA-256 hashes. Live page at `/proof-of-concept`. The proof shows deterministic metadata extraction and review support, not engineering approval.
 - [Recruiter Walkthrough](docs/recruiter-walkthrough.md): the five-minute route sequence and the fifteen-minute code inspection points.
 - [Architecture Overview](docs/architecture-overview.md): the current-state system diagram with technical review notes. The original design brief is [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 - [Real vs Mocked](docs/real-vs-mocked.md): a capability-by-capability map of what is implemented, seeded, simulated, or out of scope, with evidence paths.
@@ -34,7 +35,7 @@ The walkthrough loops through nine actual app screens: the homepage hero, the Br
 
 ## Civil Engineer AI Guide
 
-The app includes a closed-scope project guide, opened from a floating button in the lower right corner of every page. It helps visitors understand the Brookside Meadows demo, the review workflow, the evidence-first process, and the developer background. Answers come from static, pre-written project content selected by simple keyword matching. The guide does not call OpenAI, Anthropic, or any outside LLM API, and it does not provide engineering, legal, permitting, or construction advice. Details live in [docs/civil-engineer-ai-guide.md](docs/civil-engineer-ai-guide.md).
+The app includes a closed-scope project guide, opened from a floating button in the lower right corner of every page. It helps visitors understand the Brookside Meadows demo, the review workflow, the evidence-first process, the DXF proof of concept, and the developer background. Answers come from a curated, allowlisted knowledge catalog ranked by a local token-aware retrieval engine with source citations, evaluated in CI against a 130-question corpus. The guide does not call OpenAI, Anthropic, or any outside LLM API, sends no telemetry, and does not provide engineering, legal, permitting, or construction advice. Details live in [docs/civil-engineer-ai-guide.md](docs/civil-engineer-ai-guide.md).
 
 ## What This Project Demonstrates
 

@@ -45,7 +45,7 @@ export default function SiteFooter() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Product
             </p>
             <ul className="mt-3 space-y-2 text-sm">
@@ -63,7 +63,7 @@ export default function SiteFooter() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
               Explore
             </p>
             <ul className="mt-3 space-y-2 text-sm">
@@ -130,7 +130,7 @@ export default function SiteFooter() {
           </a>
         </div>
 
-        <p className="mt-8 border-t border-slate-100 pt-6 text-xs leading-relaxed text-slate-400">
+        <p className="mt-8 border-t border-slate-100 pt-6 text-xs leading-relaxed text-slate-500">
           Brookside Meadows is a fictional project created for a portfolio
           software demonstration. All people, firms, documents, and values are
           synthetic. The build includes real project records, local

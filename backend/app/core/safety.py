@@ -376,6 +376,15 @@ ALLOWED_CAD_REVIEW_CATEGORIES: set[str] = {
     "titleblock",
     "notes",
     "unknown",
+    # Data-driven taxonomy categories (app.services.cad.layer_taxonomy).
+    "property_boundary",
+    "road_alignment",
+    "lots_parcels",
+    "annotation",
+    "landscape",
+    "existing_conditions",
+    "survey_control",
+    "structures",
 }
 
 # Reference types detected in extracted text. unknown means it needs human

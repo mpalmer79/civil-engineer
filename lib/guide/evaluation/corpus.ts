@@ -191,4 +191,20 @@ export const CORPUS: EvalCase[] = [
   { question: "what is the bff", expect: ["bff-proxy"], safety: "allowed", minConfidence: "medium" },
   { question: "csrf", expect: ["csrf-protection"], safety: "allowed" },
   { question: "dxf support", expect: ["dxf-intake"], safety: "allowed", minConfidence: "medium" },
+
+  // Proof of concept
+  { question: "what is the proof of concept", expect: ["proof-of-concept"], safety: "allowed", minConfidence: "high" },
+  { question: "what does the dxf proof prove", expect: ["proof-of-concept"], safety: "allowed", minConfidence: "medium" },
+  { question: "is the proof drawing synthetic", expect: ["proof-of-concept", "synthetic-data"], safety: "allowed", minConfidence: "medium" },
+  { question: "how do I download the test bundle", expect: ["proof-of-concept"], safety: "allowed", minConfidence: "medium" },
+  { question: "how do I reproduce the dxf test", expect: ["proof-of-concept"], safety: "allowed", minConfidence: "medium" },
+  { question: "does the proof show the design is safe", expect: ["proof-of-concept", "human-review-boundary"], safety: "allowed", critical: true },
+
+  // DXF intelligence
+  { question: "how are layers classified", expect: ["dxf-intelligence"], safety: "allowed", minConfidence: "medium" },
+  { question: "layer taxonomy", expect: ["dxf-intelligence"], safety: "allowed", minConfidence: "medium" },
+  { question: "why are detention basin 1 and infiltration basin 1 not a conflict", expect: ["dxf-intelligence"], safety: "allowed", minConfidence: "medium" },
+  { question: "how does sheet reference matching work", expect: ["dxf-intelligence", "dxf-intake"], safety: "allowed", minConfidence: "medium" },
+  { question: "what happens to unknown layers", expect: ["dxf-intelligence"], safety: "allowed", minConfidence: "medium" },
+  { question: "does the parser assume feet", expect: ["dxf-intelligence"], safety: "allowed" },
 ];

@@ -319,6 +319,26 @@ export default function HomePage() {
               </ul>
             </div>
           </div>
+
+          <div className="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-6">
+            <h3 className="text-sm font-semibold text-slate-900">
+              Technical proof: reproducible DXF intake
+            </h3>
+            <p className="mt-2 text-xs leading-relaxed text-slate-600">
+              A synthetic, structurally valid subdivision DXF is processed
+              through the real upload and parse services, compared against
+              versioned ground truth, and published with downloadable
+              artifacts and SHA-256 hashes. The proof shows deterministic
+              metadata extraction and review support, not engineering
+              approval.
+            </p>
+            <Link
+              href="/proof-of-concept"
+              className="mt-3 inline-flex text-xs font-semibold text-water-700 hover:underline"
+            >
+              See the DXF proof of concept
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -336,7 +356,7 @@ export default function HomePage() {
           <div className="mt-6">
             <Link
               href="/guided-demo"
-              className="inline-block rounded-lg bg-water-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-water-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              className="inline-block rounded-lg bg-water-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-water-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
             >
               Start the Guided Demo
             </Link>

@@ -1,0 +1,95 @@
+{
+  "fixture_version": "brookside-proof-v1",
+  "description": "Versioned ground truth for the Brookside Meadows proof-of-concept DXF. Counts are exact because the generator is deterministic. IDs and timestamps are intentionally excluded: they vary per run and are not compared.",
+  "counts": {
+    "entities": 168,
+    "layers": 15,
+    "blocks": 5,
+    "text_records": 80,
+    "reference_candidates": 16,
+    "findings": 8,
+    "matched_references": 3,
+    "missing_references": 1,
+    "ambiguous_references": 1,
+    "missing_or_ambiguous_references": 2
+  },
+  "intake": {
+    "upload_http_status": 200,
+    "validation_status": "accepted",
+    "parse_status": "completed"
+  },
+  "drawing_units": "feet",
+  "expected_layer_categories": {
+    "0": "unknown",
+    "Defpoints": "unknown",
+    "C-PROP": "property_boundary",
+    "C-ROAD": "road_alignment",
+    "C-LOTS": "lots_parcels",
+    "C-LABEL": "annotation",
+    "C-LANDSCAPE": "landscape",
+    "C-GRAD": "grading",
+    "C-STRM": "stormwater",
+    "C-WETL": "wetland_buffer",
+    "C-EROS": "erosion_control",
+    "C-UTIL": "utilities",
+    "V-MISC": "unknown",
+    "X-EXPORT": "unknown",
+    "DRAFT-01": "unknown"
+  },
+  "expected_block_names": [
+    "LOT_MARKER",
+    "NORTH_ARROW",
+    "STORM_MANHOLE",
+    "TITLEBLOCK_FRAME",
+    "TREE_SYMBOL"
+  ],
+  "expected_references": [
+    { "normalized": "C-3.1", "type": "sheet_reference", "state": "matched" },
+    { "normalized": "C-5.0", "type": "sheet_reference", "state": "matched" },
+    { "normalized": "C-5.0", "type": "detail_reference", "state": "matched" },
+    { "normalized": "C-9.9", "type": "sheet_reference", "state": "missing" },
+    { "normalized": "C-4.X", "type": "detail_reference", "state": "ambiguous" }
+  ],
+  "expected_facility_labels": [
+    "BIORETENTION AREA 3",
+    "DETENTION BASIN 1",
+    "INFILTRATION BASIN 1",
+    "NORTH DETENTION BASIN 2",
+    "OUTLET STRUCTURE 1",
+    "POND A",
+    "RAIN GARDEN 3",
+    "SOUTH DETENTION BASIN 2",
+    "WET POND A"
+  ],
+  "expected_findings_by_type": {
+    "missing_plan_sheet_match": 1,
+    "unclear_detail_reference": 1,
+    "possible_label_conflict": 3,
+    "unknown_layer_category": 3
+  },
+  "forbidden_false_positives": [
+    {
+      "description": "DETENTION BASIN 1 and INFILTRATION BASIN 1 share the number 1 but are different facility types; no conflict finding may pair them.",
+      "labels": ["DETENTION BASIN 1", "INFILTRATION BASIN 1"]
+    },
+    {
+      "description": "Common civil layers must not raise unknown-layer findings.",
+      "layers": ["C-PROP", "C-ROAD", "C-LOTS", "C-LABEL", "C-LANDSCAPE"]
+    },
+    {
+      "description": "INV 638.2 is an invert elevation and must not become a sheet reference candidate.",
+      "not_a_reference": "638.2"
+    }
+  ],
+  "allowed_nondeterministic": [
+    "database identifiers",
+    "timestamps",
+    "storage paths"
+  ],
+  "known_limitations": [
+    "Reference matching runs against the seeded Brookside Meadows plan-sheet index; a project without an index cannot distinguish missing from unindexed.",
+    "Paper-space entities are inventoried in the parse audit metadata, not persisted per entity.",
+    "Geometry bounds for splines, ellipses, hatches, and dimensions are safe overestimates, not exact envelopes.",
+    "The drawing is synthetic and conceptual; no surveyed accuracy is implied."
+  ]
+}

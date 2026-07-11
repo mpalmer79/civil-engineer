@@ -1,0 +1,66 @@
+{
+  "snapshot_id": "brookside-proof-v1",
+  "synthetic_disclosure": "All artifacts are generated from a synthetic Brookside Meadows drawing. Nothing here is a real survey, a real submission, or an engineering determination.",
+  "artifacts": [
+    {
+      "artifact_id": "proof-dxf",
+      "display_name": "Synthetic Brookside Meadows DXF",
+      "filename": "brookside_meadows_realistic_submission.dxf",
+      "description": "The structurally valid synthetic subdivision drawing: 47 conceptual lots, road and cul-de-sac alignment, contours, wetland and buffer, detention and infiltration facilities, storm pipes, outfall, erosion controls, utilities, sheet and detail references, and reusable blocks.",
+      "file_type": "dxf",
+      "content_type": "application/dxf",
+      "file_size_bytes": 44658,
+      "sha256": "49d4ac43af32300b89e45e9058a52e21902c449c72ce20e83fccfb398f97bbd2",
+      "snapshot_id": "brookside-proof-v1",
+      "synthetic": true,
+      "download_route": "/api/proof-of-concept/download/proof-dxf",
+      "related_test_scenario": "scripts/run_dxf_proof.py",
+      "source_generator": "scripts/generate_brookside_proof_dxf.py"
+    },
+    {
+      "artifact_id": "proof-result",
+      "display_name": "Structured test result (JSON)",
+      "filename": "brookside_meadows_dxf_test_result.json",
+      "description": "The structured output of the proof harness: pipeline stages, extraction counts, layer classifications, reference states, findings, and every ground-truth check.",
+      "file_type": "json",
+      "content_type": "application/json; charset=utf-8",
+      "file_size_bytes": 22665,
+      "sha256": "55065824caabe68134712f3c2100b505facbcb90632aa54c12637c8e72c93de6",
+      "snapshot_id": "brookside-proof-v1",
+      "synthetic": true,
+      "download_route": "/api/proof-of-concept/download/proof-result",
+      "related_test_scenario": "scripts/run_dxf_proof.py",
+      "source_generator": "scripts/generate_brookside_proof_dxf.py"
+    },
+    {
+      "artifact_id": "proof-report",
+      "display_name": "Integration test report (Markdown)",
+      "filename": "DXF_INTEGRATION_TEST_REPORT.md",
+      "description": "Human-readable report derived from the structured result: environment, pipeline, metrics, checks, and limitations.",
+      "file_type": "markdown",
+      "content_type": "text/markdown; charset=utf-8",
+      "file_size_bytes": 5704,
+      "sha256": "51cdcfb2f216788fd9ac881581a46863e969f88f8944b3f6b8015305b0d6d612",
+      "snapshot_id": "brookside-proof-v1",
+      "synthetic": true,
+      "download_route": "/api/proof-of-concept/download/proof-report",
+      "related_test_scenario": "scripts/run_dxf_proof.py",
+      "source_generator": "scripts/generate_brookside_proof_dxf.py"
+    },
+    {
+      "artifact_id": "proof-bundle",
+      "display_name": "Complete test bundle (ZIP)",
+      "filename": "civil_engineer_dxf_test_bundle.zip",
+      "description": "The DXF, structured result, report, and versioned ground truth in one archive.",
+      "file_type": "zip",
+      "content_type": "application/zip",
+      "file_size_bytes": 76953,
+      "sha256": "5dfbc233e1dfbadf0db8f780b0da61f94fb9008da26989ddc4c37038c075dd45",
+      "snapshot_id": "brookside-proof-v1",
+      "synthetic": true,
+      "download_route": "/api/proof-of-concept/download/proof-bundle",
+      "related_test_scenario": "scripts/run_dxf_proof.py",
+      "source_generator": "scripts/generate_brookside_proof_dxf.py"
+    }
+  ]
+}

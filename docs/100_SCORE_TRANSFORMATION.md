@@ -202,3 +202,107 @@ guide, and audit gates but still lacks browser and accessibility automation.
 
 No P0 or P1 issue remains open; the eleven withheld points are held by the
 deferred items above, each with a recorded owner decision.
+
+
+## Proof of Concept, DXF Intelligence, Security, Contracts, and Browser Quality
+
+Third transformation phase, after PR #70. Confirmed baseline before this
+phase: npm audit --omit=dev at 0 vulnerabilities (Next.js 15.5.20), zero
+safeFetch references, 521 frontend tests in 66 files, 787 backend tests at
+92.8 percent coverage, frontend coverage 56.6 / 62.4 / 50.4 / 56.6
+(statements / branches / functions / lines) with ratchet floors 55/60/48/55,
+no Playwright or Axe suite, no route-group shells, no proof page. Confirmed
+DXF defects, verified in code: the layer classifier was an eight-keyword
+substring list (C-PROP, C-ROAD, C-LOTS, C-LABEL, and C-LANDSCAPE all fell to
+unknown and were over-flagged), the basin-conflict heuristic keyed on the
+trailing token only (DETENTION BASIN 1 versus INFILTRATION BASIN 1 was a
+false conflict), and entity bounds covered only TEXT, MTEXT, LINE, and
+LWPOLYLINE. The supplied proof artifacts under /mnt/data/civil_dxf_test/
+were not present in the environment; equivalent artifacts were regenerated
+deterministically and that substitution is disclosed on the page and in
+docs/proof-of-concept/DXF_PROOF_OF_CONCEPT.md.
+
+### Completed this phase
+
+| Item | Result |
+| --- | --- |
+| DXF layer taxonomy | Data-driven rule table in backend/app/services/cad/layer_taxonomy.py: exact, token, and contains tiers, 16 categories, per-rule confidence and explanation, reviewer overrides, neutral defaults. The five over-flagged layers and 14 common variants classify correctly; a 40-entry labeled corpus tracks 100 percent accuracy with only intentional unknowns remaining unknown. |
+| Facility identity | Structured identities (type, identifier, qualifier, location) in facility_identity.py with three conflict rules (same type different name, generic plus typed identifier, incompatible types at one location). Detention Basin 1 versus Infiltration Basin 1 is proven non-conflicting in unit, corpus, harness, and browser layers. Every conflict finding names both labels, the rule, the reason, and needs reviewer confirmation. |
+| Reference parsing | reference_parser.py supports C-3.1, C3.1 (context gated), SHEET and SEE SHEET forms, DETAIL n/SHEET, DETAIL n ON SHEET, sheet-comma-detail, and ambiguous forms, with negative rules proven against elevations, inverts, slopes, pipe sizes, dates, revisions, stations, lot numbers, and storm frequencies. |
+| Geometry and units | geometry.py bounds POINT, LINE, LWPOLYLINE, POLYLINE, ARC (exact axis crossings), CIRCLE, ELLIPSE and SPLINE (safe overestimates, labeled), HATCH, DIMENSION, SOLID and 3DFACE, LEADER, and INSERT (rotation, scale, nesting via virtual entities with depth and count limits). XLINE and RAY report an explicit unbounded reason. Units come from $INSUNITS and are never assumed; parse safety limits added (100k persisted entities, 2k text length, 5k layers) with visible partial-result findings. |
+| DXF proof harness | scripts/generate_brookside_proof_dxf.py builds a byte-deterministic 47-lot synthetic drawing (volatile headers pinned, CLASSES sorted). scripts/run_dxf_proof.py uploads and parses it through the real FastAPI routes against scripts/dxf_proof_expected.json (42 checks, all passing) and regenerates the four public artifacts plus manifest with SHA-256 hashes. Regeneration is byte-identical; the dxf-proof CI job enforces artifact freshness with git diff. |
+| Proof results | Upload 200, validation accepted, parse completed, 168 entities, 15 layers, 5 blocks, 80 text records, 16 reference candidates, 8 findings, 3 matched references, 2 missing or ambiguous (C-9.9 missing, DETAIL ?/C-4.X ambiguous). |
+| /proof-of-concept page | Canonical route with permanent redirects from /proofofconcept and /poc. Sections: hero with synthetic disclosure, what was tested, 13-stage pipeline with module paths, metrics read from the JSON artifact with a visible failure panel when artifact and page disagree, reference evidence table, layer classification table with rules and confidence, findings with reviewer actions, what it proves and does not prove, workflow benefits, reproducibility, four artifact download cards with hashes, limitations and roadmap, calls to action. Linked from the homepage technical proof section, /start-here, guided demo completion, the guide, README, and the docs index. |
+| Controlled downloads | Allowlisted /api/proof-of-concept/download/{artifactId} route with manifest lookup, strict ID pattern, served-byte hash verification, correct content type, disposition, and length. Tested for every artifact, unknown IDs, traversal, encoded traversal, and empty or oversized IDs, in unit and browser layers. |
+| DXF corpus | backend/tests/test_cad_dxf_corpus.py: 16 corpus scenarios through the real upload and parse endpoints (aliases, minimal, malformed, unreadable, oversized, entity truncation, nested and transformed blocks, model and paper space, unicode, reference states, facility overlap, inconsistency, existing versus proposed, unknown-heavy, units). Plus 102 unit tests across taxonomy, facility identity, reference parser, and geometry. Backend total: 905 passed, 1 skipped (was 787), coverage gate unchanged at 90. |
+| Playwright and Axe | playwright.config.ts boots FastAPI on a disposable seeded SQLite plus the production Next.js build. 24 tests: public journey (homepage, guided demo, technical overview, proof page, redirects, artifact hash verification end to end, download rejection, an offline guide answer with external egress blocked), authentication journey (register, HttpOnly session, workspace, Brookside, command center, queue, logout, cookie clearing, no token in storage), browser DXF workflow (upload the proof DXF through the BFF, request parse, verify 168 entities and findings in the UI, invalid upload rejection, no readable credential), and an Axe gate over 11 public pages failing on serious or critical violations. New e2e CI job runs all of it. |
+| Accessibility corrections | Fixed genuine violations the gate found: unassociated form labels on login, register, CAD upload, and finding promotion; footer and metadata contrast (slate-400 to slate-500); homepage CTA contrast (water-500 to water-600); chip prefix opacity; CAD file list metadata contrast; guided demo progressbar name; inline auth links now underlined. Axe now reports zero serious or critical violations on all scanned pages. |
+| Guide knowledge | Two new allowlisted entries (proof-of-concept, dxf-intelligence) covering what was tested, why the drawing is synthetic, what the parser extracted, what the test proves and does not prove, taxonomy and facility limitations, reproducibility, downloads, and repository paths. Twelve new evaluation cases including a critical safety case ("does the proof show the design is safe"). Evaluation corpus now 130 cases; retrieval and safety gates still pass. |
+| Backend decomposition | ADR 0005 activated. models.py (3,023 lines, 88 classes) split into app/db/models/ domain modules (identity, billing, cad, command_center, core) with full re-export compatibility, unchanged table definitions, and the single Alembic head preserved (0003_billing_events). CAD intake gained the four-module cad/ package. command_center_service.py went from 1,862 to about 1,040 lines with builders extracted to app/services/command_center/ (derivations, attention, metrics, readiness, timeline). |
+| Frontend coverage | 57.6 / 62.8 / 50.7 / 57.6 measured after this phase (was 56.6 / 62.4 / 50.4 / 56.6); ratchet floors raised to 57/62/50/57. The 70/65/60 targets remain open and tracked. |
+
+### Validation (this phase)
+
+| Gate | Result |
+| --- | --- |
+| npm audit --omit=dev | 0 vulnerabilities |
+| Frontend typecheck, lint | Pass |
+| Frontend unit tests | 549 passed, 69 files (was 521 in 66) |
+| Frontend coverage floors | Pass at raised 57/62/50/57 |
+| Production build (Next 15) | Pass |
+| Content integrity gate | Pass |
+| Contract freshness | Pass |
+| Guide freshness and evaluation | Pass (130 cases, critical safety 100 percent) |
+| Backend pytest | 905 passed, 1 skipped (was 787) |
+| Backend coverage | Above the 90 percent gate |
+| Alembic single head | Pass (0003_billing_events) |
+| DXF proof harness | 42 of 42 checks pass; artifacts byte-deterministic across reruns |
+| Playwright | 24 of 24 pass (public, auth, DXF upload and parse, Axe) |
+| Axe | 0 serious or critical violations on 11 pages |
+
+### Deferred with reasons
+
+1. Route-group shell separation (ADR 0001): public and authenticated pages
+   still share one root layout. Moving about seventy page directories was not
+   combined with this phase; the navigation remains progressive and the new
+   proof page follows the existing layout.
+2. Frontend coverage targets (70 statements and lines, 65 branches, 60
+   functions): floors ratcheted to the new measurement; the gap is tracked
+   here and closes as consumer states gain tests.
+3. Remaining backend extraction: review_cycle_service, evidence retrieval,
+   seed modules, safety vocabulary, and the core model remainder stay on the
+   ADR 0005 staged list.
+4. Tenant-isolation browser journey: enforced today by backend tests
+   (explicit 403, no fixture substitution) and unit suites; a dedicated
+   two-organization Playwright scenario is the next browser addition.
+5. Failure-injection browser journeys (backend down, upstream timeout) are
+   covered at the unit and route-handler layer; browser-level fault
+   injection is future work.
+
+### Updated score
+
+Testing and release discipline rises on the browser, accessibility, proof,
+and artifact-freshness gates. Accessibility rises on the corrected
+violations and the enforced Axe gate. Backend architecture rises on the
+landed decomposition. Product clarity and recruiter experience rise on the
+evidence-backed proof page. Withheld points: route shells and coverage
+targets (frontend architecture, accessibility and performance), the
+unfinished extraction list (backend architecture), and the deferred browser
+journeys (testing).
+
+| Category | Score / 10 |
+| --- | --- |
+| Product clarity | 10 |
+| Recruiter experience | 10 |
+| Frontend architecture | 9 |
+| Backend architecture | 8 |
+| Data honesty and integrity | 10 |
+| Security and tenancy | 10 |
+| Testing and release discipline | 10 |
+| Accessibility and performance | 9 |
+| Documentation and onboarding | 9 |
+| AI governance and professional safety | 10 |
+| **Total** | **95 / 100** |
+
+No P0 or P1 issue remains open. The five withheld points are held by the
+deferred items above, each with a recorded owner decision and a staged plan.

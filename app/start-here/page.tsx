@@ -295,6 +295,23 @@ export default function StartHerePage() {
               </div>
             ))}
           </div>
+          <div className="subtle-card mt-4 p-4">
+            <h3 className="text-sm font-semibold text-slate-900">
+              Reproducible DXF proof of concept
+            </h3>
+            <p className="mt-1 text-xs text-slate-600">
+              A synthetic subdivision DXF processed through the real upload
+              and parse pipeline, with downloadable artifacts, SHA-256 hashes,
+              and versioned ground truth. Review support only, never
+              engineering approval.
+            </p>
+            <Link
+              href="/proof-of-concept"
+              className="mt-2 inline-flex text-xs font-semibold text-water-700 hover:underline"
+            >
+              Open the proof of concept
+            </Link>
+          </div>
         </section>
 
         {/* Secondary CTAs */}

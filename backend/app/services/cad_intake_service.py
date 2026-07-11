@@ -43,6 +43,8 @@ from app.core.safety import (
 )
 from app.db import models
 from app.services import plan_sheet_service, workflow_service
+from app.services.cad import facility_identity, geometry, layer_taxonomy
+from app.services.cad import reference_parser
 
 PARSER_NAME = "ezdxf"
 PARSER_VERSION = ezdxf.__version__
@@ -89,25 +91,20 @@ CONTEXT_NOTE = (
     "validation of the CAD file or the design."
 )
 
-# Layer name keyword to review category. Order matters: first match wins.
-LAYER_CATEGORY_RULES: list[tuple[str, str]] = [
-    ("WTLND", "wetland_buffer"),
-    ("WETLAND", "wetland_buffer"),
-    ("STORM", "stormwater"),
-    ("GRAD", "grading"),
-    ("EROS", "erosion_control"),
-    ("UTIL", "utilities"),
-    ("TITLE", "titleblock"),
-    ("NOTE", "notes"),
-]
+# Layer classification is delegated to the data-driven taxonomy in
+# app.services.cad.layer_taxonomy. NEUTRAL_LAYERS is re-exported for callers
+# that referenced it here.
+NEUTRAL_LAYERS = layer_taxonomy.NEUTRAL_LAYERS
 
-# Default layers that carry no review meaning on their own.
-NEUTRAL_LAYERS = {"0", "DEFPOINTS"}
-
-SHEET_RE = re.compile(r"\b([A-Z]-\d\.\d[A-Z0-9]?)\b")
-DETAIL_RE = re.compile(r"DETAIL\s+([0-9?]+)\s*/\s*([A-Z]-\d\.[0-9A-Z]+)")
 PIPE_RE = re.compile(r"\bP-\d+\b")
 OUTFALL_RE = re.compile(r"\bOF-\d+\b")
+
+# Safety limits for pathological files. Entities beyond the cap are counted
+# but not persisted; a parse warning records the truncation. Text values are
+# truncated to the maximum length. Partial parsing is allowed and visible.
+MAX_PERSISTED_ENTITIES = 100_000
+MAX_TEXT_VALUE_LENGTH = 2_000
+MAX_LAYER_COUNT = 5_000
 
 
 class CadIntakeError(Exception):
@@ -154,11 +151,7 @@ def _audit(
 
 
 def _layer_category(layer_name: str) -> str:
-    upper = (layer_name or "").upper()
-    for keyword, category in LAYER_CATEGORY_RULES:
-        if keyword in upper:
-            return category
-    return "unknown"
+    return layer_taxonomy.layer_category(layer_name)
 
 
 def _normalize(text: str) -> str:
@@ -629,29 +622,13 @@ def list_cad_review_findings(
 
 
 def _entity_bounds(entity) -> tuple | None:
-    """Return (x_min, y_min, x_max, y_max) in local drawing coordinates if
-    cheaply available, else None. These are not georeferenced coordinates."""
+    """Return (x_min, y_min, x_max, y_max) in local drawing coordinates when a
+    safe bound exists, else None. These are not georeferenced coordinates.
+    Delegates to the geometry module, which covers polylines, arcs, circles,
+    ellipses, splines, points, inserts, hatches, and dimensions and never
+    fabricates coordinates for unsupported entities."""
 
-    try:
-        dxftype = entity.dxftype()
-        if dxftype in {"TEXT", "MTEXT"}:
-            point = entity.dxf.insert
-            return (float(point[0]), float(point[1]), float(point[0]), float(point[1]))
-        if dxftype == "LINE":
-            start = entity.dxf.start
-            end = entity.dxf.end
-            xs = [float(start[0]), float(end[0])]
-            ys = [float(start[1]), float(end[1])]
-            return (min(xs), min(ys), max(xs), max(ys))
-        if dxftype == "LWPOLYLINE":
-            pts = [(float(p[0]), float(p[1])) for p in entity.get_points()]
-            if pts:
-                xs = [p[0] for p in pts]
-                ys = [p[1] for p in pts]
-                return (min(xs), min(ys), max(xs), max(ys))
-    except Exception:
-        return None
-    return None
+    return geometry.entity_bounds(entity).bounds
 
 
 def _entity_text(entity) -> str | None:
@@ -671,18 +648,21 @@ def _classify_reference_type(normalized: str) -> str:
         return "wetland_buffer_label"
     if normalized.startswith("REV"):
         return "revision_note"
-    if DETAIL_RE.search(normalized):
+    parsed = reference_parser.parse_references(normalized)
+    if any(p.reference_type == "detail_reference" for p in parsed):
         return "detail_reference"
-    if "SHEET" in normalized and SHEET_RE.search(normalized):
-        return "sheet_reference"
     if "OUTFALL" in normalized or OUTFALL_RE.search(normalized):
         return "outfall_label"
-    if "BASIN" in normalized and "SHEET" not in normalized and "SEE" not in normalized:
+    if (
+        facility_identity.parse_facility_label(normalized) is not None
+        and "SHEET" not in normalized
+        and "SEE" not in normalized
+    ):
         return "basin_label"
+    if any(p.reference_type == "sheet_reference" for p in parsed):
+        return "sheet_reference"
     if PIPE_RE.search(normalized):
         return "pipe_label"
-    if SHEET_RE.search(normalized):
-        return "sheet_reference"
     return "general_note"
 
 
@@ -773,6 +753,10 @@ def parse_dxf_file(db: Session, cad_file_id: str) -> models.CadParseRun:
     layer_extract_by_name: dict[str, models.CadLayerExtract] = {}
     layer_count = 0
     for layer in doc.layers:
+        if layer_count >= MAX_LAYER_COUNT:
+            # Pathological layer tables stop persisting here; the count so
+            # far is kept and parsing continues.
+            break
         name = layer.dxf.name
         members = entities_by_layer.get(name, [])
         has_text = any(e.dxftype() in {"TEXT", "MTEXT"} for e in members)
@@ -794,16 +778,24 @@ def parse_dxf_file(db: Session, cad_file_id: str) -> models.CadParseRun:
         layer_extract_by_name[name] = layer_extract
         layer_count += 1
 
-    # Entities and text.
+    # Entities and text. Entities beyond MAX_PERSISTED_ENTITIES are counted
+    # but not persisted (graceful partial result); a parse warning finding
+    # records the truncation below.
     entity_count = 0
     text_count = 0
+    persisted_truncated = False
     text_extracts: list[models.CadTextExtract] = []
     for entity in msp:
         entity_count += 1
+        if entity_count > MAX_PERSISTED_ENTITIES:
+            persisted_truncated = True
+            continue
         layer_name = getattr(entity.dxf, "layer", None)
         category = _layer_category(layer_name or "")
         bounds = _entity_bounds(entity)
         text_value = _entity_text(entity)
+        if text_value and len(text_value) > MAX_TEXT_VALUE_LENGTH:
+            text_value = text_value[:MAX_TEXT_VALUE_LENGTH]
         handle = getattr(entity.dxf, "handle", None)
         db.add(
             models.CadEntityExtract(
@@ -903,6 +895,22 @@ def parse_dxf_file(db: Session, cad_file_id: str) -> models.CadParseRun:
     run.status = "completed_with_warnings" if warning_count else "completed"
     cad_file.upload_status = "parsed"
 
+    if persisted_truncated:
+        _create_finding(
+            db,
+            run=run,
+            finding_type="parse_warning",
+            title="Entity inventory truncated at the persistence limit",
+            description=(
+                f"The drawing contains {entity_count} model-space entities, "
+                f"above the {MAX_PERSISTED_ENTITIES} persistence limit. All "
+                "entities were counted; entities beyond the limit were not "
+                "stored individually. This is a partial parse for reviewer "
+                "awareness."
+            ),
+            severity="low",
+        )
+
     if warning_count:
         _create_finding(
             db,
@@ -915,6 +923,20 @@ def parse_dxf_file(db: Session, cad_file_id: str) -> models.CadParseRun:
             ),
             severity="low",
         )
+
+    # Drawing units and a paper-space inventory travel in the audit metadata.
+    # Per-entity space tagging is future work; model space is the parsed
+    # surface and paper-space content is inventoried here so titleblock
+    # references are not counted as site geometry.
+    units = geometry.drawing_units(doc)
+    paperspace_counts: dict[str, int] = {}
+    try:
+        for layout in doc.layouts:
+            if layout.name == "Model":
+                continue
+            paperspace_counts[layout.name] = len(list(layout))
+    except Exception:
+        paperspace_counts = {}
 
     _audit(
         db,
@@ -933,6 +955,11 @@ def parse_dxf_file(db: Session, cad_file_id: str) -> models.CadParseRun:
             "text_count": text_count,
             "block_count": block_count,
             "warning_count": warning_count,
+            "drawing_units": units.name,
+            "drawing_units_code": units.insunits_code,
+            "drawing_units_confidence": units.confidence,
+            "paperspace_entity_counts": paperspace_counts,
+            "persisted_entity_truncation": persisted_truncated,
         },
     )
     db.commit()
@@ -995,101 +1022,124 @@ def _build_reference_candidates(
 
     for text in text_extracts:
         normalized = text.normalized_text
+        parsed = reference_parser.parse_references(normalized)
 
-        # Detail references first, so their sheet token is handled as a detail.
-        detail_handled = False
-        for detail_no, sheet_token in DETAIL_RE.findall(normalized):
-            detail_handled = True
-            ambiguous = "?" in detail_no or not sheet_token[-1].isdigit()
-            matched_id = sheet_map.get(_normalize(sheet_token))
-            if ambiguous:
-                confidence = "needs_human_review"
-                reason = "Detail or sheet token is ambiguous and needs human review."
-            elif matched_id:
-                confidence = "high"
-                reason = f"Detail sheet {sheet_token} matches a seeded plan sheet."
-            else:
-                confidence = "low"
-                reason = f"Detail sheet {sheet_token} has no matching seeded plan sheet."
-            candidate = _add_candidate(
-                db,
-                run=run,
-                reference_text=f"DETAIL {detail_no}/{sheet_token}",
-                normalized_reference=_normalize(sheet_token),
-                reference_type="detail_reference",
-                source_text=text,
-                matched_plan_sheet_id=matched_id,
-                confidence_label=confidence,
-                match_reason=reason,
-            )
-            if ambiguous:
-                _create_finding(
-                    db,
-                    run=run,
-                    finding_type="unclear_detail_reference",
-                    title=f"Unclear detail reference: DETAIL {detail_no}/{sheet_token}",
-                    description=(
-                        "The detail reference could not be resolved and needs "
-                        "human review."
-                    ),
-                    severity="medium",
-                    source_reference_candidate_id=candidate.candidate_id,
-                    source_text_extract_id=text.text_extract_id,
-                )
-            elif not matched_id:
-                _create_finding(
-                    db,
-                    run=run,
-                    finding_type="missing_plan_sheet_match",
-                    title=f"Detail references missing sheet {sheet_token}",
-                    description=(
-                        f"Sheet {sheet_token} referenced by a detail callout has "
-                        "no matching seeded plan sheet."
-                    ),
-                    severity="medium",
-                    source_reference_candidate_id=candidate.candidate_id,
-                    source_text_extract_id=text.text_extract_id,
-                )
-
-        sheet_scan = normalized
-        if detail_handled:
-            sheet_scan = DETAIL_RE.sub(" ", normalized)
-
-        if text.reference_type == "sheet_reference" or "SHEET" in sheet_scan:
-            for token in SHEET_RE.findall(sheet_scan):
-                matched_id = sheet_map.get(_normalize(token))
-                if matched_id:
-                    confidence = "high"
-                    reason = f"Sheet {token} matches seeded plan sheet."
-                else:
+        for reference in parsed:
+            if reference.reference_type == "detail_reference":
+                sheet_token = reference.sheet_token
+                matched_id = sheet_map.get(sheet_token)
+                if reference.ambiguous:
                     confidence = "needs_human_review"
-                    reason = f"Sheet {token} has no matching seeded plan sheet."
+                    reason = (
+                        reference.ambiguity_reason
+                        or "Detail or sheet token is ambiguous and needs "
+                        "human review."
+                    )
+                elif matched_id:
+                    confidence = "high"
+                    reason = (
+                        f"Detail sheet {sheet_token} matches a seeded plan "
+                        "sheet."
+                    )
+                else:
+                    confidence = "low"
+                    reason = (
+                        f"Detail sheet {sheet_token} has no matching seeded "
+                        "plan sheet."
+                    )
                 candidate = _add_candidate(
                     db,
                     run=run,
-                    reference_text=token,
-                    normalized_reference=_normalize(token),
+                    reference_text=reference.normalized_reference,
+                    normalized_reference=sheet_token,
+                    reference_type="detail_reference",
+                    source_text=text,
+                    matched_plan_sheet_id=None if reference.ambiguous else matched_id,
+                    confidence_label=confidence,
+                    match_reason=reason,
+                )
+                if reference.ambiguous:
+                    _create_finding(
+                        db,
+                        run=run,
+                        finding_type="unclear_detail_reference",
+                        title=(
+                            "Unclear detail reference: "
+                            f"{reference.normalized_reference}"
+                        ),
+                        description=(
+                            "The detail reference could not be resolved and "
+                            "needs human review."
+                        ),
+                        severity="medium",
+                        source_reference_candidate_id=candidate.candidate_id,
+                        source_text_extract_id=text.text_extract_id,
+                    )
+                elif not matched_id:
+                    _create_finding(
+                        db,
+                        run=run,
+                        finding_type="missing_plan_sheet_match",
+                        title=f"Detail references missing sheet {sheet_token}",
+                        description=(
+                            f"Sheet {sheet_token} referenced by a detail "
+                            "callout has no matching seeded plan sheet."
+                        ),
+                        severity="medium",
+                        source_reference_candidate_id=candidate.candidate_id,
+                        source_text_extract_id=text.text_extract_id,
+                    )
+            else:
+                sheet_token = reference.sheet_token
+                matched_id = (
+                    None if reference.ambiguous else sheet_map.get(sheet_token)
+                )
+                if reference.ambiguous:
+                    confidence = "needs_human_review"
+                    reason = (
+                        reference.ambiguity_reason
+                        or f"Sheet {sheet_token} is ambiguous."
+                    )
+                elif matched_id:
+                    confidence = "high"
+                    reason = f"Sheet {sheet_token} matches seeded plan sheet."
+                else:
+                    confidence = "needs_human_review"
+                    reason = (
+                        f"Sheet {sheet_token} has no matching seeded plan "
+                        "sheet."
+                    )
+                candidate = _add_candidate(
+                    db,
+                    run=run,
+                    reference_text=reference.raw_text,
+                    normalized_reference=sheet_token,
                     reference_type="sheet_reference",
                     source_text=text,
                     matched_plan_sheet_id=matched_id,
                     confidence_label=confidence,
                     match_reason=reason,
                 )
-                if not matched_id:
+                if not matched_id and not reference.ambiguous:
                     _create_finding(
                         db,
                         run=run,
                         finding_type="missing_plan_sheet_match",
-                        title=f"Referenced sheet {token} has no plan sheet match",
+                        title=(
+                            f"Referenced sheet {sheet_token} has no plan "
+                            "sheet match"
+                        ),
                         description=(
-                            f"The DXF references sheet {token}, which has no "
-                            "matching seeded plan sheet. Reviewer confirmation "
-                            "needed."
+                            f"The DXF references sheet {sheet_token}, which "
+                            "has no matching seeded plan sheet. Reviewer "
+                            "confirmation needed."
                         ),
                         severity="medium",
                         source_reference_candidate_id=candidate.candidate_id,
                         source_text_extract_id=text.text_extract_id,
                     )
+
+        if parsed:
             continue
 
         if text.reference_type == "basin_label":
@@ -1164,28 +1214,50 @@ def _detect_basin_conflicts(
     run: models.CadParseRun,
     basin_labels: list[tuple[str, models.CadTextExtract]],
 ) -> None:
-    by_identifier: dict[str, set[str]] = {}
-    sources: dict[str, models.CadTextExtract] = {}
+    """Raise possible naming inconsistencies between facility labels.
+
+    Uses structured facility identities so different facility types that share
+    a number (DETENTION BASIN 1 and INFILTRATION BASIN 1) are never flagged as
+    the same facility. Each finding names both labels, the rule, and why the
+    labels may refer to the same facility. These are possible naming
+    inconsistencies that need reviewer confirmation, never confirmed design
+    conflicts.
+    """
+
+    identities: list[facility_identity.FacilityIdentity] = []
+    source_by_label: dict[str, models.CadTextExtract] = {}
     for normalized, text in basin_labels:
-        identifier = normalized.split()[-1] if normalized.split() else normalized
-        by_identifier.setdefault(identifier, set()).add(normalized)
-        sources[normalized] = text
-    for identifier, labels in by_identifier.items():
-        if len(labels) > 1:
-            joined = ", ".join(sorted(labels))
-            sample_text = sources[sorted(labels)[0]]
-            _create_finding(
-                db,
-                run=run,
-                finding_type="possible_label_conflict",
-                title=f"Possible basin label conflict for '{identifier}'",
-                description=(
-                    f"Multiple basin labels share identifier '{identifier}': "
-                    f"{joined}. Reviewer confirmation needed."
-                ),
-                severity="medium",
-                source_text_extract_id=sample_text.text_extract_id,
-            )
+        location = None
+        if text.x is not None and text.y is not None:
+            location = (text.x, text.y)
+        identity = facility_identity.parse_facility_label(
+            normalized, location=location
+        )
+        if identity is None:
+            continue
+        identities.append(identity)
+        source_by_label.setdefault(identity.normalized_label, text)
+
+    for conflict in facility_identity.detect_facility_conflicts(identities):
+        joined = ", ".join(conflict.labels)
+        sample_text = source_by_label.get(conflict.labels[0])
+        _create_finding(
+            db,
+            run=run,
+            finding_type="possible_label_conflict",
+            title=(
+                "Possible facility naming inconsistency for "
+                f"'{conflict.identifier or joined}'"
+            ),
+            description=(
+                f"Labels: {joined}. {conflict.reason} Matching rule: "
+                f"{conflict.rule}. Confidence: {conflict.confidence}."
+            ),
+            severity="medium",
+            source_text_extract_id=(
+                sample_text.text_extract_id if sample_text else None
+            ),
+        )
 
 
 def _build_layer_findings(

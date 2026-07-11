@@ -64,10 +64,14 @@ export default function CadUploadPanel({
 
       <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <label
+            htmlFor="cad-upload-file"
+            className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+          >
             DXF file
           </label>
           <input
+            id="cad-upload-file"
             ref={inputRef}
             type="file"
             accept=".dxf"
@@ -79,10 +83,14 @@ export default function CadUploadPanel({
           ) : null}
         </div>
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <label
+            htmlFor="cad-upload-uploaded-by"
+            className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+          >
             Uploaded by
           </label>
           <input
+            id="cad-upload-uploaded-by"
             type="text"
             value={uploadedBy}
             onChange={(e) => setUploadedBy(e.target.value)}
