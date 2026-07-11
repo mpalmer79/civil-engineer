@@ -4,7 +4,7 @@ function Stat({ value, label }: { value: number; label: string }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white px-3 py-3">
       <div className="text-2xl font-bold text-slate-900">{value}</div>
-      <div className="mt-1 text-xs text-slate-500">{label}</div>
+      <div className="mt-1 text-xs text-slate-600">{label}</div>
     </div>
   );
 }
@@ -12,7 +12,7 @@ function Stat({ value, label }: { value: number; label: string }) {
 function CountRow({ counts }: { counts: Record<string, number> }) {
   const entries = Object.entries(counts);
   if (entries.length === 0) {
-    return <p className="text-xs text-slate-400">None</p>;
+    return <p className="text-xs text-slate-500">None</p>;
   }
   return (
     <div className="flex flex-wrap gap-2">
@@ -39,7 +39,7 @@ export default function CadIntakeDashboard({
 }) {
   if (!dashboard) {
     return (
-      <div className="surface-card p-6 text-sm text-slate-500">
+      <div className="surface-card p-6 text-sm text-slate-600">
         The CAD intake dashboard is unavailable. Start the backend API to see
         intake counts.
       </div>
@@ -74,7 +74,7 @@ export default function CadIntakeDashboard({
 
       <div className="mt-5 space-y-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
             Parse queue status
           </p>
           <div className="mt-1">
@@ -82,7 +82,7 @@ export default function CadIntakeDashboard({
           </div>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-600">
             Upload validation status
           </p>
           <div className="mt-1">
@@ -91,7 +91,7 @@ export default function CadIntakeDashboard({
         </div>
       </div>
 
-      <p className="mt-4 text-xs text-slate-500">{dashboard.limitationsNote}</p>
+      <p className="mt-4 text-xs text-slate-600">{dashboard.limitationsNote}</p>
     </div>
   );
 }

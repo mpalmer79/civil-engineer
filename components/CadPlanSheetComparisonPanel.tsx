@@ -73,7 +73,7 @@ export default function CadPlanSheetComparisonPanel({
                 <span className="font-medium text-slate-800">
                   {row.referenceText}
                 </span>
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-slate-600">
                   {row.matchedSheetNumber
                     ? `matched ${row.matchedSheetNumber}`
                     : "no plan sheet match"}{" "}
@@ -82,7 +82,7 @@ export default function CadPlanSheetComparisonPanel({
               </li>
             ))}
           </ul>
-          <p className="mt-3 text-xs text-slate-500">{comparison.note}</p>
+          <p className="mt-3 text-xs text-slate-600">{comparison.note}</p>
         </div>
       ) : null}
     </div>

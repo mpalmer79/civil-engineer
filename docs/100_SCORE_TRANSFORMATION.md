@@ -306,3 +306,17 @@ journeys (testing).
 
 No P0 or P1 issue remains open. The five withheld points are held by the
 deferred items above, each with a recorded owner decision and a staged plan.
+
+### Post-merge follow-up: CI Axe failure on the CAD intake page
+
+The e2e job on the merged PR failed once: the Axe scan of the CAD intake
+page reported seven serious color-contrast nodes in CI that did not
+reproduce locally, and the assertion at the time reported only node counts,
+which made the trace artifact the only evidence. Two corrections landed as a
+follow-up: every text-slate-500 and text-slate-400 usage in the CAD intake
+components moved one shade darker (slate-600 and slate-500), which removes
+the entire class of borderline 4.3 to 4.8 contrast pairs regardless of
+rendering environment, and the accessibility spec now embeds each violating
+node's selector, failure summary, and markup in the assertion payload so
+any future CI failure is self-diagnosing from the log alone. All 24
+Playwright tests pass on a fresh database with the changes.
