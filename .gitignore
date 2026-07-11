@@ -163,3 +163,7 @@ project_uploads/
 backend/.coverage
 htmlcov/
 coverage.xml
+
+# Playwright browser test artifacts
+test-results/
+playwright-report/

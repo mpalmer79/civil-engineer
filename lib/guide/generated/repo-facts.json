@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "commit": "51da5920b1566c485b67d14db185ed907585123e",
+  "commit": "2167f2eab07932cbad1b9540eb72edc277b4c853",
   "dependencies": {
     "next": "15.5.20",
     "react": "19.2.7",
@@ -18,6 +18,7 @@
     "typecheck",
     "test",
     "test:coverage",
+    "test:e2e",
     "check:content",
     "generate:api",
     "check:contracts",
@@ -95,6 +96,7 @@
     "/projects/[projectId]/workflow-board",
     "/projects/[projectId]/workload",
     "/projects/new",
+    "/proof-of-concept",
     "/register",
     "/reset-password",
     "/reset-password/confirm",

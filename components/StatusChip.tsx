@@ -40,7 +40,7 @@ export default function StatusChip({
   return (
     <span className={`chip ${toneClass[tone]}`} title={title}>
       {prefix ? (
-        <span className="font-normal opacity-80">{prefix}</span>
+        <span className="font-normal">{prefix}</span>
       ) : null}
       {label}
     </span>

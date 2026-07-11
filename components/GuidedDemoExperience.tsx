@@ -101,6 +101,7 @@ export default function GuidedDemoExperience({
           <div
             className="h-1.5 w-32 overflow-hidden rounded-full bg-slate-200"
             role="progressbar"
+            aria-label="Guided demo progress"
             aria-valuenow={step.step}
             aria-valuemin={1}
             aria-valuemax={steps.length}
@@ -222,6 +223,18 @@ export default function GuidedDemoExperience({
             className="btn btn-secondary"
           >
             View command center
+          </Link>
+          <Link
+            href="/proof-of-concept"
+            onClick={() =>
+              trackDemoEvent("demo_cta_clicked", {
+                stepId: "proof-of-concept",
+                href: "/proof-of-concept",
+              })
+            }
+            className="btn btn-secondary"
+          >
+            See the DXF proof of concept
           </Link>
           {pilotHref ? (
             <Link

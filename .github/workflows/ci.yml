@@ -93,3 +93,64 @@ jobs:
         # Regenerates openapi.json from the FastAPI app and schema.d.ts from
         # openapi-typescript, then fails if the committed artifacts differ.
         run: node scripts/generate-api-types.mjs --check
+
+  dxf-proof:
+    name: DXF proof harness (generate, parse, verify, artifact freshness)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+      - name: Run the proof harness against versioned ground truth
+        # Generates the synthetic DXF, uploads and parses it through the real
+        # FastAPI routes, compares against scripts/dxf_proof_expected.json,
+        # and regenerates the four public artifacts plus the manifest. Exits
+        # nonzero when any ground-truth check fails.
+        run: python scripts/run_dxf_proof.py
+      - name: Verify committed proof artifacts are current
+        # The generator and harness are byte-deterministic, so regenerated
+        # artifacts must match the committed bytes exactly.
+        run: git diff --exit-code public/proof-of-concept
+
+  e2e:
+    name: Browser suite (Playwright + Axe over Next.js and FastAPI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+      - name: Build the production frontend
+        run: npm run build
+        env:
+          BACKEND_API_BASE_URL: http://127.0.0.1:8000
+          NEXT_PUBLIC_API_BASE_URL: http://127.0.0.1:8000
+      - name: Run Playwright journeys and Axe accessibility gate
+        # Public, authentication, DXF upload-and-parse, and accessibility
+        # suites against a disposable SQLite-backed backend. Serious and
+        # critical Axe violations fail the build.
+        run: npx playwright test
+      - name: Upload traces on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7

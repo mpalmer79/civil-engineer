@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import { registerUser } from "@/lib/api";
 
 // Local registration form. Creates a user account and optionally a first
-// organization (the new user becomes its org admin). Stores the returned access
-// token client-side and routes to the account page.
+// organization (the new user becomes its org admin). The session is
+// established server-side as an HttpOnly cookie; no token reaches browser
+// storage. Routes to the account page on success.
 export default function RegisterForm() {
   const router = useRouter();
   const [displayName, setDisplayName] = useState("");
@@ -46,10 +47,11 @@ export default function RegisterForm() {
     <div className="surface-card p-6">
       <div className="space-y-3">
         <div>
-          <label className="form-label">
+          <label htmlFor="register-display-name" className="form-label">
             Display name
           </label>
           <input
+            id="register-display-name"
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
@@ -57,10 +59,11 @@ export default function RegisterForm() {
           />
         </div>
         <div>
-          <label className="form-label">
+          <label htmlFor="register-email" className="form-label">
             Email
           </label>
           <input
+            id="register-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -68,10 +71,11 @@ export default function RegisterForm() {
           />
         </div>
         <div>
-          <label className="form-label">
+          <label htmlFor="register-password" className="form-label">
             Password
           </label>
           <input
+            id="register-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -80,10 +84,11 @@ export default function RegisterForm() {
           />
         </div>
         <div>
-          <label className="form-label">
+          <label htmlFor="register-organization" className="form-label">
             Organization name (optional)
           </label>
           <input
+            id="register-organization"
             type="text"
             value={organizationName}
             onChange={(e) => setOrganizationName(e.target.value)}
@@ -110,7 +115,7 @@ export default function RegisterForm() {
 
       <p className="mt-4 text-sm text-slate-600">
         Already have an account?{" "}
-        <Link href="/login" className="text-water-700 hover:underline">
+        <Link href="/login" className="text-water-700 underline hover:no-underline">
           Sign in
         </Link>
       </p>

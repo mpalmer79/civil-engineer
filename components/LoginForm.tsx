@@ -37,10 +37,11 @@ export default function LoginForm() {
     <div className="surface-card p-6">
       <div className="space-y-3">
         <div>
-          <label className="form-label">
+          <label htmlFor="login-email" className="form-label">
             Email
           </label>
           <input
+            id="login-email"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -49,10 +50,11 @@ export default function LoginForm() {
           />
         </div>
         <div>
-          <label className="form-label">
+          <label htmlFor="login-password" className="form-label">
             Password
           </label>
           <input
+            id="login-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -78,13 +80,13 @@ export default function LoginForm() {
 
       <p className="mt-4 text-sm text-slate-600">
         Need an account?{" "}
-        <Link href="/register" className="text-water-700 hover:underline">
+        <Link href="/register" className="text-water-700 underline hover:no-underline">
           Register
         </Link>
       </p>
       <p className="mt-1 text-sm text-slate-600">
         Forgot your password?{" "}
-        <Link href="/reset-password" className="text-water-700 hover:underline">
+        <Link href="/reset-password" className="text-water-700 underline hover:no-underline">
           Reset it
         </Link>
       </p>

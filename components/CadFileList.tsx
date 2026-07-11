@@ -51,7 +51,7 @@ export default function CadFileList({
                   {file.uploadStatus.replace(/_/g, " ")}
                 </span>
               </div>
-              <p className="mt-0.5 text-xs text-slate-500">
+              <p className="mt-0.5 text-xs text-slate-600">
                 {file.fileType.toUpperCase()} · {file.fileSizeBytes} bytes
               </p>
             </button>

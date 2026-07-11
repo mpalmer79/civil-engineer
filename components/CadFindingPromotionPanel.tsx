@@ -34,10 +34,14 @@ export default function CadFindingPromotionPanel({
       </p>
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <label
+            htmlFor="cad-promotion-reviewer-name"
+            className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+          >
             Reviewer name
           </label>
           <input
+            id="cad-promotion-reviewer-name"
             type="text"
             value={reviewerName}
             onChange={(e) => onReviewerNameChange(e.target.value)}
@@ -45,10 +49,14 @@ export default function CadFindingPromotionPanel({
           />
         </div>
         <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <label
+            htmlFor="cad-promotion-reviewer-note"
+            className="block text-xs font-semibold uppercase tracking-wide text-slate-500"
+          >
             Reviewer note (optional)
           </label>
           <input
+            id="cad-promotion-reviewer-note"
             type="text"
             value={reviewerNote}
             onChange={(e) => onReviewerNoteChange(e.target.value)}
