@@ -31,6 +31,11 @@ const workspaceImage = {
   alt: "Civil Engineer AI coffee mug beside organized DXF analysis and stormwater review reports on a glass office desk",
 } as const;
 
+const brooksideProjectImage = {
+  src: "/images/civil-engineer/brookside-project-thumbnail.webp",
+  alt: "Aerial visualization of the synthetic Brookside Meadows subdivision project used in the Civil Engineer AI stormwater review demonstration",
+} as const;
+
 // Case-study facts, counted directly from the seeded fixture so the homepage
 // can never drift from the data it describes. The ten planted review issues
 // are documented in docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md (I-1 through I-10).
@@ -168,6 +173,7 @@ export default function HomePage() {
 
             <figcaption className="mt-3 flex flex-wrap items-center justify-center gap-2 text-xs text-slate-500">
               <DemoDataBadge label="Synthetic case study" />
+
               <span>
                 Brookside Meadows is a fictional 47-lot subdivision in the
                 fictional Town of Hartwell. It is not a real project or a real
@@ -408,7 +414,7 @@ export default function HomePage() {
         aria-labelledby="review-paths-heading"
         className="border-b border-slate-100 bg-slate-50"
       >
-        <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl px-4 pb-5 pt-12 sm:px-6 sm:pb-6 lg:px-8">
           <h2
             id="review-paths-heading"
             className="text-xl font-semibold text-slate-950"
@@ -473,6 +479,18 @@ export default function HomePage() {
               See the DXF proof of concept
             </Link>
           </div>
+
+          <figure className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card-lg">
+            <div className="relative aspect-[16/9] w-full">
+              <Image
+                src={brooksideProjectImage.src}
+                alt={brooksideProjectImage.alt}
+                fill
+                sizes="(max-width: 640px) calc(100vw - 32px), (max-width: 1024px) calc(100vw - 48px), 1152px"
+                className="object-cover object-center"
+              />
+            </div>
+          </figure>
         </div>
       </section>
 
