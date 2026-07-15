@@ -48,6 +48,28 @@ Backend service variables include `CORS_ORIGINS`, `FRONTEND_ORIGIN`,
 without them; a deployment sets the ones it needs. `FRONTEND_ORIGIN` is the
 deployed frontend URL and, when set, is added to the allowed CORS origins.
 
+## Background worker service (optional)
+
+The background worker processes queued file-processing jobs off the request
+thread. It is optional: without it, the synchronous index and parse routes still
+work, and the async job endpoints simply leave jobs queued until a worker runs.
+Add it when large files or higher load make inline processing a bottleneck.
+
+Deploy it as a third Railway service in the same project, pointing at the same
+backend directory and the same `DATABASE_URL` and object-storage variables as the
+backend service, with:
+
+- Start command: `python -m app.worker`
+- No health check (it is not an HTTP service).
+- Storage: it must reach the same object storage and database as the API, so a
+  job stored by the API is visible to the worker. With local disk storage the
+  worker must share the volume; with S3-compatible storage they share the bucket.
+
+Worker tuning variables (`WORKER_POLL_INTERVAL_SECONDS`, `WORKER_MAX_ATTEMPTS`,
+`WORKER_RETRY_BACKOFF_SECONDS`, `WORKER_STALE_SECONDS`) are documented in
+`docs/OPERATIONS.md`. Run more than one worker for higher throughput; job
+claiming is safe under concurrent workers.
+
 ## Frontend service
 
 - Source: this repository, root directory the repository root.

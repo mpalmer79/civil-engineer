@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "commit": "76061bf28162492961378c77c8232c4896660542",
+  "commit": "43f3a3e2c2b891eab9acece831f9b5ae047733ff",
   "dependencies": {
     "next": "15.5.20",
     "react": "19.2.7",
@@ -165,6 +165,10 @@
     {
       "file": "docs/adr/0011-request-observability.md",
       "title": "0011. Request correlation, structured logging, and safe error handling"
+    },
+    {
+      "file": "docs/adr/0012-background-job-queue.md",
+      "title": "0012. Durable background job queue for file processing"
     }
   ],
   "keyDocuments": [
