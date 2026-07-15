@@ -1,8 +1,10 @@
 """SQLAlchemy models for the Civil Engineer AI backend.
 
 The models are organized into domain modules (ADR 0005): identity, billing,
-cad, command_center, and core. Every class is re-exported here so both
-import styles keep working unchanged:
+cad, command_center, projects, documents, evidence, checklists, findings,
+evaluation, plans, review_packets, workflow, response_packages, review_cycles,
+responses, and audit. Every class is re-exported here so both import styles
+keep working unchanged:
 
     from app.db import models; models.Project
     from app.db.models import Project
@@ -46,71 +48,91 @@ from app.db.models.command_center import (
     ReviewReadinessCheck,
     ReviewerAttentionItem,
 )
-from app.db.models.core import (
-    AIDraftFinding,
-    AIEvaluationMatch,
-    AIEvaluationResult,
-    AIReviewRun,
-    ApplicantResponse,
-    ApplicantResponseMapping,
-    AuditEvent,
-    CadMetadata,
-    ChecklistEvidenceLink,
-    ChecklistItem,
+from app.db.models.projects import Project
+from app.db.models.documents import (
     ChunkEmbedding,
-    CommentLetterDraft,
     Document,
     DocumentChunk,
     DocumentPage,
-    EvaluationCase,
+    Hotspot,
+)
+from app.db.models.evidence import (
     EvidenceCandidate,
     EvidenceCitation,
+    RetrievalQuery,
+)
+from app.db.models.checklists import (
+    ChecklistEvidenceLink,
+    ChecklistItem,
+    ProjectChecklist,
+    ProjectChecklistItem,
+    RulePack,
+    RulePackItem,
+)
+from app.db.models.findings import (
+    AIDraftFinding,
+    AIReviewRun,
     Finding,
     FindingSource,
-    Hotspot,
     HumanReviewAction,
-    IssueCarryForward,
-    MatrixItemDocumentLink,
-    NextCyclePreparation,
+    TraceabilityReviewAction,
+)
+from app.db.models.evaluation import (
+    AIEvaluationMatch,
+    AIEvaluationResult,
+    EvaluationCase,
+)
+from app.db.models.plans import (
+    CadMetadata,
     PlanConsistencyFinding,
     PlanConsistencyReviewAction,
     PlanReference,
     PlanSheet,
     PlanSheetHotspot,
-    Project,
-    ProjectChecklist,
-    ProjectChecklistItem,
-    ResponseMatrix,
-    ResponseMatrixItem,
+)
+from app.db.models.review_packets import (
+    ReviewPacket,
+    ReviewPacketEvidenceLink,
+    ReviewPacketItem,
+    ReviewPacketReviewerAction,
+    ReviewPacketSection,
+)
+from app.db.models.workflow import (
+    WorkflowAction,
+    WorkflowFollowUpRequest,
+    WorkflowItem,
+)
+from app.db.models.response_packages import (
     ResponsePackage,
     ResponsePackageAction,
     ResponsePackageAttachment,
     ResponsePackageEvidenceLink,
     ResponsePackageItem,
     ResponsePackageSection,
+)
+from app.db.models.review_cycles import (
+    ApplicantResponse,
+    ApplicantResponseMapping,
+    IssueCarryForward,
+    NextCyclePreparation,
     ResponseResolutionRecord,
     ResubmittalDocument,
     ResubmittalPackage,
     ResubmittalRound,
-    RetrievalQuery,
     ReviewCycle,
-    ReviewPacket,
-    ReviewPacketEvidenceLink,
-    ReviewPacketItem,
-    ReviewPacketReviewerAction,
-    ReviewPacketSection,
+    RevisionChangeRecord,
+    RevisionComparisonRun,
+)
+from app.db.models.responses import (
+    CommentLetterDraft,
+    MatrixItemDocumentLink,
+    ResponseMatrix,
+    ResponseMatrixItem,
     ReviewerResponsePackage,
     ReviewerResponsePackageItem,
     ReviewerResponsePackageRevision,
-    RevisionChangeRecord,
-    RevisionComparisonRun,
-    RulePack,
-    RulePackItem,
-    TraceabilityReviewAction,
-    WorkflowAction,
-    WorkflowFollowUpRequest,
-    WorkflowItem,
 )
+from app.db.models.audit import AuditEvent
 
 __all__ = [
     "AIDraftFinding",
