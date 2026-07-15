@@ -183,9 +183,11 @@ def test_initial_migration_is_the_base_revision():
     # The head has advanced past the initial migration; the chain is linear back
     # to the initial revision.
     head = script.get_current_head()
-    assert head == "0003_billing_events"
+    assert head == "0004_processing_jobs"
     head_revision = script.get_revision(head)
-    assert head_revision.down_revision == "0002_auth_billing_usage"
+    assert head_revision.down_revision == "0003_billing_events"
+    billing_revision = script.get_revision("0003_billing_events")
+    assert billing_revision.down_revision == "0002_auth_billing_usage"
     mid_revision = script.get_revision("0002_auth_billing_usage")
     assert mid_revision.down_revision == "0001_initial_schema"
 
