@@ -1,4 +1,4 @@
-import { API_BASE_URL, authHeaders, apiFetch,
+import { apiFetch, apiMutate,
   type ApiResult,
 } from "./client";
 
@@ -176,41 +176,20 @@ function mapPreview(p: Record<string, unknown>): ResponsePackagePreview {
   };
 }
 
+// Thin adapter over the shared mutation helper that keeps this module's
+// unavailable-backend message.
 async function postJson<T>(
   path: string,
   body: unknown,
   mapper: (raw: Record<string, unknown>) => T,
-  method = "POST",
+  method: "POST" | "PATCH" | "PUT" | "DELETE" = "POST",
 ): Promise<MutationResult<T>> {
-  try {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-      method,
-      headers: authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(body),
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      let detail = `Request failed (${res.status}).`;
-      try {
-        const parsed = (await res.json()) as { detail?: string };
-        if (parsed.detail) detail = parsed.detail;
-      } catch {
-        // Keep the generic message.
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    return {
-      ok: true,
-      backendReachable: true,
-      data: mapper((await res.json()) as Record<string, unknown>),
-    };
-  } catch {
-    return {
-      ok: false,
-      backendReachable: false,
-      error: "Backend unavailable. Start the API to use response packages.",
-    };
-  }
+  return apiMutate<T>(method, path, {
+    body,
+    map: mapper,
+    unavailableMessage:
+      "Backend unavailable. Start the API to use response packages.",
+  });
 }
 
 const base = (projectId: string) =>

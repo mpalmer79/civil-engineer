@@ -215,6 +215,115 @@ export async function apiGetMapped<W, T>(
   }
 }
 
+// Result model for mutating calls. Modules historically returned this shape
+// from their local postJson/patchJson wrappers; the shared helper below
+// produces it so components keep the { ok, backendReachable } contract.
+// status is the HTTP status of the backend response, or 0 when the backend
+// was unreachable.
+export type MutationResult<T = unknown> = {
+  ok: boolean;
+  status: number;
+  backendReachable: boolean;
+  data?: T;
+  error?: string;
+};
+
+export type MutationOptions<T> = {
+  // JSON request body. When undefined, no body and no Content-Type header are
+  // sent (some POST endpoints take no payload).
+  body?: unknown;
+  // Maps the wire payload to the module's view model. Applied outside the
+  // transport failure path so an invalid payload reports an honest shape
+  // error instead of a false backend-unavailable message.
+  map?: (raw: Record<string, unknown>) => T;
+  // Message returned when the backend cannot be reached.
+  unavailableMessage?: string;
+  // Fallback message for a non-ok response. Defaults to
+  // "Request failed (status)."
+  failureMessage?: (status: number) => string;
+  // Whether a non-ok JSON body's detail field replaces the fallback message.
+  parseErrorDetail?: boolean;
+  // Whether a successful response carries a JSON body to read. Set false for
+  // endpoints that return no payload (for example DELETE).
+  parseResponse?: boolean;
+};
+
+// Shared JSON mutation helper. Sends the CSRF marker on every call, parses
+// FastAPI detail messages on rejected requests, and reports an unreachable
+// backend as backendReachable: false so callers never substitute local data.
+export async function apiMutate<T = unknown>(
+  method: "POST" | "PATCH" | "PUT" | "DELETE",
+  path: string,
+  options: MutationOptions<T> = {},
+): Promise<MutationResult<T>> {
+  const {
+    body,
+    map,
+    unavailableMessage = "Backend unavailable.",
+    failureMessage,
+    parseErrorDetail = true,
+    parseResponse = true,
+  } = options;
+  let status = 0;
+  let raw: unknown;
+  try {
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      headers: authHeaders(
+        body === undefined ? undefined : { "Content-Type": "application/json" },
+      ),
+      body: body === undefined ? undefined : JSON.stringify(body),
+      cache: "no-store",
+    });
+    status = res.status;
+    if (!res.ok) {
+      let detail = failureMessage
+        ? failureMessage(res.status)
+        : `Request failed (${res.status}).`;
+      if (parseErrorDetail) {
+        try {
+          const parsed = (await res.json()) as { detail?: string };
+          if (parsed.detail) detail = parsed.detail;
+        } catch {
+          // Keep the generic message.
+        }
+      }
+      return { ok: false, status, backendReachable: true, error: detail };
+    }
+    if (!parseResponse) {
+      return { ok: true, status, backendReachable: true };
+    }
+    raw = await res.json();
+  } catch {
+    return {
+      ok: false,
+      status: 0,
+      backendReachable: false,
+      error: unavailableMessage,
+    };
+  }
+  if (!map) {
+    return { ok: true, status, backendReachable: true, data: raw as T };
+  }
+  // Map outside the transport failure path so an invalid payload reports an
+  // honest shape error instead of a false backend-unavailable message.
+  try {
+    return {
+      ok: true,
+      status,
+      backendReachable: true,
+      data: map(raw as Record<string, unknown>),
+    };
+  } catch {
+    return {
+      ok: false,
+      status,
+      backendReachable: true,
+      error: "The backend returned an unexpected payload shape.",
+    };
+  }
+}
+
 // Minimal runtime assertions for high-risk payload mapping. Mappers use these
 // on required fields so an invalid payload fails loudly through apiGetMapped.
 export function requireString(value: unknown, field: string): string {

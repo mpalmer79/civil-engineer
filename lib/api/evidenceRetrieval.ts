@@ -1,7 +1,6 @@
 import {
-  API_BASE_URL,
   apiGetMapped,
-  authHeaders,
+  apiMutate,
   requireString,
   type ApiResult,
 } from "./client";
@@ -196,47 +195,19 @@ function mapRetrievalQuery(q: Record<string, unknown>): RetrievalQuery {
   };
 }
 
+// Thin adapter over the shared mutation helper that keeps this module's
+// unavailable-backend message.
 async function postJson<T>(
   path: string,
   body: unknown,
   mapper: (raw: Record<string, unknown>) => T,
 ): Promise<MutationResult<T>> {
-  try {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-      method: "POST",
-      headers: authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(body),
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      let detail = `Request failed (${res.status}).`;
-      try {
-        const parsed = (await res.json()) as { detail?: string };
-        if (parsed.detail) detail = parsed.detail;
-      } catch {
-        // Keep the generic message.
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    const raw = (await res.json()) as Record<string, unknown>;
-    // Map outside the transport failure path so an invalid payload reports an
-    // honest shape error instead of a false "backend unavailable" message.
-    try {
-      return { ok: true, backendReachable: true, data: mapper(raw) };
-    } catch {
-      return {
-        ok: false,
-        backendReachable: true,
-        error: "The backend returned an unexpected payload shape.",
-      };
-    }
-  } catch {
-    return {
-      ok: false,
-      backendReachable: false,
-      error: "Backend unavailable. Start the API to use evidence retrieval.",
-    };
-  }
+  return apiMutate<T>("POST", path, {
+    body,
+    map: mapper,
+    unavailableMessage:
+      "Backend unavailable. Start the API to use evidence retrieval.",
+  });
 }
 
 export type EvidenceSearchInput = {
@@ -400,37 +371,18 @@ export async function updateEvidenceCandidate(
   candidateId: string,
   input: { candidateStatus?: string; reviewerNote?: string },
 ): Promise<MutationResult<EvidenceCandidate>> {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${projectId}/evidence-candidates/${candidateId}`,
-      {
-        method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          candidate_status: input.candidateStatus ?? null,
-          reviewer_note: input.reviewerNote ?? null,
-        }),
-        cache: "no-store",
+  return apiMutate<EvidenceCandidate>(
+    "PATCH",
+    `/api/v1/projects/${projectId}/evidence-candidates/${candidateId}`,
+    {
+      body: {
+        candidate_status: input.candidateStatus ?? null,
+        reviewer_note: input.reviewerNote ?? null,
       },
-    );
-    if (!res.ok) {
-      let detail = `Update failed (${res.status}).`;
-      try {
-        const parsed = (await res.json()) as { detail?: string };
-        if (parsed.detail) detail = parsed.detail;
-      } catch {
-        // Keep the generic message.
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    return {
-      ok: true,
-      backendReachable: true,
-      data: mapCandidate((await res.json()) as Record<string, unknown>),
-    };
-  } catch {
-    return { ok: false, backendReachable: false, error: "Backend unavailable." };
-  }
+      map: mapCandidate,
+      failureMessage: (status) => `Update failed (${status}).`,
+    },
+  );
 }
 
 export async function dismissEvidenceCandidate(

@@ -16,6 +16,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "check:content": "node scripts/check-content-integrity.mjs",
+    "check:complexity": "node scripts/check-complexity.mjs",
     "generate:api": "node scripts/generate-api-types.mjs",
     "check:contracts": "node scripts/generate-api-types.mjs --check",
     "generate:guide": "node scripts/generate-guide-knowledge.mjs",
@@ -38,7 +39,7 @@
       "vite": "$vite"
     },
     "@axe-core/playwright": {
-      "playwright-core": "1.58.2"
+      "playwright-core": "1.61.1"
     }
   },
   "devDependencies": {

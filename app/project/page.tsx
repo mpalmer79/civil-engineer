@@ -184,8 +184,8 @@ export default async function ProjectPage() {
             <p>
               Brookside Meadows is deliberately authored with realistic planted
               conflicts, missing evidence, and civil engineering tensions so the
-              review-support system has concrete, checkable work to do, not a toy
-              example.
+              review-support system has concrete, checkable work to do that
+              reflects the substance of a real submission package.
             </p>
             <ul className="grid gap-2 sm:grid-cols-2">
               <li className="rounded-lg bg-slate-50 px-3 py-2">

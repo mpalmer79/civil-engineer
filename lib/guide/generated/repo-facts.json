@@ -1,13 +1,13 @@
 {
   "schemaVersion": 1,
-  "commit": "2167f2eab07932cbad1b9540eb72edc277b4c853",
+  "commit": "54d45891a77f3dd2f24b13b8ce8b9168e90a893e",
   "dependencies": {
     "next": "15.5.20",
     "react": "19.2.7",
     "react-dom": "19.2.7",
-    "typescript": "5.5.3",
+    "typescript": "^5.9.3",
     "tailwindcss": "3.4.6",
-    "vitest": "2.0.5"
+    "vitest": "^4.1.10"
   },
   "nodeEngine": ">=22",
   "scripts": [
@@ -20,6 +20,7 @@
     "test:coverage",
     "test:e2e",
     "check:content",
+    "check:complexity",
     "generate:api",
     "check:contracts",
     "generate:guide",
@@ -47,7 +48,6 @@
     "/guided-demo",
     "/human-review",
     "/invitations/accept",
-    "/landing",
     "/login",
     "/me",
     "/organizations",
@@ -145,6 +145,22 @@
     {
       "file": "docs/adr/0006-local-guide-knowledge-architecture.md",
       "title": "ADR 0006: Local guide knowledge and retrieval architecture"
+    },
+    {
+      "file": "docs/adr/0007-repository-consolidation.md",
+      "title": "ADR 0007: Repository consolidation and bounded-context module structure"
+    },
+    {
+      "file": "docs/adr/0008-dependency-security-policy.md",
+      "title": "ADR 0008: Dependency security policy"
+    },
+    {
+      "file": "docs/adr/0009-documentation-governance.md",
+      "title": "ADR 0009: Documentation governance"
+    },
+    {
+      "file": "docs/adr/0010-evidence-provenance.md",
+      "title": "ADR 0010: Evidence provenance model"
     }
   ],
   "keyDocuments": [

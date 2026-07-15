@@ -18,11 +18,12 @@ import {
 
 export const dynamic = "force-dynamic";
 
-// Start Here: the recruiter and evaluator entry point. It answers what the
-// product is, who it is for, what problem it solves, what Brookside Meadows is,
-// and what to click first, then lays out the recommended demo path. Brookside
-// Meadows is a synthetic public demo fixture. Nothing here approves a plan,
-// certifies compliance, or replaces a licensed Professional Engineer.
+// Start Here: the product evaluation entry point for reviewers, engineering
+// leaders, and technical evaluators. It answers what the product is, who it is
+// for, what problem it solves, what Brookside Meadows is, and what to click
+// first, then lays out the recommended demo path. Brookside Meadows is a
+// synthetic public demo fixture. Nothing here approves a plan, certifies
+// compliance, or replaces a licensed Professional Engineer.
 const base = `/projects/${BROOKSIDE_PROJECT_ID}`;
 
 // The older, unscoped Brookside demo module routes. They moved out of the
@@ -128,19 +129,21 @@ export default function StartHerePage() {
           </div>
         </section>
 
-        {/* Recruiter and technical evaluator review path */}
+        {/* Evaluation pathways for reviewers, engineering leaders, and
+            technical evaluators */}
         <section className="surface-card p-4 sm:p-6">
-          <span className="page-eyebrow">For recruiters and technical evaluators</span>
-          <h2 className="section-title mt-2">Review this project in 5 minutes</h2>
+          <span className="page-eyebrow">Evaluation pathways</span>
+          <h2 className="section-title mt-2">Evaluate the platform</h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            A fast path to understand the product, and a deeper path to assess
-            the engineering foundation.
+            Pathways for reviewers, engineering leaders, and technical
+            evaluators: a guided product path to understand the platform, and a
+            deeper path to assess the engineering foundation.
           </p>
 
           <div className="mt-5 grid gap-5 lg:mt-6 lg:grid-cols-2 lg:gap-6">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-water-700">
-                5-minute path
+                Product evaluation path
               </h3>
               <ol className="mt-3 space-y-2">
                 {fiveMinutePath.map((item, i) => (
@@ -168,7 +171,7 @@ export default function StartHerePage() {
 
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-water-700">
-                Deeper technical path
+                Technical evaluation path
               </h3>
               <ol className="mt-3 space-y-2">
                 {technicalPath.map((item, i) => (

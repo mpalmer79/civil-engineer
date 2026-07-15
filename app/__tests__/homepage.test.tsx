@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 import { render, screen } from "@testing-library/react";
@@ -11,8 +11,19 @@ import { findings } from "@/data/findings";
 
 const HERO_IMAGE_FILE = "site-plan-review-hero.webp";
 
-const source = () =>
-  readFileSync(join(process.cwd(), "app/page.tsx"), "utf8");
+// The homepage is a composition layer over components/home, so source-level
+// hygiene checks cover the composition file plus every home section component
+// and its content module.
+const source = () => {
+  const homeDir = join(process.cwd(), "components/home");
+  const sectionSources = readdirSync(homeDir)
+    .filter((file) => file.endsWith(".ts") || file.endsWith(".tsx"))
+    .map((file) => readFileSync(join(homeDir, file), "utf8"));
+  return [
+    readFileSync(join(process.cwd(), "app/page.tsx"), "utf8"),
+    ...sectionSources,
+  ].join("\n");
+};
 
 describe("HomePage hero", () => {
   it("leads with the product positioning headline", () => {
@@ -144,10 +155,25 @@ describe("HomePage honesty guarantees", () => {
     expect(screen.getByText("Intentionally out of scope")).toBeInTheDocument();
   });
 
-  it("documents both recruiter review paths", () => {
+  it("documents the professional evaluation pathways", () => {
     render(<HomePage />);
-    expect(screen.getByText(/five-minute product path/i)).toBeInTheDocument();
-    expect(screen.getByText(/fifteen-minute technical path/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/ways to evaluate the platform/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Explore the platform")).toBeInTheDocument();
+    expect(
+      screen.getByText("Review the technical validation"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Examine the architecture")).toBeInTheDocument();
+    expect(screen.getByText("Request a pilot")).toBeInTheDocument();
+    const pilot = screen.getByRole("link", {
+      name: "Request a pilot workspace",
+    });
+    expect(pilot.getAttribute("href")).toBe("/pilot");
+    const validation = screen.getByRole("link", {
+      name: "Open the DXF validation report",
+    });
+    expect(validation.getAttribute("href")).toBe("/proof-of-concept");
   });
 });
 
@@ -180,6 +206,13 @@ describe("HomePage language hygiene", () => {
       "passed review",
       "production ready",
     ]) {
+      expect(text).not.toContain(phrase);
+    }
+  });
+
+  it("carries no recruiter or portfolio framing in homepage sources", () => {
+    const text = source().toLowerCase();
+    for (const phrase of ["recruiter", "hiring", "portfolio"]) {
       expect(text).not.toContain(phrase);
     }
   });

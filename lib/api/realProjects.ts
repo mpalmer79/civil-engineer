@@ -1,6 +1,7 @@
 import {
   API_BASE_URL,
   apiGetMapped,
+  apiMutate,
   authHeaders,
   requireString,
   type ApiResult,
@@ -270,35 +271,17 @@ type MutationResult<T> = {
   error?: string;
 };
 
+// Thin adapter over the shared mutation helper that keeps this module's
+// unavailable-backend message.
 async function postJson<T>(
   path: string,
   body: unknown,
 ): Promise<MutationResult<T>> {
-  try {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-      method: "POST",
-      headers: authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(body),
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      let detail = `Request failed (${res.status}).`;
-      try {
-        const parsed = (await res.json()) as { detail?: string };
-        if (parsed.detail) detail = parsed.detail;
-      } catch {
-        // Keep the generic message.
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    return { ok: true, backendReachable: true, data: (await res.json()) as T };
-  } catch {
-    return {
-      ok: false,
-      backendReachable: false,
-      error: "Backend unavailable. Start the API to use real project intake.",
-    };
-  }
+  return apiMutate<T>("POST", path, {
+    body,
+    unavailableMessage:
+      "Backend unavailable. Start the API to use real project intake.",
+  });
 }
 
 export async function createProject(

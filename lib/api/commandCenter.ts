@@ -1,8 +1,7 @@
 import {
-  API_BASE_URL,
   PROJECT_ID,
   apiGetMapped,
-  authHeaders,
+  apiMutate,
   requireArray,
   requireRecord,
   requireString,
@@ -242,38 +241,17 @@ function mapHealthSummary(d: Json): ProjectHealthSummary {
   return camel<ProjectHealthSummary>(d);
 }
 
+// Thin adapter over the shared mutation helper that keeps this module's
+// unavailable-backend message.
 async function postJson<T>(
   path: string,
   body: unknown,
 ): Promise<{ ok: boolean; backendReachable: boolean; data?: T; error?: string }> {
-  try {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-      method: "POST",
-      headers: authHeaders(
-        body === undefined ? undefined : { "Content-Type": "application/json" },
-      ),
-      body: body === undefined ? undefined : JSON.stringify(body),
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      let detail = `Request failed (${res.status}).`;
-      try {
-        const errBody = (await res.json()) as { detail?: string };
-        if (errBody.detail) detail = errBody.detail;
-      } catch {
-        // keep generic
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    return { ok: true, backendReachable: true, data: (await res.json()) as T };
-  } catch {
-    return {
-      ok: false,
-      backendReachable: false,
-      error:
-        "The backend is not reachable. The command center is not simulated in the browser.",
-    };
-  }
+  return apiMutate<T>("POST", path, {
+    body,
+    unavailableMessage:
+      "The backend is not reachable. The command center is not simulated in the browser.",
+  });
 }
 
 export async function generateCommandCenterSnapshot(
@@ -383,38 +361,19 @@ export async function updateAttentionItemStatus(
   data?: ReviewerAttentionItem;
   error?: string;
 }> {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/v1/command-center/attention-items/${attentionItemId}/status`,
-      {
-        method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          status,
-          reviewer_name: reviewerName,
-          reviewer_note: reviewerNote ?? null,
-        }),
-        cache: "no-store",
+  return apiMutate<ReviewerAttentionItem>(
+    "PATCH",
+    `/api/v1/command-center/attention-items/${attentionItemId}/status`,
+    {
+      body: {
+        status,
+        reviewer_name: reviewerName,
+        reviewer_note: reviewerNote ?? null,
       },
-    );
-    if (!res.ok) {
-      let detail = `Request failed (${res.status}).`;
-      try {
-        const errBody = (await res.json()) as { detail?: string };
-        if (errBody.detail) detail = errBody.detail;
-      } catch {
-        // keep generic
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    return {
-      ok: true,
-      backendReachable: true,
-      data: camel<ReviewerAttentionItem>((await res.json()) as Json),
-    };
-  } catch {
-    return { ok: false, backendReachable: false, error: "The backend is not reachable." };
-  }
+      map: (raw) => camel<ReviewerAttentionItem>(raw),
+      unavailableMessage: "The backend is not reachable.",
+    },
+  );
 }
 
 export async function getProjectTimeline(): Promise<

@@ -131,9 +131,11 @@ export default function SiteFooter() {
         </div>
 
         <p className="mt-8 border-t border-slate-100 pt-6 text-xs leading-relaxed text-slate-500">
-          Brookside Meadows is a fictional project created for a portfolio
-          software demonstration. All people, firms, documents, and values are
-          synthetic. The build includes real project records, local
+          Brookside Meadows is a fictional project that serves as the synthetic
+          reference project for evaluating this review-support platform. All
+          people, firms, documents, and values are synthetic, and review
+          decisions remain with licensed professionals. The build includes real
+          project records, local
           authentication and access control, durable document storage, PDF page
           indexing, deterministic evidence retrieval, checklist review, an
           applicant response matrix, reviewer response packages, a reviewer

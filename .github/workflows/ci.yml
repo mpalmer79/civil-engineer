@@ -26,6 +26,13 @@ jobs:
         # at the time of writing (see PR description). Raise the floor as
         # coverage grows; never lower it to make a build pass.
         run: pytest --cov=app --cov-report=term-missing --cov-fail-under=90
+      - name: Python dependency audit
+        # Release gate: no known vulnerabilities in the pinned backend
+        # dependency set. Exceptions require a documented owner and expiry in
+        # docs/internal/DEPENDENCY_REMEDIATION.md.
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
       - name: Validate migrations have a single head
         run: |
           python - <<'EOF'
@@ -53,9 +60,17 @@ jobs:
       - name: Production dependency audit
         # Release gate: zero known high or critical vulnerabilities in
         # production dependencies. Moderate findings require a documented,
-        # owned exception (see docs/100_SCORE_TRANSFORMATION.md) before any
-        # threshold change here.
+        # owned exception in docs/internal/DEPENDENCY_REMEDIATION.md before
+        # any threshold change here.
         run: npm audit --omit=dev --audit-level=high
+      - name: Full-tree dependency audit
+        # Development tooling is part of the supply chain. No known high or
+        # critical vulnerabilities anywhere in the tree.
+        run: npm audit --audit-level=high
+      - name: Repository complexity budget
+        # Fails when an authored source file crosses the hard size ceiling
+        # without an allowlisted cohesion reason.
+        run: node scripts/check-complexity.mjs
       - name: Typecheck
         run: npm run typecheck
       - name: Lint
