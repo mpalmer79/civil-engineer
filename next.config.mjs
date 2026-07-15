@@ -15,6 +15,13 @@ const nextConfig = {
         destination: "/proof-of-concept",
         permanent: true,
       },
+      // The standalone landing page consolidated into the homepage. The
+      // route stays as a redirect so bookmarked links keep working.
+      {
+        source: "/landing",
+        destination: "/",
+        permanent: true,
+      },
     ];
   },
 };
