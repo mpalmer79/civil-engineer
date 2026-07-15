@@ -33,6 +33,17 @@ class Settings(BaseSettings):
     # blocked. See docs/DEPLOYMENT.md.
     APP_ENV: str = "development"
 
+    # Application log verbosity. Standard level name (DEBUG, INFO, WARNING,
+    # ERROR). An operator can raise or lower this per environment without a code
+    # change. An unknown value falls back to INFO rather than failing startup.
+    LOG_LEVEL: str = "INFO"
+
+    # Maximum PDF pages indexed inline on the request thread. A hostile or very
+    # large PDF is bounded so it cannot exhaust the worker; pages beyond the cap
+    # are left for a reviewer to follow up. Set to 0 to disable the cap. Moving
+    # indexing to a background worker is the enterprise-scale path (see ROADMAP).
+    PDF_MAX_PAGES: int = 500
+
     # Database connection string. SQLite is the default for local development and
     # tests. For production SaaS a Postgres URL is required (for example a Railway
     # Postgres plugin URL). Railway and some providers hand out a legacy

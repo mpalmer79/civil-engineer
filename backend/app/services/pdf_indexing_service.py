@@ -23,6 +23,8 @@ from io import BytesIO
 
 from pypdf import PdfReader
 from sqlalchemy import select
+
+from app.core.config import get_settings
 from sqlalchemy.orm import Session
 
 from app.core.safety import (
@@ -188,11 +190,20 @@ def index_pdf_document(
             status_code=422,
         ) from exc
 
+    # Bound how many pages are indexed inline so a very large or hostile PDF
+    # cannot exhaust the request thread. Pages beyond the cap are left for a
+    # reviewer to follow up; the summary and status record the truncation.
+    max_pages = get_settings().PDF_MAX_PAGES
+    pages_to_index = (
+        min(total_pages, max_pages) if max_pages and max_pages > 0 else total_pages
+    )
+    pages_truncated = total_pages - pages_to_index
+
     pages_with_text = 0
     pages_without_text = 0
     warning_count = 0
 
-    for index in range(total_pages):
+    for index in range(pages_to_index):
         page_number = index + 1
         warnings: list[str] = []
         text: str | None = None
@@ -257,7 +268,9 @@ def index_pdf_document(
         )
 
     now = _now()
-    if warning_count > 0:
+    if pages_truncated > 0:
+        processing_status = "indexed_partial_needs_review"
+    elif warning_count > 0:
         processing_status = "indexed_with_warnings"
     elif pages_with_text > 0:
         processing_status = "indexed_with_text"
@@ -272,9 +285,15 @@ def index_pdf_document(
     )
     document.extraction_warning_count = warning_count
     summary_text = (
-        f"{total_pages} page(s) indexed: {pages_with_text} with extractable "
-        f"text, {pages_without_text} without. {warning_count} page warning(s)."
+        f"{pages_to_index} of {total_pages} page(s) indexed: {pages_with_text} "
+        f"with extractable text, {pages_without_text} without. "
+        f"{warning_count} page warning(s)."
     )
+    if pages_truncated > 0:
+        summary_text += (
+            f" {pages_truncated} page(s) beyond the {max_pages} page limit were "
+            "not indexed and need reviewer follow-up."
+        )
     document.text_extraction_summary = summary_text
 
     record_audit_event(

@@ -11,12 +11,17 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+import logging
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.api.routes import api_router
 from app.core.config import get_settings
 from app.core.logging import log_event
+from app.core.middleware import RequestContextMiddleware
+from app.core import request_context
 from app.db.database import (
     SessionLocal,
     check_production_database,
@@ -152,7 +157,44 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    # Expose the correlation id so a browser client can read it and quote it in
+    # a support request.
+    expose_headers=["X-Request-Id"],
 )
+# Assigns a correlation id, times each request, and emits one safe access log
+# event. Added after CORS so it runs inside the CORS layer for normal requests.
+app.add_middleware(RequestContextMiddleware)
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(
+    request: Request, exc: Exception
+) -> JSONResponse:
+    """Return a safe generic error and log the failure with its correlation id.
+
+    Uncaught exceptions never expose a stack trace, exception message, or any
+    internal detail to the client. The exception type and route are logged
+    server side with the request id so an operator can correlate the client's
+    request id with the server log. Typed HTTP errors raised by routes are
+    handled by the framework and do not reach here.
+    """
+
+    request_id = request_context.get_request_id()
+    log_event(
+        "unhandled_exception",
+        level=logging.ERROR,
+        route=request.url.path,
+        method=request.method,
+        error_type=type(exc).__name__,
+    )
+    body: dict[str, str] = {"detail": "Internal server error."}
+    headers: dict[str, str] = {}
+    if request_id:
+        body["request_id"] = request_id
+        # The error response is produced outside the request middleware, so set
+        # the correlation header here too for a consistent trace on failures.
+        headers["X-Request-Id"] = request_id
+    return JSONResponse(status_code=500, content=body, headers=headers)
 
 
 @app.get("/health", tags=["health"])
