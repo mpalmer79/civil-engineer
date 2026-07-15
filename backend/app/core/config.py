@@ -44,6 +44,20 @@ class Settings(BaseSettings):
     # indexing to a background worker is the enterprise-scale path (see ROADMAP).
     PDF_MAX_PAGES: int = 500
 
+    # Background processing worker (see docs/adr/0012-background-job-queue.md).
+    # The worker claims queued jobs from the processing_jobs table and runs the
+    # same review-support processing a reviewer could trigger inline. These
+    # settings tune its loop; they do not change any existing synchronous route.
+    #
+    # Seconds a worker waits between polls when the queue is empty.
+    WORKER_POLL_INTERVAL_SECONDS: float = 2.0
+    # Default retry ceiling for a job before it is marked failed.
+    WORKER_MAX_ATTEMPTS: int = 3
+    # Base seconds for exponential retry backoff after a transient failure.
+    WORKER_RETRY_BACKOFF_SECONDS: int = 30
+    # Seconds after which a running job whose worker died is reclaimed.
+    WORKER_STALE_SECONDS: int = 300
+
     # Database connection string. SQLite is the default for local development and
     # tests. For production SaaS a Postgres URL is required (for example a Railway
     # Postgres plugin URL). Railway and some providers hand out a legacy

@@ -133,6 +133,7 @@ from app.db.models.responses import (
     ReviewerResponsePackageRevision,
 )
 from app.db.models.audit import AuditEvent
+from app.db.models.jobs import ProcessingJob
 
 __all__ = [
     "AIDraftFinding",
@@ -143,6 +144,7 @@ __all__ = [
     "ApplicantResponse",
     "ApplicantResponseMapping",
     "AuditEvent",
+    "ProcessingJob",
     "BillingEvent",
     "CadBlockExtract",
     "CadEntityExtract",

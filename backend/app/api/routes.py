@@ -25,6 +25,7 @@ from app.api.v1 import (
     hotspots,
     human_review,
     invitations,
+    jobs,
     pdf_evidence,
     pilot,
     plan_consistency,
@@ -78,3 +79,4 @@ api_router.include_router(diagnostics.router)
 api_router.include_router(pilot.router)
 api_router.include_router(invitations.router)
 api_router.include_router(billing.router)
+api_router.include_router(jobs.router)
