@@ -24,8 +24,18 @@ stormwater review is intended to carry later review modules.
   default noop provider, and Stripe billing scaffolding in test mode.
 - Railway deployment configuration, CI gates, and the deterministic DXF proof
   harness.
+- Structured, secret-safe logging with per-request correlation ids echoed on the
+  response and written onto audit rows, a global safe-error handler, a
+  configurable log level, and an inline PDF page cap. See `docs/OPERATIONS.md`
+  and `docs/adr/0011-request-observability.md`.
 
 ## Planned (scoped, not yet built)
+
+- Moving file and DXF processing off the request thread onto a background worker
+  before enterprise-scale load. Today intake, PDF indexing, and DXF parsing run
+  synchronously with size and page bounds; the worker migration removes the
+  request-thread bound entirely.
+- Raising the frontend coverage floors as the suite grows.
 
 - Richer reviewer workload balancing and assignment on top of the existing
   assignment and priority foundation.

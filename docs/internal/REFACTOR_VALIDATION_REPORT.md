@@ -153,20 +153,40 @@ Completed in the follow-up:
   references (guide catalog, route context, doc-assertion tests, verification
   scripts, admin links, and source comments) were repointed.
 
+## Second follow-up: observability and the last test split
+
+A further follow-up completed the remaining deferred items:
+
+- `app/__tests__/evidenceRetrieval.test.tsx` (720 lines) was split by behavior
+  into `evidenceSearch`, `evidenceCandidates`, and `evidenceBoundary` test files
+  plus a shared fixtures module, with all 17 tests preserved verbatim. The
+  `DEFERRED_SPLIT` registry is now empty.
+- Structured request-correlated logging was added: a `RequestContextMiddleware`
+  assigns a correlation id (reusing a safe inbound `X-Request-Id`), echoes it on
+  the response, merges it and the resolved user into every log event, and a
+  `before_insert` listener writes it onto every audit row. A global exception
+  handler returns a safe generic 500 with the correlation id and never leaks
+  stack traces or internal detail. `LOG_LEVEL` makes verbosity configurable. See
+  `docs/adr/0011-request-observability.md` and `docs/OPERATIONS.md`.
+- A `PDF_MAX_PAGES` cap bounds inline PDF indexing so a large or hostile file
+  cannot exhaust the request thread; pages beyond the cap are flagged for
+  reviewer follow-up.
+
+Backend suite after these changes: 918 passed, 1 skipped.
+
 ## Deferred work (tracked, not hidden)
 
-Registered in `scripts/check-complexity.mjs` under `DEFERRED_SPLIT` and the
-cohesion allowlist. Each is a size or test-structure item, not a capability gap.
+Each is a data-cohesion or enterprise-scale item, not a capability gap.
 
-1. `app/__tests__/evidenceRetrieval.test.tsx` (720 lines) split by behavior
-   (search, ranking, filters, citations). Remaining `DEFERRED_SPLIT` entry.
-2. Seed fixtures `backend/app/db/seeds/plan_sheets.py` and `evidence.py`, and
+1. Seed fixtures `backend/app/db/seeds/plan_sheets.py` and `evidence.py`, and
    the curated `lib/guide/knowledge.ts` catalog, remain on the cohesion
    allowlist: they are reviewed as data, not logic, and a split would only
    fragment them.
-3. Observability and background-processing work described in OPERATIONS and the
-   ROADMAP Deferred section: structured request-correlated logging, moving file
-   and DXF processing to background workers, and raising coverage floors.
+2. Moving file and DXF processing off the request thread onto a background
+   worker before enterprise-scale load. Today intake, PDF indexing (page
+   capped), and DXF parsing run synchronously with size and page bounds.
+3. Technical metrics (request counters, latency histograms, a `/metrics`
+   endpoint) and raising the frontend coverage floors as the suite grows.
 
 ## Readiness assessment
 
