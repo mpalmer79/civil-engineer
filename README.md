@@ -1,135 +1,269 @@
+<div align="center">
+
 # Civil Engineer AI
 
-Civil Engineer AI is a document-first, evidence-first, reviewer-controlled
-stormwater review-support platform. It helps a human reviewer upload and parse
-DXF files, index uploaded PDFs, search and organize evidence, apply
-checklist-driven review, organize findings against their source citations, build
-review packets, track a plan review workflow, draft response packages, manage
-resubmittals across rounds, and see the whole review state in one reviewer
-command center.
+### Stormwater Review Assistant
 
-It does not approve plans, certify compliance, verify CAD, validate design,
-declare safety, resolve issues, close issues, or replace a licensed Professional
-Engineer. Every output is review-support material for a human decision maker.
+**Evidence-first review workflows for civil engineering submissions, DXF intake, document traceability, findings, resubmittals, and reviewer-controlled handoff.**
 
-## Intended users
+[![Live Platform](https://img.shields.io/badge/Live_Platform-Open_Civil_Engineer_AI-0F766E?style=for-the-badge&logo=railway&logoColor=white)](https://civil-engineer.up.railway.app/)
+[![Technical Validation](https://img.shields.io/badge/Technical_Validation-DXF_Proof-1D4ED8?style=for-the-badge&logo=autodesk&logoColor=white)](https://civil-engineer.up.railway.app/proof-of-concept)
+[![CI](https://img.shields.io/github/actions/workflow/status/mpalmer79/civil-engineer/ci.yml?branch=main&style=for-the-badge&label=CI)](https://github.com/mpalmer79/civil-engineer/actions/workflows/ci.yml)
 
-Municipal reviewers, civil engineering reviewers, internal QA reviewers, and
-project managers who organize a stormwater submission, track findings across
-review rounds, and prepare communication back to an applicant while keeping every
-step traceable and under human control. Small and mid-sized civil and AEC firms
-running pre-submittal QA are the primary audience.
+<img src="public/images/civil-engineer/site-plan-review-hero.webp" alt="Civil Engineer AI stormwater review workspace showing a subdivision site plan, drainage infrastructure, evidence markers, and review documents" width="100%" />
 
-## Core capabilities
+<br />
 
-- Browser DXF upload with validated intake and real ezdxf metadata parsing.
-- PDF text-layer indexing (pypdf) with page-level evidence citations.
-- Deterministic evidence retrieval that cites its source page.
-- Checklist-driven review against reusable stormwater rule packs.
-- Findings linked to evidence, applicant response tracking, and resubmittal and
-  revision comparison across rounds.
-- Reviewer-controlled response packages and a reviewer command center.
+[![GitHub](https://img.shields.io/badge/GitHub-mpalmer79%2Fcivil--engineer-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mpalmer79/civil-engineer)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Michael_Palmer-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/mpalmer1234)
 
-## Safety and decision boundary
+</div>
 
-The system organizes evidence and drafts review-support findings. It never
-approves plans, certifies compliance, stamps drawings, declares a project safe,
-or makes a final engineering decision, and there is no action named approve. A
-central safety vocabulary in the backend and content tests in the frontend keep
-statuses within review-support language. See [docs/SECURITY.md](docs/SECURITY.md).
+## Product overview
 
-## Architecture summary
+Civil Engineer AI is a full-stack stormwater review-support platform for civil engineering and AEC workflows. It brings project intake, submitted documents, CAD metadata, evidence citations, checklist review, findings, applicant responses, resubmittals, revision comparison, response packages, and audit history into one controlled review environment.
 
-A Next.js frontend and a FastAPI backend deploy as two services. Authenticated
-browser requests flow through a same-origin backend-for-frontend proxy that
-attaches an HttpOnly session token server-side. The backend uses SQLAlchemy
-models, Alembic migrations, and a per-domain safety vocabulary; SQLite serves
-local development and tests while PostgreSQL is the production database. Live AI
-is disabled by default. See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+The platform is designed for civil engineering firms, municipal review teams, internal quality-assurance reviewers, and project managers who need a defensible record of how a submission was reviewed and how each concern moved from source evidence to final handoff.
 
-## Live demo
+Civil Engineer AI supports professional judgment. It does not approve plans, certify compliance, stamp drawings, validate engineering design, or replace a licensed Professional Engineer.
 
-Live demo: https://civil-engineer.up.railway.app/
+## Business value
 
-Recommended demo path:
+Traditional plan review often spreads critical information across drawings, PDFs, spreadsheets, email threads, checklists, and reviewer notes. Civil Engineer AI creates a connected project record that helps teams:
 
-1. Open `/start-here` for the technical overview and evaluation paths.
-2. Open `/guided-demo` to walk the reviewer journey over the synthetic Brookside
-   Meadows reference project.
-3. Open a project or a review packet to see the evidence detail, where every
-   finding links to source citations and applicant responses are tracked across
-   resubmittal rounds.
+- Trace findings back to source documents, pages, sheets, and evidence.
+- Process DXF submissions through a repeatable intake and metadata extraction workflow.
+- Apply reusable stormwater review checklists and rule packs.
+- Track applicant responses and unresolved concerns across review rounds.
+- Compare resubmittals and document revision history.
+- Assemble reviewer-controlled response packages and review packets.
+- Maintain role-based access, organization boundaries, and project audit history.
+- Improve consistency without transferring engineering authority to automation.
 
-The demo runs on the synthetic Brookside Meadows reference project. See
-[docs/REFERENCE_PROJECT.md](docs/REFERENCE_PROJECT.md).
+## Core platform capabilities
+
+| Capability | Implementation |
+|---|---|
+| Project and organization management | Authenticated workspaces, organization membership, project access controls, team administration, and invitations |
+| Document intake | Project document registration, file storage abstraction, PDF text extraction, page indexing, and page-level evidence citations |
+| CAD and DXF intake | Browser upload, file validation, `ezdxf` parsing, metadata extraction, layer analysis, and reproducible validation artifacts |
+| Evidence retrieval | Deterministic search, filtering, ranking, evidence candidates, citations, and traceability views |
+| Review management | Reusable rule packs, project checklists, checklist items, findings, human review, and evaluation workflows |
+| Review cycles | Applicant response matrices, resubmittal rounds, revision comparisons, workflow boards, and workload views |
+| Deliverables | Review packets, response packages, previews, comment-letter drafts, and reviewer-controlled handoff |
+| Governance | Audit events, safety vocabulary, authentication, authorization, CSRF protection, diagnostics, and deployment readiness |
+| Operations | Health and readiness checks, environment validation, pilot administration, billing surfaces, and deployment verification |
+
+## Reference project
+
+Brookside Meadows is a synthetic subdivision dataset used to demonstrate and regression-test the complete workflow. It provides a stable reference project with documents, plan sheets, DXF content, checklist items, findings, evidence, applicant responses, review cycles, and generated artifacts.
+
+The reference project is intentionally fictional. It is used for product evaluation, technical validation, training, automated testing, and reproducibility. It is not a real municipal submission or engineering approval.
+
+Recommended evaluation path:
+
+1. [Open the technical overview](https://civil-engineer.up.railway.app/start-here)
+2. [Run the guided product tour](https://civil-engineer.up.railway.app/guided-demo)
+3. [Review the reproducible DXF validation](https://civil-engineer.up.railway.app/proof-of-concept)
+4. [Inspect deployment status](https://civil-engineer.up.railway.app/deployment-status)
+5. [Request a controlled pilot](https://civil-engineer.up.railway.app/pilot)
+
+## Architecture
+
+Civil Engineer AI uses a service-oriented web architecture with a Next.js frontend and FastAPI backend.
+
+```text
+Browser
+  |
+  | Same-origin requests and HttpOnly session cookie
+  v
+Next.js App Router
+  |
+  | Backend-for-frontend proxy
+  v
+FastAPI API
+  |
+  +-- SQLAlchemy domain models
+  +-- Alembic migrations
+  +-- PostgreSQL production database
+  +-- SQLite local and test database
+  +-- File storage provider abstraction
+  +-- pypdf document extraction
+  +-- ezdxf CAD parsing
+  +-- Audit, access-control, and safety services
+```
+
+The frontend uses TypeScript, React, Tailwind CSS, generated OpenAPI types, Vitest, Playwright, and Axe accessibility checks. The backend uses Python, FastAPI, Pydantic, SQLAlchemy, Alembic, PostgreSQL, `pypdf`, and `ezdxf`.
+
+Authenticated browser requests are routed through a same-origin backend-for-frontend layer. Session tokens remain server-side in HttpOnly cookies, and mutating requests are protected by origin and CSRF controls. Authorization is enforced at organization and project boundaries.
+
+## Engineering decision boundary
+
+Civil Engineer AI is deliberately reviewer-controlled.
+
+The platform can organize documents, extract metadata, retrieve evidence, draft review-support findings, compare revisions, and prepare communication packages. Final interpretation, code applicability, design acceptance, safety determination, and professional approval remain with qualified human reviewers.
+
+The repository reinforces this boundary through backend safety vocabulary, frontend content checks, test coverage, and product language that avoids autonomous approval claims.
+
+## Technical validation and quality gates
+
+The CI pipeline includes independent gates for:
+
+- Frontend type checking and linting
+- Frontend unit tests and coverage thresholds
+- Backend tests with a 90 percent coverage floor
+- Production builds
+- Alembic migration-head validation
+- FastAPI application import validation
+- OpenAPI contract and generated TypeScript freshness
+- Content integrity and guide-knowledge checks
+- Production dependency auditing
+- Deterministic DXF proof generation and artifact comparison
+- Playwright browser tests
+- Axe accessibility checks
+
+The DXF validation harness generates a structurally valid synthetic subdivision drawing, uploads it through the real API, parses it with the production CAD-intake path, compares the result with versioned ground truth, and verifies published artifacts and hashes.
 
 ## Local development
 
-```bash
-# Backend (from backend/)
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+### Prerequisites
 
-# Frontend (from the repository root)
-npm install
+- Node.js 22 or newer
+- Python 3.12
+- npm
+- A PostgreSQL database for production-like development, or SQLite for local evaluation
+
+### Frontend
+
+```text
+npm ci
 npm run dev
 ```
 
-Set `NEXT_PUBLIC_API_BASE_URL` to the backend origin (default
-`http://localhost:8000`).
+The frontend is available at `http://localhost:3000`.
+
+### Backend
+
+From the `backend` directory:
+
+```text
+python -m pip install -r requirements.txt
+python -m uvicorn app.main:app --reload
+```
+
+The API is available at `http://localhost:8000`.
+
+Set the frontend environment variable to the backend origin without an `/api/v1` suffix:
+
+```text
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+```
+
+Use the repository environment examples and deployment documentation for authentication, storage, database, email, billing, and production settings.
 
 ## Validation commands
 
-```bash
+```text
 npm run typecheck
 npm run lint
 npm run check:content
 npm run check:guide
-npm test
+npm run test:coverage
 npm run build
-cd backend && pytest
 ```
 
-See [docs/TESTING.md](docs/TESTING.md).
+From the `backend` directory:
 
-## Deployment summary
-
-Deployment targets Railway as two services. Set one frontend variable to the
-backend origin only, with no `/api/v1` path:
-
+```text
+python -m pytest --cov=app --cov-report=term-missing --cov-fail-under=90
 ```
+
+Additional release gates are defined in `.github/workflows/ci.yml`.
+
+## Deployment
+
+The current deployment targets Railway with separate frontend and backend services.
+
+The frontend requires the backend service origin:
+
+```text
 NEXT_PUBLIC_API_BASE_URL=https://your-backend-service.up.railway.app
 ```
 
-Verify the backend with `/health` and
-`/api/v1/projects/proj_brookside_meadows`. See
-[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) and [docs/OPERATIONS.md](docs/OPERATIONS.md).
+Operational verification surfaces include:
+
+- `/health`
+- `/api/v1/diagnostics/readiness`
+- `/deployment-status`
+
+Production deployment requires a managed PostgreSQL database, secure secrets, durable file storage, configured CORS and cookie settings, and validated environment configuration.
+
+## Repository map
+
+```text
+app/                  Next.js routes, layouts, public pages, workspaces, and BFF routes
+backend/app/          FastAPI application, API routes, services, models, and schemas
+components/           Shared and domain-specific React components
+lib/                  API clients, authentication, generated contracts, and shared logic
+data/                 Reference-project and frontend fixture data
+public/               Static media and downloadable public artifacts
+scripts/              Contract generation, validation, release, and proof harnesses
+e2e/                  Playwright end-to-end and accessibility tests
+docs/                 Product, architecture, security, deployment, and technical records
+.github/workflows/     CI and release quality gates
+```
 
 ## Documentation
 
-- [docs/PRODUCT.md](docs/PRODUCT.md): product overview and capability boundary.
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): system architecture.
-- [docs/DOMAIN_MODEL.md](docs/DOMAIN_MODEL.md): the review-support domain model.
-- [docs/SECURITY.md](docs/SECURITY.md): security and the professional boundary.
-- [docs/OPERATIONS.md](docs/OPERATIONS.md): release, pilot, billing, and email.
-- [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md): deployment and the database.
-- [docs/TESTING.md](docs/TESTING.md): tests and release gates.
-- [docs/API.md](docs/API.md): API surfaces and the OpenAPI contract.
-- [docs/DXF_VALIDATION.md](docs/DXF_VALIDATION.md): the DXF proof of concept.
-- [docs/REFERENCE_PROJECT.md](docs/REFERENCE_PROJECT.md): Brookside Meadows.
-- [docs/ROADMAP.md](docs/ROADMAP.md): committed, planned, and out-of-scope work.
-- [docs/README.md](docs/README.md): the full documentation map.
+The current repository contains detailed engineering records covering the platform’s development history and individual backend capabilities. The most useful entry points are:
 
-## Technical foundation
+- [Architecture](docs/ARCHITECTURE.md)
+- [Domain model](docs/DOMAIN_MODEL.md)
+- [Route architecture](docs/ROUTE_ARCHITECTURE.md)
+- [Authentication and access control](docs/AUTHENTICATION_AND_ACCESS_CONTROL.md)
+- [Security and professional boundary](docs/SECURITY_AND_PROFESSIONAL_BOUNDARY.md)
+- [Tenant isolation audit](docs/TENANT_ISOLATION_AUDIT.md)
+- [Production database](docs/PRODUCTION_DATABASE.md)
+- [Railway deployment guide](docs/RAILWAY_DEPLOYMENT_GUIDE.md)
+- [Release readiness](docs/RELEASE_READINESS.md)
+- [DXF proof of concept](docs/proof-of-concept/DXF_PROOF_OF_CONCEPT.md)
+- [DXF test methodology](docs/proof-of-concept/DXF_TEST_METHODOLOGY.md)
+- [Brookside Meadows project story](docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md)
+- [Real versus mocked behavior](docs/real-vs-mocked.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Full documentation index](docs/README.md)
 
-Next.js App Router with TypeScript and Tailwind CSS on the frontend; FastAPI with
-SQLAlchemy, Alembic, pypdf, and ezdxf on the backend. Wire types are generated
-from the FastAPI OpenAPI schema, and CI runs typecheck, lint, unit and content
-tests, a content integrity gate, dependency audits, the production build, the API
-contract check, the DXF proof harness, and a Playwright and accessibility suite.
+## Current limitations
 
-## Intentionally out of scope
+The current platform does not provide:
 
-DWG parsing, Autodesk and Civil 3D integration, GIS integration, OCR, computer
-vision, external vector search, enterprise single sign-on, and a full
-applicant-facing portal. Live AI calls stay disabled by default.
+- DWG parsing
+- Native Autodesk Civil 3D integration
+- GIS integration
+- OCR for image-only documents
+- Computer-vision interpretation of plan graphics
+- External vector-search infrastructure
+- Enterprise single sign-on
+- A complete applicant-facing portal
+- Autonomous engineering approval or compliance certification
+
+Live generative-AI calls remain disabled by default. The system’s strongest implemented capabilities are deterministic document indexing, evidence traceability, DXF metadata extraction, structured review workflows, and reviewer-controlled deliverables.
+
+## Product direction
+
+The next maturity phase should focus on enterprise integration, operational resilience, configurable jurisdictional rule packs, background processing for large file workloads, richer provenance, production observability, and controlled design-partner pilots.
+
+The platform should continue to prioritize auditability, human authority, deterministic validation, and domain-specific workflow depth over broad but unverifiable automation claims.
+
+---
+
+<div align="center">
+
+**Civil Engineer AI · Stormwater Review Assistant**
+
+[![GitHub](https://img.shields.io/badge/GitHub-mpalmer79%2Fcivil--engineer-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/mpalmer79/civil-engineer)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Michael_Palmer-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/mpalmer1234)
+
+[Live Platform](https://civil-engineer.up.railway.app/) · [Technical Overview](https://civil-engineer.up.railway.app/start-here) · [Guided Product Tour](https://civil-engineer.up.railway.app/guided-demo) · [DXF Validation](https://civil-engineer.up.railway.app/proof-of-concept)
+
+</div>
