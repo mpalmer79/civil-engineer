@@ -33,13 +33,13 @@ const PROHIBITED_PROMISES = [
 
 describe("Release docs exist", () => {
   it("ships the release readiness and pilot checklist docs", () => {
-    expect(existsSync(join(root, "docs/RELEASE_READINESS.md"))).toBe(true);
-    expect(existsSync(join(root, "docs/PILOT_RELEASE_CHECKLIST.md"))).toBe(true);
+    expect(existsSync(join(root, "docs/OPERATIONS.md"))).toBe(true);
+    expect(existsSync(join(root, "docs/OPERATIONS.md"))).toBe(true);
   });
 
   it("ships the pilot operations and design-partner outreach docs", () => {
-    expect(existsSync(join(root, "docs/PILOT_OPERATIONS.md"))).toBe(true);
-    expect(existsSync(join(root, "docs/DESIGN_PARTNER_OUTREACH.md"))).toBe(true);
+    expect(existsSync(join(root, "docs/OPERATIONS.md"))).toBe(true);
+    expect(existsSync(join(root, "docs/OPERATIONS.md"))).toBe(true);
   });
 
   it("ships the pilot release verification script and npm script", () => {
@@ -48,7 +48,7 @@ describe("Release docs exist", () => {
   });
 
   it("documents the production-posture flags and public route allowlist", () => {
-    const readiness = read("docs/RELEASE_READINESS.md");
+    const readiness = read("docs/OPERATIONS.md");
     expect(readiness).toContain("AUTH_REQUIRE_LOGIN_FOR_REAL_PROJECTS");
     expect(readiness).toContain("AUTH_DEMO_MODE");
     expect(readiness).toContain("AUTH_ALLOW_PUBLIC_DEMO");
@@ -57,12 +57,12 @@ describe("Release docs exist", () => {
 
   it("does not duplicate the release docs", () => {
     // A single canonical readiness doc and a single checklist doc.
-    expect(existsSync(join(root, "docs/RELEASE_READINESS.md"))).toBe(true);
+    expect(existsSync(join(root, "docs/OPERATIONS.md"))).toBe(true);
     expect(existsSync(join(root, "docs/RELEASE-READINESS.md"))).toBe(false);
   });
 
   it("states the honest pilot limitations", () => {
-    const readiness = read("docs/RELEASE_READINESS.md").toLowerCase();
+    const readiness = read("docs/OPERATIONS.md").toLowerCase();
     expect(readiness).toContain("billing");
     expect(readiness).toContain("sqlite");
     expect(readiness).toContain("design-partner pilot");
@@ -70,7 +70,7 @@ describe("Release docs exist", () => {
   });
 
   it("lists required environment variables in the checklist", () => {
-    const checklist = read("docs/PILOT_RELEASE_CHECKLIST.md");
+    const checklist = read("docs/OPERATIONS.md");
     expect(checklist).toContain("AUTH_SECRET_KEY");
     expect(checklist).toContain("DATABASE_URL");
     expect(checklist).toContain("NEXT_PUBLIC_API_BASE_URL");
@@ -87,10 +87,10 @@ describe("Release routes exist", () => {
 
 describe("No attribution footer in release docs and operational copy", () => {
   const files = [
-    "docs/RELEASE_READINESS.md",
-    "docs/PILOT_RELEASE_CHECKLIST.md",
-    "docs/PILOT_OPERATIONS.md",
-    "docs/DESIGN_PARTNER_OUTREACH.md",
+    "docs/OPERATIONS.md",
+    "docs/OPERATIONS.md",
+    "docs/OPERATIONS.md",
+    "docs/OPERATIONS.md",
     "app/workspace/page.tsx",
     "app/admin/pilot-requests/page.tsx",
     "components/PilotReleaseNote.tsx",

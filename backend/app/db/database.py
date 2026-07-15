@@ -4,7 +4,7 @@ SQLite is the default for local development and tests so the prototype runs with
 no external service. Production SaaS uses Postgres, selected by pointing
 DATABASE_URL at a Postgres connection string. The provider is chosen from the URL
 scheme; nothing else in the application needs to change to switch databases. See
-docs/PRODUCTION_DATABASE.md for the production migration path.
+docs/DEPLOYMENT.md for the production migration path.
 """
 
 from __future__ import annotations
@@ -106,7 +106,7 @@ def check_production_database(settings: Settings | None = None) -> None:
             "supported for local development, tests, and the pilot prototype. Set "
             "DATABASE_URL to a Postgres connection string, or set APP_ENV to "
             "'development' or 'pilot' for prototype use. See "
-            "docs/PRODUCTION_DATABASE.md."
+            "docs/DEPLOYMENT.md."
         )
 
 
@@ -116,7 +116,7 @@ def init_db() -> None:
     This is a convenience for local development, tests, and the pilot prototype.
     It only creates missing tables and never alters an existing one, so the
     production schema is managed by Alembic migrations (``alembic upgrade head``),
-    not by this call. See docs/PRODUCTION_DATABASE.md.
+    not by this call. See docs/DEPLOYMENT.md.
     """
 
     from app.db import models  # noqa: F401  (registers models on Base.metadata)

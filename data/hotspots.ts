@@ -1,5 +1,5 @@
 // Static hotspot overlay data for the homepage hero map.
-// Source of truth: docs/HOMEPAGE_HOTSPOT_PLAN.md
+// Source of truth: docs/archive/HOMEPAGE_HOTSPOT_PLAN.md
 //
 // The hero image (public/development.png) is treated as a product feature: a
 // future interactive development map. These records drive the Phase 1 static

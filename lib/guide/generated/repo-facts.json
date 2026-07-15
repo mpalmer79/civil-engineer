@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "commit": "54d45891a77f3dd2f24b13b8ce8b9168e90a893e",
+  "commit": "3d71a8fe502a07a163982cbce5ffa85042d18cd4",
   "dependencies": {
     "next": "15.5.20",
     "react": "19.2.7",
@@ -166,10 +166,10 @@
   "keyDocuments": [
     "docs/README.md",
     "docs/ROUTE_ARCHITECTURE.md",
-    "docs/real-vs-mocked.md",
-    "docs/100_SCORE_TRANSFORMATION.md",
-    "docs/security/BFF_PROXY_THREAT_MODEL.md",
-    "docs/civil-engineer-ai-guide.md"
+    "docs/PRODUCT.md",
+    "docs/ROADMAP.md",
+    "docs/SECURITY.md",
+    "docs/TESTING.md"
   ],
   "openApiContract": "lib/api/generated/openapi.json"
 }

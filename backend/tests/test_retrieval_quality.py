@@ -3,7 +3,7 @@
 Builds a controlled corpus, evaluates keyword, semantic, and hybrid retrieval,
 and asserts conservative thresholds that catch major regressions without being
 brittle. Set CIVIL_WRITE_RETRIEVAL_REPORT=1 to also write the Markdown report to
-docs/PHASE_2_RETRIEVAL_QUALITY.md (used to regenerate the committed report).
+docs/archive/PHASE_2_RETRIEVAL_QUALITY.md (used to regenerate the committed report).
 """
 
 from __future__ import annotations

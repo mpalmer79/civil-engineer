@@ -5,7 +5,7 @@
 //
 // The "compact" variant is a single reassuring line; the default variant lists
 // the current pilot caveats. Capability wording follows the canonical statement
-// in docs/SAAS_POSITIONING.md.
+// in docs/PRODUCT.md.
 
 export default function PilotReleaseNote({
   variant = "default",

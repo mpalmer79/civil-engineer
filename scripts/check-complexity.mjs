@@ -55,19 +55,6 @@ const COHESION_ALLOWLIST = new Map([
 // Entries must only shrink. Do not add new files here to dodge the ceiling;
 // new oversized files must be split before merge.
 const DEFERRED_SPLIT = new Map([
-  ["lib/api/realProjects.ts", "deferred: split by intake resource (queries, mutations, mappers)"],
-  ["lib/api/workflow.ts", "deferred: split board queries, mutations, mappers"],
-  ["backend/app/services/response_package_service.py", "deferred: split response-package assembly, sections, handoff"],
-  ["backend/app/services/review_packet_service.py", "deferred: split packet lifecycle, sections, export"],
-  ["backend/app/services/command_center_service.py", "deferred: split dashboard projections by widget"],
-  ["backend/app/services/checklist_review_service.py", "deferred: split checklist decisions, evidence links, projections"],
-  ["backend/app/services/real_intake_service.py", "deferred: split upload, parsing, persistence"],
-  ["backend/app/services/reviewer_response_package_service.py", "deferred: split package build, comment-letter draft, revisions"],
-  ["backend/app/services/traceability_service.py", "deferred: split matrix build, review actions, projections"],
-  ["backend/app/services/environment_validation_service.py", "deferred: split checks by dependency class"],
-  ["backend/app/services/access_control_service.py", "deferred: split org, project, role enforcement"],
-  ["backend/app/services/workflow_service.py", "deferred: split board lifecycle, actions, follow-ups"],
-  ["backend/app/api/v1/review_cycle.py", "deferred: split router by resource once service package lands"],
   ["app/__tests__/evidenceRetrieval.test.tsx", "deferred: split by behavior (search, ranking, filters, citations)"],
 ]);
 

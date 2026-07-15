@@ -1,6 +1,6 @@
 // Seeded expected review-support findings for Brookside Meadows.
-// Source of truth: docs/SEED_DATA_PLAN.md §4 and the planted issues in
-// docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md §7.
+// Source of truth: docs/archive/SEED_DATA_PLAN.md §4 and the planted issues in
+// docs/archive/BROOKSIDE_MEADOWS_PROJECT_STORY.md §7.
 //
 // These are framed as EXPECTED findings that need reviewer confirmation. They
 // are review-support issues, not final engineering conclusions. No finding is

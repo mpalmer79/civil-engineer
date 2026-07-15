@@ -36,7 +36,7 @@ export const brooksideProjectImage: HomeImage = {
 
 // Reference-project facts, counted directly from the seeded fixture so the
 // homepage can never drift from the data it describes. The ten planted review
-// issues are documented in docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md (I-1
+// issues are documented in docs/archive/BROOKSIDE_MEADOWS_PROJECT_STORY.md (I-1
 // through I-10).
 
 export type CaseStudyFact = {

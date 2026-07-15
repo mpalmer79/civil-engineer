@@ -35,7 +35,7 @@ export default function RealVsSeeded() {
 
         <p className="mt-4 text-xs text-slate-500">
           The full real-versus-seeded matrix lives in the repository at
-          docs/real-vs-mocked.md, and the technical overview page summarizes
+          docs/PRODUCT.md, and the technical overview page summarizes
           the architecture behind it.
         </p>
       </div>

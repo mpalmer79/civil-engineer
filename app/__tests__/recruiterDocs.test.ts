@@ -18,32 +18,42 @@ const ATTRIBUTION_TOKENS = [
   ["co-authored", "by"].join("-"),
 ];
 
-const RECRUITER_DOCS = [
-  "docs/recruiter-walkthrough.md",
-  "docs/recruiter-walkthrough-storyboard.md",
-  "docs/architecture-overview.md",
-  "docs/real-vs-mocked.md",
-  "docs/synthetic-demo-data.md",
-  "docs/technical-decisions.md",
-  "docs/test-summary.md",
-  "docs/civil-engineer-ai-guide.md",
+// The canonical, current-state documentation set after consolidation. These are
+// the authoritative documents the README and the docs index point to.
+const CANONICAL_DOCS = [
+  "docs/README.md",
+  "docs/PRODUCT.md",
+  "docs/ARCHITECTURE.md",
+  "docs/DOMAIN_MODEL.md",
+  "docs/SECURITY.md",
+  "docs/OPERATIONS.md",
+  "docs/DEPLOYMENT.md",
+  "docs/TESTING.md",
+  "docs/API.md",
+  "docs/DXF_VALIDATION.md",
+  "docs/REFERENCE_PROJECT.md",
+  "docs/ROADMAP.md",
 ];
 
-describe("Recruiter documentation exists", () => {
-  it("ships every recruiter and technical review doc", () => {
-    for (const doc of RECRUITER_DOCS) {
+describe("Canonical documentation exists", () => {
+  it("ships every canonical current-state document", () => {
+    for (const doc of CANONICAL_DOCS) {
       expect(existsSync(join(root, doc)), doc).toBe(true);
     }
   });
 
-  it("links every recruiter doc from the README technical review section", () => {
+  it("links every canonical document from the README documentation section", () => {
     const readme = read("README.md");
-    expect(readme).toContain("## Technical Review Links");
-    for (const doc of RECRUITER_DOCS.filter(
-      (d) => d !== "docs/recruiter-walkthrough-storyboard.md",
-    )) {
+    expect(readme).toContain("## Documentation");
+    for (const doc of CANONICAL_DOCS.filter((d) => d !== "docs/README.md")) {
       expect(readme, doc).toContain(`(${doc})`);
     }
+  });
+
+  it("archives the superseded recruiter and phase material", () => {
+    expect(existsSync(join(root, "docs/archive/README.md"))).toBe(true);
+    // The recruiter walkthrough was folded and archived, not kept active.
+    expect(existsSync(join(root, "docs/recruiter-walkthrough.md"))).toBe(false);
   });
 });
 
@@ -62,20 +72,11 @@ describe("README links resolve to real files", () => {
       expect(existsSync(join(root, target)), target).toBe(true);
     }
   });
-
-  it("references the visual walkthrough only when the file exists", () => {
-    const readme = read("README.md");
-    const gifPath = "public/images/civil-engineer/recruiter-walkthrough.gif";
-    if (readme.includes("recruiter-walkthrough.gif")) {
-      expect(existsSync(join(root, gifPath))).toBe(true);
-      expect(readme).toContain("## Visual Walkthrough");
-    }
-  });
 });
 
-describe("Recruiter docs language hygiene", () => {
+describe("Canonical docs language hygiene", () => {
   it("contains no attribution tokens", () => {
-    for (const doc of RECRUITER_DOCS) {
+    for (const doc of CANONICAL_DOCS) {
       const text = read(doc).toLowerCase();
       for (const token of ATTRIBUTION_TOKENS) {
         expect(text, `${doc} must not contain "${token}"`).not.toContain(token);
@@ -84,33 +85,32 @@ describe("Recruiter docs language hygiene", () => {
   });
 
   it("contains no em dashes", () => {
-    for (const doc of RECRUITER_DOCS) {
+    for (const doc of CANONICAL_DOCS) {
       expect(read(doc), doc).not.toContain("\u2014");
     }
   });
 
-  it("keeps the review-support boundary in the walkthrough and architecture docs", () => {
-    const walkthrough = read("docs/recruiter-walkthrough.md").toLowerCase();
-    expect(walkthrough).toContain("does not approve plans");
-    expect(walkthrough).toContain("synthetic demo data");
+  it("keeps the review-support boundary in the product and security docs", () => {
+    const product = read("docs/PRODUCT.md").toLowerCase();
+    expect(product).toContain("does not approve plans");
+    expect(product).toContain("review-support");
+    expect(product).toContain("no action named approve");
 
-    const architecture = read("docs/architecture-overview.md").toLowerCase();
-    expect(architecture).toContain("human reviewer");
-    expect(architecture).toContain("no approve action");
+    const security = read("docs/SECURITY.md").toLowerCase();
+    expect(security).toContain("human reviewer");
+    expect(security).toContain("does not approve plans");
   });
 
-  it("labels demo data honestly in the real-vs-mocked map", () => {
-    const map = read("docs/real-vs-mocked.md");
-    expect(map).toContain("Seeded demo");
-    expect(map).toContain("Static prototype");
-    expect(map).toContain("Simulated");
-    expect(map.toLowerCase()).toContain("live ai disabled by default");
-  });
+  it("labels the reference project honestly", () => {
+    const product = read("docs/PRODUCT.md");
+    expect(product).toContain("Seeded demo");
+    expect(product).toContain("Simulated");
+    expect(product).toContain("Static prototype");
+    expect(product.toLowerCase()).toContain("live ai disabled by default");
 
-  it("states that Brookside Meadows and the Town of Hartwell are fictional", () => {
-    const data = read("docs/synthetic-demo-data.md").toLowerCase();
-    expect(data).toContain("synthetic demo data");
-    expect(data).toContain("town of hartwell is fictional");
-    expect(data).toContain("does not make real approval decisions");
+    const reference = read("docs/REFERENCE_PROJECT.md").toLowerCase();
+    expect(reference).toContain("synthetic demo data");
+    expect(reference).toContain("town of hartwell is fictional");
+    expect(reference).toContain("does not make real approval decisions");
   });
 });

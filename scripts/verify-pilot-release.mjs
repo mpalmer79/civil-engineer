@@ -62,11 +62,11 @@ const PROHIBITED_CLAIMS = [
 
 // 1. Required release docs exist.
 const REQUIRED_DOCS = [
-  "docs/RELEASE_READINESS.md",
-  "docs/PILOT_RELEASE_CHECKLIST.md",
-  "docs/PILOT_OPERATIONS.md",
-  "docs/DESIGN_PARTNER_OUTREACH.md",
-  "docs/TENANT_ISOLATION_AUDIT.md",
+  "docs/OPERATIONS.md",
+  "docs/OPERATIONS.md",
+  "docs/OPERATIONS.md",
+  "docs/OPERATIONS.md",
+  "docs/SECURITY.md",
 ];
 for (const doc of REQUIRED_DOCS) {
   if (read(doc) !== null) record(`doc:${doc}`, "ok", "present");
@@ -74,7 +74,7 @@ for (const doc of REQUIRED_DOCS) {
 }
 
 // 2. Public routes and protected routes are listed in the release checklist.
-const checklist = read("docs/PILOT_RELEASE_CHECKLIST.md") ?? "";
+const checklist = read("docs/OPERATIONS.md") ?? "";
 for (const route of ["/", "/guided-demo", "/pilot"]) {
   if (checklist.includes(route)) record(`public-route:${route}`, "ok", "listed");
   else record(`public-route:${route}`, "warning", "not listed in checklist");
@@ -91,17 +91,17 @@ for (const flag of [
   "AUTH_ALLOW_PUBLIC_DEMO",
 ]) {
   const inDocs =
-    (read("docs/RELEASE_READINESS.md") ?? "").includes(flag) ||
+    (read("docs/OPERATIONS.md") ?? "").includes(flag) ||
     checklist.includes(flag);
   record(`flag:${flag}`, inDocs ? "ok" : "warning", inDocs ? "documented" : "undocumented");
 }
 
 // 4. No attribution footer in public docs and public copy.
 const PUBLIC_FILES = [
-  "docs/RELEASE_READINESS.md",
-  "docs/PILOT_RELEASE_CHECKLIST.md",
-  "docs/PILOT_OPERATIONS.md",
-  "docs/DESIGN_PARTNER_OUTREACH.md",
+  "docs/OPERATIONS.md",
+  "docs/OPERATIONS.md",
+  "docs/OPERATIONS.md",
+  "docs/OPERATIONS.md",
   "app/page.tsx",
   "app/pilot/page.tsx",
   "app/guided-demo/page.tsx",

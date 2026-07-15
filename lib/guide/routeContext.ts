@@ -105,7 +105,7 @@ const ROUTE_INFO: { prefix: string; info: RouteInfo }[] = [
         "DXF metadata parsing: layers, blocks, and text extracted deterministically with ezdxf from the seeded sample file.",
       stage: "Document and DXF intake",
       dataSource: "public_demo",
-      sources: ["backend/app/services/cad_intake_service.py"],
+      sources: ["backend/app/services/cad_intake_service/__init__.py"],
     },
   },
   {
@@ -116,7 +116,7 @@ const ROUTE_INFO: { prefix: string; info: RouteInfo }[] = [
         "The reviewer-controlled communication record assembled from findings and applicant responses, with a draft, reviewer check, and issue lifecycle.",
       stage: "Reviewer-controlled handoff",
       dataSource: "public_demo",
-      sources: ["backend/app/services/response_package_service.py"],
+      sources: ["backend/app/services/response_package_service/__init__.py"],
     },
   },
   {
@@ -127,7 +127,7 @@ const ROUTE_INFO: { prefix: string; info: RouteInfo }[] = [
         "The assembled review packet: sections, items, and evidence links prepared for reviewer handoff.",
       stage: "Reviewer-controlled handoff",
       dataSource: "public_demo",
-      sources: ["backend/app/services/review_packet_service.py"],
+      sources: ["backend/app/services/review_packet_service"],
     },
   },
   {

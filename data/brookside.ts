@@ -1,5 +1,5 @@
 // Seed data for the Brookside Meadows review fixture.
-// Source of truth: docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md and docs/SEED_DATA_PLAN.md
+// Source of truth: docs/archive/BROOKSIDE_MEADOWS_PROJECT_STORY.md and docs/archive/SEED_DATA_PLAN.md
 // Phase 1 uses these static records to drive the prototype UI. No backend yet.
 
 export type SiteCondition = {

@@ -3,7 +3,7 @@
 Settings are read from environment variables (and an optional .env file), with
 sensible local defaults so the backend runs out of the box. The same defaults
 work for local development; a Railway deployment overrides them through service
-environment variables (see docs/RAILWAY_DEPLOYMENT_GUIDE.md).
+environment variables (see docs/DEPLOYMENT.md).
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     # a Postgres DATABASE_URL: production SaaS data must not live on ephemeral
     # SQLite. The strict check is enforced at startup only when APP_ENV is
     # "production", so local development, tests, and preview builds are never
-    # blocked. See docs/PRODUCTION_DATABASE.md.
+    # blocked. See docs/DEPLOYMENT.md.
     APP_ENV: str = "development"
 
     # Database connection string. SQLite is the default for local development and
@@ -186,7 +186,7 @@ class Settings(BaseSettings):
     # Set USAGE_ENFORCEMENT_ENABLED=true to hard-enforce the selected low-risk
     # categories (project creation, document registration, review packet
     # generation) for real organizations. The public Brookside demo and the demo
-    # organization are never enforced. See docs/BILLING_AND_USAGE.md.
+    # organization are never enforced. See docs/OPERATIONS.md.
     USAGE_ENFORCEMENT_ENABLED: bool = False
 
     # AI provider configuration. The default is the deterministic mock provider

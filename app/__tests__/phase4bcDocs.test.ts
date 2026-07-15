@@ -16,19 +16,19 @@ function readDoc(relativePath: string): string {
 
 describe("Phase 4B/4C documentation", () => {
   it("the auth lifecycle and billing docs exist", () => {
-    expect(existsSync(join(root, "docs/AUTH_LIFECYCLE.md"))).toBe(true);
-    expect(existsSync(join(root, "docs/BILLING_AND_USAGE.md"))).toBe(true);
+    expect(existsSync(join(root, "docs/SECURITY.md"))).toBe(true);
+    expect(existsSync(join(root, "docs/OPERATIONS.md"))).toBe(true);
   });
 
   it("the billing doc states billing is inactive until configured", () => {
-    const doc = readDoc("docs/BILLING_AND_USAGE.md").toLowerCase();
+    const doc = readDoc("docs/OPERATIONS.md").toLowerCase();
     expect(doc).toContain("configured by environment");
     expect(doc).toContain("no payment is");
     expect(doc).toContain("advisory");
   });
 
   it("the auth lifecycle doc states tokens are hashed and use-once", () => {
-    const doc = readDoc("docs/AUTH_LIFECYCLE.md").toLowerCase();
+    const doc = readDoc("docs/SECURITY.md").toLowerCase();
     expect(doc).toContain("hash");
     expect(doc).toContain("use-once");
     // Real email is available via smtp; noop is the default.
@@ -37,13 +37,13 @@ describe("Phase 4B/4C documentation", () => {
   });
 
   it("neither doc claims an active paid subscription", () => {
-    const billing = readDoc("docs/BILLING_AND_USAGE.md").toLowerCase();
+    const billing = readDoc("docs/OPERATIONS.md").toLowerCase();
     expect(billing).not.toContain("subscription is active");
     expect(billing).not.toContain("billing is active.");
   });
 
   it("release readiness reflects the account and billing foundation", () => {
-    const doc = readDoc("docs/RELEASE_READINESS.md").toLowerCase();
+    const doc = readDoc("docs/OPERATIONS.md").toLowerCase();
     expect(doc).toContain("team invitation");
     expect(doc).toContain("billing");
   });

@@ -20,7 +20,7 @@ function apiBaseUrlAssignments(content: string): string[] {
 }
 
 describe("Railway deployment guide", () => {
-  const guide = readDoc("docs/RAILWAY_DEPLOYMENT_GUIDE.md");
+  const guide = readDoc("docs/DEPLOYMENT.md");
 
   it("explains that the frontend must be redeployed after the backend URL changes", () => {
     expect(guide).toMatch(/redeploy/i);
@@ -55,7 +55,7 @@ describe("Railway deployment guide", () => {
 });
 
 describe("Live site verification doc", () => {
-  const doc = readDoc("docs/LIVE_SITE_VERIFICATION.md");
+  const doc = readDoc("docs/OPERATIONS.md");
 
   it("lists the core manual live-site checks", () => {
     expect(doc).toContain("https://civil-engineer.up.railway.app/");
