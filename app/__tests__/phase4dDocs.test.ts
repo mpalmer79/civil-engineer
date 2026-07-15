@@ -16,12 +16,12 @@ function readDoc(relativePath: string): string {
 
 describe("Phase 4D documentation", () => {
   it("the email and Stripe docs exist", () => {
-    expect(existsSync(join(root, "docs/EMAIL_DELIVERY.md"))).toBe(true);
-    expect(existsSync(join(root, "docs/STRIPE_BILLING.md"))).toBe(true);
+    expect(existsSync(join(root, "docs/OPERATIONS.md"))).toBe(true);
+    expect(existsSync(join(root, "docs/OPERATIONS.md"))).toBe(true);
   });
 
   it("the email doc describes noop default and an smtp provider", () => {
-    const doc = readDoc("docs/EMAIL_DELIVERY.md").toLowerCase();
+    const doc = readDoc("docs/OPERATIONS.md").toLowerCase();
     expect(doc).toContain("noop");
     expect(doc).toContain("smtp");
     expect(doc).toContain("never");
@@ -29,7 +29,7 @@ describe("Phase 4D documentation", () => {
   });
 
   it("the Stripe doc describes signature verification and idempotency", () => {
-    const doc = readDoc("docs/STRIPE_BILLING.md").toLowerCase();
+    const doc = readDoc("docs/OPERATIONS.md").toLowerCase();
     expect(doc).toContain("signature");
     expect(doc).toContain("idempot");
     expect(doc).toContain("inactive until configured");
@@ -37,7 +37,7 @@ describe("Phase 4D documentation", () => {
   });
 
   it("the billing doc describes enforced and advisory categories", () => {
-    const doc = readDoc("docs/BILLING_AND_USAGE.md").toLowerCase();
+    const doc = readDoc("docs/OPERATIONS.md").toLowerCase();
     expect(doc).toContain("enforceable for selected categories");
     expect(doc).toContain("usage_enforcement_enabled");
     expect(doc).toContain("limit_exceeded");
@@ -46,7 +46,7 @@ describe("Phase 4D documentation", () => {
   });
 
   it("no doc claims an active paid subscription by default", () => {
-    const stripe = readDoc("docs/STRIPE_BILLING.md").toLowerCase();
+    const stripe = readDoc("docs/OPERATIONS.md").toLowerCase();
     expect(stripe).not.toContain("billing is active by default");
     expect(stripe).not.toContain("payment is processed by default");
   });

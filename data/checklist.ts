@@ -1,5 +1,5 @@
 // Seeded stormwater review checklist for Brookside Meadows.
-// Source of truth: docs/SEED_DATA_PLAN.md §3.
+// Source of truth: docs/archive/SEED_DATA_PLAN.md §3.
 // The checklist drives review structure. AI findings are tied to checklist
 // items; the system does not rely on free-form AI judgment alone, and human
 // review is required before any final action.

@@ -26,7 +26,7 @@ Counts are tracked files via `git ls-files`.
 | TypeScript (.ts) | 106 files / 41,458 lines | 128 / 42,263 | Large API modules became directories. |
 | TSX (.tsx) | 308 / 38,745 | 336 / 38,539 | Pages and clients decomposed into sections. |
 | Python (.py) | 231 / 62,755 | 270 / 63,477 | Models, safety vocab, and seeds split by domain. |
-| Markdown (.md) | 105 / 17,661 | 114 / 18,246 | Added ADRs and internal reports. Public-doc consolidation deferred (see below). |
+| Markdown (.md) | 105 / 17,661 | 114 / 18,246 | Added ADRs and internal reports; historical docs then archived and the active set consolidated in the follow-up. |
 | npm audit (full tree) | 2 critical, 1 high, 3 moderate | 0 | Verified `npm audit`: found 0 vulnerabilities. |
 
 ### Largest authored modules: before and after
@@ -68,7 +68,7 @@ Verification: `npm audit` reports 0 vulnerabilities.
 
 ## Backend decomposition
 
-Completed and verified (905 passed, 1 skipped after each):
+Completed and verified (907 passed, 1 skipped):
 
 - `db/models/core.py` split into 13 bounded-context modules under
   `app/db/models/`, table names, columns, relationships, constraints, and
@@ -81,9 +81,9 @@ Completed and verified (905 passed, 1 skipped after each):
   isolated as an optional reference dataset. Production startup does not
   depend on the reference project.
 
-Deferred (registered in `scripts/check-complexity.mjs`, target follow-up):
-service-layer packages for cad intake, review cycle, evidence retrieval, and
-the remaining oversized services. See Deferred section.
+All oversized service modules were subsequently split into bounded-context
+packages in the follow-up. See the Follow-up completion section for the full
+list and the remaining deferred items.
 
 ## Frontend decomposition and repositioning (completed and verified)
 
@@ -98,7 +98,7 @@ the remaining oversized services. See Deferred section.
   Meadows presented as a synthetic reference project. `/landing` kept as a
   permanent redirect to `/`.
 
-Verification: typecheck, lint, 550 unit tests, coverage floors, production
+Verification: typecheck, lint, unit tests, coverage floors, production
 build, and content integrity gate all pass.
 
 ## Quality gates added
@@ -116,60 +116,77 @@ build, and content integrity gate all pass.
 |---|---|---|
 | Frontend typecheck | `npm run typecheck` | pass |
 | Frontend lint | `npm run lint` | pass |
-| Frontend unit tests | `npm run test` | 550 pass |
+| Frontend unit tests | `npm run test` | 549 pass |
 | Coverage floors | `npm run test:coverage` | pass (statements 52.2%, branches 42.8%, functions 47.6%, lines 53.5%; all above committed floors) |
 | Production build | `npm run build` | pass |
 | Content integrity | `npm run check:content` | pass |
 | Complexity budget | `node scripts/check-complexity.mjs` | pass |
 | Full-tree npm audit | `npm audit` | 0 vulnerabilities |
 | Backend imports | `python -c "from app.main import app"` | ok |
-| Backend tests | `pytest -q` | 905 pass, 1 skip |
+| Backend tests | `pytest -q` | 907 pass, 1 skip |
 | Alembic head | single head check | `0003_billing_events` |
 | API contract | `node scripts/generate-api-types.mjs --check` | current |
 | DXF deterministic proof | `scripts/run_dxf_proof.py` | artifacts unchanged |
 
+## Follow-up completion (PR after #75)
+
+The items deferred in PR #75 were completed in the follow-up branch and are
+recorded here for a single authoritative account.
+
+Completed in the follow-up:
+
+- All remaining oversized backend services were split into bounded-context
+  packages, each file under the 700 line ceiling: cad_intake_service,
+  review_cycle_service, evidence_retrieval_service, response_package_service,
+  reviewer_response_package_service, review_packet_service, workflow_service,
+  command_center_service, traceability_service, checklist_review_service,
+  real_intake_service, access_control_service, environment_validation_service.
+- The `api/v1/review_cycle` router was split by resource with identical route
+  count, paths, methods, status codes, and response models.
+- `lib/api/realProjects.ts` and `lib/api/workflow.ts` were split into
+  responsibility directories.
+- Documentation was consolidated into the canonical set (PRODUCT, ARCHITECTURE
+  rewritten from about 1,400 lines to roughly 200, SECURITY, OPERATIONS,
+  DEPLOYMENT, TESTING, API, DXF_VALIDATION, REFERENCE_PROJECT, ROADMAP, plus
+  the retained DOMAIN_MODEL and route map). 89 historical documents were moved
+  to `docs/archive/` with git history preserved, and all load-bearing
+  references (guide catalog, route context, doc-assertion tests, verification
+  scripts, admin links, and source comments) were repointed.
+
 ## Deferred work (tracked, not hidden)
 
-Registered in `scripts/check-complexity.mjs` under `DEFERRED_SPLIT`. Each is
-real remaining decomposition work, not a capability gap. The application
-functions correctly; these files are simply larger than the target ceiling.
+Registered in `scripts/check-complexity.mjs` under `DEFERRED_SPLIT` and the
+cohesion allowlist. Each is a size or test-structure item, not a capability gap.
 
-1. Service-layer packages for: cad_intake_service, review_cycle_service,
-   evidence_retrieval_service, response_package_service, review_packet_service,
-   command_center_service, checklist_review_service, real_intake_service,
-   reviewer_response_package_service, traceability_service,
-   environment_validation_service, access_control_service, workflow_service.
-2. `api/v1/review_cycle.py` router split (follows the service package).
-3. `lib/api/realProjects.ts` and `lib/api/workflow.ts` directory splits.
-4. `app/__tests__/evidenceRetrieval.test.tsx` split by behavior.
-5. Documentation consolidation into the canonical set (PRODUCT, ARCHITECTURE,
-   SECURITY, OPERATIONS, DEPLOYMENT, TESTING, API, DXF_VALIDATION,
-   REFERENCE_PROJECT, ROADMAP) with phase and sprint documents archived. The
-   disposition matrix (`docs/internal/DOCUMENTATION_DISPOSITION.md`) and the
-   governance ADR (`0009`) are in place; the file moves and reference updates
-   are the remaining step.
-
-These were deferred because the parallel refactor agents executing them were
-terminated by an account spend limit before producing output. The completed
-increments were each validated and committed independently, so the branch is
-coherent and green at every commit.
+1. `app/__tests__/evidenceRetrieval.test.tsx` (720 lines) split by behavior
+   (search, ranking, filters, citations). Remaining `DEFERRED_SPLIT` entry.
+2. Seed fixtures `backend/app/db/seeds/plan_sheets.py` and `evidence.py`, and
+   the curated `lib/guide/knowledge.ts` catalog, remain on the cohesion
+   allowlist: they are reviewed as data, not logic, and a split would only
+   fragment them.
+3. Observability and background-processing work described in OPERATIONS and the
+   ROADMAP Deferred section: structured request-correlated logging, moving file
+   and DXF processing to background workers, and raising coverage floors.
 
 ## Readiness assessment
 
-- Internal engineering review: ready. Architecture is documented in ADRs and
-  the baseline and plan documents; completed refactors are validated.
+- Internal engineering review: ready. Architecture is documented in the
+  canonical ARCHITECTURE document and ADRs; every oversized module named in the
+  baseline has been decomposed and validated.
 - Customer demonstration: ready. The product reads professionally; recruiter
   and portfolio framing is gone; the reference project is labeled synthetic.
-- Controlled pilot: conditional. Recommended before pilot: complete the
-  service-layer decomposition and documentation consolidation, and add the
-  observability items in ADR and OPERATIONS backlog.
+- Controlled pilot: conditional. The service-layer decomposition and
+  documentation consolidation are now complete. Recommended before pilot: add
+  the observability items (structured request-correlated logging, background
+  workers for file and DXF processing) from OPERATIONS and the ROADMAP.
 - Production use: not yet. File processing remains request-bound; background
-  workers, structured request-correlated logging, and the deferred
-  decomposition should land first. See ROADMAP Deferred.
+  workers and structured request-correlated logging should land first. See
+  ROADMAP Deferred.
 
 ## Known remaining risks
 
-- Oversized service modules remain harder to change safely until split.
-- Public documentation set still contains overlapping and historical documents
-  pending the consolidation step.
-- Coverage floors are modest; raising them should accompany the service split.
+- File and DXF processing runs on the request thread; enterprise-scale load
+  should move it to a background worker.
+- Coverage floors are modest; raising them is tracked in the ROADMAP.
+- One UI test file remains above the size ceiling (tracked in the deferred
+  registry); it is a test-structure item, not a behavior risk.

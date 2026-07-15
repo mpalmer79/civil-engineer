@@ -46,14 +46,14 @@ describe("public surfaces carry no phase chronology", () => {
   });
 
   it("the product overview leads with capability, not phase numbers", () => {
-    const overview = read("docs/PRODUCT_OVERVIEW.md");
+    const overview = read("docs/PRODUCT.md");
     expect(overview).not.toMatch(PHASE_LABEL);
   });
 });
 
 describe("Railway deployment readiness", () => {
   it("the deployment guide targets Railway and does not recommend Vercel", () => {
-    const guide = read("docs/RAILWAY_DEPLOYMENT_GUIDE.md");
+    const guide = read("docs/DEPLOYMENT.md");
     expect(guide).toContain("Railway");
     expect(guide.toLowerCase()).not.toContain("vercel");
   });
@@ -70,7 +70,7 @@ describe("Railway deployment readiness", () => {
   });
 
   it("documents the backend health and project test routes", () => {
-    const guide = read("docs/RAILWAY_DEPLOYMENT_GUIDE.md");
+    const guide = read("docs/DEPLOYMENT.md");
     expect(guide).toContain("/health");
     expect(guide).toContain("/api/v1/projects/proj_brookside_meadows");
     // A 404 on the backend root is documented as not necessarily a failure.
@@ -87,7 +87,7 @@ describe("Railway deployment readiness", () => {
 describe("NEXT_PUBLIC_API_BASE_URL example hygiene", () => {
   const sources = [
     ".env.example",
-    "docs/RAILWAY_DEPLOYMENT_GUIDE.md",
+    "docs/DEPLOYMENT.md",
     "README.md",
   ];
 
@@ -105,7 +105,7 @@ describe("NEXT_PUBLIC_API_BASE_URL example hygiene", () => {
   it("documents that the base URL is the backend origin only", () => {
     const envExample = read(".env.example");
     expect(envExample.toLowerCase()).toContain("origin only");
-    const guide = read("docs/RAILWAY_DEPLOYMENT_GUIDE.md");
+    const guide = read("docs/DEPLOYMENT.md");
     expect(guide).toContain("origin");
   });
 });

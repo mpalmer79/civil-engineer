@@ -1,5 +1,5 @@
 // Seeded evaluation cases for Brookside Meadows.
-// Source of truth: docs/SEED_DATA_PLAN.md §5.
+// Source of truth: docs/archive/SEED_DATA_PLAN.md §5.
 //
 // Phase 1 displays seeded evaluation outcomes. Later phases will run evaluation
 // cases against generated findings. The metric values below are mock but

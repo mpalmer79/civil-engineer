@@ -1,504 +1,80 @@
-# Roadmap, Civil Engineer AI
-
-**Product:** Civil Engineer AI: Stormwater Review Assistant
-
-This roadmap shows the staged path from a documentation foundation to a
-multi-module land development review platform. **Stormwater is the starting
-point, not the endpoint.** Each phase delivers something demonstrable, and no
-phase begins until the previous one's foundation is solid.
-
-```mermaid
-flowchart LR
-    P0[Phase 0\nFoundation] --> P1[Phase 1\nStatic Prototype]
-    P1 --> P2[Phase 2\nBackend & Data]
-    P2 --> P3[Phase 3\nRetrieval]
-    P3 --> P4[Phase 4\nAI Review]
-    P4 --> P5[Phase 5\nEvaluation]
-    P5 --> P6[Phase 6\nPlan Sheet & CAD]
-    P6 --> P7[Phase 7\nSheet Viewer & Hotspots]
-    P7 --> P8[Phase 8\nReview Packet Builder]
-    P8 --> P9[Phase 9\nReviewer Workflow Board]
-    P9 --> P10[Phase 10\nResponse Package]
-    P10 --> P11[Phase 11\nDXF Intake Foundation]
-    P11 --> P12[Phase 12\nBrowser CAD Upload & Parse Queue]
-    P12 --> P13[Phase 13\nResubmittal & Revision Cycle]
-    P13 --> P14[Phase 14\nReviewer Command Center]
-    P14 --> P15[Phase 15+\nCAD Extraction & Expansion]
-```
-
----
-
-## Phase 0, Foundation  *(complete)*
-
-**Goal:** Build the strongest possible foundation before any code.
-
-- Research basis (`RESEARCH_AND_SYSTEM_DESIGN.md`)
-- Project story (`BROOKSIDE_MEADOWS_PROJECT_STORY.md`)
-- Domain model (`DOMAIN_MODEL.md`)
-- Safety boundaries (`PHASE_0_FOUNDATION.md` §4; existing safety content)
-- V1 scope (`V1_SCOPE.md`)
-- Seed data plan (`SEED_DATA_PLAN.md`)
-
-**Exit criteria:** Phase 0 documents reviewed and approved. No application code
-written. (See `PHASE_0_FOUNDATION.md` §9.)
-
----
-
-## Phase 1, Static Portfolio Prototype
-
-**Goal:** A clickable, convincing UI driven entirely by seed data, no AI calls.
-
-- Next.js + TypeScript frontend
-- Seeded Brookside Meadows project data (from `SEED_DATA_PLAN.md`)
-- Static document library
-- Static checklist view (statuses precomputed from seed data)
-- Static findings list and finding detail pages
-- Static human review queue (actions stubbed/local)
-- Static audit trail view
-- Use the canonical product naming (**Civil Engineer AI**) and demo fixture
-  (**Brookside Meadows**) consistently across the app and docs
-
-**Why first:** It de-risks the product story and UX, and gives a portfolio-ready
-artifact early, before any backend or model cost.
-
-**Exit criteria:** A reviewer can navigate the full v1 loop visually with seeded
-content.
-
----
-
-## Phase 2, Backend and Data Model
-
-**Goal:** Make the seeded data real and queryable.
-
-- FastAPI backend
-- PostgreSQL (or Supabase) with the schema from `DOMAIN_MODEL.md` /
-  `ARCHITECTURE.md` §6
-- Seed scripts loading project, documents, checklist, findings, audit events
-- Read/write API endpoints for projects, documents, checklist, findings,
-  review actions, audit events (per `ARCHITECTURE.md` §8)
-- Wire the Phase 1 frontend to live endpoints
-
-**Exit criteria:** The static prototype now runs on a real database and API.
-
----
-
-## Phase 3, Retrieval Layer
-
-**Goal:** Turn documents into source-linked, retrievable evidence.
-
-- Document chunking with page/section metadata
-- Embeddings + pgvector storage
-- Hybrid retrieval (semantic + keyword) scoped by project, document type, and
-  checklist category
-- Source-evidence search surfaced in the UI ("view source")
-- Retrieval testing: weak-result rejection, ranking sanity checks
-
-**Exit criteria:** For any checklist item, the system returns ranked, cited
-evidence chunks from the Brookside Meadows package.
-
-**Delivered in Phase 3:** the document chunk and finding source data model,
-seeded chunks and source evidence, and keyword and metadata retrieval with
-checklist and finding evidence endpoints and frontend evidence display.
-Embeddings, a vector store, and semantic retrieval are deferred to a later step
-behind the same retrieval interface. See `PHASE_3_RETRIEVAL_FOUNDATION.md`.
-
----
-
-## Phase 4, AI Review Assistant
-
-**Goal:** Generate structured, safe, source-cited findings.
-
-- Structured, versioned prompts (per `ARCHITECTURE.md` §10)
-- JSON output schema + validation (per `ARCHITECTURE.md` §11)
-- Finding generation tied to checklist items and retrieved evidence
-- Safety/prohibited-wording checks; `requires_human_review` on uncertainty
-- **Human review required for every finding** before it is final
-
-**Exit criteria:** Running the checklist produces validated findings that cite
-sources, avoid prohibited wording, and land in the human review queue.
-
-**Delivered in Phase 4:** a constrained AI review service, a provider
-abstraction with a deterministic mock provider (default) and an optional live
-provider (disabled by default), evidence-first prompts, strict JSON schema
-validation, prohibited-word and citation safety checks, `ai_review_runs` and
-`ai_draft_findings` tables, audit events for every step, an AI Review page, and
-mandatory human review for every draft finding. A persisted human review queue
-and live evaluation scoring are deferred to Phase 5. See
-`PHASE_4_AI_REVIEW_ASSISTANT.md`.
-
----
-
-## Phase 5, Human Review Queue and Evaluation System
-
-**Goal:** Prove the system works, manage a full review lifecycle, and keep it
-from regressing.
-
-- Persisted human review actions on AI draft findings
-- Human review queue with status transitions
-- Recall / precision against expected findings
-- Source-citation validity tracking
-- Validation-failure, safety-failure, and prohibited-wording checks
-- Evaluation result storage and an evaluation dashboard
-
-**Exit criteria:** Draft findings move through a persisted human review queue
-with audit events, and evaluation scoring runs against a real AI review run and
-reports recall, precision, citation validity, and quality metrics for the
-planted Brookside Meadows issues.
-
-**Delivered in Phase 5:** persisted human review actions (`human_review_actions`)
-with allowed actions (accept, edit, reject, escalate, mark unclear, request more
-information) and review-support status transitions, a Human Review page,
-evaluation scoring (`ai_evaluation_results` and `ai_evaluation_matches`) with
-recall, precision, citation validity, human-review-required rate, and validation
-and safety failure counts, evaluation dashboard updates, separate surfacing of
-failed drafts, audit events for every review action and evaluation run, and
-backend tests. There is no action called approve, and failed drafts cannot be
-accepted. See `PHASE_5_HUMAN_REVIEW_AND_EVALUATION.md`.
-
-> Phases 1 to 5 together constitute the **v1 build** defined in `V1_SCOPE.md`.
-
----
-
-## Phase 6, Plan Sheet and CAD-Aware Review Foundation
-
-**Goal:** Begin the transition from document-only review into plan sheet and
-CAD-aware review support, without attempting full CAD parsing.
-
-- Plan sheet data model and a seeded Brookside Meadows plan sheet index
-- CAD-aware civil feature metadata, seeded rather than extracted
-- Plan references connecting documents, sheets, and features
-- Missing sheet detection and plan consistency findings that require human review
-- Plan Sheets and CAD Review frontend pages
-- Audit events for the plan consistency check
-
-**Exit criteria:** The plan sheet index, CAD-aware metadata, plan references, and
-plan consistency findings are seeded and served through the API, the consistency
-check generates findings with audit events, and the frontend Plan Sheets and CAD
-Review pages render. The CAD-aware metadata is seeded, not extracted from real
-CAD files, and no DWG or DXF parsing, CAD verification, or final design review is
-included.
-
-**Delivered in Phase 6:** the `plan_sheets`, `cad_metadata`, `plan_references`,
-and `plan_consistency_findings` tables, seeded Brookside Meadows plan data
-(twelve sheets including the referenced-not-included C-3.1, sixteen CAD-aware
-feature records, eleven plan references, and six plan consistency findings), the
-plan sheet, CAD metadata, plan reference, and plan consistency endpoints, the
-Plan Sheets and CAD Review pages, audit events for the consistency check, and
-backend tests. See `PHASE_6_PLAN_SHEET_CAD_FOUNDATION.md` and
-`CAD_INTEGRATION_ROADMAP.md`.
-
----
-
-## Phase 7, Plan Sheet Viewer and Sheet Hotspot Review
-
-**Goal:** Give reviewers a plan sheet viewer with seeded hotspot annotations on
-top of the Phase 6 foundation, without parsing real PDF or CAD files.
-
-- A plan sheet hotspot model with percentage coordinates and links to Phase 6
-  entities
-- A sheet viewer context that bundles a sheet with its hotspots and related
-  evidence
-- Human review actions on plan consistency findings (needs follow up, reviewer
-  confirmed, not applicable, needs more information)
-- A reviewer-facing Sheet Viewer with a synthetic preview, hotspot overlay, and
-  review panels
-- Audit events for viewer context requests, hotspot inspection, and plan review
-  actions
-
-**Exit criteria:** A reviewer can open a Brookside Meadows sheet, see seeded
-hotspots over a synthetic preview, inspect connected evidence, and record
-review-support actions on plan consistency findings. The preview and hotspots
-are seeded review-support metadata, not parsed PDF, DWG, DXF, or Autodesk data.
-
-**Delivered in Phase 7:** the `plan_sheet_hotspots` and
-`plan_consistency_review_actions` tables, eight seeded hotspots across six
-Brookside Meadows sheets, sheet hotspot, sheet viewer context, and plan review
-action endpoints, the Sheet Viewer pages and viewer components, audit events,
-and backend tests. There is no action called approve, and nothing verifies CAD
-or validates a design. See `PHASE_7_PLAN_SHEET_VIEWER.md` and
-`CAD_INTEGRATION_ROADMAP.md`.
-
----
-
-## Phase 8, Review Packet Builder and Evidence Traceability
-
-**Goal:** Assemble the evidence from prior phases into a structured
-review-support packet draft for a human reviewer, without parsing real files.
-
-- Review packet, section, item, evidence link, and reviewer action models
-- A packet generation service that builds a packet draft from seeded data
-- An evidence traceability matrix and a printable review-support summary
-- Reviewer actions and item status updates on packet items
-- Audit events for packet generation, viewing, traceability and print requests,
-  reviewer actions, and status changes
-
-**Exit criteria:** A reviewer can generate a Brookside Meadows review-support
-packet draft, inspect issue groups and linked evidence, view the traceability
-matrix, record reviewer actions, and open a printable draft summary. The packet
-is a draft assembled from seeded review-support data and does not approve plans,
-certify compliance, verify CAD, or validate the design.
-
-**Delivered in Phase 8:** the `review_packets`, `review_packet_sections`,
-`review_packet_items`, `review_packet_evidence_links`, and
-`review_packet_reviewer_actions` tables, a packet generation service producing an
-eight-section packet, the traceability and print-view endpoints, reviewer action
-and status endpoints, the Review Packet pages and components, audit events, and
-backend tests. There is no action called approve. See
-`PHASE_8_REVIEW_PACKET_BUILDER.md`.
-
----
-
-## Phase 9, Reviewer Workflow Board and Issue Resolution Tracking
-
-**Goal:** Add an operational workflow layer that manages review-support items
-from packet generation through triage, follow-up, and handoff to a human
-reviewer, without parsing real files.
-
-- Workflow item, workflow action, and follow-up request models
-- A board generation service that promotes review packet items into workflow
-  items
-- Workflow board statuses (draft, needs triage, needs follow up, needs more
-  information, reviewer checked, excluded from packet, ready for handoff)
-- Status transitions, reviewer notes, and follow-up requests on workflow items
-- A board summary and a ready-for-handoff summary
-- Audit events for board generation, item viewing, status changes, notes,
-  follow-up requests, history requests, and summary requests
-
-**Exit criteria:** A reviewer can generate the Brookside Meadows reviewer
-workflow board, move each item through the workflow, record notes and follow-up
-requests, and review which items are ready for handoff to a licensed
-Professional Engineer. The board is built from seeded review-support data and
-does not approve plans, certify compliance, verify CAD, or validate the design.
-
-**Delivered in Phase 9:** the `workflow_items`, `workflow_actions`, and
-`workflow_follow_up_requests` tables, a board generation service that promotes
-the review packet items that require human review, the workflow board, item,
-status, note, follow-up, history, summary, and ready-for-handoff endpoints, the
-Workflow Board pages and components, audit events, and backend tests. There is
-no action called approve, and ready for handoff means handing organized
-evidence to a human reviewer, not issuing a decision. See
-`PHASE_9_WORKFLOW_BOARD.md`.
-
----
-
-## Phase 10, External Review Response Package
-
-**Goal:** Turn the ready-for-handoff workflow items into a structured draft
-external response package a human reviewer can prepare for an applicant, design
-engineer, municipal reviewer, or internal review team, without sending any
-correspondence.
-
-- Response package, section, item, evidence link, attachment, and action models
-- A generation service that promotes workflow items, groups them by topic, and
-  drafts plain external-review wording
-- Response item draft text editing and item and package status management
-- An attachment checklist, a printable draft response, a package history, and a
-  human review sign-off checklist
-- Audit events for generation, viewing, print view, attachments, history, and
-  status, draft text, and note changes
-
-**Exit criteria:** A reviewer can generate a Brookside Meadows draft response
-package, group items into topical sections, edit draft wording, manage item and
-package statuses, review linked evidence and attachments, inspect package
-history, complete a human review sign-off checklist, and open a printable draft.
-The package is draft external communication support and does not send email,
-approve plans, certify compliance, verify CAD, or validate the design.
-
-**Delivered in Phase 10:** the `response_packages`, `response_package_sections`,
-`response_package_items`, `response_package_evidence_links`,
-`response_package_attachments`, and `response_package_actions` tables, a
-generation service with topical grouping and draft wording, the package, print
-view, attachments, history, summary, status, item status, draft text, and note
-endpoints, the Response Package pages and components, audit events, and backend
-tests. There is no action called approve, and the system does not send
-correspondence. See `PHASE_10_RESPONSE_PACKAGE.md`.
-
----
-
-## Phase 11, Real CAD File Intake and DXF Parsing Foundation
-
-**Goal:** Begin reading real CAD files by parsing DXF metadata and connecting it
-to the existing plan sheet and review workflows, without claiming CAD
-verification or design validation.
-
-- A DXF parser dependency (ezdxf, a lightweight pure-Python library)
-- CAD file, parse run, layer, entity, block, text, reference candidate, and
-  review finding models
-- A parsing service that extracts layers, entities, blocks, and text, detects
-  sheet, detail, pipe, basin, outfall, and wetland buffer references with
-  confidence labels, and raises review-support findings
-- Reference comparison against the seeded Phase 6 plan sheets
-- Workflow items created from CAD findings
-- A small synthetic Brookside Meadows DXF fixture
-- CAD Intake pages and components
-- Audit events for file creation, parse start, parse completion or failure,
-  reads, comparison, finding creation, and workflow item creation
-
-**Exit criteria:** A reviewer can load and parse the sample Brookside Meadows
-DXF, inspect extracted layers, text, blocks, reference candidates, and review
-findings, compare extracted references against the seeded plan sheets, and
-create workflow items from CAD findings. DXF is the only supported file type.
-Parsing extracts review-support metadata and does not verify CAD, validate
-geometry or design, certify compliance, or approve plans.
-
-**Delivered in Phase 11:** the `cad_file_uploads`, `cad_parse_runs`,
-`cad_layer_extracts`, `cad_entity_extracts`, `cad_block_extracts`,
-`cad_text_extracts`, `cad_reference_candidates`, and `cad_review_findings`
-tables, a DXF parsing service built on ezdxf, the CAD intake endpoints, the CAD
-Intake pages and components, a synthetic sample DXF fixture, audit events, and
-backend tests. There is no action called approve, and parsing does not verify
-CAD or validate the design. DWG parsing, Autodesk and Civil 3D integration,
-GIS, OCR, and computer vision remain out of scope. See
-`PHASE_11_CAD_INTAKE_DXF_PARSING.md` and `CAD_INTEGRATION_ROADMAP.md`.
-
----
-
-## Phase 12, Browser CAD Upload and Parse Review Queue
-
-**Goal:** Make the Phase 11 DXF parsing usable by a reviewer through the browser,
-with safe upload intake, parse transparency, and promotion of CAD findings into
-the workflow, without claiming CAD verification or design validation.
-
-- Browser DXF upload with intake validation (extension, size, content type, and
-  readability) and safe storage under a generated file name that prevents path
-  traversal
-- A manual parse review queue and a CAD intake dashboard with parse status and
-  parse failure visibility
-- An unpromoted CAD findings view with single and batch promotion into the
-  workflow board, with duplicate promotion prevented per finding
-- New CAD file and CAD review finding fields, allowed validation and queue
-  statuses, upload and promotion endpoints, audit events, and backend and
-  frontend tests
-
-**Exit criteria:** A reviewer can upload a DXF file through the browser, see
-validation results, request a parse, inspect parse status and parse failures,
-view a CAD intake dashboard and parse queue, review unpromoted CAD findings, and
-promote selected CAD findings into the Workflow Board. DXF is the only supported
-file type. A parse queue status of failed means a technical parse failure, not an
-engineering failure. Upload and parsing extract review-support metadata only and
-do not verify CAD, validate design, certify compliance, or approve plans.
-
-**Delivered in Phase 12:** the browser upload endpoint with validation and safe
-storage, the parse review queue and CAD intake dashboard, the unpromoted findings
-and promotion endpoints, new `cad_file_uploads` and `cad_review_findings` fields,
-audit events, and backend and frontend tests. There is no action called approve.
-DWG parsing, Autodesk and Civil 3D integration, GIS, OCR, and computer vision
-remain out of scope. See `PHASE_12_BROWSER_CAD_UPLOAD.md` and
-`CAD_INTEGRATION_ROADMAP.md`.
-
----
-
-## Phase 13, Resubmittal Intake, Revision Comparison, and Applicant Response Cycle
-
-**Goal:** Make Civil Engineer AI a multi-round review-support system. A reviewer
-can track multiple review rounds, record resubmittals, compare DXF parse rounds,
-map applicant responses, carry unresolved items forward, and prepare the next
-round, without issuing any final closure decision.
-
-- Review cycles with a timeline, dashboard, and summary
-- Resubmittal packages that link uploaded DXF files and applicant response notes
-- DXF metadata revision comparison that surfaces added, removed, changed,
-  unchanged, and carried-forward references from layers, references, blocks, and
-  review findings
-- Deterministic applicant response mapping to prior response and workflow items
-- Response resolution statuses and issue carry-forward without duplication
-- Next-cycle preparation, ten new models, allowed statuses, audit events, and
-  backend and frontend tests
-
-**Exit criteria:** A reviewer can create or load a review cycle, record a
-resubmittal, link a revised DXF file and applicant responses, run a revision
-comparison between two parse rounds, review the change records, map responses to
-prior items, mark review-support resolution statuses, carry unresolved items
-forward, and prepare the next cycle. Revision comparison compares extracted DXF
-metadata only and does not verify CAD, validate design, certify compliance, or
-approve plans. No status uses final-decision language and there is no action
-called approve.
-
-**Delivered in Phase 13:** the review cycle, resubmittal, applicant response and
-mapping, revision comparison and change record, issue carry-forward, response
-resolution, and next-cycle preparation models, services, and endpoints, a second
-synthetic resubmittal DXF fixture, audit events, a Review Cycles page with detail
-routes, and backend and frontend tests. DWG parsing, Autodesk and Civil 3D
-integration, PDF parsing, GIS, OCR, and computer vision remain out of scope. See
-`PHASE_13_RESUBMITTAL_REVISION_CYCLE.md` and `CAD_INTEGRATION_ROADMAP.md`.
-
----
-
-## Phase 14, Reviewer Command Center and Project Health Dashboard
-
-**Goal:** Unify the system into one operational command center that aggregates
-the review-support state across every phase, so a reviewer can see what needs
-attention, what changed, what is ready for handoff, and what to do next, without
-making any engineering decision.
-
-- A command center snapshot with an overall review-support status and summary
-- Project health metrics, a reviewer attention queue, recommended next steps, a
-  project timeline, review readiness checks, reviewer notes, and module links
-- Attention items aggregated from workflow, CAD intake, review cycle, response
-  package, and evidence data, with no duplication across regeneration
-- Six new models, allowed statuses, thirteen endpoints, audit events, a Project
-  Dashboard page, and backend and frontend tests
-
-**Exit criteria:** A reviewer can open the Project Dashboard, generate or refresh
-a command center snapshot, read the health metrics and attention queue, mark
-attention items reviewer_checked, deferred, or not_applicable, read the
-recommended next steps, review the timeline and readiness checks, record reviewer
-notes, and deep link into every module. The dashboard organizes review-support
-work and links into existing modules rather than replacing them. It does not
-approve, certify, verify, validate, close, or resolve anything, and
-ready_for_human_review is not a final decision.
-
-**Delivered in Phase 14:** the command center snapshot, health metric, attention
-item, timeline event, readiness check, and reviewer note models, an aggregation
-service, thirteen endpoints, audit events, a Project Dashboard page with its
-components, and backend and frontend tests. Phase 14 adds no new parsing, AI, or
-external integration; it aggregates existing data. DWG parsing, Autodesk and Civil
-3D integration, PDF parsing, GIS, OCR, and computer vision remain out of scope.
-See `PHASE_14_COMMAND_CENTER_DASHBOARD.md` and `CAD_INTEGRATION_ROADMAP.md`.
-
----
-
-## Phase 15 and beyond, CAD Extraction and Expansion Modules
-
-**Goal:** Build on the Phase 11 and Phase 12 DXF intake foundation toward broader
-CAD extraction (DWG support, Autodesk and Civil 3D object intelligence, and
-structured plan exports, per `CAD_INTEGRATION_ROADMAP.md`) and reuse the engine
-to grow from a stormwater assistant into a land development review platform.
-Each review module mostly adds **checklist content, document types, and
-evaluation cases**, not new infrastructure.
-
-Future expansion areas:
-
-- **Grading review assistant**, cut/fill balance evidence, slope stability
-  references, phased earthwork.
-- **Utility coordination review assistant**, water/sewer/storm crossings,
-  pump-station documentation, conflict checks.
-- **Roadway layout review assistant**, geometry, sight distance, sidewalk and
-  fire-access checks.
-- **Construction phasing review assistant**, sequencing dependencies and
-  stabilization timing.
-- **Municipal comment-response assistant**, track comments and draft response
-  letters.
-- **Inspection closeout assistant**, corrective-action tracking to closeout.
-- **RFI resolution assistant**, open/closed RFI tracking and follow-up.
-- **Cost and maintenance planning assistant**, long-term O&M responsibility and
-  funding.
-- **Climate resilience scenario assistant**, design-storm sensitivity and
-  nature-based-solution scenarios.
-
-**Cross-cutting platform capabilities (enabled by the Phase 0 model):**
-
-- Evidence graphs linking findings ↔ documents ↔ checklist items ↔ stakeholders
-  ↔ risks
-- Risk heatmaps across the development package
-- Development timeline tracking from planning review to construction closeout
-- Multi-agent review roles (stormwater / grading / utility / municipal
-  reviewers)
-- Scenario comparison (conventional detention vs. green infrastructure)
-- Review confidence scoring, prompt regression testing, citation-accuracy
-  tracking, and reviewer-disagreement tracking
-
-**The roadmap's message:** the same retrieval + checklist + findings + review +
-audit + evaluation backbone that powers stormwater review in v1 powers every
-later module. Brookside Meadows was deliberately authored (see its story §8) to
-carry all of these forward without new seed storytelling.
+# Roadmap
+
+The single roadmap for Civil Engineer AI, structured by commitment level. It
+folds in the former real-world product roadmap and CAD integration roadmap. The
+historical phase-by-phase build record lives in `docs/archive/`.
+
+Stormwater review is the starting point, not the endpoint. The same retrieval,
+checklist, findings, review, audit, and evaluation backbone that powers
+stormwater review is intended to carry later review modules.
+
+## Committed (delivered and maintained)
+
+- Reviewer-controlled stormwater review workflow: intake, PDF text-layer
+  indexing (pypdf), DXF metadata parsing (ezdxf), evidence retrieval, checklists,
+  findings, review packets, workflow board, response packages, resubmittal and
+  revision comparison, and the reviewer command center.
+- Local authentication, organizations, per-project access control, and a
+  guard-regression test.
+- HttpOnly cookie sessions through the Next.js backend-for-frontend proxy.
+- Object storage abstraction (local and S3-compatible).
+- Production database posture (SQLite for development, PostgreSQL for production)
+  with Alembic migrations.
+- Account lifecycle (password reset, team invitation), SMTP email behind a
+  default noop provider, and Stripe billing scaffolding in test mode.
+- Railway deployment configuration, CI gates, and the deterministic DXF proof
+  harness.
+
+## Planned (scoped, not yet built)
+
+- Richer reviewer workload balancing and assignment on top of the existing
+  assignment and priority foundation.
+- Merging the demo review-packet builder onto backend-issued packages.
+- Invoice and payment-failure handling and a customer portal link for self-serve
+  plan changes, once live Stripe keys are configured.
+- Additional usage-enforcement categories once their flows have dedicated
+  user-entry guards.
+- Routing the local demo analytics event names through a real analytics sink
+  behind an explicit opt-in.
+
+## Research (exploratory, unscheduled)
+
+- Live AI retrieval assistance behind the same human review boundary, evidence
+  bounded and citation required, staying off by default.
+- Additional land-development review modules that mostly add checklist content,
+  document types, and evaluation cases rather than new infrastructure: grading,
+  utility coordination, roadway layout, construction phasing, comment-response,
+  inspection closeout, RFI resolution, and cost and maintenance planning.
+- Cross-cutting platform capabilities: evidence graphs, risk heatmaps,
+  development-timeline tracking, and multi-role review.
+
+## Deferred (evaluated, intentionally postponed)
+
+These evidence-provenance fields were evaluated and deferred per
+`docs/adr/0010-evidence-provenance.md`. Each is a database column addition with
+migration, OpenAPI contract, and frontend type consequences, and no current
+workflow reads it. When any is added, it arrives with an Alembic migration,
+regenerated contract, frontend mapping, and an update to ADR 0010 in the same
+change.
+
+- `extraction_method` and `extractor_name` / `extractor_version` on citations.
+  Deferred because they are derivable today: PDF citations come from the pypdf
+  text-layer index and CAD references from the recorded parser identity.
+- `source_entity_id` for DXF entity-level anchors.
+- `manually_verified_at` and `manually_verified_by` on citations.
+- Per-citation confidence scores. Deferred because retrieval ranking scores exist
+  on results but are not persisted onto citations.
+
+Also deferred: turning off the anonymous demo-reviewer fallback is a deployment
+posture step, not a code change; denormalizing `organization_id` onto child
+entities is deferred in favor of the per-route project guard plus the
+guard-regression test.
+
+## Out of scope
+
+Deliberately excluded, with the boundary documented: DWG parsing, Autodesk and
+Civil 3D integration, GIS integration and georeferencing, OCR, computer vision,
+external vector search, enterprise single sign-on, and a full applicant-facing
+portal. Live AI calls stay off by default. Nothing on this roadmap changes the
+professional boundary: the product never approves plans, certifies compliance, or
+replaces a licensed Professional Engineer.

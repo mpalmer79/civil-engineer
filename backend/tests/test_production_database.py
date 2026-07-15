@@ -4,7 +4,7 @@ Covers database URL normalization and provider detection for SQLite and Postgres
 URL forms, the strict production-mode guard, the Alembic migration metadata and
 revision wiring, and the readiness migration/provider posture. No test requires a
 live Postgres server; Postgres handling is exercised at the URL/configuration
-level. Manual Postgres verification is documented in docs/PRODUCTION_DATABASE.md.
+level. Manual Postgres verification is documented in docs/DEPLOYMENT.md.
 """
 
 from __future__ import annotations

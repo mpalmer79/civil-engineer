@@ -394,7 +394,7 @@ export default function PilotRequestsAdminPage() {
                   Guided demo
                 </Link>
                 <a
-                  href="https://github.com/mpalmer79/civil-engineer/blob/main/docs/PILOT_RELEASE_CHECKLIST.md"
+                  href="https://github.com/mpalmer79/civil-engineer/blob/main/docs/OPERATIONS.md"
                   className="text-sm font-semibold text-water-700 hover:underline"
                   onClick={() => trackDemoEvent("release_checklist_viewed", {})}
                 >

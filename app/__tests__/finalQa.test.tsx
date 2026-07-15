@@ -116,7 +116,7 @@ describe("README portfolio presentation", () => {
 });
 
 describe("Live site verification doc", () => {
-  const doc = readDoc("docs/LIVE_SITE_VERIFICATION.md");
+  const doc = readDoc("docs/OPERATIONS.md");
 
   it("includes Start Here and guided demo checks", () => {
     expect(doc).toContain("/start-here");

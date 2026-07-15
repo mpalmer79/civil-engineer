@@ -15,7 +15,7 @@ function readDoc(relativePath: string): string {
 // (ezdxf) and PDF text-layer indexing (pypdf), with no DWG, GIS, or OCR.
 
 describe("SaaS positioning capability claims", () => {
-  const positioning = readDoc("docs/SAAS_POSITIONING.md").toLowerCase();
+  const positioning = readDoc("docs/PRODUCT.md").toLowerCase();
 
   it("does not claim DXF parsing is absent", () => {
     for (const phrase of [
@@ -49,12 +49,12 @@ describe("SaaS positioning capability claims", () => {
 });
 
 describe("Tenant isolation audit document", () => {
-  it("ships docs/TENANT_ISOLATION_AUDIT.md", () => {
-    expect(existsSync(join(root, "docs/TENANT_ISOLATION_AUDIT.md"))).toBe(true);
+  it("ships docs/SECURITY.md", () => {
+    expect(existsSync(join(root, "docs/SECURITY.md"))).toBe(true);
   });
 
   it("documents the public demo exception and deferred hardening honestly", () => {
-    const audit = readDoc("docs/TENANT_ISOLATION_AUDIT.md").toLowerCase();
+    const audit = readDoc("docs/SECURITY.md").toLowerCase();
     expect(audit).toContain("demo_public");
     expect(audit).toContain("deferred");
     // It must not overclaim production-grade isolation.
@@ -63,11 +63,10 @@ describe("Tenant isolation audit document", () => {
 });
 
 describe("Roadmap is not duplicated", () => {
-  it("has exactly one SaaS roadmap document", () => {
+  it("has exactly one active roadmap document", () => {
+    expect(existsSync(join(root, "docs/ROADMAP.md"))).toBe(true);
     const docs = readdirSync(join(root, "docs"));
-    const roadmaps = docs.filter(
-      (name) => /saas.*roadmap/i.test(name) || /roadmap.*saas/i.test(name),
-    );
-    expect(roadmaps).toEqual(["civil-engineer-ai-saas-roadmap.md"]);
+    const roadmaps = docs.filter((name) => /roadmap/i.test(name));
+    expect(roadmaps).toEqual(["ROADMAP.md"]);
   });
 });

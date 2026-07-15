@@ -1,5 +1,5 @@
 // Seeded synthetic document package for Brookside Meadows.
-// Source of truth: docs/SEED_DATA_PLAN.md §2.
+// Source of truth: docs/archive/SEED_DATA_PLAN.md §2.
 // Phase 1 uses seeded synthetic document records. Later phases will add
 // ingestion, chunking, embeddings, and retrieval.
 

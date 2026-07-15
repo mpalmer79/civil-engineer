@@ -66,10 +66,10 @@ const facts = {
   keyDocuments: [
     "docs/README.md",
     "docs/ROUTE_ARCHITECTURE.md",
-    "docs/real-vs-mocked.md",
-    "docs/100_SCORE_TRANSFORMATION.md",
-    "docs/security/BFF_PROXY_THREAT_MODEL.md",
-    "docs/civil-engineer-ai-guide.md",
+    "docs/PRODUCT.md",
+    "docs/ROADMAP.md",
+    "docs/SECURITY.md",
+    "docs/TESTING.md",
   ],
   openApiContract: "lib/api/generated/openapi.json",
 };
