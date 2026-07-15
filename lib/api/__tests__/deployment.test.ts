@@ -77,10 +77,11 @@ describe("Railway deployment readiness", () => {
     expect(guide.toLowerCase()).toContain("not necessarily a failure");
   });
 
-  it("the README documents the backend health route", () => {
+  it("the README links to the deployment documentation", () => {
     const readme = read("README.md");
-    expect(readme).toContain("/health");
-    expect(readme).toContain("/api/v1/projects/proj_brookside_meadows");
+    // The backend health and project verification routes are documented in the
+    // canonical deployment doc, which the README links from its documentation map.
+    expect(readme).toContain("(docs/DEPLOYMENT.md)");
   });
 });
 

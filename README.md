@@ -215,21 +215,19 @@ docs/                 Product, architecture, security, deployment, and technical
 
 ## Documentation
 
-The current repository contains detailed engineering records covering the platform’s development history and individual backend capabilities. The most useful entry points are:
+The canonical documentation set describes the product, its architecture, and how to operate, secure, and deploy it. Historical development records are retained under `docs/archive`. The current entry points are:
 
+- [Product overview](docs/PRODUCT.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Domain model](docs/DOMAIN_MODEL.md)
 - [Route architecture](docs/ROUTE_ARCHITECTURE.md)
-- [Authentication and access control](docs/AUTHENTICATION_AND_ACCESS_CONTROL.md)
-- [Security and professional boundary](docs/SECURITY_AND_PROFESSIONAL_BOUNDARY.md)
-- [Tenant isolation audit](docs/TENANT_ISOLATION_AUDIT.md)
-- [Production database](docs/PRODUCTION_DATABASE.md)
-- [Railway deployment guide](docs/RAILWAY_DEPLOYMENT_GUIDE.md)
-- [Release readiness](docs/RELEASE_READINESS.md)
-- [DXF proof of concept](docs/proof-of-concept/DXF_PROOF_OF_CONCEPT.md)
-- [DXF test methodology](docs/proof-of-concept/DXF_TEST_METHODOLOGY.md)
-- [Brookside Meadows project story](docs/BROOKSIDE_MEADOWS_PROJECT_STORY.md)
-- [Real versus mocked behavior](docs/real-vs-mocked.md)
+- [Security](docs/SECURITY.md)
+- [Operations](docs/OPERATIONS.md)
+- [Deployment](docs/DEPLOYMENT.md)
+- [Testing](docs/TESTING.md)
+- [API](docs/API.md)
+- [DXF validation](docs/DXF_VALIDATION.md)
+- [Reference project](docs/REFERENCE_PROJECT.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Full documentation index](docs/README.md)
 

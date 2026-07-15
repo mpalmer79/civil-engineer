@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "commit": "b0034a5eee099cc5649ddcc3d30094049e6b1d30",
+  "commit": "43f3a3e2c2b891eab9acece831f9b5ae047733ff",
   "dependencies": {
     "next": "15.5.20",
     "react": "19.2.7",

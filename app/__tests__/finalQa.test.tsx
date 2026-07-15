@@ -99,10 +99,10 @@ describe("README portfolio presentation", () => {
     expect(readme).toContain("/guided-demo");
   });
 
-  it("includes the recommended demo path and technical foundation", () => {
-    expect(readme).toContain("Recommended demo path");
-    expect(readme).toContain("Technical foundation");
-    expect(readme).toContain("Intentionally out of scope");
+  it("presents the product overview, capabilities, and documentation map", () => {
+    expect(readme).toContain("Product overview");
+    expect(readme).toContain("Core platform capabilities");
+    expect(readme).toContain("## Documentation");
   });
 
   it("keeps the review-support boundary and avoids overclaims", () => {
