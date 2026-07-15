@@ -1,7 +1,6 @@
-import Image from "next/image";
 import Link from "next/link";
 
-import { brooksideProjectImage, productPathways } from "@/components/home/content";
+import { productPathways } from "@/components/home/content";
 
 // Professional evaluation pathways: the guided product tour, the technical
 // validation, the architecture documentation, and the pilot request. External
@@ -61,18 +60,6 @@ export default function ProductPathways() {
             </div>
           ))}
         </div>
-
-        <figure className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-card-lg">
-          <div className="relative aspect-[16/9] w-full">
-            <Image
-              src={brooksideProjectImage.src}
-              alt={brooksideProjectImage.alt}
-              fill
-              sizes="(max-width: 640px) calc(100vw - 32px), (max-width: 1024px) calc(100vw - 48px), 1152px"
-              className="object-cover object-center"
-            />
-          </div>
-        </figure>
       </div>
     </section>
   );

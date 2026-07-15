@@ -1,3 +1,4 @@
+import BrooksideProjectPreview from "@/components/home/BrooksideProjectPreview";
 import CaseStudyFacts from "@/components/home/CaseStudyFacts";
 import DxfShowcase from "@/components/home/DxfShowcase";
 import FinalCta from "@/components/home/FinalCta";
@@ -25,6 +26,7 @@ export default function HomePage() {
       <WorkflowStages />
       <DxfShowcase />
       <HumanDecisionBoundary />
+      <BrooksideProjectPreview />
       <RealVsSeeded />
       <ProductPathways />
       <FinalCta />
