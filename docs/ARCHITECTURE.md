@@ -132,6 +132,16 @@ present, never a secret. A safe structured logger redacts secret-like and
 path-like keys. Every proxied request carries a correlation ID. See
 `docs/DEPLOYMENT.md`.
 
+## Background processing
+
+File processing (PDF page indexing, DXF parsing) runs synchronously on the
+request thread by default, bounded by size and page caps. For large files and
+higher load it can be handed to a durable database-backed job queue: async
+endpoints enqueue a `processing_jobs` row and a separate worker process
+(`python -m app.worker`) claims and runs the same processors with retry, backoff,
+and stale-job reclaim. The worker is optional and the synchronous routes are
+unchanged. See `docs/adr/0012-background-job-queue.md` and `docs/OPERATIONS.md`.
+
 ## The local project guide
 
 `lib/guide` is a deterministic local project expert: it searches an allowlisted

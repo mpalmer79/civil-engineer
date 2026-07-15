@@ -38,6 +38,10 @@ token, or full extracted text.
 - Health, readiness, and diagnostics: public `/health` and `/api/v1/readiness`
   and admin-gated environment and storage diagnostics, all reporting safe
   operational status only.
+- Background jobs: enqueue PDF indexing or DXF parsing on the worker and poll job
+  status, scoped to the project. Additive to the synchronous index and parse
+  routes; requires the worker process to run. See
+  `docs/adr/0012-background-job-queue.md`.
 
 For request and response shapes, field names, and status codes, use the OpenAPI
 schema.

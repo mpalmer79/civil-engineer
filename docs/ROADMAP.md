@@ -28,13 +28,20 @@ stormwater review is intended to carry later review modules.
   response and written onto audit rows, a global safe-error handler, a
   configurable log level, and an inline PDF page cap. See `docs/OPERATIONS.md`
   and `docs/adr/0011-request-observability.md`.
+- Durable database-backed background job queue and worker for file processing,
+  with async enqueue and job-status endpoints, retry with backoff, stale-job
+  reclaim, and correlation-id tracing. The synchronous routes remain the default;
+  the worker is the opt-in path for large files and higher load. See
+  `docs/OPERATIONS.md` and `docs/adr/0012-background-job-queue.md`.
 
 ## Planned (scoped, not yet built)
 
-- Moving file and DXF processing off the request thread onto a background worker
-  before enterprise-scale load. Today intake, PDF indexing, and DXF parsing run
-  synchronously with size and page bounds; the worker migration removes the
-  request-thread bound entirely.
+- Frontend adoption of the async job endpoints (enqueue then poll) for large
+  uploads, and operator visibility of the job queue. The backend queue, worker,
+  and API are delivered (see Committed); the frontend still calls the
+  synchronous routes.
+- Technical metrics (request counters, latency histograms, a `/metrics`
+  endpoint) on top of the current structured logging.
 - Raising the frontend coverage floors as the suite grows.
 
 - Richer reviewer workload balancing and assignment on top of the existing

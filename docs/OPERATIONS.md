@@ -229,8 +229,57 @@ client. Typed route errors keep their specific status codes and messages.
 - `PDF_MAX_PAGES` bounds how many pages are indexed inline per PDF so a large or
   hostile file cannot exhaust the request thread. Pages beyond the cap are left
   for reviewer follow-up and the document is flagged `indexed_partial_needs_review`.
-  Default 500; set 0 to disable the cap. Moving indexing to a background worker
-  is the enterprise-scale path (see `docs/ROADMAP.md`).
+  Default 500; set 0 to disable the cap.
+
+## Background processing worker
+
+File processing (PDF page indexing and DXF metadata parsing) can run inline on
+the request thread, or be handed to a background worker for large files and
+higher load. The worker is optional: small and development deployments can rely
+on the synchronous routes and need not run it. See
+`docs/adr/0012-background-job-queue.md`.
+
+### How it works
+
+- The async endpoints (`POST .../index-pdf/jobs`, `POST .../parse/jobs`) enqueue
+  a row in the `processing_jobs` table and return `202 Accepted` with a job id.
+- The worker process claims queued jobs, runs the same processing the
+  synchronous routes run, and records success or failure. Job claiming is safe
+  under multiple concurrent workers.
+- A transient failure retries with exponential backoff up to `WORKER_MAX_ATTEMPTS`.
+  A permanent fault (an unreadable or missing file) fails immediately with no
+  retry. A job whose worker dies is reclaimed after `WORKER_STALE_SECONDS`.
+- Each job carries the correlation id of the request that enqueued it, so its
+  audit rows and logs trace back to that request.
+- Poll `GET /api/v1/projects/{project_id}/jobs/{job_id}` for status, or
+  `GET /api/v1/projects/{project_id}/jobs` for a project's recent jobs.
+
+### Running the worker
+
+Run one or more worker processes alongside the API, against the same database:
+
+```
+python -m app.worker
+```
+
+On Railway, add a second service in the backend directory with the start command
+`python -m app.worker` (no health check; it is not an HTTP service). See
+`docs/DEPLOYMENT.md`.
+
+### Configuration
+
+- `WORKER_POLL_INTERVAL_SECONDS` (default 2.0): idle poll interval.
+- `WORKER_MAX_ATTEMPTS` (default 3): retry ceiling before a job is marked failed.
+- `WORKER_RETRY_BACKOFF_SECONDS` (default 30): base for exponential retry backoff.
+- `WORKER_STALE_SECONDS` (default 300): lease timeout before a running job is
+  reclaimed.
+
+### Monitoring
+
+The worker logs `worker_started`, `job_claimed`, `job_succeeded`,
+`job_retry_scheduled`, `job_failed`, and `jobs_reclaimed` events, all with the
+correlation id. A rising count of failed jobs or repeated reclaims indicates a
+processing or worker-health problem to investigate.
 
 ## Live-site verification checklist
 
