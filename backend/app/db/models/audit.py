@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import JSON, DateTime, ForeignKey, String, Text
+from sqlalchemy import JSON, DateTime, ForeignKey, String, Text, event
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.database import Base
@@ -44,3 +44,23 @@ class AuditEvent(Base):
     access_level: Mapped[str | None] = mapped_column(String, nullable=True)
 
     project: Mapped["Project"] = relationship(back_populates="audit_events")
+
+
+@event.listens_for(AuditEvent, "before_insert")
+def _default_request_id(_mapper, _connection, target: "AuditEvent") -> None:
+    """Fill the correlation id from the current request when a caller omits it.
+
+    The request middleware binds a correlation id for the request context. This
+    listener copies it onto every audit row that does not already carry one, so
+    the audit trail can be joined to the access logs for a single request. It
+    only sets request_id and never overrides an explicit value or any other
+    attribution field.
+    """
+
+    if target.request_id:
+        return
+    from app.core.request_context import get_request_id
+
+    request_id = get_request_id()
+    if request_id:
+        target.request_id = request_id

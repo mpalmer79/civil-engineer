@@ -88,6 +88,23 @@ def redact(data: dict[str, Any]) -> dict[str, Any]:
     return safe
 
 
+def _resolve_level() -> int:
+    """Return the configured log level, defaulting to INFO on any problem.
+
+    The level comes from the LOG_LEVEL setting so an operator can raise or lower
+    verbosity per environment without a code change. An unknown value falls back
+    to INFO rather than failing startup.
+    """
+
+    try:
+        from app.core.config import get_settings
+
+        name = (get_settings().LOG_LEVEL or "INFO").strip().upper()
+    except Exception:
+        return logging.INFO
+    return getattr(logging, name, logging.INFO)
+
+
 def get_logger() -> logging.Logger:
     """Return the shared application logger, configured once."""
 
@@ -98,7 +115,7 @@ def get_logger() -> logging.Logger:
             logging.Formatter("%(asctime)s %(levelname)s %(name)s %(message)s")
         )
         logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
+        logger.setLevel(_resolve_level())
         logger.propagate = False
     return logger
 
@@ -107,10 +124,17 @@ def log_event(event: str, /, *, level: int = logging.INFO, **fields: Any) -> Non
     """Log a structured operational event with secret-like fields redacted.
 
     The event name is a short stable label (for example "startup_configuration").
-    Fields are redacted before formatting, so callers may pass a configuration
-    summary without first removing secrets. Values are rendered as key=value.
+    The current request context (correlation id and any resolved user, tenant,
+    and project identifiers) is merged in automatically so every event is
+    traceable, without each caller passing those values. Explicit fields win
+    over context on a key clash. Fields are redacted before formatting, so
+    callers may pass a configuration summary without first removing secrets.
+    Values are rendered as key=value.
     """
 
-    safe = redact(fields)
+    from app.core.request_context import current_context
+
+    merged = {**current_context(), **fields}
+    safe = redact(merged)
     rendered = " ".join(f"{key}={value}" for key, value in safe.items())
     get_logger().log(level, "%s %s", event, rendered)

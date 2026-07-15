@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "commit": "3d71a8fe502a07a163982cbce5ffa85042d18cd4",
+  "commit": "76061bf28162492961378c77c8232c4896660542",
   "dependencies": {
     "next": "15.5.20",
     "react": "19.2.7",
@@ -161,6 +161,10 @@
     {
       "file": "docs/adr/0010-evidence-provenance.md",
       "title": "ADR 0010: Evidence provenance model"
+    },
+    {
+      "file": "docs/adr/0011-request-observability.md",
+      "title": "0011. Request correlation, structured logging, and safe error handling"
     }
   ],
   "keyDocuments": [

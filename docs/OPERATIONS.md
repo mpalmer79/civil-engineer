@@ -191,6 +191,47 @@ Team invitation and password-reset lifecycle is covered in `docs/SECURITY.md`.
 No surface claims an active subscription unless the backend reports one, and the
 checkout call to action appears only when checkout is available.
 
+## Logging and observability
+
+The backend emits structured, secret-safe log events through a single named
+logger (`civil_engineer`). Every event is `key=value` text with secret-like and
+path-like fields redacted before anything is written. Logging is standard
+library only: no external APM, Sentry, or OpenTelemetry.
+
+### Request correlation
+
+Every request is assigned a correlation id. If the caller sends a safe
+`X-Request-Id` header it is reused; otherwise a fresh id is generated. The id is:
+
+- bound to the request context and merged into every log event for that request,
+- echoed on the response `X-Request-Id` header (exposed to browser clients), and
+- written onto every audit row created during the request, so the audit trail
+  joins to the access logs for a single request.
+
+One `request_completed` event per request records the method, route, status, and
+duration. A resolved signed-in user id is bound to the context after
+authentication so later events and audit rows share the same attribution. To
+trace an issue, take the `request_id` from the client response or a support
+report and grep the logs for it.
+
+### Error handling
+
+Uncaught exceptions are caught by a global handler that returns a generic
+`{"detail": "Internal server error.", "request_id": ...}` with status 500. The
+exception type and route are logged server side with the correlation id; the
+exception message, stack trace, and internal detail are never sent to the
+client. Typed route errors keep their specific status codes and messages.
+
+### Configuration
+
+- `LOG_LEVEL` sets verbosity (DEBUG, INFO, WARNING, ERROR). An unknown value
+  falls back to INFO rather than failing startup. Default INFO.
+- `PDF_MAX_PAGES` bounds how many pages are indexed inline per PDF so a large or
+  hostile file cannot exhaust the request thread. Pages beyond the cap are left
+  for reviewer follow-up and the document is flagged `indexed_partial_needs_review`.
+  Default 500; set 0 to disable the cap. Moving indexing to a background worker
+  is the enterprise-scale path (see `docs/ROADMAP.md`).
+
 ## Live-site verification checklist
 
 Run this checklist after every frontend redeploy to confirm the deployed site

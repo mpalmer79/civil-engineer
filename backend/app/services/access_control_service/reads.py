@@ -10,6 +10,7 @@ from __future__ import annotations
 from fastapi import Depends, Header, HTTPException
 from sqlalchemy.orm import Session
 
+from app.core import request_context
 from app.db import models
 from app.db.database import get_db
 from app.services import auth_service
@@ -35,9 +36,13 @@ def get_optional_user(
     if not token:
         return None
     try:
-        return auth_service.get_current_user_from_token(db, token)
+        user = auth_service.get_current_user_from_token(db, token)
     except AuthError as exc:
         raise HTTPException(status_code=exc.status_code, detail=exc.message) from exc
+    # Bind the resolved user onto the request context so later application logs
+    # and audit rows share the same attribution as the access log.
+    request_context.bind_actor(user_id=user.user_id)
+    return user
 
 
 def get_current_user(
