@@ -398,9 +398,13 @@ backend/
     db/
       database.py      Engine, session factory, declarative base
       models.py        SQLAlchemy models
-      seed.py          Canonical Brookside Meadows seed data and loader
-      seed_evidence.py Seeded chunks, finding sources, retrieval queries
-      seed_plansheets.py Seeded plan sheets, CAD metadata, references, and hotspots
+      seeds/           Canonical Brookside Meadows seed fixture, split by domain
+                       (reference project, documents, checklist, findings,
+                       workflow, hotspots, evidence, plan sheets) with the
+                       seed_database, seed_evidence, and seed_plansheets loaders
+      seed.py          Compatibility facade for app.db.seeds (core fixture)
+      seed_evidence.py Compatibility facade for app.db.seeds.evidence
+      seed_plansheets.py Compatibility facade for app.db.seeds.plan_sheets
     schemas/           Pydantic response schemas
     services/          Service layer including the review packet builder, workflow board, response package, and CAD intake
     cad_samples/       Bundled sample DXF fixture and its generator
@@ -412,7 +416,7 @@ backend/
 
 ## Data source of truth
 
-For Phase 2 the Python seed data in `app/db/seed.py` is the canonical runtime
-source. The frontend TypeScript data under the repository `data` folder is kept
+The Python seed data in the `app/db/seeds` package is the canonical runtime
+source (`app/db/seed.py` remains as a compatibility facade). The frontend TypeScript data under the repository `data` folder is kept
 as a graceful fallback used only when the backend cannot be reached. The two are
 aligned and describe the same Brookside Meadows fixture.

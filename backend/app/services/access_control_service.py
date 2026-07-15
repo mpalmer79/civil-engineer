@@ -43,7 +43,6 @@ DEMO_REVIEWER_NAME = "Demo Reviewer"
 DEMO_ADMIN_USER_ID = "user_demo_admin"
 DEMO_ADMIN_EMAIL = "admin@example.com"
 DEMO_ADMIN_NAME = "Demo Admin"
-BROOKSIDE_PROJECT_ID = "proj_brookside_meadows"
 
 # Precedence from strongest to weakest, used to pick the effective access level.
 _ACCESS_PRECEDENCE = [
@@ -137,9 +136,11 @@ def ensure_auth_seed(db: Session) -> None:
             role="org_admin",
         )
 
-    # Mark the seeded Brookside Meadows demo project as a public demo so it stays
-    # readable without a login, and grant the demo reviewer reviewer access.
-    project = db.get(models.Project, BROOKSIDE_PROJECT_ID)
+    # Mark the seeded public demo project (Brookside Meadows by default, see
+    # PUBLIC_DEMO_PROJECT_ID) as a public demo so it stays readable without a
+    # login, and grant the demo reviewer reviewer access.
+    demo_project_id = settings.PUBLIC_DEMO_PROJECT_ID
+    project = db.get(models.Project, demo_project_id)
     if project is not None:
         project.demo_public = True
         project.visibility_mode = "demo_public"
@@ -147,13 +148,13 @@ def ensure_auth_seed(db: Session) -> None:
             project.organization_id = DEMO_ORG_ID
         _ensure_project_access(
             db,
-            project_id=BROOKSIDE_PROJECT_ID,
+            project_id=demo_project_id,
             user_id=DEMO_REVIEWER_USER_ID,
             access_level="reviewer",
         )
         _ensure_project_access(
             db,
-            project_id=BROOKSIDE_PROJECT_ID,
+            project_id=demo_project_id,
             user_id=DEMO_ADMIN_USER_ID,
             access_level="project_admin",
         )

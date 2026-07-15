@@ -114,6 +114,11 @@ class Settings(BaseSettings):
     # is called. It is on by default for the portfolio demo.
     DEMO_MODE: bool = True
 
+    # Identifier of the seeded reference project that is marked as the public
+    # demo at startup. The default matches the seeded Brookside Meadows fixture
+    # (app.db.seeds), so behavior is unchanged unless a deployment overrides it.
+    PUBLIC_DEMO_PROJECT_ID: str = "proj_brookside_meadows"
+
     # Production Foundations Sprint 5 local authentication and access control.
     # AUTH_SECRET_KEY signs local access tokens. The default is a clearly marked
     # development-only value; a deployment MUST override it with a strong secret.
