@@ -48,6 +48,9 @@ describe("SiteFooter professional badges", () => {
     expect(
       screen.getByText(/brookside meadows is a fictional project/i),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(/review decisions remain with licensed professionals/i),
+    ).toBeInTheDocument();
   });
 
   it("contains no em dashes in footer copy", () => {

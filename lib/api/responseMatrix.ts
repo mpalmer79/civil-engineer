@@ -1,4 +1,4 @@
-import { API_BASE_URL, authHeaders, apiFetch,
+import { apiFetch, apiMutate,
   type ApiResult,
 } from "./client";
 
@@ -115,40 +115,19 @@ function mapItem(i: Record<string, unknown>): ResponseMatrixItem {
   };
 }
 
+// Thin adapter over the shared mutation helper that keeps this module's
+// unavailable-backend message.
 async function postJson<T>(
   path: string,
   body: unknown,
   mapper: (raw: Record<string, unknown>) => T,
 ): Promise<MutationResult<T>> {
-  try {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-      method: "POST",
-      headers: authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(body),
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      let detail = `Request failed (${res.status}).`;
-      try {
-        const parsed = (await res.json()) as { detail?: string };
-        if (parsed.detail) detail = parsed.detail;
-      } catch {
-        // Keep the generic message.
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    return {
-      ok: true,
-      backendReachable: true,
-      data: mapper((await res.json()) as Record<string, unknown>),
-    };
-  } catch {
-    return {
-      ok: false,
-      backendReachable: false,
-      error: "Backend unavailable. Start the API to use the response matrix.",
-    };
-  }
+  return apiMutate<T>("POST", path, {
+    body,
+    map: mapper,
+    unavailableMessage:
+      "Backend unavailable. Start the API to use the response matrix.",
+  });
 }
 
 export async function listResponseMatrices(
@@ -249,40 +228,21 @@ export async function updateResponseMatrixItem(
     reviewerFollowUpStatus?: string;
   },
 ): Promise<MutationResult<ResponseMatrixItem>> {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${projectId}/response-matrix-items/${itemId}`,
-      {
-        method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          reviewer_comment_draft: payload.reviewerCommentDraft ?? null,
-          requested_evidence: payload.requestedEvidence ?? null,
-          reviewer_note: payload.reviewerNote ?? null,
-          applicant_response_status: payload.applicantResponseStatus ?? null,
-          reviewer_follow_up_status: payload.reviewerFollowUpStatus ?? null,
-        }),
-        cache: "no-store",
+  return apiMutate<ResponseMatrixItem>(
+    "PATCH",
+    `/api/v1/projects/${projectId}/response-matrix-items/${itemId}`,
+    {
+      body: {
+        reviewer_comment_draft: payload.reviewerCommentDraft ?? null,
+        requested_evidence: payload.requestedEvidence ?? null,
+        reviewer_note: payload.reviewerNote ?? null,
+        applicant_response_status: payload.applicantResponseStatus ?? null,
+        reviewer_follow_up_status: payload.reviewerFollowUpStatus ?? null,
       },
-    );
-    if (!res.ok) {
-      let detail = `Update failed (${res.status}).`;
-      try {
-        const parsed = (await res.json()) as { detail?: string };
-        if (parsed.detail) detail = parsed.detail;
-      } catch {
-        // Keep the generic message.
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    return {
-      ok: true,
-      backendReachable: true,
-      data: mapItem((await res.json()) as Record<string, unknown>),
-    };
-  } catch {
-    return { ok: false, backendReachable: false, error: "Backend unavailable." };
-  }
+      map: mapItem,
+      failureMessage: (status) => `Update failed (${status}).`,
+    },
+  );
 }
 
 export async function recordApplicantResponse(

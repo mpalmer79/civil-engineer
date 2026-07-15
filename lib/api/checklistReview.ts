@@ -1,4 +1,4 @@
-import { API_BASE_URL, authHeaders, apiFetch,
+import { apiFetch, apiMutate,
   type ApiResult,
 } from "./client";
 import type { EvidenceSearchResponse } from "./evidenceRetrieval";
@@ -200,40 +200,19 @@ function mapChecklist(c: Record<string, unknown>): ProjectChecklist {
   };
 }
 
+// Thin adapter over the shared mutation helper that keeps this module's
+// unavailable-backend message.
 async function postJson<T>(
   path: string,
   body: unknown,
   mapper: (raw: Record<string, unknown>) => T,
 ): Promise<MutationResult<T>> {
-  try {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-      method: "POST",
-      headers: authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(body),
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      let detail = `Request failed (${res.status}).`;
-      try {
-        const parsed = (await res.json()) as { detail?: string };
-        if (parsed.detail) detail = parsed.detail;
-      } catch {
-        // Keep the generic message.
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    return {
-      ok: true,
-      backendReachable: true,
-      data: mapper((await res.json()) as Record<string, unknown>),
-    };
-  } catch {
-    return {
-      ok: false,
-      backendReachable: false,
-      error: "Backend unavailable. Start the API to use checklist review.",
-    };
-  }
+  return apiMutate<T>("POST", path, {
+    body,
+    map: mapper,
+    unavailableMessage:
+      "Backend unavailable. Start the API to use checklist review.",
+  });
 }
 
 export async function listRulePacks(): Promise<ApiResult<RulePack[]>> {
@@ -310,39 +289,20 @@ export async function updateProjectChecklistItem(
     reviewerNote?: string;
   },
 ): Promise<MutationResult<ProjectChecklistItem>> {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${projectId}/checklist-items/${checklistItemId}`,
-      {
-        method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          applicability_status: payload.applicabilityStatus ?? null,
-          evidence_status: payload.evidenceStatus ?? null,
-          review_status: payload.reviewStatus ?? null,
-          reviewer_note: payload.reviewerNote ?? null,
-        }),
-        cache: "no-store",
+  return apiMutate<ProjectChecklistItem>(
+    "PATCH",
+    `/api/v1/projects/${projectId}/checklist-items/${checklistItemId}`,
+    {
+      body: {
+        applicability_status: payload.applicabilityStatus ?? null,
+        evidence_status: payload.evidenceStatus ?? null,
+        review_status: payload.reviewStatus ?? null,
+        reviewer_note: payload.reviewerNote ?? null,
       },
-    );
-    if (!res.ok) {
-      let detail = `Update failed (${res.status}).`;
-      try {
-        const parsed = (await res.json()) as { detail?: string };
-        if (parsed.detail) detail = parsed.detail;
-      } catch {
-        // Keep the generic message.
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    return {
-      ok: true,
-      backendReachable: true,
-      data: mapChecklistItem((await res.json()) as Record<string, unknown>),
-    };
-  } catch {
-    return { ok: false, backendReachable: false, error: "Backend unavailable." };
-  }
+      map: mapChecklistItem,
+      failureMessage: (status) => `Update failed (${status}).`,
+    },
+  );
 }
 
 export async function searchChecklistItemEvidence(

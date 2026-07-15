@@ -49,17 +49,13 @@ describe("Demo journey link validation", () => {
   });
 });
 
-describe("Start Here recruiter and evaluator path", () => {
-  it("renders the five-minute review path section", () => {
+describe("Start Here evaluation pathways", () => {
+  it("renders the evaluation pathways section", () => {
     render(<StartHerePage />);
-    expect(
-      screen.getByText("Review this project in 5 minutes"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("For recruiters and technical evaluators"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("5-minute path")).toBeInTheDocument();
-    expect(screen.getByText("Deeper technical path")).toBeInTheDocument();
+    expect(screen.getByText("Evaluate the platform")).toBeInTheDocument();
+    expect(screen.getByText("Evaluation pathways")).toBeInTheDocument();
+    expect(screen.getByText("Product evaluation path")).toBeInTheDocument();
+    expect(screen.getByText("Technical evaluation path")).toBeInTheDocument();
   });
 
   it("renders what to notice and intentionally out of scope", () => {

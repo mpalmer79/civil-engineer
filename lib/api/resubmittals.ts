@@ -1,7 +1,6 @@
 import {
-  API_BASE_URL,
   apiGetMapped,
-  authHeaders,
+  apiMutate,
   requireString,
   type ApiResult,
 } from "./client";
@@ -101,40 +100,19 @@ function mapSummary(s: Record<string, unknown>): ResubmittalRoundSummary {
   };
 }
 
+// Thin adapter over the shared mutation helper that keeps this module's
+// unavailable-backend message.
 async function postJson<T>(
   path: string,
   body: unknown,
   mapper: (raw: Record<string, unknown>) => T,
 ): Promise<MutationResult<T>> {
-  try {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-      method: "POST",
-      headers: authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(body),
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      let detail = `Request failed (${res.status}).`;
-      try {
-        const parsed = (await res.json()) as { detail?: string };
-        if (parsed.detail) detail = parsed.detail;
-      } catch {
-        // Keep the generic message.
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    return {
-      ok: true,
-      backendReachable: true,
-      data: mapper((await res.json()) as Record<string, unknown>),
-    };
-  } catch {
-    return {
-      ok: false,
-      backendReachable: false,
-      error: "Backend unavailable. Start the API to use resubmittal rounds.",
-    };
-  }
+  return apiMutate<T>("POST", path, {
+    body,
+    map: mapper,
+    unavailableMessage:
+      "Backend unavailable. Start the API to use resubmittal rounds.",
+  });
 }
 
 export async function listResubmittalRounds(

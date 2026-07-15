@@ -1,7 +1,6 @@
 import {
-  API_BASE_URL,
   apiGetMapped,
-  authHeaders,
+  apiMutate,
   requireString,
   type ApiResult,
 } from "./client";
@@ -123,47 +122,18 @@ function mapCitation(c: Record<string, unknown>): EvidenceCitation {
   };
 }
 
+// Thin adapter over the shared mutation helper that keeps this module's
+// unavailable-backend message.
 async function postJson<T>(
   path: string,
   body: unknown,
   mapper: (raw: Record<string, unknown>) => T,
 ): Promise<MutationResult<T>> {
-  try {
-    const res = await fetch(`${API_BASE_URL}${path}`, {
-      method: "POST",
-      headers: authHeaders({ "Content-Type": "application/json" }),
-      body: JSON.stringify(body),
-      cache: "no-store",
-    });
-    if (!res.ok) {
-      let detail = `Request failed (${res.status}).`;
-      try {
-        const parsed = (await res.json()) as { detail?: string };
-        if (parsed.detail) detail = parsed.detail;
-      } catch {
-        // Keep the generic message.
-      }
-      return { ok: false, backendReachable: true, error: detail };
-    }
-    const raw = (await res.json()) as Record<string, unknown>;
-    // Map outside the transport failure path so an invalid payload reports an
-    // honest shape error instead of a false "backend unavailable" message.
-    try {
-      return { ok: true, backendReachable: true, data: mapper(raw) };
-    } catch {
-      return {
-        ok: false,
-        backendReachable: true,
-        error: "The backend returned an unexpected payload shape.",
-      };
-    }
-  } catch {
-    return {
-      ok: false,
-      backendReachable: false,
-      error: "Backend unavailable. Start the API to use PDF indexing.",
-    };
-  }
+  return apiMutate<T>("POST", path, {
+    body,
+    map: mapper,
+    unavailableMessage: "Backend unavailable. Start the API to use PDF indexing.",
+  });
 }
 
 export async function indexPdfDocument(
@@ -290,33 +260,22 @@ export async function updateEvidenceCitation(
     citationType: string;
   }>,
 ): Promise<MutationResult<EvidenceCitation>> {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${projectId}/findings/${findingId}/citations/${citationId}`,
-      {
-        method: "PATCH",
-        headers: authHeaders({ "Content-Type": "application/json" }),
-        body: JSON.stringify({
-          section_label: input.sectionLabel ?? null,
-          quoted_excerpt: input.quotedExcerpt ?? null,
-          reviewer_note: input.reviewerNote ?? null,
-          citation_status: input.citationStatus ?? null,
-          citation_type: input.citationType ?? null,
-        }),
-        cache: "no-store",
+  return apiMutate<EvidenceCitation>(
+    "PATCH",
+    `/api/v1/projects/${projectId}/findings/${findingId}/citations/${citationId}`,
+    {
+      body: {
+        section_label: input.sectionLabel ?? null,
+        quoted_excerpt: input.quotedExcerpt ?? null,
+        reviewer_note: input.reviewerNote ?? null,
+        citation_status: input.citationStatus ?? null,
+        citation_type: input.citationType ?? null,
       },
-    );
-    if (!res.ok) {
-      return { ok: false, backendReachable: true, error: `Update failed (${res.status}).` };
-    }
-    return {
-      ok: true,
-      backendReachable: true,
-      data: mapCitation((await res.json()) as Record<string, unknown>),
-    };
-  } catch {
-    return { ok: false, backendReachable: false, error: "Backend unavailable." };
-  }
+      map: mapCitation,
+      parseErrorDetail: false,
+      failureMessage: (status) => `Update failed (${status}).`,
+    },
+  );
 }
 
 export async function deleteEvidenceCitation(
@@ -324,16 +283,13 @@ export async function deleteEvidenceCitation(
   findingId: string,
   citationId: string,
 ): Promise<MutationResult<unknown>> {
-  try {
-    const res = await fetch(
-      `${API_BASE_URL}/api/v1/projects/${projectId}/findings/${findingId}/citations/${citationId}`,
-      { method: "DELETE", headers: authHeaders(), cache: "no-store" },
-    );
-    if (!res.ok) {
-      return { ok: false, backendReachable: true, error: `Delete failed (${res.status}).` };
-    }
-    return { ok: true, backendReachable: true };
-  } catch {
-    return { ok: false, backendReachable: false, error: "Backend unavailable." };
-  }
+  return apiMutate(
+    "DELETE",
+    `/api/v1/projects/${projectId}/findings/${findingId}/citations/${citationId}`,
+    {
+      parseResponse: false,
+      parseErrorDetail: false,
+      failureMessage: (status) => `Delete failed (${status}).`,
+    },
+  );
 }

@@ -318,8 +318,8 @@ export const technicalFoundation: { title: string; detail: string }[] = [
   },
 ];
 
-// A focused five-minute path for a recruiter or hiring manager who wants the
-// fastest credible tour. Each entry links to an existing public route.
+// A focused product evaluation path for an evaluator who wants the fastest
+// credible tour. Each entry links to an existing public route.
 export const fiveMinutePath: { label: string; href: string; note: string }[] = [
   {
     label: "Start Here",
@@ -395,7 +395,7 @@ export const reviewerChecklist: string[] = [
   "Check deployment status",
 ];
 
-// Notes aimed at a recruiter or technical evaluator skimming the demo.
+// Notes aimed at a reviewer or technical evaluator skimming the demo.
 export const evaluatorNotes: string[] = [
   "The workflow is document-first and evidence-first: findings trace back to a specific page.",
   "The system is reviewer-controlled. It organizes evidence and never decides an engineering outcome.",
