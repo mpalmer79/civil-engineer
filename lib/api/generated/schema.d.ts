@@ -4753,7 +4753,9 @@ export interface components {
              * Event Metadata
              * @default {}
              */
-            event_metadata: Record<string, never>;
+            event_metadata: {
+                [key: string]: unknown;
+            };
             /** Event Type */
             event_type: string;
             /** Organization Id */
@@ -4800,10 +4802,7 @@ export interface components {
         };
         /** Body_upload_cad_file_api_v1_projects__project_id__cad_files_upload_post */
         Body_upload_cad_file_api_v1_projects__project_id__cad_files_upload_post: {
-            /**
-             * File
-             * Format: binary
-             */
+            /** File */
             file: string;
             /**
              * Uploaded By
@@ -4818,10 +4817,7 @@ export interface components {
              * @default other
              */
             document_type: string;
-            /**
-             * File
-             * Format: binary
-             */
+            /** File */
             file: string;
             /**
              * Purpose
@@ -7770,7 +7766,9 @@ export interface components {
              * Evidence Status Summary
              * @default {}
              */
-            evidence_status_summary: Record<string, never>;
+            evidence_status_summary: {
+                [key: string]: unknown;
+            };
             /**
              * Item Count
              * @default 0
@@ -7791,7 +7789,9 @@ export interface components {
              * Review Status Summary
              * @default {}
              */
-            review_status_summary: Record<string, never>;
+            review_status_summary: {
+                [key: string]: unknown;
+            };
             /** Rule Pack Id */
             rule_pack_id?: string | null;
             /** Source Mode */
@@ -7868,7 +7868,9 @@ export interface components {
              * Evidence Status Summary
              * @default {}
              */
-            evidence_status_summary: Record<string, never>;
+            evidence_status_summary: {
+                [key: string]: unknown;
+            };
             /**
              * Item Count
              * @default 0
@@ -7884,7 +7886,9 @@ export interface components {
              * Review Status Summary
              * @default {}
              */
-            review_status_summary: Record<string, never>;
+            review_status_summary: {
+                [key: string]: unknown;
+            };
             /** Rule Pack Id */
             rule_pack_id?: string | null;
             /** Source Mode */
@@ -8507,12 +8511,16 @@ export interface components {
              * Applicant Response Summary
              * @default {}
              */
-            applicant_response_summary: Record<string, never>;
+            applicant_response_summary: {
+                [key: string]: unknown;
+            };
             /**
              * Carry Forward Summary
              * @default {}
              */
-            carry_forward_summary: Record<string, never>;
+            carry_forward_summary: {
+                [key: string]: unknown;
+            };
             /** Created At */
             created_at?: string | null;
             /** Created By Name */
@@ -8541,7 +8549,9 @@ export interface components {
              * Reviewer Follow Up Summary
              * @default {}
              */
-            reviewer_follow_up_summary: Record<string, never>;
+            reviewer_follow_up_summary: {
+                [key: string]: unknown;
+            };
             /** Source Mode */
             source_mode: string;
             /** Status */
@@ -8648,12 +8658,16 @@ export interface components {
              * Applicant Response Summary
              * @default {}
              */
-            applicant_response_summary: Record<string, never>;
+            applicant_response_summary: {
+                [key: string]: unknown;
+            };
             /**
              * Carry Forward Summary
              * @default {}
              */
-            carry_forward_summary: Record<string, never>;
+            carry_forward_summary: {
+                [key: string]: unknown;
+            };
             /** Created At */
             created_at?: string | null;
             /** Created By Name */
@@ -8677,7 +8691,9 @@ export interface components {
              * Reviewer Follow Up Summary
              * @default {}
              */
-            reviewer_follow_up_summary: Record<string, never>;
+            reviewer_follow_up_summary: {
+                [key: string]: unknown;
+            };
             /** Source Mode */
             source_mode: string;
             /** Status */
@@ -9511,7 +9527,9 @@ export interface components {
              * Applicant Response Summary
              * @default {}
              */
-            applicant_response_summary: Record<string, never>;
+            applicant_response_summary: {
+                [key: string]: unknown;
+            };
             /**
              * Carried Forward Item Count
              * @default 0
@@ -9521,7 +9539,9 @@ export interface components {
              * Carry Forward Summary
              * @default {}
              */
-            carry_forward_summary: Record<string, never>;
+            carry_forward_summary: {
+                [key: string]: unknown;
+            };
             /**
              * Document Count
              * @default 0
@@ -9551,7 +9571,9 @@ export interface components {
              * Filters
              * @default {}
              */
-            filters: Record<string, never>;
+            filters: {
+                [key: string]: unknown;
+            };
             /** Project Id */
             project_id: string;
             /** Query Text */
@@ -10815,6 +10837,10 @@ export interface components {
         };
         /** ValidationError */
         ValidationError: {
+            /** Context */
+            ctx?: Record<string, never>;
+            /** Input */
+            input?: unknown;
             /** Location */
             loc: (string | number)[];
             /** Message */

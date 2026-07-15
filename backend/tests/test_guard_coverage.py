@@ -38,11 +38,25 @@ GUARD_TOKENS = (
 ALLOWLIST: dict[tuple[str, str], str] = {}
 
 
+def _walk_api_routes(routes: list[object]) -> list[APIRoute]:
+    # Starlette 1.x wraps included routers lazily (_IncludedRouter), so the
+    # application's route list is no longer flat. Walk both shapes: flat
+    # APIRoute entries and nested routers reachable through original_router
+    # or a routes attribute.
+    found: list[APIRoute] = []
+    for route in routes:
+        if isinstance(route, APIRoute):
+            found.append(route)
+        elif hasattr(route, "original_router"):
+            found.extend(_walk_api_routes(route.original_router.routes))
+        elif hasattr(route, "routes"):
+            found.extend(_walk_api_routes(route.routes))
+    return found
+
+
 def _project_scoped_routes() -> list[tuple[str, str, object]]:
     found: list[tuple[str, str, object]] = []
-    for route in app.routes:
-        if not isinstance(route, APIRoute):
-            continue
+    for route in _walk_api_routes(app.routes):
         if "{project_id}" not in route.path:
             continue
         for method in sorted(route.methods or []):
