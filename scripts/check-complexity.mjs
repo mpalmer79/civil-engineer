@@ -55,9 +55,6 @@ const COHESION_ALLOWLIST = new Map([
 // Entries must only shrink. Do not add new files here to dodge the ceiling;
 // new oversized files must be split before merge.
 const DEFERRED_SPLIT = new Map([
-  ["backend/app/services/cad_intake_service.py", "deferred: split upload, DXF parsing, findings, insights, reads"],
-  ["backend/app/services/review_cycle_service.py", "deferred: split lifecycle, resubmittals, responses, comparison, carry-forward"],
-  ["backend/app/services/evidence_retrieval_service.py", "deferred: split page search, chunk search, candidates"],
   ["lib/api/realProjects.ts", "deferred: split by intake resource (queries, mutations, mappers)"],
   ["lib/api/workflow.ts", "deferred: split board queries, mutations, mappers"],
   ["backend/app/services/response_package_service.py", "deferred: split response-package assembly, sections, handoff"],
