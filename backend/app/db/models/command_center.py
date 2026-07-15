@@ -11,6 +11,13 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.database import Base
 from app.db.models.shared import _utcnow
 
+# Phase 14: reviewer command center and project health dashboard. These models
+# persist an aggregated view of the existing review-support data across all
+# phases. The dashboard organizes review-support work and never approves plans,
+# certifies compliance, verifies CAD, validates design, or closes or resolves
+# issues. It links to existing modules rather than replacing them.
+
+
 class ProjectCommandCenterSnapshot(Base):
     """A point-in-time aggregated view of the project review-support state."""
 

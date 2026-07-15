@@ -169,7 +169,7 @@ describe("body limits", () => {
       vi.fn().mockImplementation(async (_url, init: RequestInit) => {
         const reader = (init.body as ReadableStream<Uint8Array>).getReader();
         // Drain until the limiter errors.
-        // eslint-disable-next-line no-constant-condition
+         
         while (true) {
           const { done } = await reader.read();
           if (done) break;
@@ -216,7 +216,7 @@ describe("body limits", () => {
         sawStream = init.body instanceof ReadableStream;
         if (init.body instanceof ReadableStream) {
           const reader = init.body.getReader();
-          // eslint-disable-next-line no-constant-condition
+           
           while (true) {
             const { done } = await reader.read();
             if (done) break;

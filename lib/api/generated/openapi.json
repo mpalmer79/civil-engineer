@@ -893,6 +893,7 @@
             "type": "string"
           },
           "event_metadata": {
+            "additionalProperties": true,
             "default": {},
             "title": "Event Metadata",
             "type": "object"
@@ -1029,7 +1030,7 @@
       "Body_upload_cad_file_api_v1_projects__project_id__cad_files_upload_post": {
         "properties": {
           "file": {
-            "format": "binary",
+            "contentMediaType": "application/octet-stream",
             "title": "File",
             "type": "string"
           },
@@ -1053,7 +1054,7 @@
             "type": "string"
           },
           "file": {
-            "format": "binary",
+            "contentMediaType": "application/octet-stream",
             "title": "File",
             "type": "string"
           },
@@ -9292,6 +9293,7 @@
             "title": "Created By Name"
           },
           "evidence_status_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Evidence Status Summary",
             "type": "object"
@@ -9322,6 +9324,7 @@
             "type": "string"
           },
           "review_status_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Review Status Summary",
             "type": "object"
@@ -9603,6 +9606,7 @@
             "title": "Created By Name"
           },
           "evidence_status_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Evidence Status Summary",
             "type": "object"
@@ -9625,6 +9629,7 @@
             "type": "string"
           },
           "review_status_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Review Status Summary",
             "type": "object"
@@ -11354,11 +11359,13 @@
       "ResponseMatrixDetailResponse": {
         "properties": {
           "applicant_response_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Applicant Response Summary",
             "type": "object"
           },
           "carry_forward_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Carry Forward Summary",
             "type": "object"
@@ -11427,6 +11434,7 @@
             "type": "string"
           },
           "reviewer_follow_up_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Reviewer Follow Up Summary",
             "type": "object"
@@ -11824,11 +11832,13 @@
       "ResponseMatrixResponse": {
         "properties": {
           "applicant_response_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Applicant Response Summary",
             "type": "object"
           },
           "carry_forward_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Carry Forward Summary",
             "type": "object"
@@ -11889,6 +11899,7 @@
             "type": "string"
           },
           "reviewer_follow_up_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Reviewer Follow Up Summary",
             "type": "object"
@@ -14380,6 +14391,7 @@
       "ResubmittalRoundSummaryResponse": {
         "properties": {
           "applicant_response_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Applicant Response Summary",
             "type": "object"
@@ -14390,6 +14402,7 @@
             "type": "integer"
           },
           "carry_forward_summary": {
+            "additionalProperties": true,
             "default": {},
             "title": "Carry Forward Summary",
             "type": "object"
@@ -14456,6 +14469,7 @@
             "title": "Created By Name"
           },
           "filters": {
+            "additionalProperties": true,
             "default": {},
             "title": "Filters",
             "type": "object"
@@ -17881,6 +17895,13 @@
       },
       "ValidationError": {
         "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
           "loc": {
             "items": {
               "anyOf": [

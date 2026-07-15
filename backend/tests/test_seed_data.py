@@ -37,3 +37,44 @@ def test_projects_list_contains_brookside_demo_fixture(
     # The unfiltered list always includes the seeded demo fixture.
     all_projects = client.get("/api/v1/projects").json()
     assert any(p["project_id"] == PROJECT_ID for p in all_projects)
+
+
+def test_seed_facades_reexport_the_seeds_package() -> None:
+    # The legacy seed module paths are thin facades over the app.db.seeds
+    # package. They must expose the same objects so both import paths stay
+    # interchangeable.
+    from app.db import seed, seed_evidence, seed_plansheets, seeds
+
+    assert seed.PROJECT_ID == seeds.PROJECT_ID == PROJECT_ID
+    assert seed.seed_database is seeds.seed_database
+    assert seed.DOCUMENTS is seeds.DOCUMENTS
+    assert seed.CHECKLIST is seeds.CHECKLIST
+    assert seed.FINDINGS is seeds.FINDINGS
+    assert seed_evidence.seed_evidence is seeds.seed_evidence
+    assert seed_evidence.CHUNKS is seeds.CHUNKS
+    assert seed_evidence.FINDING_SOURCES is seeds.FINDING_SOURCES
+    assert seed_plansheets.seed_plansheets is seeds.seed_plansheets
+    assert seed_plansheets.PROJECT_ID == PROJECT_ID
+    assert seed_plansheets.PLAN_SHEETS is seeds.PLAN_SHEETS
+
+
+def test_public_demo_project_id_defaults_to_seeded_fixture(
+    client: TestClient,
+) -> None:
+    # The public demo project id is configurable, and its default must match
+    # the seeded reference project so the startup auth seed marks Brookside
+    # Meadows as the public demo.
+    from app.core.config import get_settings
+    from app.db import models
+    from app.db.database import SessionLocal
+
+    assert get_settings().PUBLIC_DEMO_PROJECT_ID == PROJECT_ID
+
+    db = SessionLocal()
+    try:
+        project = db.get(models.Project, PROJECT_ID)
+        assert project is not None
+        assert project.demo_public is True
+        assert project.visibility_mode == "demo_public"
+    finally:
+        db.close()
