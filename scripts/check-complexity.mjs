@@ -54,9 +54,7 @@ const COHESION_ALLOWLIST = new Map([
 // docs/internal/REFACTOR_VALIDATION_REPORT.md with the target sequence.
 // Entries must only shrink. Do not add new files here to dodge the ceiling;
 // new oversized files must be split before merge.
-const DEFERRED_SPLIT = new Map([
-  ["app/__tests__/evidenceRetrieval.test.tsx", "deferred: split by behavior (search, ranking, filters, citations)"],
-]);
+const DEFERRED_SPLIT = new Map([]);
 
 const ALLOWLIST = new Map([...COHESION_ALLOWLIST, ...DEFERRED_SPLIT]);
 
