@@ -38,7 +38,7 @@ export function trackDemoEvent(
   // Guard for non-browser (server render) contexts.
   if (typeof window === "undefined") return;
   if (process.env.NODE_ENV !== "production") {
-    // eslint-disable-next-line no-console
+     
     console.debug("[demo-analytics]", event, props);
   }
   // No external network call. A real sink can be attached here later.
